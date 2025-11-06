@@ -29,3 +29,10 @@ help: ## Display this help.
 
 export
 include devenv.mk
+
+codegen: ## Run code generation, e.g. openapi
+	./hack/update-codegen.sh
+
+fmt: ## Add license headers and format code
+	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only **/*.go **/**/*.go
+	go fmt ./...

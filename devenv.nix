@@ -7,9 +7,11 @@
   # https://devenv.sh/packages/
   packages = [
     pkgs.git
+    pkgs.gnumake
     pkgs.cobra-cli
     pkgs.golangci-lint
     pkgs.govulncheck
+    pkgs.addlicense
 
     pkgs.kubernetes-code-generator
   ];
