@@ -5,11 +5,14 @@
   env.GREET = "ARC DevEnv";
 
   # https://devenv.sh/packages/
-  packages = [ pkgs.git ];
+  packages = [ 
+    pkgs.git
+    pkgs.cobra-cli
+  ];
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
-  languages.go.package = pkgs.go_1_25_3;
+  languages.go.package = pkgs.go_1_25;
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
