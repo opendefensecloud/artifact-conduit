@@ -5,11 +5,13 @@
   env.GREET = "ARC DevEnv";
 
   # https://devenv.sh/packages/
-  packages = [ 
+  packages = [
     pkgs.git
     pkgs.cobra-cli
     pkgs.golangci-lint
     pkgs.govulncheck
+
+    pkgs.kubernetes-code-generator
   ];
 
   # https://devenv.sh/languages/
