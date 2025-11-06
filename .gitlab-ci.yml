@@ -1,0 +1,16 @@
+image: nixos/nix:2.13
+
+stages:
+  - lint
+
+variables:
+  NIX_REMOTE: "https://cache.nixos.org"
+  PATH: "$HOME/.nix-profile/bin:$PATH"
+
+go-lint:
+  stage: lint
+  script:
+    - nix profile install nixpkgs#devenv
+    - devenv run -- golangci-lint run ./... {golangci_args}
+  retry: 1
+  interruptible: true
