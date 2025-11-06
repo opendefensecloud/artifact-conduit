@@ -1,4 +1,4 @@
-image: nixos/nix:2.13
+image: nixos/nix:2.23.2
 
 stages:
   - lint
