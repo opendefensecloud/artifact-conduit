@@ -8,6 +8,8 @@
   packages = [ 
     pkgs.git
     pkgs.cobra-cli
+    pkgs.golangci-lint
+    pkgs.govulncheck
   ];
 
   # https://devenv.sh/languages/
