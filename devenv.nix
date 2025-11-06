@@ -9,6 +9,7 @@
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
+  languages.go.package = pkgs.go_1_25_3;
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
