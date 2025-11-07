@@ -47,7 +47,7 @@ type orders struct {
 }
 
 // newOrders returns a Orders
-func newOrders(c *OrderV1alpha1Client, namespace string) *orders {
+func newOrders(c *ArcV1alpha1Client, namespace string) *orders {
 	return &orders{
 		gentype.NewClientWithListAndApply[*orderv1alpha1.Order, *orderv1alpha1.OrderList, *applyconfigurationsorderv1alpha1.OrderApplyConfiguration](
 			"orders",

@@ -49,25 +49,25 @@ func NewFilteredOrderInformer(client versioned.Interface, namespace string, resy
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OrderV1alpha1().Orders(namespace).List(context.Background(), options)
+				return client.ArcV1alpha1().Orders(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OrderV1alpha1().Orders(namespace).Watch(context.Background(), options)
+				return client.ArcV1alpha1().Orders(namespace).Watch(context.Background(), options)
 			},
 			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OrderV1alpha1().Orders(namespace).List(ctx, options)
+				return client.ArcV1alpha1().Orders(namespace).List(ctx, options)
 			},
 			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OrderV1alpha1().Orders(namespace).Watch(ctx, options)
+				return client.ArcV1alpha1().Orders(namespace).Watch(ctx, options)
 			},
 		},
 		&apiorderv1alpha1.Order{},
