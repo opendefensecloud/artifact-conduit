@@ -7,5 +7,10 @@ import (
 
 func newOrasCmd() *cobra.Command {
 	cmd := orasRoot.New()
+	cmd.Short = "ORAS CLI (Artifact Registry As Storage)"
+	cmd.Long = `ORAS CLI (Artifact Registry As Storage) is a CLI tool for working with OCI registries.
+
+ORAS CLI allows you to push, pull, and manage artifacts in OCI-compliant registries,
+enabling you to leverage container registries for storing and distributing various types of artifacts.`
 	return cmd
 }

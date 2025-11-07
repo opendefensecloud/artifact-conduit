@@ -41,6 +41,7 @@ func init() {
 
 	// Add subcommands
 	rootCmd.AddCommand(newOrasCmd())
+	rootCmd.AddCommand(newOCMCmd())
 }
 
 func initConfig() {
