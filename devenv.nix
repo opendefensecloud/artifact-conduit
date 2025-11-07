@@ -1,9 +1,6 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  # https://devenv.sh/basics/
-  env.GREET = "ARC DevEnv";
-
   # https://devenv.sh/packages/
   packages = [
     pkgs.git
@@ -12,10 +9,11 @@
     pkgs.golangci-lint
     pkgs.govulncheck
     pkgs.addlicense
-
+    pkgs.oras
     pkgs.kubernetes-code-generator
   ];
 
+  # aliases for common git commands
   scripts.gss.exec = ''
     git status --short
   '';
@@ -28,7 +26,10 @@
   scripts.gcam.exec = ''
     git commit --all --message "$@";
   '';
-
+  scripts.gaa.exec = ''
+    git add --all
+  '';
+  
   # https://devenv.sh/languages/
   languages.go.enable = true;
   languages.go.package = pkgs.go_1_25;

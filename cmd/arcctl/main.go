@@ -38,6 +38,9 @@ func init() {
 	fl.AddGoFlagSet(flag.CommandLine)
 	fl.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/arc/config.yaml)")
 	sprint.PanicOnError(viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config")))
+
+	// Add subcommands
+	rootCmd.AddCommand(newOrasCmd())
 }
 
 func initConfig() {
