@@ -10,7 +10,7 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned"
+	versioned "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
 	internalinterfaces "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
 	order "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/order"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

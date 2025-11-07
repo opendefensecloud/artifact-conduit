@@ -10,7 +10,7 @@ import (
 
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
 	applyconfigurationsorderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/order/v1alpha1"
-	scheme "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned/scheme"
+	scheme "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"

@@ -10,7 +10,7 @@ import (
 	time "time"
 
 	apiorderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
-	versioned "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned"
+	versioned "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
 	internalinterfaces "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/listers/order/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

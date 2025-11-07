@@ -1,14 +1,11 @@
 package v1alpha1
 
 import (
-	"encoding/json"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:prerelease-lifecycle-gen:introduced=1.0
-// +k8s:prerelease-lifecycle-gen:removed=1.10
 
 // OrderList is a list of Order objects.
 type OrderList struct {
@@ -25,7 +22,7 @@ const (
 )
 
 type OrderSpec struct {
-	json.RawMessage
+	runtime.RawExtension
 }
 
 type OrderStatus struct {
@@ -33,8 +30,6 @@ type OrderStatus struct {
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-// +k8s:prerelease-lifecycle-gen:introduced=1.0
-// +k8s:prerelease-lifecycle-gen:removed=1.10
 
 type Order struct {
 	metav1.TypeMeta   `json:",inline"`

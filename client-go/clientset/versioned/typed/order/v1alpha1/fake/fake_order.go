@@ -8,7 +8,7 @@ package fake
 import (
 	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/order/v1alpha1"
-	typedorderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned/typed/order/v1alpha1"
+	typedorderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1"
 	gentype "k8s.io/client-go/gentype"
 )
 

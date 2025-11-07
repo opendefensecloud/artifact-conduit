@@ -46,6 +46,7 @@ kube::codegen::gen_helpers \
     --boilerplate "${SCRIPT_DIR}/boilerplate.go.txt" \
     "${PROJECT_DIR}/api"
 
+# TODO: use kube::codegen::gen_openapi
 input_dirs=($(qualify-gvs "${THIS_PKG}/api" "$ALL_VERSION_GROUPS"))
 openapi-gen \
     --output-dir "$PROJECT_DIR/client-go/openapi" \
@@ -64,7 +65,7 @@ kube::codegen::gen_client \
   --with-watch \
   --with-applyconfig \
   --applyconfig-name "applyconfigurations" \
-  --clientset-name "arc" \
+  --clientset-name "clientset" \
   --listers-name "listers" \
   --informers-name "informers" \
   --output-dir "$PROJECT_DIR/client-go" \

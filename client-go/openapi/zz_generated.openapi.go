@@ -416,16 +416,17 @@ func schema_artifact_conduit_api_order_v1alpha1_OrderSpec(ref common.ReferenceCa
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"RawMessage": {
+					"RawExtension": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "byte",
+							Ref: ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
 				},
-				Required: []string{"RawMessage"},
+				Required: []string{"RawExtension"},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/runtime.RawExtension"},
 	}
 }
 

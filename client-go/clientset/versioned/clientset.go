@@ -9,7 +9,7 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned/typed/order/v1alpha1"
+	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

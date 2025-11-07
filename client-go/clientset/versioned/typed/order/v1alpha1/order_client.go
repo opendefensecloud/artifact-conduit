@@ -9,7 +9,7 @@ import (
 	http "net/http"
 
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
-	scheme "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned/scheme"
+	scheme "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

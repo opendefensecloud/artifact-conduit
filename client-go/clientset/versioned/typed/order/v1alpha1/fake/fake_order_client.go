@@ -6,7 +6,7 @@
 package fake
 
 import (
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/arc/versioned/typed/order/v1alpha1"
+	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1"
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
 )
