@@ -34,5 +34,12 @@ codegen: ## Run code generation, e.g. openapi
 	./hack/update-codegen.sh
 
 fmt: ## Add license headers and format code
-	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only **/*.go **/**/*.go
+	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only **/*.go
 	go fmt ./...
+
+lint: ## Run linters such as golangci-lint and addlicence checks
+	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only -check **/*.go && \
+	golangci-lint run -v
+
+test: ## Run all tests
+	go test -v ./...

@@ -1,3 +1,6 @@
+// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// SPDX-License-Identifier: Apache-2.0
+
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package
 // +k8s:conversion-gen=gitlab.opencode.de/bwi/ace/artifact-conduit/api/order

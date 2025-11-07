@@ -1,3 +1,6 @@
+// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// SPDX-License-Identifier: Apache-2.0
+
 package order
 
 import (
@@ -26,7 +29,7 @@ func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	if !ok {
 		return nil, nil, fmt.Errorf("given object is not an Order")
 	}
-	return labels.Set(apiserver.ObjectMeta.Labels), SelectableFields(apiserver), nil
+	return labels.Set(apiserver.Labels), SelectableFields(apiserver), nil
 }
 
 // MatchOrder is the filter used by the generic etcd backend to watch events
