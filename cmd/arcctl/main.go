@@ -4,36 +4,62 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"os"
 
+	"github.com/jastBytes/sprint"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
+
+var (
+	// cfgFile holds the path to the configuration file
+	cfgFile string
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "artifact-conduit",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:               "arcctl [command] [flags]",
+	Short:             "CLI of ARC",
+	Long:              `arcctl is the command line interface for Artefact Conduit (ARC).`,
+	DisableAutoGenTag: true,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
+// Initialize configuration and flags
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	cobra.OnInitialize(initConfig)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.artifact-conduit.yaml)")
+	// Setup global flags
+	fl := rootCmd.PersistentFlags()
+	fl.AddGoFlagSet(flag.CommandLine)
+	fl.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/arc/config.yaml)")
+	sprint.PanicOnError(viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config")))
+}
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func initConfig() {
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
+
+		// Search config in home directory with name "config" (without extension).
+		viper.AddConfigPath(fmt.Sprintf("%s/.config/arc", home))
+		viper.SetConfigType("yaml")
+		viper.SetConfigName("config")
+	}
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
 }
 
 func main() {

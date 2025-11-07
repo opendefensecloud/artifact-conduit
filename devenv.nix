@@ -16,6 +16,19 @@
     pkgs.kubernetes-code-generator
   ];
 
+  scripts.gss.exec = ''
+    git status --short
+  '';
+  scripts.gp.exec = ''
+    git push
+  '';
+  scripts.gl.exec = ''
+    git pull
+  '';
+  scripts.gcam.exec = ''
+    git commit --all --message "$@";
+  '';
+
   # https://devenv.sh/languages/
   languages.go.enable = true;
   languages.go.package = pkgs.go_1_25;
@@ -31,4 +44,7 @@
     };
   };
   # See full reference at https://devenv.sh/reference/options/
+
+  difftastic.enable = true;
+  delta.enable = true;
 }
