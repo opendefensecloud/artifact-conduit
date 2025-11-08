@@ -9,7 +9,13 @@ MAKEFLAGS += --no-print-directory
 
 BUILD_PATH ?= $(shell pwd)
 HACK_DIR ?= $(shell cd hack 2>/dev/null && pwd)
+GINKGO ?= ginkgo
+ENVTEST ?= setup-envtest
+ENVTEST_K8S_VERSION ?= 1.34.1
 
+export GOPRIVATE=*.opencode.de
+export GNOSUMDB=*.opencode.de
+export GNOPROXY=*.opencode.de
 
 ##@ General
 
@@ -30,6 +36,13 @@ help: ## Display this help.
 export
 include devenv.mk
 
+LOCALBIN ?= $(BUILD_PATH)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+clean:
+	rm -rf $(LOCALBIN)
+
 codegen: ## Run code generation, e.g. openapi
 	./hack/update-codegen.sh
 
@@ -41,5 +54,5 @@ lint: ## Run linters such as golangci-lint and addlicence checks
 	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only -check **/*.go && \
 	golangci-lint run -v
 
-test: ## Run all tests
-	go test -v ./...
+test: $(LOCALBIN) ## Run all tests
+	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r -cover --fail-fast --require-suite -covermode count --output-dir=$(BUILD_PATH) -coverprofile=arc.coverprofile

@@ -11,6 +11,8 @@
     pkgs.addlicense
     pkgs.oras
     pkgs.kubernetes-code-generator
+    pkgs.setup-envtest
+    pkgs.ginkgo
   ];
 
   # aliases for common git commands
@@ -29,7 +31,7 @@
   scripts.gaa.exec = ''
     git add --all
   '';
-  
+
   # https://devenv.sh/languages/
   languages.go.enable = true;
   languages.go.package = pkgs.go_1_25;
