@@ -9,9 +9,17 @@ MAKEFLAGS += --no-print-directory
 
 BUILD_PATH ?= $(shell pwd)
 HACK_DIR ?= $(shell cd hack 2>/dev/null && pwd)
+LOCALBIN ?= $(BUILD_PATH)/bin
+
+GO ?= go
 GINKGO ?= ginkgo
 ENVTEST ?= setup-envtest
+ADDLICENSE ?= addlicense
+GOLANGCI_LINT ?= golangci-lint
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+
 ENVTEST_K8S_VERSION ?= 1.34.1
+CONTROLLER_TOOLS_VERSION ?= v0.19.0
 
 export GOPRIVATE=*.opencode.de
 export GNOSUMDB=*.opencode.de
@@ -36,23 +44,39 @@ help: ## Display this help.
 export
 include devenv.mk
 
-LOCALBIN ?= $(BUILD_PATH)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
 
+.PHONY: clean
 clean:
 	rm -rf $(LOCALBIN)
 
+.PHONY: codegen
 codegen: ## Run code generation, e.g. openapi
 	./hack/update-codegen.sh
 
+.PHONY: fmt
 fmt: ## Add license headers and format code
-	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only **/*.go
-	go fmt ./...
+	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only {} +
+	$(GO) fmt ./...
 
+.PHONY: lint
 lint: ## Run linters such as golangci-lint and addlicence checks
-	addlicense -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only -check **/*.go && \
-	golangci-lint run -v
+	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
+	$(GOLANGCI_LINT) run -v
 
+.PHONY: test
 test: $(LOCALBIN) ## Run all tests
 	@KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r -cover --fail-fast --require-suite -covermode count --output-dir=$(BUILD_PATH) -coverprofile=arc.coverprofile
+
+.PHONY: manifests
+manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
+	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
+
+
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
+	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
