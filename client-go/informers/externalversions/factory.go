@@ -241,9 +241,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Arc() order.Interface
+	Order() order.Interface
 }
 
-func (f *sharedInformerFactory) Arc() order.Interface {
+func (f *sharedInformerFactory) Order() order.Interface {
 	return order.New(f, f.namespace, f.tweakListOptions)
 }

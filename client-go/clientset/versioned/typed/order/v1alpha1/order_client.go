@@ -13,24 +13,24 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-type ArcV1alpha1Interface interface {
+type OrderV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	OrdersGetter
 }
 
-// ArcV1alpha1Client is used to interact with features provided by the arc.bwi.de group.
-type ArcV1alpha1Client struct {
+// OrderV1alpha1Client is used to interact with features provided by the order.arc.bwi.de group.
+type OrderV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *ArcV1alpha1Client) Orders(namespace string) OrderInterface {
+func (c *OrderV1alpha1Client) Orders(namespace string) OrderInterface {
 	return newOrders(c, namespace)
 }
 
-// NewForConfig creates a new ArcV1alpha1Client for the given config.
+// NewForConfig creates a new OrderV1alpha1Client for the given config.
 // NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
 // where httpClient was generated with rest.HTTPClientFor(c).
-func NewForConfig(c *rest.Config) (*ArcV1alpha1Client, error) {
+func NewForConfig(c *rest.Config) (*OrderV1alpha1Client, error) {
 	config := *c
 	setConfigDefaults(&config)
 	httpClient, err := rest.HTTPClientFor(&config)
@@ -40,21 +40,21 @@ func NewForConfig(c *rest.Config) (*ArcV1alpha1Client, error) {
 	return NewForConfigAndClient(&config, httpClient)
 }
 
-// NewForConfigAndClient creates a new ArcV1alpha1Client for the given config and http client.
+// NewForConfigAndClient creates a new OrderV1alpha1Client for the given config and http client.
 // Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*ArcV1alpha1Client, error) {
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*OrderV1alpha1Client, error) {
 	config := *c
 	setConfigDefaults(&config)
 	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
-	return &ArcV1alpha1Client{client}, nil
+	return &OrderV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new ArcV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new OrderV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *ArcV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *OrderV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -62,9 +62,9 @@ func NewForConfigOrDie(c *rest.Config) *ArcV1alpha1Client {
 	return client
 }
 
-// New creates a new ArcV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *ArcV1alpha1Client {
-	return &ArcV1alpha1Client{c}
+// New creates a new OrderV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *OrderV1alpha1Client {
+	return &OrderV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) {
@@ -80,7 +80,7 @@ func setConfigDefaults(config *rest.Config) {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *ArcV1alpha1Client) RESTClient() rest.Interface {
+func (c *OrderV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

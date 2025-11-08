@@ -15,10 +15,10 @@ import (
 // fakeOrders implements OrderInterface
 type fakeOrders struct {
 	*gentype.FakeClientWithListAndApply[*v1alpha1.Order, *v1alpha1.OrderList, *orderv1alpha1.OrderApplyConfiguration]
-	Fake *FakeArcV1alpha1
+	Fake *FakeOrderV1alpha1
 }
 
-func newFakeOrders(fake *FakeArcV1alpha1, namespace string) typedorderv1alpha1.OrderInterface {
+func newFakeOrders(fake *FakeOrderV1alpha1, namespace string) typedorderv1alpha1.OrderInterface {
 	return &fakeOrders{
 		gentype.NewFakeClientWithListAndApply[*v1alpha1.Order, *v1alpha1.OrderList, *orderv1alpha1.OrderApplyConfiguration](
 			fake.Fake,

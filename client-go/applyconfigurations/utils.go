@@ -18,7 +18,7 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=arc.bwi.de, Version=v1alpha1
+	// Group=order.arc.bwi.de, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Order"):
 		return &orderv1alpha1.OrderApplyConfiguration{}
 
