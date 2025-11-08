@@ -5,24 +5,18 @@ package apiserver_test
 
 import (
 	"context"
-	"path/filepath"
 	"testing"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/ironcore-dev/controller-utils/buildutils"
-	utilsenvtest "github.com/ironcore-dev/ironcore/utils/envtest"
-	utilapiserver "github.com/ironcore-dev/ironcore/utils/envtest/apiserver"
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/envtest"
-	"sigs.k8s.io/controller-runtime/pkg/envtest/komega"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -35,10 +29,8 @@ const (
 )
 
 var (
-	cfg        *rest.Config
-	k8sClient  client.Client
-	testEnv    *envtest.Environment
-	testEnvExt *utilsenvtest.EnvironmentExtensions
+	k8sClient client.Client
+	testEnv   *envtest.Environment
 )
 
 func TestAPIServer(t *testing.T) {
@@ -58,39 +50,18 @@ var _ = BeforeSuite(func() {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
-	testEnv = &envtest.Environment{}
-	testEnvExt = &utilsenvtest.EnvironmentExtensions{
-		APIServiceDirectoryPaths:       []string{filepath.Join("..", "..", "config", "apiserver", "apiservice", "bases")},
-		ErrorIfAPIServicePathIsMissing: true,
-	}
-
-	cfg, err = utilsenvtest.StartWithExtensions(testEnv, testEnvExt)
-	Expect(err).NotTo(HaveOccurred())
-	Expect(cfg).NotTo(BeNil())
-	DeferCleanup(utilsenvtest.StopWithExtensions, testEnv, testEnvExt)
 
 	Expect(orderv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
-	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	testEnv, err = envtest.NewEnvironment()
 	Expect(err).NotTo(HaveOccurred())
-	Expect(k8sClient).NotTo(BeNil())
-	komega.SetClient(k8sClient)
+	Expect(testEnv).NotTo(BeNil())
 
-	apiSrv, err := utilapiserver.New(cfg, utilapiserver.Options{
-		MainPath:     "gitlab.opencode.de/bwi/ace/artifact-conduit/cmd/arc-apiserver",
-		BuildOptions: []buildutils.BuildOption{buildutils.ModModeMod},
-		ETCDServers:  []string{testEnv.ControlPlane.Etcd.URL.String()},
-		Host:         testEnvExt.APIServiceInstallOptions.LocalServingHost,
-		Port:         testEnvExt.APIServiceInstallOptions.LocalServingPort,
-		CertDir:      testEnvExt.APIServiceInstallOptions.LocalServingCertDir,
-	})
+	k8sClient, err = testEnv.Start(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
+	DeferCleanup(testEnv.Stop)
 
-	Expect(apiSrv.Start()).To(Succeed())
-	DeferCleanup(apiSrv.Stop)
-
-	err = utilsenvtest.WaitUntilAPIServicesReadyWithTimeout(apiServiceTimeout, testEnvExt, cfg, k8sClient, scheme.Scheme)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(testEnv.WaitUntilReadyWithTimeout(apiServiceTimeout)).To(Succeed())
 })
 
 func SetupTest(ctx context.Context) *corev1.Namespace {

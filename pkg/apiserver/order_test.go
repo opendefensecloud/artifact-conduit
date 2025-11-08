@@ -4,10 +4,10 @@
 package apiserver_test
 
 import (
-	. "github.com/ironcore-dev/ironcore/utils/testing"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/envtest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -15,7 +15,7 @@ import (
 
 var _ = Describe("Order", func() {
 	var (
-		ctx   = SetupContext()
+		ctx   = envtest.Context()
 		ns    = SetupTest(ctx)
 		order = &orderv1alpha1.Order{}
 	)
