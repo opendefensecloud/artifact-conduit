@@ -12,6 +12,7 @@ HACK_DIR ?= $(shell cd hack 2>/dev/null && pwd)
 LOCALBIN ?= $(BUILD_PATH)/bin
 
 GO ?= go
+SHELLCHECK ?= shellcheck
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
@@ -65,6 +66,7 @@ fmt: addlicense ## Add license headers and format code
 .PHONY: lint
 lint: addlicense golangci-lint ## Run linters such as golangci-lint and addlicence checks
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
+	shellcheck hack/*.sh
 	$(GOLANGCI_LINT) run -v
 
 .PHONY: test
