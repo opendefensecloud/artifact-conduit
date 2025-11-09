@@ -9,7 +9,7 @@
     pkgs.golangci-lint
     pkgs.govulncheck
     pkgs.oras
-    pkgs.kubernetes-code-generator
+    pkgs.kubernetes-code-generator # currently required by hack/update-codegen.sh
   ];
 
   # aliases for common git commands
