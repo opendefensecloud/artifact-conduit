@@ -86,3 +86,7 @@ func (e *Environment) Stop() error {
 func (e *Environment) WaitUntilReadyWithTimeout(timeout time.Duration) error {
 	return utilsenvtest.WaitUntilAPIServicesReadyWithTimeout(timeout, e.ext, e.cfg, e.k8sClient, e.k8sClient.Scheme())
 }
+
+func (e *Environment) GetRESTConfig() *rest.Config {
+	return e.cfg
+}
