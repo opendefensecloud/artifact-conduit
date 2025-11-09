@@ -37,7 +37,6 @@ function qualify-gvs() {
 }
 
 
-CLIENT_GROUPS="order"
 CLIENT_VERSION_GROUPS="order:v1alpha1"
 ALL_VERSION_GROUPS="$CLIENT_VERSION_GROUPS"
 
@@ -47,7 +46,7 @@ kube::codegen::gen_helpers \
     "${PROJECT_DIR}/api"
 
 # TODO: use kube::codegen::gen_openapi, see commented block below (works and generates same code but exit code != 0)
-input_dirs=($(qualify-gvs "${THIS_PKG}/api" "$ALL_VERSION_GROUPS"))
+mapfile -t input_dirs < <(qualify-gvs "${THIS_PKG}/api" "$ALL_VERSION_GROUPS")
 openapi-gen \
     --output-dir "$PROJECT_DIR/client-go/openapi" \
     --output-pkg "${THIS_PKG}/client-go/openapi" \
