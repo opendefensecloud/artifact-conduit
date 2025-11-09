@@ -8,11 +8,8 @@
     pkgs.cobra-cli
     pkgs.golangci-lint
     pkgs.govulncheck
-    pkgs.addlicense
     pkgs.oras
     pkgs.kubernetes-code-generator
-    pkgs.setup-envtest
-    pkgs.ginkgo
   ];
 
   # aliases for common git commands
