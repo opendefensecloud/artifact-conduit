@@ -11,6 +11,7 @@ import (
 	"github.com/jastBytes/sprint"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/cmd/arcctl/oci"
 )
 
 var (
@@ -44,6 +45,7 @@ func init() {
 	// Add subcommands
 	rootCmd.AddCommand(newOrasCmd())
 	rootCmd.AddCommand(newOCMCmd())
+	rootCmd.AddCommand(oci.NewOCICommand())
 }
 
 func initConfig() {
