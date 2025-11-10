@@ -15,12 +15,17 @@ import (
 
 type ArcV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	FragmentsGetter
 	OrdersGetter
 }
 
 // ArcV1alpha1Client is used to interact with features provided by the arc.bwi.de group.
 type ArcV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *ArcV1alpha1Client) Fragments(namespace string) FragmentInterface {
+	return newFragments(c, namespace)
 }
 
 func (c *ArcV1alpha1Client) Orders(namespace string) OrderInterface {

@@ -15,3 +15,8 @@ func addDefaultingFuncs(scheme *runtime.Scheme) error {
 func SetDefaults_OrderSpec(obj *OrderSpec) {
 	// ...
 }
+
+// SetDefaults_OrderSpec sets defaults for Order spec
+func SetDefaults_FragmentSpec(obj *FragmentSpec) {
+	// ...
+}

@@ -11,6 +11,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// Fragments returns a FragmentInformer.
+	Fragments() FragmentInformer
 	// Orders returns a OrderInformer.
 	Orders() OrderInformer
 }
@@ -24,6 +26,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// Fragments returns a FragmentInformer.
+func (v *version) Fragments() FragmentInformer {
+	return &fragmentInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Orders returns a OrderInformer.

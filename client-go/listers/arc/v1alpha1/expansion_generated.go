@@ -5,6 +5,14 @@
 
 package v1alpha1
 
+// FragmentListerExpansion allows custom methods to be added to
+// FragmentLister.
+type FragmentListerExpansion interface{}
+
+// FragmentNamespaceListerExpansion allows custom methods to be added to
+// FragmentNamespaceLister.
+type FragmentNamespaceListerExpansion interface{}
+
 // OrderListerExpansion allows custom methods to be added to
 // OrderLister.
 type OrderListerExpansion interface{}

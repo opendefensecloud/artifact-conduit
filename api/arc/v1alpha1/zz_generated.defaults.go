@@ -16,9 +16,22 @@ import (
 // Public to allow building arbitrary schemes.
 // All generated defaulters are covering - they call all nested defaulters.
 func RegisterDefaults(scheme *runtime.Scheme) error {
+	scheme.AddTypeDefaultingFunc(&Fragment{}, func(obj interface{}) { SetObjectDefaults_Fragment(obj.(*Fragment)) })
+	scheme.AddTypeDefaultingFunc(&FragmentList{}, func(obj interface{}) { SetObjectDefaults_FragmentList(obj.(*FragmentList)) })
 	scheme.AddTypeDefaultingFunc(&Order{}, func(obj interface{}) { SetObjectDefaults_Order(obj.(*Order)) })
 	scheme.AddTypeDefaultingFunc(&OrderList{}, func(obj interface{}) { SetObjectDefaults_OrderList(obj.(*OrderList)) })
 	return nil
+}
+
+func SetObjectDefaults_Fragment(in *Fragment) {
+	SetDefaults_FragmentSpec(&in.Spec)
+}
+
+func SetObjectDefaults_FragmentList(in *FragmentList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_Fragment(a)
+	}
 }
 
 func SetObjectDefaults_Order(in *Order) {

@@ -19,7 +19,7 @@ type OrderDefaults struct {
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 }
 
-// OrderArtifact specifies a single artifact which is translated into a corresponding OrderFragment
+// OrderArtifact specifies a single artifact which is translated into a corresponding Fragment
 type OrderArtifact struct {
 	// Type specifies which ArtifactTypeDefinition is used to process this artifact.
 	Type string `json:"type"`

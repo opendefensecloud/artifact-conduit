@@ -15,6 +15,10 @@ type FakeArcV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeArcV1alpha1) Fragments(namespace string) v1alpha1.FragmentInterface {
+	return newFakeFragments(c, namespace)
+}
+
 func (c *FakeArcV1alpha1) Orders(namespace string) v1alpha1.OrderInterface {
 	return newFakeOrders(c, namespace)
 }

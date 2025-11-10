@@ -19,6 +19,10 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=arc.bwi.de, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("Fragment"):
+		return &arcv1alpha1.FragmentApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("FragmentSpec"):
+		return &arcv1alpha1.FragmentSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Order"):
 		return &arcv1alpha1.OrderApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifact"):
