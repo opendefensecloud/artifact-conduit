@@ -452,7 +452,7 @@ func (in *OrderStatus) DeepCopyInto(out *OrderStatus) {
 	*out = *in
 	if in.Fragments != nil {
 		in, out := &in.Fragments, &out.Fragments
-		*out = make(map[string]v1.ObjectReference, len(*in))
+		*out = make(map[string]v1.LocalObjectReference, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}

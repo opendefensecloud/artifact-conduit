@@ -5,6 +5,10 @@ package controller
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
 
 	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -39,30 +43,106 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	// Create a Fragment owned by this Order
-	frag := &arcv1alpha1.Fragment{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:    order.Namespace,
-			GenerateName: order.Name + "-fragment-",
-		},
-		Spec: arcv1alpha1.FragmentSpec{
-			// Intentionally empty defaults; controllers may fill this in later.
-			// Provide a minimal SrcRef/DstRef if needed:
-			SrcRef: corev1.LocalObjectReference{},
-			DstRef: corev1.LocalObjectReference{},
-		},
-	}
-
-	// Set owner reference so Fragment is garbage-collected with the Order
-	if err := controllerutil.SetControllerReference(order, frag, r.Scheme); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := r.Create(ctx, frag); err != nil {
-		if apierrors.IsAlreadyExists(err) {
-			// Already created by a previous reconcile — that's fine
-			return ctrl.Result{}, nil
+	desiredFrags := map[string]*arcv1alpha1.Fragment{}
+	for _, artifact := range order.Spec.Artifacts {
+		// Let's collect the necessary data for the fragment from the artifact and order
+		frag := &arcv1alpha1.Fragment{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: order.Namespace,
+				Name:      "",
+			},
+			Spec: arcv1alpha1.FragmentSpec{
+				Type:   artifact.Type,
+				SrcRef: artifact.SrcRef,
+				DstRef: artifact.DstRef,
+				Spec:   artifact.Spec,
+			},
 		}
+		if frag.Spec.SrcRef.Name == "" {
+			frag.Spec.SrcRef = order.Spec.Defaults.SrcRef
+		}
+		if frag.Spec.DstRef.Name == "" {
+			frag.Spec.DstRef = order.Spec.Defaults.DstRef
+		}
+
+		// Create a hash based on fragment fields for idempotency and compute the fragment name
+		h := sha256.New()
+		data := map[string]interface{}{
+			"type": frag.Spec.Type,
+			"src":  frag.Spec.SrcRef.Name,
+			"dst":  frag.Spec.DstRef.Name,
+			"spec": frag.Spec.Spec.Raw,
+		}
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to marshal fragment data: %w", err)
+		}
+		h.Write(jsonData)
+		sha := hex.EncodeToString(h.Sum(nil))[:16]
+		frag.Name = fmt.Sprintf("%s-%s", order.Name, sha)
+
+		desiredFrags[sha] = frag
+	}
+
+	// List missing fragments
+	fragsToCreate := []string{}
+	for sha, _ := range desiredFrags {
+		_, exists := order.Status.Fragments[sha]
+		if exists {
+			continue
+		}
+		fragsToCreate = append(fragsToCreate, sha)
+	}
+
+	// Find obsolete fragments
+	fragsToDelete := []string{}
+	for sha, _ := range order.Status.Fragments {
+		_, exists := desiredFrags[sha]
+		if exists {
+			continue
+		}
+		fragsToDelete = append(fragsToDelete, sha)
+	}
+
+	// Create missing fragments
+	for _, sha := range fragsToCreate {
+		frag := desiredFrags[sha]
+
+		// Set owner reference so Fragment is garbage-collected with the Order
+		if err := controllerutil.SetControllerReference(order, frag, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if err := r.Create(ctx, frag); err != nil {
+			if apierrors.IsAlreadyExists(err) {
+				// Already created by a previous reconcile — that's fine
+				continue
+			}
+			return ctrl.Result{}, err
+		}
+
+		// Update status
+		order.Status.Fragments[sha] = corev1.LocalObjectReference{Name: frag.Name}
+	}
+
+	// Delete obsolete fragments
+	for _, sha := range fragsToDelete {
+		// Does not exist anymore, let's clean up!
+		if err := r.Delete(ctx, &arcv1alpha1.Fragment{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: order.Namespace,
+				Name:      order.Status.Fragments[sha].Name,
+			},
+		}); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		// Update status
+		delete(order.Status.Fragments, sha)
+	}
+
+	// Update status
+	if err := r.Status().Update(ctx, order); err != nil {
 		return ctrl.Result{}, err
 	}
 

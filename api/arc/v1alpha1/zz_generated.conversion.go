@@ -668,7 +668,7 @@ func Convert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *OrderSp
 }
 
 func autoConvert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.OrderStatus, s conversion.Scope) error {
-	out.Fragments = *(*map[string]v1.ObjectReference)(unsafe.Pointer(&in.Fragments))
+	out.Fragments = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.Fragments))
 	return nil
 }
 
@@ -678,7 +678,7 @@ func Convert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.O
 }
 
 func autoConvert_arc_OrderStatus_To_v1alpha1_OrderStatus(in *arc.OrderStatus, out *OrderStatus, s conversion.Scope) error {
-	out.Fragments = *(*map[string]v1.ObjectReference)(unsafe.Pointer(&in.Fragments))
+	out.Fragments = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.Fragments))
 	return nil
 }
 

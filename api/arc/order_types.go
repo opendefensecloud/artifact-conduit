@@ -44,7 +44,7 @@ type OrderSpec struct {
 
 // OrderStatus defines the observed state of Order
 type OrderStatus struct {
-	Fragments map[string]corev1.ObjectReference `json:"fragments,omitempty"`
+	Fragments map[string]corev1.LocalObjectReference `json:"fragments,omitempty"`
 }
 
 // +genclient
