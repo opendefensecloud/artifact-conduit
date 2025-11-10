@@ -20,6 +20,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
+const finalizer = "arc.bwi.de/order-finalizer"
+
 // OrderReconciler reconciles a Order object
 type OrderReconciler struct {
 	client.Client
@@ -41,6 +43,56 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, err
+	}
+
+	// Add finalizer if not present and not deleting
+	if order.DeletionTimestamp.IsZero() {
+		found := false
+		for _, f := range order.Finalizers {
+			if f == finalizer {
+				found = true
+				break
+			}
+		}
+		if !found {
+			order.Finalizers = append(order.Finalizers, finalizer)
+			if err := r.Update(ctx, order); err != nil {
+				return ctrl.Result{}, err
+			}
+			// Requeue to ensure finalizer is persisted before proceeding
+			return ctrl.Result{Requeue: true}, nil
+		}
+	}
+
+	// Handle deletion: cleanup fragments, then remove finalizer
+	if !order.DeletionTimestamp.IsZero() {
+		if order.Status.Fragments != nil && len(order.Status.Fragments) > 0 {
+			for sha, ref := range order.Status.Fragments {
+				frag := &arcv1alpha1.Fragment{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: order.Namespace,
+						Name:      ref.Name,
+					},
+				}
+				_ = r.Delete(ctx, frag) // ignore not found errors
+				delete(order.Status.Fragments, sha)
+			}
+			_ = r.Status().Update(ctx, order)
+			// Requeue until all fragments are gone
+			return ctrl.Result{Requeue: true}, nil
+		}
+		// All fragments are gone, remove finalizer
+		finalizers := []string{}
+		for _, f := range order.Finalizers {
+			if f != finalizer {
+				finalizers = append(finalizers, f)
+			}
+		}
+		order.Finalizers = finalizers
+		if err := r.Update(ctx, order); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
 	}
 
 	desiredFrags := map[string]*arcv1alpha1.Fragment{}

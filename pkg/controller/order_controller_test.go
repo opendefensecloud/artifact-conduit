@@ -186,5 +186,105 @@ var _ = Describe("OrderController", func() {
 				return len(order.Status.Fragments)
 			}).Should(Equal(3))
 		})
+
+		It("should delete fragments when order is deleted", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-delete",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: "type-a", SrcRef: corev1.LocalObjectReference{Name: "src-a"}, DstRef: corev1.LocalObjectReference{Name: "dst-a"}},
+						{Type: "type-b", SrcRef: corev1.LocalObjectReference{Name: "src-b"}, DstRef: corev1.LocalObjectReference{Name: "dst-b"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+			fragmentList := &arcv1alpha1.FragmentList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(2))
+			// Delete order
+			Expect(k8sClient.Delete(ctx, order)).To(Succeed())
+			// Eventually all fragments should be gone
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should create a new fragment and update status when an artifact is added", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-add-artifact",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: "type-c", SrcRef: corev1.LocalObjectReference{Name: "src-c"}, DstRef: corev1.LocalObjectReference{Name: "dst-c"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+			fragmentList := &arcv1alpha1.FragmentList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(1))
+			// Add a new artifact
+			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed()) // fetch reconciled updates
+			order.Spec.Artifacts = append(order.Spec.Artifacts, arcv1alpha1.OrderArtifact{
+				Type:   "type-d",
+				SrcRef: corev1.LocalObjectReference{Name: "src-d"},
+				DstRef: corev1.LocalObjectReference{Name: "dst-d"},
+			})
+			Expect(k8sClient.Update(ctx, order)).To(Succeed())
+			// Eventually two fragments should exist
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(2))
+			// Status should be updated
+			Eventually(func() int {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				return len(order.Status.Fragments)
+			}).Should(Equal(2))
+		})
+
+		It("should delete a fragment and update status when an artifact is removed", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-remove-artifact",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: "type-e", SrcRef: corev1.LocalObjectReference{Name: "src-e"}, DstRef: corev1.LocalObjectReference{Name: "dst-e"}},
+						{Type: "type-f", SrcRef: corev1.LocalObjectReference{Name: "src-f"}, DstRef: corev1.LocalObjectReference{Name: "dst-f"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+			fragmentList := &arcv1alpha1.FragmentList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(2))
+			// Remove one artifact
+			order.Spec.Artifacts = order.Spec.Artifacts[:1]
+			Expect(k8sClient.Update(ctx, order)).To(Succeed())
+			// Eventually only one fragment should exist
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
+				return len(fragmentList.Items)
+			}).Should(Equal(1))
+			// Status should be updated
+			Eventually(func() int {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				return len(order.Status.Fragments)
+			}).Should(Equal(1))
+		})
 	})
 })
