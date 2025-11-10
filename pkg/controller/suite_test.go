@@ -83,6 +83,7 @@ var _ = BeforeSuite(func() {
 	// setup reconcilers
 	Expect((&OrderReconciler{
 		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	go func() {
