@@ -22,6 +22,7 @@ var _ = Describe("Pull Command", func() {
 	const (
 		arcctlTempDir = "/tmp/arcctl-tests"
 	)
+
 	BeforeEach(func() {
 		cmd = NewPullCommand()
 		cmd.SetContext(GinkgoT().Context())
@@ -33,7 +34,6 @@ var _ = Describe("Pull Command", func() {
 	})
 
 	Context("when required configuration is missing", func() {
-
 		It("should return an error if source.reference is missing", func() {
 			err := runPull(cmd, []string{})
 			Expect(err).To(HaveOccurred())

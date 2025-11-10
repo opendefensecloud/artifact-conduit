@@ -37,6 +37,8 @@ func runPull(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get source repository: %w", err)
 	}
 
+	fmt.Printf("Pulling artifact from %s\n", srcReference)
+
 	// Set up authentication if provided
 	if viper.IsSet("source.auth") {
 		srcUser := viper.GetString("source.auth.username")
