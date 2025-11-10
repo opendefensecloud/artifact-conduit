@@ -11,8 +11,8 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/install"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/install"
 	arcregistry "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
 	orderstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/order"
 )
@@ -91,7 +91,7 @@ func (c completedConfig) New() (*ARCServer, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(order.GroupName, Scheme, metav1.ParameterCodec, Codecs)
+	apiGroupInfo := genericapiserver.NewDefaultAPIGroupInfo(arc.GroupName, Scheme, metav1.ParameterCodec, Codecs)
 
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["orders"] = arcregistry.RESTInPeace(orderstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))

@@ -11,7 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	clientset "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
 	informers "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions"
 	sampleopenapi "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/openapi"

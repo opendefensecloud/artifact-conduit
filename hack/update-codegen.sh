@@ -38,7 +38,7 @@ function qualify-gvs() {
 }
 
 
-CLIENT_VERSION_GROUPS="order:v1alpha1"
+CLIENT_VERSION_GROUPS="arc:v1alpha1"
 ALL_VERSION_GROUPS="$CLIENT_VERSION_GROUPS"
 
 

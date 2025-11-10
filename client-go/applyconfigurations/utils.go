@@ -6,9 +6,9 @@
 package applyconfigurations
 
 import (
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
 	internal "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/internal"
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/order/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"
@@ -18,9 +18,17 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=order.arc.bwi.de, Version=v1alpha1
+	// Group=arc.bwi.de, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Order"):
-		return &orderv1alpha1.OrderApplyConfiguration{}
+		return &arcv1alpha1.OrderApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifact"):
+		return &arcv1alpha1.OrderArtifactApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderDefaults"):
+		return &arcv1alpha1.OrderDefaultsApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderSpec"):
+		return &arcv1alpha1.OrderSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderStatus"):
+		return &arcv1alpha1.OrderStatusApplyConfiguration{}
 
 	}
 	return nil

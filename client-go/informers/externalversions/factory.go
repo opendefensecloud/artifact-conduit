@@ -11,8 +11,8 @@ import (
 	time "time"
 
 	versioned "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
+	arc "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/arc"
 	internalinterfaces "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
-	order "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions/order"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -241,9 +241,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Order() order.Interface
+	Arc() arc.Interface
 }
 
-func (f *sharedInformerFactory) Order() order.Interface {
-	return order.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Arc() arc.Interface {
+	return arc.New(f, f.namespace, f.tweakListOptions)
 }

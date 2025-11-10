@@ -8,8 +8,8 @@ package fake
 import (
 	applyconfigurations "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations"
 	clientset "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1"
-	fakeorderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1/fake"
+	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
+	fakearcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -112,7 +112,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// OrderV1alpha1 retrieves the OrderV1alpha1Client
-func (c *Clientset) OrderV1alpha1() orderv1alpha1.OrderV1alpha1Interface {
-	return &fakeorderv1alpha1.FakeOrderV1alpha1{Fake: &c.Fake}
+// ArcV1alpha1 retrieves the ArcV1alpha1Client
+func (c *Clientset) ArcV1alpha1() arcv1alpha1.ArcV1alpha1Interface {
+	return &fakearcv1alpha1.FakeArcV1alpha1{Fake: &c.Fake}
 }

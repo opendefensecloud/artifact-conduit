@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"time"
 
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
@@ -36,7 +36,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(orderv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(arcv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

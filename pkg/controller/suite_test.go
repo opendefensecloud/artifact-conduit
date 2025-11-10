@@ -11,7 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -56,7 +56,7 @@ var _ = BeforeSuite(func() {
 
 	By("bootstrapping test environment")
 
-	Expect(orderv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(arcv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	testEnv, err = envtest.NewEnvironment()
 	Expect(err).NotTo(HaveOccurred())

@@ -9,7 +9,7 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	orderv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/order/v1alpha1"
+	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -17,18 +17,18 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	OrderV1alpha1() orderv1alpha1.OrderV1alpha1Interface
+	ArcV1alpha1() arcv1alpha1.ArcV1alpha1Interface
 }
 
 // Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	orderV1alpha1 *orderv1alpha1.OrderV1alpha1Client
+	arcV1alpha1 *arcv1alpha1.ArcV1alpha1Client
 }
 
-// OrderV1alpha1 retrieves the OrderV1alpha1Client
-func (c *Clientset) OrderV1alpha1() orderv1alpha1.OrderV1alpha1Interface {
-	return c.orderV1alpha1
+// ArcV1alpha1 retrieves the ArcV1alpha1Client
+func (c *Clientset) ArcV1alpha1() arcv1alpha1.ArcV1alpha1Interface {
+	return c.arcV1alpha1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -75,7 +75,7 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.orderV1alpha1, err = orderv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.arcV1alpha1, err = arcv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.orderV1alpha1 = orderv1alpha1.New(c)
+	cs.arcV1alpha1 = arcv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

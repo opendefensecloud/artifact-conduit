@@ -4,7 +4,7 @@
 package order
 
 import (
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
@@ -17,18 +17,18 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	strategy := NewStrategy(scheme)
 
 	store := &genericregistry.Store{
-		NewFunc:                   func() runtime.Object { return &order.Order{} },
-		NewListFunc:               func() runtime.Object { return &order.OrderList{} },
+		NewFunc:                   func() runtime.Object { return &arc.Order{} },
+		NewListFunc:               func() runtime.Object { return &arc.OrderList{} },
 		PredicateFunc:             MatchOrder,
-		DefaultQualifiedResource:  order.Resource("orders"),
-		SingularQualifiedResource: order.Resource("order"),
+		DefaultQualifiedResource:  arc.Resource("orders"),
+		SingularQualifiedResource: arc.Resource("order"),
 
 		CreateStrategy: strategy,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
 
 		// TODO: define table converter that exposes more than name/creation timestamp
-		TableConvertor: rest.NewDefaultTableConvertor(order.Resource("fischers")),
+		TableConvertor: rest.NewDefaultTableConvertor(arc.Resource("orders")),
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {

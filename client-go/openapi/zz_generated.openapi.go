@@ -18,10 +18,12 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.Order":       schema_artifact_conduit_api_order_v1alpha1_Order(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderList":   schema_artifact_conduit_api_order_v1alpha1_OrderList(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderSpec":   schema_artifact_conduit_api_order_v1alpha1_OrderSpec(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderStatus": schema_artifact_conduit_api_order_v1alpha1_OrderStatus(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order":         schema_artifact_conduit_api_arc_v1alpha1_Order(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact": schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults": schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderList":     schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec":     schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref),
+		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus":   schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref),
 		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":                        schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                                schema_k8sio_api_core_v1_Affinity(ref),
 		"k8s.io/api/core/v1.AppArmorProfile":                                         schema_k8sio_api_core_v1_AppArmorProfile(ref),
@@ -316,11 +318,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	}
 }
 
-func schema_artifact_conduit_api_order_v1alpha1_Order(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_artifact_conduit_api_arc_v1alpha1_Order(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "Order is the Schema for the orders API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -344,24 +347,98 @@ func schema_artifact_conduit_api_order_v1alpha1_Order(ref common.ReferenceCallba
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderSpec"),
+							Default: map[string]interface{}{},
+							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderStatus"),
+							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.OrderStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
-func schema_artifact_conduit_api_order_v1alpha1_OrderList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OrderArtifact specifies a single artifact which is translated into a corresponding OrderFragment",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Type specifies which ArtifactTypeDefinition is used to process this artifact.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"srcRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+					"dstRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Spec specifies parameters used by the underlying Workflow.",
+							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
+						},
+					},
+				},
+				Required: []string{"type"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+	}
+}
+
+func schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OrderDefaults is used to set defaults for all other artifacts of an Order.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"srcRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SrcRef defines which Endpoint object is used as fallback source by all artifacts.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+					"dstRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "DstRef defines which Endpoint object is used as fallback destination by all artifacts.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.LocalObjectReference"},
+	}
+}
+
+func schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -395,7 +472,7 @@ func schema_artifact_conduit_api_order_v1alpha1_OrderList(ref common.ReferenceCa
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.Order"),
+										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order"),
 									},
 								},
 							},
@@ -406,37 +483,72 @@ func schema_artifact_conduit_api_order_v1alpha1_OrderList(ref common.ReferenceCa
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1.Order", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
-func schema_artifact_conduit_api_order_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "OrderSpec defines the desired state of Order",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"RawExtension": {
+					"defaults": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
+							Description: "Defaults sets up defaults for all artifacts.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults"),
+						},
+					},
+					"artifacts": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Artifacts lists all artifacts, that will be processed by this Order.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact"),
+									},
+								},
+							},
 						},
 					},
 				},
-				Required: []string{"RawExtension"},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults"},
 	}
 }
 
-func schema_artifact_conduit_api_order_v1alpha1_OrderStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "OrderStatus defines the observed state of Order",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"fragments": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("k8s.io/api/core/v1.ObjectReference"),
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.ObjectReference"},
 	}
 }
 

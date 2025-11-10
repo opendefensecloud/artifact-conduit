@@ -15,7 +15,7 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/order"
+	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
 )
 
 // NewStrategy creates and returns a orderStrategy instance
@@ -25,7 +25,7 @@ func NewStrategy(typer runtime.ObjectTyper) orderStrategy {
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an Order
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*order.Order)
+	apiserver, ok := obj.(*arc.Order)
 	if !ok {
 		return nil, nil, fmt.Errorf("given object is not an Order")
 	}
@@ -43,7 +43,7 @@ func MatchOrder(label labels.Selector, field fields.Selector) storage.SelectionP
 }
 
 // SelectableFields returns a field set that represents the object.
-func SelectableFields(obj *order.Order) fields.Set {
+func SelectableFields(obj *arc.Order) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 

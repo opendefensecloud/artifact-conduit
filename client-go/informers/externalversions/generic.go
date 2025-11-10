@@ -8,7 +8,7 @@ package externalversions
 import (
 	fmt "fmt"
 
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/order/v1alpha1"
+	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -39,9 +39,9 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=order.arc.bwi.de, Version=v1alpha1
+	// Group=arc.bwi.de, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("orders"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Order().V1alpha1().Orders().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Orders().Informer()}, nil
 
 	}
 

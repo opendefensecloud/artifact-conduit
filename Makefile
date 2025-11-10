@@ -96,7 +96,7 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 .PHONY: ginkgo
 ginkgo: $(GINKGO) ## Download setup-envtest locally if necessary.
 $(GINKGO): $(LOCALBIN)
-	test -s $(LOCALBIN)/ginkgo && $(LOCALBIN)/ginkgo version | greo -q $(subst v,,$(GINKGO_VERSION)) || \
+	test -s $(LOCALBIN)/ginkgo && $(LOCALBIN)/ginkgo version | grep -q $(subst v,,$(GINKGO_VERSION)) || \
 	GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
 
 .PHONY: addlicense
@@ -109,4 +109,3 @@ $(ADDLICENSE): $(LOCALBIN)
 setup-envtest: $(SETUP_ENVTEST) ## Download setup-envtest locally if necessary.
 $(SETUP_ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(SETUP_ENVTEST_VERSION)
-
