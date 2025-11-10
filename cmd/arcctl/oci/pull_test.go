@@ -2,18 +2,12 @@ package oci
 
 import (
 	"os"
-	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-func TestRunPullGinkgo(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "arcctl oci pull Suite")
-}
 
 var _ = Describe("Pull Command", func() {
 	var (
