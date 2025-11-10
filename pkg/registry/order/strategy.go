@@ -14,6 +14,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
+	"sigs.k8s.io/structured-merge-diff/v6/fieldpath"
 
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
 )
@@ -53,7 +54,7 @@ type orderStrategy struct {
 }
 
 func (orderStrategy) NamespaceScoped() bool {
-	return false
+	return true
 }
 
 func (orderStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
@@ -86,5 +87,36 @@ func (orderStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object
 
 // WarningsOnUpdate returns warnings for the given update.
 func (orderStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+	return nil
+}
+
+// NewStrategy creates and returns a orderStatusStrategy instance
+func NewStatusStrategy(typer runtime.ObjectTyper) orderStatusStrategy {
+	return orderStatusStrategy{orderStrategy{typer, names.SimpleNameGenerator}}
+}
+
+type orderStatusStrategy struct {
+	orderStrategy
+}
+
+func (orderStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.Set {
+	return map[fieldpath.APIVersion]*fieldpath.Set{
+		"arc.bwi.de/v1alpha1": fieldpath.NewSet(
+			fieldpath.MakePathOrDie("spec"),
+		),
+	}
+}
+
+func (orderStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+	newMachine := obj.(*arc.Order)
+	oldMachine := old.(*arc.Order)
+	newMachine.Spec = oldMachine.Spec
+}
+
+func (orderStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+	return field.ErrorList{}
+}
+
+func (orderStatusStrategy) WarningsOnUpdate(cxt context.Context, obj, old runtime.Object) []string {
 	return nil
 }

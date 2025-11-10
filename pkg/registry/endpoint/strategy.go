@@ -53,7 +53,7 @@ type endpointStrategy struct {
 }
 
 func (endpointStrategy) NamespaceScoped() bool {
-	return false
+	return true
 }
 
 func (endpointStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {

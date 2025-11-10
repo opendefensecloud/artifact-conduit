@@ -53,7 +53,7 @@ type artifactTypeDefinitionStrategy struct {
 }
 
 func (artifactTypeDefinitionStrategy) NamespaceScoped() bool {
-	return false
+	return true
 }
 
 func (artifactTypeDefinitionStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {

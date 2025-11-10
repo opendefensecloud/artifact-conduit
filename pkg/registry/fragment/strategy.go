@@ -53,7 +53,7 @@ type fragmentStrategy struct {
 }
 
 func (fragmentStrategy) NamespaceScoped() bool {
-	return false
+	return true
 }
 
 func (fragmentStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
