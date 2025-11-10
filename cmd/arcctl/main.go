@@ -36,7 +36,9 @@ func init() {
 	// Setup global flags
 	fl := rootCmd.PersistentFlags()
 	fl.AddGoFlagSet(flag.CommandLine)
-	fl.StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/arc/config.yaml)")
+	fl.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/arc/config.yaml)")
+	_ = fl.StringP("tmp-dir", "t", "/tmp/arcctl", "Path to temporary directory")
+
 	sprint.PanicOnError(viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config")))
 
 	// Add subcommands

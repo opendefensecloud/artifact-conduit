@@ -9,8 +9,8 @@ spec:
       steps:
         - - name: pull
             template: oci-pull
-        - - name: scan
-            template: oci-scan
+        # - - name: scan
+        #     template: oci-scan
         - - name: push
             template: oci-push
     - name: oci-pull
@@ -31,16 +31,16 @@ spec:
             mountPath: /etc/oci-workflow-config
           - name: workdir
             mountPath: /tmp/artifact
-    - name: oci-scan
-      container:
-        image: aquasec/trivy:latest
-        command: [trivy]
-        args: ["--input", "/tmp/artifact/oci.tar"]
-        volumeMounts:
-          - name: workflow-config
-            mountPath: /etc/oci-workflow-config
-          - name: workdir
-            mountPath: /tmp/artifact
+    # - name: oci-scan
+    #   container:
+    #     image: aquasec/trivy:latest
+    #     command: [trivy]
+    #     args: ["--input", "/tmp/artifact/oci.tar"]
+    #     volumeMounts:
+    #       - name: workflow-config
+    #         mountPath: /etc/oci-workflow-config
+    #       - name: workdir
+    #         mountPath: /tmp/artifact
     - name: oci-push
       container:
         image: registry.opencode.de/bwi/ace/artifact-conduit/arcctl:latest
