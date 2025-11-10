@@ -104,7 +104,10 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 			},
 		}
 		Expect(k8sClient.Create(ctx, ns)).To(Succeed(), "failed to create test namespace")
-		DeferCleanup(k8sClient.Delete, ctx, ns)
+	})
+
+	AfterEach(func() {
+		Expect(k8sClient.Delete(ctx, ns)).To(Succeed())
 	})
 
 	return ns

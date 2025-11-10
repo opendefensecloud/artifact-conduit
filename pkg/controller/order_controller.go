@@ -94,6 +94,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		fragsToCreate = append(fragsToCreate, sha)
 	}
 
+	// Make sure status is initialized
+	if order.Status.Fragments == nil {
+		order.Status.Fragments = map[string]corev1.LocalObjectReference{}
+	}
+
 	// Find obsolete fragments
 	fragsToDelete := []string{}
 	for sha, _ := range order.Status.Fragments {
