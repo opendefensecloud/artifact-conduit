@@ -16,7 +16,17 @@ func SetDefaults_OrderSpec(obj *OrderSpec) {
 	// ...
 }
 
-// SetDefaults_OrderSpec sets defaults for Order spec
+// SetDefaults_FragmentSpec sets defaults for Fragment spec
 func SetDefaults_FragmentSpec(obj *FragmentSpec) {
+	// ...
+}
+
+// SetDefaults_EndpointSpec sets defaults for Endpoint spec
+func SetDefaults_EndpointSpec(obj *EndpointSpec) {
+	// ...
+}
+
+// SetDefaults_ArtifactTypeDefinitionSpec sets defaults for ArtifactTypeDefinition spec
+func SetDefaults_ArtifactTypeDefinitionSpec(obj *ArtifactTypeDefinitionSpec) {
 	// ...
 }

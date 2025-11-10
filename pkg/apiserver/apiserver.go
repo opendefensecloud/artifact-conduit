@@ -14,6 +14,8 @@ import (
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
 	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/install"
 	arcregistry "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
+	artifacttypedefinitionstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/artifacttypedefinition"
+	endpointstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/endpoint"
 	fragmentstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/fragment"
 	orderstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/order"
 )
@@ -97,6 +99,8 @@ func (c completedConfig) New() (*ARCServer, error) {
 	v1alpha1storage := map[string]rest.Storage{}
 	v1alpha1storage["orders"] = arcregistry.RESTInPeace(orderstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["fragments"] = arcregistry.RESTInPeace(fragmentstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["endpoints"] = arcregistry.RESTInPeace(endpointstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["artifacttypedefinitions"] = arcregistry.RESTInPeace(artifacttypedefinitionstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	// v1beta1storage := map[string]rest.Storage{}

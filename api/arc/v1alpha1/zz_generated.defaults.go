@@ -16,11 +16,37 @@ import (
 // Public to allow building arbitrary schemes.
 // All generated defaulters are covering - they call all nested defaulters.
 func RegisterDefaults(scheme *runtime.Scheme) error {
+	scheme.AddTypeDefaultingFunc(&ArtifactTypeDefinition{}, func(obj interface{}) { SetObjectDefaults_ArtifactTypeDefinition(obj.(*ArtifactTypeDefinition)) })
+	scheme.AddTypeDefaultingFunc(&ArtifactTypeDefinitionList{}, func(obj interface{}) { SetObjectDefaults_ArtifactTypeDefinitionList(obj.(*ArtifactTypeDefinitionList)) })
+	scheme.AddTypeDefaultingFunc(&Endpoint{}, func(obj interface{}) { SetObjectDefaults_Endpoint(obj.(*Endpoint)) })
+	scheme.AddTypeDefaultingFunc(&EndpointList{}, func(obj interface{}) { SetObjectDefaults_EndpointList(obj.(*EndpointList)) })
 	scheme.AddTypeDefaultingFunc(&Fragment{}, func(obj interface{}) { SetObjectDefaults_Fragment(obj.(*Fragment)) })
 	scheme.AddTypeDefaultingFunc(&FragmentList{}, func(obj interface{}) { SetObjectDefaults_FragmentList(obj.(*FragmentList)) })
 	scheme.AddTypeDefaultingFunc(&Order{}, func(obj interface{}) { SetObjectDefaults_Order(obj.(*Order)) })
 	scheme.AddTypeDefaultingFunc(&OrderList{}, func(obj interface{}) { SetObjectDefaults_OrderList(obj.(*OrderList)) })
 	return nil
+}
+
+func SetObjectDefaults_ArtifactTypeDefinition(in *ArtifactTypeDefinition) {
+	SetDefaults_ArtifactTypeDefinitionSpec(&in.Spec)
+}
+
+func SetObjectDefaults_ArtifactTypeDefinitionList(in *ArtifactTypeDefinitionList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_ArtifactTypeDefinition(a)
+	}
+}
+
+func SetObjectDefaults_Endpoint(in *Endpoint) {
+	SetDefaults_EndpointSpec(&in.Spec)
+}
+
+func SetObjectDefaults_EndpointList(in *EndpointList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_Endpoint(a)
+	}
 }
 
 func SetObjectDefaults_Fragment(in *Fragment) {

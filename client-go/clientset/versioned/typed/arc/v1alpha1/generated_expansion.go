@@ -5,6 +5,10 @@
 
 package v1alpha1
 
+type ArtifactTypeDefinitionExpansion interface{}
+
+type EndpointExpansion interface{}
+
 type FragmentExpansion interface{}
 
 type OrderExpansion interface{}

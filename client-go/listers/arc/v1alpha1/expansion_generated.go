@@ -5,6 +5,22 @@
 
 package v1alpha1
 
+// ArtifactTypeDefinitionListerExpansion allows custom methods to be added to
+// ArtifactTypeDefinitionLister.
+type ArtifactTypeDefinitionListerExpansion interface{}
+
+// ArtifactTypeDefinitionNamespaceListerExpansion allows custom methods to be added to
+// ArtifactTypeDefinitionNamespaceLister.
+type ArtifactTypeDefinitionNamespaceListerExpansion interface{}
+
+// EndpointListerExpansion allows custom methods to be added to
+// EndpointLister.
+type EndpointListerExpansion interface{}
+
+// EndpointNamespaceListerExpansion allows custom methods to be added to
+// EndpointNamespaceLister.
+type EndpointNamespaceListerExpansion interface{}
+
 // FragmentListerExpansion allows custom methods to be added to
 // FragmentLister.
 type FragmentListerExpansion interface{}

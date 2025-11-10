@@ -40,6 +40,10 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&OrderList{},
 		&Fragment{},
 		&FragmentList{},
+		&Endpoint{},
+		&EndpointList{},
+		&ArtifactTypeDefinition{},
+		&ArtifactTypeDefinitionList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

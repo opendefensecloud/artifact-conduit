@@ -24,6 +24,96 @@ func init() {
 // RegisterConversions adds conversion functions to the given scheme.
 // Public to allow building arbitrary schemes.
 func RegisterConversions(s *runtime.Scheme) error {
+	if err := s.AddGeneratedConversionFunc((*ArtifactTypeDefinition)(nil), (*arc.ArtifactTypeDefinition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactTypeDefinition_To_arc_ArtifactTypeDefinition(a.(*ArtifactTypeDefinition), b.(*arc.ArtifactTypeDefinition), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactTypeDefinition)(nil), (*ArtifactTypeDefinition)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactTypeDefinition_To_v1alpha1_ArtifactTypeDefinition(a.(*arc.ArtifactTypeDefinition), b.(*ArtifactTypeDefinition), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactTypeDefinitionList)(nil), (*arc.ArtifactTypeDefinitionList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactTypeDefinitionList_To_arc_ArtifactTypeDefinitionList(a.(*ArtifactTypeDefinitionList), b.(*arc.ArtifactTypeDefinitionList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactTypeDefinitionList)(nil), (*ArtifactTypeDefinitionList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactTypeDefinitionList_To_v1alpha1_ArtifactTypeDefinitionList(a.(*arc.ArtifactTypeDefinitionList), b.(*ArtifactTypeDefinitionList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactTypeDefinitionRules)(nil), (*arc.ArtifactTypeDefinitionRules)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules(a.(*ArtifactTypeDefinitionRules), b.(*arc.ArtifactTypeDefinitionRules), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactTypeDefinitionRules)(nil), (*ArtifactTypeDefinitionRules)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules(a.(*arc.ArtifactTypeDefinitionRules), b.(*ArtifactTypeDefinitionRules), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactTypeDefinitionSpec)(nil), (*arc.ArtifactTypeDefinitionSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec(a.(*ArtifactTypeDefinitionSpec), b.(*arc.ArtifactTypeDefinitionSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactTypeDefinitionSpec)(nil), (*ArtifactTypeDefinitionSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec(a.(*arc.ArtifactTypeDefinitionSpec), b.(*ArtifactTypeDefinitionSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactTypeDefinitionStatus)(nil), (*arc.ArtifactTypeDefinitionStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus(a.(*ArtifactTypeDefinitionStatus), b.(*arc.ArtifactTypeDefinitionStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactTypeDefinitionStatus)(nil), (*ArtifactTypeDefinitionStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus(a.(*arc.ArtifactTypeDefinitionStatus), b.(*ArtifactTypeDefinitionStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*Endpoint)(nil), (*arc.Endpoint)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_Endpoint_To_arc_Endpoint(a.(*Endpoint), b.(*arc.Endpoint), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.Endpoint)(nil), (*Endpoint)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_Endpoint_To_v1alpha1_Endpoint(a.(*arc.Endpoint), b.(*Endpoint), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*EndpointList)(nil), (*arc.EndpointList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_EndpointList_To_arc_EndpointList(a.(*EndpointList), b.(*arc.EndpointList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.EndpointList)(nil), (*EndpointList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_EndpointList_To_v1alpha1_EndpointList(a.(*arc.EndpointList), b.(*EndpointList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*EndpointSpec)(nil), (*arc.EndpointSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(a.(*EndpointSpec), b.(*arc.EndpointSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.EndpointSpec)(nil), (*EndpointSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(a.(*arc.EndpointSpec), b.(*EndpointSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*EndpointStatus)(nil), (*arc.EndpointStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(a.(*EndpointStatus), b.(*arc.EndpointStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.EndpointStatus)(nil), (*EndpointStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(a.(*arc.EndpointStatus), b.(*EndpointStatus), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*Fragment)(nil), (*arc.Fragment)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_Fragment_To_arc_Fragment(a.(*Fragment), b.(*arc.Fragment), scope)
 	}); err != nil {
@@ -125,6 +215,230 @@ func RegisterConversions(s *runtime.Scheme) error {
 		return err
 	}
 	return nil
+}
+
+func autoConvert_v1alpha1_ArtifactTypeDefinition_To_arc_ArtifactTypeDefinition(in *ArtifactTypeDefinition, out *arc.ArtifactTypeDefinition, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactTypeDefinition_To_arc_ArtifactTypeDefinition is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactTypeDefinition_To_arc_ArtifactTypeDefinition(in *ArtifactTypeDefinition, out *arc.ArtifactTypeDefinition, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactTypeDefinition_To_arc_ArtifactTypeDefinition(in, out, s)
+}
+
+func autoConvert_arc_ArtifactTypeDefinition_To_v1alpha1_ArtifactTypeDefinition(in *arc.ArtifactTypeDefinition, out *ArtifactTypeDefinition, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_arc_ArtifactTypeDefinition_To_v1alpha1_ArtifactTypeDefinition is an autogenerated conversion function.
+func Convert_arc_ArtifactTypeDefinition_To_v1alpha1_ArtifactTypeDefinition(in *arc.ArtifactTypeDefinition, out *ArtifactTypeDefinition, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactTypeDefinition_To_v1alpha1_ArtifactTypeDefinition(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactTypeDefinitionList_To_arc_ArtifactTypeDefinitionList(in *ArtifactTypeDefinitionList, out *arc.ArtifactTypeDefinitionList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]arc.ArtifactTypeDefinition)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactTypeDefinitionList_To_arc_ArtifactTypeDefinitionList is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactTypeDefinitionList_To_arc_ArtifactTypeDefinitionList(in *ArtifactTypeDefinitionList, out *arc.ArtifactTypeDefinitionList, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactTypeDefinitionList_To_arc_ArtifactTypeDefinitionList(in, out, s)
+}
+
+func autoConvert_arc_ArtifactTypeDefinitionList_To_v1alpha1_ArtifactTypeDefinitionList(in *arc.ArtifactTypeDefinitionList, out *ArtifactTypeDefinitionList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]ArtifactTypeDefinition)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_arc_ArtifactTypeDefinitionList_To_v1alpha1_ArtifactTypeDefinitionList is an autogenerated conversion function.
+func Convert_arc_ArtifactTypeDefinitionList_To_v1alpha1_ArtifactTypeDefinitionList(in *arc.ArtifactTypeDefinitionList, out *ArtifactTypeDefinitionList, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactTypeDefinitionList_To_v1alpha1_ArtifactTypeDefinitionList(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules(in *ArtifactTypeDefinitionRules, out *arc.ArtifactTypeDefinitionRules, s conversion.Scope) error {
+	out.SrcTypes = *(*[]string)(unsafe.Pointer(&in.SrcTypes))
+	out.DstTypes = *(*[]string)(unsafe.Pointer(&in.DstTypes))
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules(in *ArtifactTypeDefinitionRules, out *arc.ArtifactTypeDefinitionRules, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules(in, out, s)
+}
+
+func autoConvert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules(in *arc.ArtifactTypeDefinitionRules, out *ArtifactTypeDefinitionRules, s conversion.Scope) error {
+	out.SrcTypes = *(*[]string)(unsafe.Pointer(&in.SrcTypes))
+	out.DstTypes = *(*[]string)(unsafe.Pointer(&in.DstTypes))
+	return nil
+}
+
+// Convert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules is an autogenerated conversion function.
+func Convert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules(in *arc.ArtifactTypeDefinitionRules, out *ArtifactTypeDefinitionRules, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec(in *ArtifactTypeDefinitionSpec, out *arc.ArtifactTypeDefinitionSpec, s conversion.Scope) error {
+	if err := Convert_v1alpha1_ArtifactTypeDefinitionRules_To_arc_ArtifactTypeDefinitionRules(&in.Rules, &out.Rules, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(&in.Defaults, &out.Defaults, s); err != nil {
+		return err
+	}
+	out.WorkflowTemplateRef = in.WorkflowTemplateRef
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec(in *ArtifactTypeDefinitionSpec, out *arc.ArtifactTypeDefinitionSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactTypeDefinitionSpec_To_arc_ArtifactTypeDefinitionSpec(in, out, s)
+}
+
+func autoConvert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec(in *arc.ArtifactTypeDefinitionSpec, out *ArtifactTypeDefinitionSpec, s conversion.Scope) error {
+	if err := Convert_arc_ArtifactTypeDefinitionRules_To_v1alpha1_ArtifactTypeDefinitionRules(&in.Rules, &out.Rules, s); err != nil {
+		return err
+	}
+	if err := Convert_arc_OrderDefaults_To_v1alpha1_OrderDefaults(&in.Defaults, &out.Defaults, s); err != nil {
+		return err
+	}
+	out.WorkflowTemplateRef = in.WorkflowTemplateRef
+	return nil
+}
+
+// Convert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec is an autogenerated conversion function.
+func Convert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec(in *arc.ArtifactTypeDefinitionSpec, out *ArtifactTypeDefinitionSpec, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactTypeDefinitionSpec_To_v1alpha1_ArtifactTypeDefinitionSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus(in *ArtifactTypeDefinitionStatus, out *arc.ArtifactTypeDefinitionStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus(in *ArtifactTypeDefinitionStatus, out *arc.ArtifactTypeDefinitionStatus, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactTypeDefinitionStatus_To_arc_ArtifactTypeDefinitionStatus(in, out, s)
+}
+
+func autoConvert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus(in *arc.ArtifactTypeDefinitionStatus, out *ArtifactTypeDefinitionStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus is an autogenerated conversion function.
+func Convert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus(in *arc.ArtifactTypeDefinitionStatus, out *ArtifactTypeDefinitionStatus, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactTypeDefinitionStatus_To_v1alpha1_ArtifactTypeDefinitionStatus(in, out, s)
+}
+
+func autoConvert_v1alpha1_Endpoint_To_arc_Endpoint(in *Endpoint, out *arc.Endpoint, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_Endpoint_To_arc_Endpoint is an autogenerated conversion function.
+func Convert_v1alpha1_Endpoint_To_arc_Endpoint(in *Endpoint, out *arc.Endpoint, s conversion.Scope) error {
+	return autoConvert_v1alpha1_Endpoint_To_arc_Endpoint(in, out, s)
+}
+
+func autoConvert_arc_Endpoint_To_v1alpha1_Endpoint(in *arc.Endpoint, out *Endpoint, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_arc_Endpoint_To_v1alpha1_Endpoint is an autogenerated conversion function.
+func Convert_arc_Endpoint_To_v1alpha1_Endpoint(in *arc.Endpoint, out *Endpoint, s conversion.Scope) error {
+	return autoConvert_arc_Endpoint_To_v1alpha1_Endpoint(in, out, s)
+}
+
+func autoConvert_v1alpha1_EndpointList_To_arc_EndpointList(in *EndpointList, out *arc.EndpointList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]arc.Endpoint)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_v1alpha1_EndpointList_To_arc_EndpointList is an autogenerated conversion function.
+func Convert_v1alpha1_EndpointList_To_arc_EndpointList(in *EndpointList, out *arc.EndpointList, s conversion.Scope) error {
+	return autoConvert_v1alpha1_EndpointList_To_arc_EndpointList(in, out, s)
+}
+
+func autoConvert_arc_EndpointList_To_v1alpha1_EndpointList(in *arc.EndpointList, out *EndpointList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]Endpoint)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_arc_EndpointList_To_v1alpha1_EndpointList is an autogenerated conversion function.
+func Convert_arc_EndpointList_To_v1alpha1_EndpointList(in *arc.EndpointList, out *EndpointList, s conversion.Scope) error {
+	return autoConvert_arc_EndpointList_To_v1alpha1_EndpointList(in, out, s)
+}
+
+func autoConvert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(in *EndpointSpec, out *arc.EndpointSpec, s conversion.Scope) error {
+	out.Type = in.Type
+	out.RemoteURL = in.RemoteURL
+	out.SecretRef = in.SecretRef
+	out.Usage = arc.EndpointUsage(in.Usage)
+	return nil
+}
+
+// Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec is an autogenerated conversion function.
+func Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(in *EndpointSpec, out *arc.EndpointSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(in, out, s)
+}
+
+func autoConvert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in *arc.EndpointSpec, out *EndpointSpec, s conversion.Scope) error {
+	out.Type = in.Type
+	out.RemoteURL = in.RemoteURL
+	out.SecretRef = in.SecretRef
+	out.Usage = EndpointUsage(in.Usage)
+	return nil
+}
+
+// Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec is an autogenerated conversion function.
+func Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in *arc.EndpointSpec, out *EndpointSpec, s conversion.Scope) error {
+	return autoConvert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, out *arc.EndpointStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus is an autogenerated conversion function.
+func Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, out *arc.EndpointStatus, s conversion.Scope) error {
+	return autoConvert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in, out, s)
+}
+
+func autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointStatus, out *EndpointStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus is an autogenerated conversion function.
+func Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointStatus, out *EndpointStatus, s conversion.Scope) error {
+	return autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in, out, s)
 }
 
 func autoConvert_v1alpha1_Fragment_To_arc_Fragment(in *Fragment, out *arc.Fragment, s conversion.Scope) error {

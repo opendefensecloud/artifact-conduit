@@ -11,6 +11,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// ArtifactTypeDefinitions returns a ArtifactTypeDefinitionInformer.
+	ArtifactTypeDefinitions() ArtifactTypeDefinitionInformer
+	// Endpoints returns a EndpointInformer.
+	Endpoints() EndpointInformer
 	// Fragments returns a FragmentInformer.
 	Fragments() FragmentInformer
 	// Orders returns a OrderInformer.
@@ -26,6 +30,16 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// ArtifactTypeDefinitions returns a ArtifactTypeDefinitionInformer.
+func (v *version) ArtifactTypeDefinitions() ArtifactTypeDefinitionInformer {
+	return &artifactTypeDefinitionInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// Endpoints returns a EndpointInformer.
+func (v *version) Endpoints() EndpointInformer {
+	return &endpointInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Fragments returns a FragmentInformer.

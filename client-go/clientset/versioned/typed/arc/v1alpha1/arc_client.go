@@ -15,6 +15,8 @@ import (
 
 type ArcV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	ArtifactTypeDefinitionsGetter
+	EndpointsGetter
 	FragmentsGetter
 	OrdersGetter
 }
@@ -22,6 +24,14 @@ type ArcV1alpha1Interface interface {
 // ArcV1alpha1Client is used to interact with features provided by the arc.bwi.de group.
 type ArcV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *ArcV1alpha1Client) ArtifactTypeDefinitions(namespace string) ArtifactTypeDefinitionInterface {
+	return newArtifactTypeDefinitions(c, namespace)
+}
+
+func (c *ArcV1alpha1Client) Endpoints(namespace string) EndpointInterface {
+	return newEndpoints(c, namespace)
 }
 
 func (c *ArcV1alpha1Client) Fragments(namespace string) FragmentInterface {
