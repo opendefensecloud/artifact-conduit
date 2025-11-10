@@ -31,6 +31,11 @@ func runPull(cmd *cobra.Command, args []string) error {
 	}
 	srcReference := viper.GetString("source.reference")
 
+	if !viper.IsSet("tmp-dir") {
+		return fmt.Errorf("tmp-dir is not set")
+	}
+	tmpDir := viper.GetString("tmp-dir")
+
 	// Create source (remote OCI repository)
 	repo, err := remote.NewRepository(srcReference)
 	if err != nil {
@@ -55,7 +60,7 @@ func runPull(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create destination (local OCI layout)
-	tmpDir := viper.GetString("tmp-dir")
+
 	dst, err := oci.NewWithContext(ctx, tmpDir)
 	if err != nil {
 		return fmt.Errorf("failed to create destination: %w", err)

@@ -30,7 +30,11 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("destination.reference is not set")
 	}
 	dstReference := viper.GetString("destination.reference")
-	fmt.Printf("Pushing artifact to %s\n", dstReference)
+
+	if !viper.IsSet("tmp-dir") {
+		return fmt.Errorf("tmp-dir is not set")
+	}
+	tmpDir := viper.GetString("tmp-dir")
 
 	// Create destination (remote OCI repository)
 	repo, err := remote.NewRepository(dstReference)
@@ -54,13 +58,13 @@ func runPush(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create source (local OCI layout)
-	tmpDir := viper.GetString("tmp-dir")
 	src, err := oci.NewWithContext(ctx, tmpDir)
 	if err != nil {
 		return fmt.Errorf("failed to create source: %w", err)
 	}
 
 	// Copy artifact from source to destination
+	fmt.Printf("Pushing artifact to %s\n", dstReference)
 	if err := src.Tags(ctx, "", func(tags []string) error {
 		for _, tag := range tags {
 			desc, err := oras.Copy(ctx, src, tag, repo, dstReference, oras.DefaultCopyOptions)

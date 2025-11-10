@@ -40,11 +40,12 @@ func init() {
 	fl.StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.config/arc/config.yaml)")
 	_ = fl.StringP("tmp-dir", "t", "/tmp/arcctl", "Path to temporary directory")
 
-	sprint.PanicOnError(viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config")))
+	// Bind flags to viper
+	sprint.PanicOnError(viper.BindPFlags(rootCmd.PersistentFlags()))
 
 	// Add subcommands
-	rootCmd.AddCommand(newOrasCmd())
-	rootCmd.AddCommand(newOCMCmd())
+	// rootCmd.AddCommand(newOrasCmd())
+	// rootCmd.AddCommand(newOCMCmd())
 	rootCmd.AddCommand(oci.NewOCICommand())
 }
 
@@ -64,7 +65,6 @@ func initConfig() {
 	}
 
 	viper.AutomaticEnv()
-
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
