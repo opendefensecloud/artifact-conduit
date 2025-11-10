@@ -12,15 +12,17 @@ import (
 
 // OrderList is a list of Order objects.
 type OrderList struct {
-	metav1.TypeMeta
-	metav1.ListMeta
-
-	Items []Order
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []Order `json:"items"`
 }
 
 // OrderSpec is the specification of a Order.
 type OrderSpec struct {
-	runtime.RawExtension
+	// +kubebuilder:validation:XPreserveUnknownFields
+	// +kubebuilder:pruning:PreserveUnknownFields
+	// +required
+	runtime.RawExtension `json:",inline"`
 }
 
 // OrderStatus is the status of a Order.
@@ -32,9 +34,9 @@ type OrderStatus struct {
 
 // Order is an example type with a spec and a status.
 type Order struct {
-	metav1.TypeMeta
-	metav1.ObjectMeta
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   OrderSpec
-	Status OrderStatus
+	Spec   OrderSpec   `json:"spec,omitempty"`
+	Status OrderStatus `json:"status,omitempty"`
 }
