@@ -100,6 +100,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	desiredFrags := map[string]*arcv1alpha1.Fragment{}
 	for _, artifact := range order.Spec.Artifacts {
+		spec := runtime.RawExtension(artifact.Spec)
+
 		// Let's collect the necessary data for the fragment from the artifact and order
 		frag := &arcv1alpha1.Fragment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -110,7 +112,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				Type:   artifact.Type,
 				SrcRef: artifact.SrcRef,
 				DstRef: artifact.DstRef,
-				Spec:   artifact.Spec,
+				Spec:   spec,
 			},
 		}
 		if frag.Spec.SrcRef.Name == "" {
@@ -141,7 +143,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// List missing fragments
 	fragsToCreate := []string{}
-	for sha, _ := range desiredFrags {
+	for sha := range desiredFrags {
 		_, exists := order.Status.Fragments[sha]
 		if exists {
 			continue
@@ -156,7 +158,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// Find obsolete fragments
 	fragsToDelete := []string{}
-	for sha, _ := range order.Status.Fragments {
+	for sha := range order.Status.Fragments {
 		_, exists := desiredFrags[sha]
 		if exists {
 			continue
