@@ -3,48 +3,17 @@ run:
   concurrency: 4
 linters:
   enable:
+    - errcheck
     - ginkgolinter
     - importas
     - misspell
-    - revive
     - wastedassign
     - unused
     - unparam
-  settings:
-    misspell:
-      ignore-rules:
-        - strat
-        - iritable
-    revive:
-      severity: error
-      rules:
-        - name: exported
-          arguments:
-            - disableStutteringCheck
-        - name: if-return
-          disabled: true
-  exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
-    rules:
-      - path: (.+)\.go$
-        text: "exported: type name will be used as (.+) by other packages, and that stutters; consider calling this (.+)"
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - goconst
 severity:
   default: error
 formatters:
   enable:
     - goimports
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+    - gofmt
