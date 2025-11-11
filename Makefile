@@ -19,6 +19,7 @@ SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
 ADDLICENSE ?= $(LOCALBIN)/addlicense
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
+HUGO ?= $(LOCALBIN)/hugo
 
 GINKGO_VERSION ?= v2.27.2
 GOLANGCI_LINT_VERSION ?= v2.5.0
@@ -26,6 +27,7 @@ SETUP_ENVTEST_VERSION ?= release-0.22
 ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_K8S_VERSION ?= 1.34.1
+HUGO_VERSION ?= v0.152.2
 
 export GOPRIVATE=*.opencode.de
 export GNOSUMDB=*.opencode.de
@@ -74,6 +76,10 @@ test: setup-envtest ginkgo ## Run all tests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
 
+.PHONY: docs
+docs: hugo
+	cd docs && $(HUGO) server -D
+
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
@@ -111,3 +117,8 @@ $(SETUP_ENVTEST): $(LOCALBIN)
 openapi-gen: $(OPENAPI_GEN) ## Download openapi-gen locally if necessary.
 $(OPENAPI_GEN): $(LOCALBIN)
 	test -s $(LOCALBIN)/openapi-gen || GOBIN=$(LOCALBIN) go install k8s.io/kube-openapi/cmd/openapi-gen
+
+.PHONY: hugo
+hugo: $(HUGO)
+$(HUGO): $(LOCALBIN)
+	test -s $(LOCALBIN)/hugo || GOBIN=$(LOCALBIN) go install github.com/gohugoio/hugo@$(HUGO_VERSION)
