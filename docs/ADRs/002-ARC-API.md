@@ -4,7 +4,7 @@ This ADR is about finding the right API for ARC.
 
 ## Proposed Solution
 
-Options were discussed and documented here: https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn
+Options were discussed and documented here: <https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn>
 
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
