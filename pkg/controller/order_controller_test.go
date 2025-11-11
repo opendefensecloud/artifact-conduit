@@ -233,14 +233,18 @@ var _ = Describe("OrderController", func() {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				return len(fragmentList.Items)
 			}).Should(Equal(1))
-			// Add a new artifact
-			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed()) // fetch reconciled updates
-			order.Spec.Artifacts = append(order.Spec.Artifacts, arcv1alpha1.OrderArtifact{
-				Type:   "type-d",
-				SrcRef: corev1.LocalObjectReference{Name: "src-d"},
-				DstRef: corev1.LocalObjectReference{Name: "dst-d"},
-			})
-			Expect(k8sClient.Update(ctx, order)).To(Succeed())
+			// Add a new artifact with retry on conflict
+			Eventually(func() error {
+				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
+					return err
+				}
+				order.Spec.Artifacts = append(order.Spec.Artifacts, arcv1alpha1.OrderArtifact{
+					Type:   "type-d",
+					SrcRef: corev1.LocalObjectReference{Name: "src-d"},
+					DstRef: corev1.LocalObjectReference{Name: "dst-d"},
+				})
+				return k8sClient.Update(ctx, order)
+			}).Should(Succeed())
 			// Eventually two fragments should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
@@ -272,9 +276,14 @@ var _ = Describe("OrderController", func() {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				return len(fragmentList.Items)
 			}).Should(Equal(2))
-			// Remove one artifact
-			order.Spec.Artifacts = order.Spec.Artifacts[:1]
-			Expect(k8sClient.Update(ctx, order)).To(Succeed())
+			// Remove one artifact with retry on conflict
+			Eventually(func() error {
+				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
+					return err
+				}
+				order.Spec.Artifacts = order.Spec.Artifacts[:1]
+				return k8sClient.Update(ctx, order)
+			}).Should(Succeed())
 			// Eventually only one fragment should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))

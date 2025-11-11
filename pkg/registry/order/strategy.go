@@ -26,11 +26,11 @@ func NewStrategy(typer runtime.ObjectTyper) orderStrategy {
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an Order
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*arc.Order)
+	order, ok := obj.(*arc.Order)
 	if !ok {
 		return nil, nil, fmt.Errorf("given object is not an Order")
 	}
-	return labels.Set(apiserver.Labels), SelectableFields(apiserver), nil
+	return labels.Set(order.Labels), SelectableFields(order), nil
 }
 
 // MatchOrder is the filter used by the generic etcd backend to watch events
@@ -108,9 +108,9 @@ func (orderStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.
 }
 
 func (orderStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
-	newMachine := obj.(*arc.Order)
-	oldMachine := old.(*arc.Order)
-	newMachine.Spec = oldMachine.Spec
+	newOrder := obj.(*arc.Order)
+	oldOrder := old.(*arc.Order)
+	newOrder.Spec = oldOrder.Spec
 }
 
 func (orderStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {

@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"slices"
 
 	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -35,6 +36,8 @@ type OrderReconciler struct {
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	log := ctrl.LoggerFrom(ctx)
+
 	// Fetch the Order instance
 	order := &arcv1alpha1.Order{}
 	if err := r.Get(ctx, req.NamespacedName, order); err != nil {
@@ -45,28 +48,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, err
 	}
 
-	// Add finalizer if not present and not deleting
-	if order.DeletionTimestamp.IsZero() {
-		found := false
-		for _, f := range order.Finalizers {
-			if f == finalizer {
-				found = true
-				break
-			}
-		}
-		if !found {
-			order.Finalizers = append(order.Finalizers, finalizer)
-			if err := r.Update(ctx, order); err != nil {
-				return ctrl.Result{}, err
-			}
-			// Requeue to ensure finalizer is persisted before proceeding
-			return ctrl.Result{Requeue: true}, nil
-		}
-	}
-
 	// Handle deletion: cleanup fragments, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
-		if order.Status.Fragments != nil && len(order.Status.Fragments) > 0 {
+		log.V(1).Info("Order is being deleted")
+		if len(order.Status.Fragments) > 0 {
 			for sha, ref := range order.Status.Fragments {
 				frag := &arcv1alpha1.Fragment{
 					ObjectMeta: metav1.ObjectMeta{
@@ -77,22 +62,40 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				_ = r.Delete(ctx, frag) // ignore not found errors
 				delete(order.Status.Fragments, sha)
 			}
-			_ = r.Status().Update(ctx, order)
+			if err := r.Status().Update(ctx, order); err != nil {
+				log.Error(err, "Failed to update fragments in Order.Status")
+				return ctrl.Result{}, err
+			}
+			log.V(1).Info("Order fragments cleaned up")
 			// Requeue until all fragments are gone
 			return ctrl.Result{Requeue: true}, nil
 		}
 		// All fragments are gone, remove finalizer
-		finalizers := []string{}
-		for _, f := range order.Finalizers {
-			if f != finalizer {
-				finalizers = append(finalizers, f)
+		if slices.Contains(order.Finalizers, finalizer) {
+			log.V(1).Info("No fragments, removing finalizer from Order")
+			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
+				return f == finalizer
+			})
+			if err := r.Update(ctx, order); err != nil {
+				log.Error(err, "Failed to remove finalizer from Order")
+				return ctrl.Result{}, err
 			}
 		}
-		order.Finalizers = finalizers
-		if err := r.Update(ctx, order); err != nil {
-			return ctrl.Result{}, err
-		}
 		return ctrl.Result{}, nil
+	}
+
+	// Add finalizer if not present and not deleting
+	if order.DeletionTimestamp.IsZero() {
+		if !slices.Contains(order.Finalizers, finalizer) {
+			log.V(1).Info("Adding finalizer to Order")
+			order.Finalizers = append(order.Finalizers, finalizer)
+			if err := r.Update(ctx, order); err != nil {
+				log.Error(err, "Failed to add finalizer to Order")
+				return ctrl.Result{}, err
+			}
+			// Return without requeue; the Update event will trigger reconciliation again
+			return ctrl.Result{}, nil
+		}
 	}
 
 	desiredFrags := map[string]*arcv1alpha1.Fragment{}
@@ -119,7 +122,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 		// Create a hash based on fragment fields for idempotency and compute the fragment name
 		h := sha256.New()
-		data := map[string]interface{}{
+		data := map[string]any{
 			"type": frag.Spec.Type,
 			"src":  frag.Spec.SrcRef.Name,
 			"dst":  frag.Spec.DstRef.Name,
@@ -199,8 +202,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	// Update status
-	if err := r.Status().Update(ctx, order); err != nil {
-		return ctrl.Result{}, err
+	if len(fragsToCreate) > 0 || len(fragsToDelete) > 0 {
+		log.V(1).Info("Updating Order.Status")
+		if err := r.Status().Update(ctx, order); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
