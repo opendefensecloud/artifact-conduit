@@ -4,7 +4,7 @@
 package fuzzer
 
 import (
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
 	"sigs.k8s.io/randfill"
 
 	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"

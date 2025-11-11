@@ -6,7 +6,7 @@ package install
 import (
 	"testing"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/fuzzer"
+	"github.com/opendefensecloud/artifact-conduit/api/arc/fuzzer"
 	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
 )
 

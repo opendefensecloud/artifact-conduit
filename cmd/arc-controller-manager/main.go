@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/controller"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	"github.com/opendefensecloud/artifact-conduit/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"

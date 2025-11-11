@@ -1,7 +1,0 @@
-stages:
-  - lint
-
-golangci-lint:
-  stage: lint
-  image: ghcr.io/cachix/devenv/devenv:latest
-  script: devenv shell golangci-lint run ./...

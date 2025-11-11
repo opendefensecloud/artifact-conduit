@@ -1,0 +1,19 @@
+version: "2"
+run:
+  concurrency: 4
+linters:
+  enable:
+    - errcheck
+    - ginkgolinter
+    - importas
+    - misspell
+    - wastedassign
+    - unused
+    - unparam
+    - goconst
+severity:
+  default: error
+formatters:
+  enable:
+    - goimports
+    - gofmt

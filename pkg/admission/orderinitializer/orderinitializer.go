@@ -4,7 +4,7 @@
 package orderinitializer
 
 import (
-	informers "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions"
+	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
 	"k8s.io/apiserver/pkg/admission"
 )
 

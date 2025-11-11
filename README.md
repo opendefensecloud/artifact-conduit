@@ -1,10 +1,14 @@
 # Artifact Conduit (ARC)
 
-![ARC LOGO](docs/arc_logo.png){height=200px}
+[![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=develop)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=develop)
 
+<img src="docs/arc_logo.png" width="100" style="float: left">
 Project ARC is an open-source system to bring a variety of artifact types into air-gapped environments.
 It acts as a gateway to get artifacts from one zone to another while scans assure that only artifacts that match certain policies are transported.
 These scans include malware, CVE, license scans including validation of signatures and the attestation of that process.
+
+<br style="clear: left;"/>
 
 ## Features of the ARC suite
 
@@ -24,9 +28,9 @@ These scans include malware, CVE, license scans including validation of signatur
 
 - Define responsible contact for endpoints, be it
   - the owner of the endpoint itself
-  - the owner of the endpoint configuration in ACE
+  - the owner of the endpoint configuration in ARC
 - Shared endpoints
-  - Endpoint is available globally within the instance of ACE for any tenant
+  - Endpoint is available globally within the instance of ARC for any tenant
 - Expiry for endpoints to represent contract term
 - Policies for valid endpoints for administrators (blocklist/allowlist)
 

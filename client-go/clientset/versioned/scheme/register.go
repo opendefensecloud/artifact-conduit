@@ -6,7 +6,7 @@
 package scheme
 
 import (
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

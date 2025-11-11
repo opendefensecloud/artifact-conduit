@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/fake"
-	informers "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/admission/orderinitializer"
+	"github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/fake"
+	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
+	"github.com/opendefensecloud/artifact-conduit/pkg/admission/orderinitializer"
 	"k8s.io/apiserver/pkg/admission"
 )
 

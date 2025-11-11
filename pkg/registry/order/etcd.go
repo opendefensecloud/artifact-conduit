@@ -4,8 +4,8 @@
 package order
 
 import (
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/pkg/registry"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
@@ -44,7 +44,7 @@ func NewStatusREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter)
 	}
 
 	strategy := NewStatusStrategy(scheme)
-	rest.Store.UpdateStrategy = strategy
-	rest.Store.ResetFieldsStrategy = strategy
+	rest.UpdateStrategy = strategy
+	rest.ResetFieldsStrategy = strategy
 	return rest, nil
 }

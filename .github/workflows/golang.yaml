@@ -1,0 +1,44 @@
+name: Golang CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
+  GO_VERSION: 1.25.2
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: lint
+        run: |
+          make lint
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: test
+        run: |
+          make test
+      - name: Convert coverage to lcov
+        uses: jandelgado/gcov2lcov-action@v1.2.0
+        with:
+          infile: arc.coverprofile
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v2.3.6
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: coverage.lcov

@@ -6,9 +6,9 @@
 package fake
 
 import (
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
-	typedarcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
+	v1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
+	typedarcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
 	gentype "k8s.io/client-go/gentype"
 )
 

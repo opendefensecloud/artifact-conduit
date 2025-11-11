@@ -1,4 +1,4 @@
-module gitlab.opencode.de/bwi/ace/artifact-conduit
+module github.com/opendefensecloud/artifact-conduit
 
 go 1.25.2
 

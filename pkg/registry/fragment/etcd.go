@@ -4,8 +4,8 @@
 package fragment
 
 import (
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/pkg/registry"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"

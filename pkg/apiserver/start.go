@@ -11,11 +11,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
-	clientset "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
-	informers "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/informers/externalversions"
-	sampleopenapi "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/openapi"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/admission/orderinitializer"
+	"github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	clientset "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned"
+	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
+	sampleopenapi "github.com/opendefensecloud/artifact-conduit/client-go/openapi"
+	"github.com/opendefensecloud/artifact-conduit/pkg/admission/orderinitializer"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
