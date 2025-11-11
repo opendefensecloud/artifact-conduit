@@ -1,6 +1,10 @@
 # Artifact Conduit (ARC)
 
-![ARC LOGO](docs/arc_logo.png){height=200px}
+[![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=develop)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=develop)
+
+
+![ARC LOGO](docs/arc_logo.png)
 
 Project ARC is an open-source system to bring a variety of artifact types into air-gapped environments.
 It acts as a gateway to get artifacts from one zone to another while scans assure that only artifacts that match certain policies are transported.
