@@ -1,0 +1,54 @@
+name: Golang CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
+  GO_VERSION: 1.19.x
+  GINKGO_VERSION: v1.16.5
+  GO_CI_LINT_VERSION: v1.48.0
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run linters
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: ${{ env.GO_CI_LINT_VERSION }}
+          args: --timeout=5m
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        if: success()
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Checkout Project
+        uses: actions/checkout@v3
+      - name: test
+        run: |
+          go install github.com/onsi/ginkgo/ginkgo@${{ env.GINKGO_VERSION }}
+          GINKGO=ginkgo make go-test-ci
+      - name: Convert coverage to lcov
+        uses: jandelgado/gcov2lcov-action@v1.0.9
+        with:
+          infile: monoskope.coverprofile
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@1.1.3
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: coverage.lcov

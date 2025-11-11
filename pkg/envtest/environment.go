@@ -51,7 +51,7 @@ func (e *Environment) Start(scheme *runtime.Scheme) (client.Client, error) {
 	}
 
 	apiServer, err := utilapiserver.New(cfg, utilapiserver.Options{
-		MainPath:     "gitlab.opencode.de/bwi/ace/artifact-conduit/cmd/arc-apiserver",
+		MainPath:     "github.com/opendefensecloud/artifact-conduit/cmd/arc-apiserver",
 		BuildOptions: []buildutils.BuildOption{buildutils.ModModeMod},
 		ETCDServers:  []string{e.env.ControlPlane.Etcd.URL.String()},
 		Host:         e.ext.APIServiceInstallOptions.LocalServingHost,

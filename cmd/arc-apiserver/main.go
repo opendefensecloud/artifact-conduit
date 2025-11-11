@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/apiserver"
+	"github.com/opendefensecloud/artifact-conduit/pkg/apiserver"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/component-base/cli"
 )

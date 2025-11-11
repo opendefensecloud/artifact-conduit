@@ -6,9 +6,9 @@
 package applyconfigurations
 
 import (
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
-	internal "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations/internal"
+	v1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
+	internal "github.com/opendefensecloud/artifact-conduit/client-go/applyconfigurations/internal"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	managedfields "k8s.io/apimachinery/pkg/util/managedfields"

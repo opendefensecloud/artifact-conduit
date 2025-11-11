@@ -8,8 +8,8 @@ package v1alpha1
 import (
 	http "net/http"
 
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
-	scheme "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/scheme"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	scheme "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

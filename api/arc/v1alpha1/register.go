@@ -4,7 +4,7 @@
 package v1alpha1
 
 import (
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

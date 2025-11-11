@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"slices"
 
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

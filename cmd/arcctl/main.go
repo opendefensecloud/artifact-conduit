@@ -9,9 +9,9 @@ import (
 	"os"
 
 	"github.com/jastBytes/sprint"
+	"github.com/opendefensecloud/artifact-conduit/cmd/arcctl/oci"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/cmd/arcctl/oci"
 )
 
 var (

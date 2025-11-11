@@ -9,7 +9,7 @@
 package openapi
 
 import (
-	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
+	v1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

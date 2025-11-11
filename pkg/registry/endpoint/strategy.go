@@ -15,7 +15,7 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
 )
 
 // NewStrategy creates and returns a endpointStrategy instance

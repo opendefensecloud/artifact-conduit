@@ -6,10 +6,10 @@
 package fake
 
 import (
-	applyconfigurations "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/applyconfigurations"
-	clientset "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned"
-	arcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
-	fakearcv1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1/fake"
+	applyconfigurations "github.com/opendefensecloud/artifact-conduit/client-go/applyconfigurations"
+	clientset "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned"
+	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
+	fakearcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"

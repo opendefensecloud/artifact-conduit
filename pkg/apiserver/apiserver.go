@@ -11,13 +11,13 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc"
-	"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/install"
-	arcregistry "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry"
-	artifacttypedefinitionstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/artifacttypedefinition"
-	endpointstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/endpoint"
-	fragmentstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/fragment"
-	orderstorage "gitlab.opencode.de/bwi/ace/artifact-conduit/pkg/registry/order"
+	"github.com/opendefensecloud/artifact-conduit/api/arc"
+	"github.com/opendefensecloud/artifact-conduit/api/arc/install"
+	arcregistry "github.com/opendefensecloud/artifact-conduit/pkg/registry"
+	artifacttypedefinitionstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/artifacttypedefinition"
+	endpointstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/endpoint"
+	fragmentstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/fragment"
+	orderstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/order"
 )
 
 var (
