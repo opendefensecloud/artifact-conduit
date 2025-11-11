@@ -1,16 +1,33 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
-  # https://devenv.sh/basics/
-  env.GREET = "ARC DevEnv";
-
   # https://devenv.sh/packages/
-  packages = [ 
+  packages = [
     pkgs.git
+    pkgs.gnumake
     pkgs.cobra-cli
     pkgs.golangci-lint
     pkgs.govulncheck
+    pkgs.oras
+    pkgs.shellcheck
   ];
+
+  # aliases for common git commands
+  scripts.gss.exec = ''
+    git status --short
+  '';
+  scripts.gp.exec = ''
+    git push
+  '';
+  scripts.gl.exec = ''
+    git pull
+  '';
+  scripts.gcam.exec = ''
+    git commit --all --message "$@";
+  '';
+  scripts.gaa.exec = ''
+    git add --all
+  '';
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
@@ -27,4 +44,7 @@
     };
   };
   # See full reference at https://devenv.sh/reference/options/
+
+  difftastic.enable = true;
+  delta.enable = true;
 }

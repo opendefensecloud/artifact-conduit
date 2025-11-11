@@ -1,0 +1,16 @@
+{
+  "source": {
+    "reference": "registry-1.docker.io/library/busybox:latest",
+    "auth": {
+      "username": "myuser",
+      "password": "mypassword"
+    }
+  },
+  "destination": {
+    "reference": "registry.example.com/myrepo/busybox:latest",
+    "auth": {
+      "username": "destuser",
+      "password": "destpassword"
+    }
+  }
+}
