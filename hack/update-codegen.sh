@@ -8,6 +8,7 @@ THIS_PKG="github.com/opendefensecloud/artifact-conduit"
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_DIR="$SCRIPT_DIR/.."
+# shellcheck disable=SC2269
 OPENAPI_GEN="$OPENAPI_GEN"
 
 (cd "$PROJECT_DIR"; go mod download)
