@@ -78,7 +78,7 @@ manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition o
 
 .PHONY: docs
 docs: hugo
-	cd docs && $(HUGO) server -D
+	$(HUGO) server -D -s docs
 
 
 $(LOCALBIN):

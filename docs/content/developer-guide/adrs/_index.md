@@ -1,7 +1,10 @@
 ---
-weight: 100
-bookCollapseSection: true
-title: "ADRs"
+title: ADRs
+type: docs
+prev: developer-guide/first-page
+next: developer-guide/adrs/leaf
+sidebar:
+  open: false
 ---
 
 # Introduction
