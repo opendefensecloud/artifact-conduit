@@ -9,7 +9,7 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/typed/arc/v1alpha1"
+	arcv1alpha1 "go.opendefense.cloud/arc/client-go/clientset/versioned/typed/arc/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

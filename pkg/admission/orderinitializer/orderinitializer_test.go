@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/fake"
-	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
-	"github.com/opendefensecloud/artifact-conduit/pkg/admission/orderinitializer"
+	"go.opendefense.cloud/arc/client-go/clientset/versioned/fake"
+	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
+	"go.opendefense.cloud/arc/pkg/admission/orderinitializer"
 	"k8s.io/apiserver/pkg/admission"
 )
 

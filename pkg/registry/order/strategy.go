@@ -16,7 +16,7 @@ import (
 	"k8s.io/apiserver/pkg/storage/names"
 	"sigs.k8s.io/structured-merge-diff/v6/fieldpath"
 
-	"github.com/opendefensecloud/artifact-conduit/api/arc"
+	"go.opendefense.cloud/arc/api/arc"
 )
 
 // NewStrategy creates and returns a orderStrategy instance

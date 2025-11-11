@@ -6,8 +6,8 @@
 package arc
 
 import (
-	v1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions/arc/v1alpha1"
-	internalinterfaces "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
+	v1alpha1 "go.opendefense.cloud/arc/client-go/informers/externalversions/arc/v1alpha1"
+	internalinterfaces "go.opendefense.cloud/arc/client-go/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to each of this group's versions.

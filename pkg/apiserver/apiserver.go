@@ -11,13 +11,13 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 
-	"github.com/opendefensecloud/artifact-conduit/api/arc"
-	"github.com/opendefensecloud/artifact-conduit/api/arc/install"
-	arcregistry "github.com/opendefensecloud/artifact-conduit/pkg/registry"
-	artifacttypedefinitionstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/artifacttypedefinition"
-	endpointstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/endpoint"
-	fragmentstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/fragment"
-	orderstorage "github.com/opendefensecloud/artifact-conduit/pkg/registry/order"
+	"go.opendefense.cloud/arc/api/arc"
+	"go.opendefense.cloud/arc/api/arc/install"
+	arcregistry "go.opendefense.cloud/arc/pkg/registry"
+	artifacttypedefinitionstorage "go.opendefense.cloud/arc/pkg/registry/artifacttypedefinition"
+	endpointstorage "go.opendefense.cloud/arc/pkg/registry/endpoint"
+	fragmentstorage "go.opendefense.cloud/arc/pkg/registry/fragment"
+	orderstorage "go.opendefense.cloud/arc/pkg/registry/order"
 )
 
 var (

@@ -11,7 +11,7 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
-	arc "github.com/opendefensecloud/artifact-conduit/api/arc"
+	arc "go.opendefense.cloud/arc/api/arc"
 	v1 "k8s.io/api/core/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"

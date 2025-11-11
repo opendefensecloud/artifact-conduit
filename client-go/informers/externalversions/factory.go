@@ -10,9 +10,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned"
-	arc "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions/arc"
-	internalinterfaces "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
+	versioned "go.opendefense.cloud/arc/client-go/clientset/versioned"
+	arc "go.opendefense.cloud/arc/client-go/informers/externalversions/arc"
+	internalinterfaces "go.opendefense.cloud/arc/client-go/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

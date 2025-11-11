@@ -8,9 +8,9 @@ package v1alpha1
 import (
 	context "context"
 
-	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
-	applyconfigurationsarcv1alpha1 "github.com/opendefensecloud/artifact-conduit/client-go/applyconfigurations/arc/v1alpha1"
-	scheme "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned/scheme"
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	applyconfigurationsarcv1alpha1 "go.opendefense.cloud/arc/client-go/applyconfigurations/arc/v1alpha1"
+	scheme "go.opendefense.cloud/arc/client-go/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
