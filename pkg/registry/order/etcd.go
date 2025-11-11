@@ -44,7 +44,7 @@ func NewStatusREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter)
 	}
 
 	strategy := NewStatusStrategy(scheme)
-	rest.Store.UpdateStrategy = strategy
-	rest.Store.ResetFieldsStrategy = strategy
+	rest.UpdateStrategy = strategy
+	rest.ResetFieldsStrategy = strategy
 	return rest, nil
 }
