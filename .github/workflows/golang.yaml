@@ -8,9 +8,9 @@ on:
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
-  GO_VERSION: 1.19.x
-  GINKGO_VERSION: v1.16.5
-  GO_CI_LINT_VERSION: v1.48.0
+  GO_VERSION: 1.25.2
+  GINKGO_VERSION: v2.27.2
+  GO_CI_LINT_VERSION: v2.5.0
 
 jobs:
   lint:
