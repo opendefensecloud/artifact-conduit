@@ -42,7 +42,7 @@ This ADR is about finding the right architecture for the ARC suite of services b
 
 #### Architecture Diagram
 
-![ARC Architecture Diagram](img/0-ace-architecture.drawio.svg "ARC Architecture")
+![ARC Architecture Diagram](img/0-arc-architecture.drawio.svg "ARC Architecture")
 
 #### Pros
 

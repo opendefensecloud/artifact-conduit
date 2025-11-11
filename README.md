@@ -24,9 +24,9 @@ These scans include malware, CVE, license scans including validation of signatur
 
 - Define responsible contact for endpoints, be it
   - the owner of the endpoint itself
-  - the owner of the endpoint configuration in ACE
+  - the owner of the endpoint configuration in ARC
 - Shared endpoints
-  - Endpoint is available globally within the instance of ACE for any tenant
+  - Endpoint is available globally within the instance of ARC for any tenant
 - Expiry for endpoints to represent contract term
 - Policies for valid endpoints for administrators (blocklist/allowlist)
 
