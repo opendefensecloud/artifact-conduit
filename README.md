@@ -61,7 +61,7 @@ These scans include malware, CVE, license scans including validation of signatur
 
 > ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/development/contribution.md)
 
-Please see our documentation in the `/docs` folder for more details.
+Please see our documentation in the [`/docs`](docs) folder for more details.
 
 ## Contributing
 
