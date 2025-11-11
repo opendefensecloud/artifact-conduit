@@ -38,7 +38,7 @@ jobs:
         with:
           infile: monoskope.coverprofile
       - name: Coveralls GitHub Action
-        uses: coverallsapp/github-action@2.3.6
+        uses: coverallsapp/github-action@v2.3.6
         with:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: coverage.lcov
