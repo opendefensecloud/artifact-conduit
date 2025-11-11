@@ -9,6 +9,7 @@
 package openapi
 
 import (
+	v1alpha1 "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	resource "k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,26 +19,26 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinition":       schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionList":   schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionRules":  schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionSpec":   schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionStatus": schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Endpoint":                     schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointList":                 schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointSpec":                 schema_artifact_conduit_api_arc_v1alpha1_EndpointSpec(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointStatus":               schema_artifact_conduit_api_arc_v1alpha1_EndpointStatus(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Fragment":                     schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentList":                 schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentSpec":                 schema_artifact_conduit_api_arc_v1alpha1_FragmentSpec(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentStatus":               schema_artifact_conduit_api_arc_v1alpha1_FragmentStatus(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order":                        schema_artifact_conduit_api_arc_v1alpha1_Order(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact":                schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults":                schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderList":                    schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec":                    schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref),
-		"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus":                  schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref),
-		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":                                       schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
+		v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName():             schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref),
+		v1alpha1.ArtifactTypeDefinitionList{}.OpenAPIModelName():         schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref),
+		v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName():        schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref),
+		v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName():         schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref),
+		v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName():       schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref),
+		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref),
+		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref),
+		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_EndpointSpec(ref),
+		v1alpha1.EndpointStatus{}.OpenAPIModelName():                     schema_artifact_conduit_api_arc_v1alpha1_EndpointStatus(ref),
+		v1alpha1.Fragment{}.OpenAPIModelName():                           schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref),
+		v1alpha1.FragmentList{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref),
+		v1alpha1.FragmentSpec{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_FragmentSpec(ref),
+		v1alpha1.FragmentStatus{}.OpenAPIModelName():                     schema_artifact_conduit_api_arc_v1alpha1_FragmentStatus(ref),
+		v1alpha1.Order{}.OpenAPIModelName():                              schema_artifact_conduit_api_arc_v1alpha1_Order(ref),
+		v1alpha1.OrderArtifact{}.OpenAPIModelName():                      schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref),
+		v1alpha1.OrderDefaults{}.OpenAPIModelName():                      schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref),
+		v1alpha1.OrderList{}.OpenAPIModelName():                          schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref),
+		v1alpha1.OrderSpec{}.OpenAPIModelName():                          schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref),
+		v1alpha1.OrderStatus{}.OpenAPIModelName():                        schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref),
+		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":            schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                    schema_k8sio_api_core_v1_Affinity(ref),
 		"k8s.io/api/core/v1.AppArmorProfile":                             schema_k8sio_api_core_v1_AppArmorProfile(ref),
 		"k8s.io/api/core/v1.AttachedVolume":                              schema_k8sio_api_core_v1_AttachedVolume(ref),
@@ -274,7 +275,6 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/api/core/v1.WeightedPodAffinityTerm":                     schema_k8sio_api_core_v1_WeightedPodAffinityTerm(ref),
 		"k8s.io/api/core/v1.WindowsSecurityContextOptions":               schema_k8sio_api_core_v1_WindowsSecurityContextOptions(ref),
 		"k8s.io/apimachinery/pkg/api/resource.Quantity":                  schema_apimachinery_pkg_api_resource_Quantity(ref),
-		"k8s.io/apimachinery/pkg/api/resource.int64Amount":               schema_apimachinery_pkg_api_resource_int64Amount(ref),
 		"k8s.io/apimachinery/pkg/apis/meta/v1.APIGroup":                  schema_pkg_apis_meta_v1_APIGroup(ref),
 		"k8s.io/apimachinery/pkg/apis/meta/v1.APIGroupList":              schema_pkg_apis_meta_v1_APIGroupList(ref),
 		"k8s.io/apimachinery/pkg/apis/meta/v1.APIResource":               schema_pkg_apis_meta_v1_APIResource(ref),
@@ -361,20 +361,20 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionSpec"),
+							Ref:     ref(v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName()),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionStatus"),
+							Ref:     ref(v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName(), v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -412,7 +412,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref com
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinition"),
+										Ref:     ref(v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -423,7 +423,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref com
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinition", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
@@ -481,14 +481,14 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref com
 						SchemaProps: spec.SchemaProps{
 							Description: "Rules defines a set of rules for this type.",
 							Default:     map[string]interface{}{},
-							Ref:         ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionRules"),
+							Ref:         ref(v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName()),
 						},
 					},
 					"defaults": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Defaults optionally sets defaults for this type of artifact.",
 							Default:     map[string]interface{}{},
-							Ref:         ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults"),
+							Ref:         ref(v1alpha1.OrderDefaults{}.OpenAPIModelName()),
 						},
 					},
 					"workflowTemplateRef": {
@@ -503,7 +503,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref com
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.ArtifactTypeDefinitionRules", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults", "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
@@ -548,20 +548,20 @@ func schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref common.ReferenceCallb
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointSpec"),
+							Ref:     ref(v1alpha1.EndpointSpec{}.OpenAPIModelName()),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointStatus"),
+							Ref:     ref(v1alpha1.EndpointStatus{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.EndpointStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			v1alpha1.EndpointSpec{}.OpenAPIModelName(), v1alpha1.EndpointStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -599,7 +599,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref common.ReferenceC
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Endpoint"),
+										Ref:     ref(v1alpha1.Endpoint{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -610,7 +610,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref common.ReferenceC
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Endpoint", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.Endpoint{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
@@ -703,20 +703,20 @@ func schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref common.ReferenceCallb
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentSpec"),
+							Ref:     ref(v1alpha1.FragmentSpec{}.OpenAPIModelName()),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentStatus"),
+							Ref:     ref(v1alpha1.FragmentStatus{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.FragmentStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			v1alpha1.FragmentSpec{}.OpenAPIModelName(), v1alpha1.FragmentStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -754,7 +754,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref common.ReferenceC
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Fragment"),
+										Ref:     ref(v1alpha1.Fragment{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -765,7 +765,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref common.ReferenceC
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Fragment", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.Fragment{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
@@ -854,20 +854,20 @@ func schema_artifact_conduit_api_arc_v1alpha1_Order(ref common.ReferenceCallback
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec"),
+							Ref:     ref(v1alpha1.OrderSpec{}.OpenAPIModelName()),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus"),
+							Ref:     ref(v1alpha1.OrderStatus{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderSpec", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			v1alpha1.OrderSpec{}.OpenAPIModelName(), v1alpha1.OrderStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -978,7 +978,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref common.ReferenceCall
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order"),
+										Ref:     ref(v1alpha1.Order{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -989,7 +989,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref common.ReferenceCall
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.Order", "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.Order{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
@@ -1004,7 +1004,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCall
 						SchemaProps: spec.SchemaProps{
 							Description: "Defaults sets up defaults for all artifacts.",
 							Default:     map[string]interface{}{},
-							Ref:         ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults"),
+							Ref:         ref(v1alpha1.OrderDefaults{}.OpenAPIModelName()),
 						},
 					},
 					"artifacts": {
@@ -1015,7 +1015,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCall
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref("gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact"),
+										Ref:     ref(v1alpha1.OrderArtifact{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -1025,7 +1025,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCall
 			},
 		},
 		Dependencies: []string{
-			"gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderArtifact", "gitlab.opencode.de/bwi/ace/artifact-conduit/api/arc/v1alpha1.OrderDefaults"},
+			v1alpha1.OrderArtifact{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName()},
 	}
 }
 
@@ -15889,15 +15889,12 @@ func schema_pkg_apis_meta_v1_InternalEvent(ref common.ReferenceCallback) common.
 					"Object": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Object is:\n * If Type is Added or Modified: the new state of the object.\n * If Type is Deleted: the state of the object immediately before deletion.\n * If Type is Bookmark: the object (instance of a type being watched) where\n   only ResourceVersion field is set. On successful restart of watch from a\n   bookmark resourceVersion, client is guaranteed to not get repeat event\n   nor miss any events.\n * If Type is Error: *api.Status is recommended; other types may make sense\n   depending on context.",
-							Ref:         ref("k8s.io/apimachinery/pkg/runtime.Object"),
 						},
 					},
 				},
 				Required: []string{"Type", "Object"},
 			},
 		},
-		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/runtime.Object"},
 	}
 }
 

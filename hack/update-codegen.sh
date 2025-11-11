@@ -8,6 +8,7 @@ THIS_PKG="gitlab.opencode.de/bwi/ace/artifact-conduit"
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_DIR="$SCRIPT_DIR/.."
+OPENAPI_GEN="$OPENAPI_GEN"
 
 (cd "$PROJECT_DIR"; go mod download)
 
@@ -48,10 +49,11 @@ kube::codegen::gen_helpers \
 
 # TODO: use kube::codegen::gen_openapi, see commented block below (works and generates same code but exit code != 0)
 mapfile -t input_dirs < <(qualify-gvs "${THIS_PKG}/api" "$ALL_VERSION_GROUPS")
-openapi-gen \
+"$OPENAPI_GEN" \
     --output-dir "$PROJECT_DIR/client-go/openapi" \
     --output-pkg "${THIS_PKG}/client-go/openapi" \
     --output-file "zz_generated.openapi.go" \
+    --output-model-name-file "zz_generated.openapi.go" \
     --report-filename "$PROJECT_DIR/client-go/openapi/api_violations.report" \
     --go-header-file "$SCRIPT_DIR/boilerplate.go.txt" \
     "k8s.io/apimachinery/pkg/apis/meta/v1" \

@@ -10,7 +10,6 @@
     pkgs.govulncheck
     pkgs.oras
     pkgs.shellcheck
-    pkgs.kubernetes-code-generator # currently required by hack/update-codegen.sh
   ];
 
   # aliases for common git commands

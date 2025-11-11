@@ -18,6 +18,7 @@ GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
 ADDLICENSE ?= $(LOCALBIN)/addlicense
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
+OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
 
 GINKGO_VERSION ?= v2.27.2
 GOLANGCI_LINT_VERSION ?= v2.5.0
@@ -55,7 +56,7 @@ clean:
 	rm -rf $(LOCALBIN)
 
 .PHONY: codegen
-codegen: ## Run code generation, e.g. openapi
+codegen: openapi-gen ## Run code generation, e.g. openapi
 	./hack/update-codegen.sh
 
 .PHONY: fmt
@@ -109,3 +110,8 @@ $(ADDLICENSE): $(LOCALBIN)
 setup-envtest: $(SETUP_ENVTEST) ## Download setup-envtest locally if necessary.
 $(SETUP_ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(SETUP_ENVTEST_VERSION)
+
+.PHONY: openapi-gen
+openapi-gen: $(OPENAPI_GEN) ## Download openapi-gen locally if necessary.
+$(OPENAPI_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/openapi-gen || GOBIN=$(LOCALBIN) go install k8s.io/kube-openapi/cmd/openapi-gen
