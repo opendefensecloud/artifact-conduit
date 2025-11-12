@@ -13,6 +13,7 @@ LOCALBIN ?= $(BUILD_PATH)/bin
 
 GO ?= go
 SHELLCHECK ?= shellcheck
+MKDOCS ?= mkdocs
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
@@ -73,6 +74,10 @@ test: setup-envtest ginkgo ## Run all tests
 .PHONY: manifests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
+
+.PHONY: docs
+docs:
+	mkdocs serve
 
 
 $(LOCALBIN):
