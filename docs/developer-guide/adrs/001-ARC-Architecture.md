@@ -1,3 +1,5 @@
+# Evaluate Future ARC Architecture Based on Predecessors
+
 ## Context and Problem Statement
 
 This ADR is about finding the right architecture for the ARC suite of services based on the knowledge gained during the internal predecessors of this project.
@@ -151,7 +153,7 @@ An `ArtifactTypeDefinition` specifies the processing rules and workflow template
 - Keep the declarative style of Kubernetes while having complete freedom on the API implementation
 - Argo Workflows allows us to focus on the domain of the product without reinventing the wheel
 - Qotas and Fairness easy without writing code via Kueue
-  
+
 #### Cons
 
 - Building addon apiservers directly on the raw api-machinery libraries requires non-trivial code that must be maintained and rebased as the raw libraries change.
