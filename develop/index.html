@@ -73,6 +73,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#what-is-artifact-conduit-arc" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -405,6 +410,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="." class="md-nav__link md-nav__link--active">
         
@@ -422,6 +447,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#system-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artifact-procurement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact Procurement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security and Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-and-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport and Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -606,7 +711,7 @@
   <span class="md-ellipsis">
     
   
-    Order
+    Order Resource
   
 
     
@@ -1162,6 +1267,77 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#system-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Capabilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="System Capabilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#artifact-procurement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifact Procurement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-and-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security and Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-and-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport and Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1194,10 +1370,39 @@
   
 
 
-  <h1>Home</h1>
-
-<p>Welcome to the Artifact Conduit Docs.</p>
-<p>TODO</p>
+<h1 id="what-is-artifact-conduit-arc">What is Artifact Conduit (ARC)?<a class="headerlink" href="#what-is-artifact-conduit-arc" title="Permanent link">&para;</a></h1>
+<p>Project ARC is an open-source system to bring a variety of artifact types into air-gapped environments.
+It acts as a gateway to get artifacts from one zone to another while scans assure that only artifacts that match certain policies are transported.
+These scans include malware, CVE, license scans including validation of signatures and the attestation of that process.</p>
+<h2 id="system-capabilities">System Capabilities<a class="headerlink" href="#system-capabilities" title="Permanent link">&para;</a></h2>
+<p>ARC provides a comprehensive artifact management platform with the following key capabilities:</p>
+<h3 id="artifact-procurement">Artifact Procurement<a class="headerlink" href="#artifact-procurement" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Multiple Source Types</strong>: OCI registries (container images, Helm charts, OCM packages), Helm repositories, S3-compatible storage, Google Cloud Storage, Azure Blob Storage, HTTP(S) endpoints</li>
+<li><strong>Flexible Ordering</strong>: One-shot orders for specific versions, watchers using semver for continuous ordering, complete registry mirroring</li>
+</ul>
+<h3 id="endpoint-management">Endpoint Management<a class="headerlink" href="#endpoint-management" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Ownership Tracking</strong>: Define responsible contacts for endpoints and configurations</li>
+<li><strong>Shared Endpoints</strong>: Global endpoint availability across the ARC instance</li>
+<li><strong>Lifecycle Management</strong>: Endpoint expiry based on contract terms</li>
+<li><strong>Policy Enforcement</strong>: Blocklist/allowlist policies for administrators</li>
+</ul>
+<h3 id="security-and-validation">Security and Validation<a class="headerlink" href="#security-and-validation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Signature Validation</strong>: Verify artifact signatures before transport</li>
+<li><strong>Malware Scanning</strong>: Plugin system supporting Trivy, Sysdig, ClamAV</li>
+<li><strong>CVE Scanning</strong>: Security vulnerability detection</li>
+<li><strong>License Scanning</strong>: License compliance verification</li>
+<li><strong>Attestation</strong>: Sign and attest to the scanning process</li>
+</ul>
+<h3 id="transport-and-optimization">Transport and Optimization<a class="headerlink" href="#transport-and-optimization" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Multi-Destination</strong>: Deliver artifacts to one or more destinations after validation</li>
+<li><strong>Dry-Run Mode</strong>: Test orders without actual delivery</li>
+<li><strong>Deduplication</strong>: Avoid redundant transfers and scans unless necessary (e.g., CVE database updates)</li>
+<li><strong>TTL Management</strong>: Automatic retirement of orders and resources</li>
+</ul>
 
 
 

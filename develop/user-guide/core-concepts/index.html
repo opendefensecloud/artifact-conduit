@@ -530,6 +530,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -546,6 +564,47 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resource-type-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Type Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#order-reconciliation-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order Reconciliation Sequence
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -620,7 +679,7 @@
   <span class="md-ellipsis">
     
   
-    Order
+    Order Resource
   
 
     
@@ -1179,6 +1238,36 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resource-type-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Type Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#order-reconciliation-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order Reconciliation Sequence
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1211,6 +1300,59 @@
 
 
 <h1 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h1>
+<p>ARC is built as a Kubernetes-native system that extends the Kubernetes API through the API Aggregation Layer. Unlike traditional Kubernetes operators that use Custom Resource Definitions (CRDs), ARC implements an Extension API Server with dedicated storage. This architectural decision provides isolation from the cluster's control plane etcd and enables future flexibility in storage backend selection.</p>
+<p>The system consists of three primary runtime components:</p>
+<ul>
+<li><strong>ARC API Server</strong> - Extends the Kubernetes API to handle arc.bwi.de/v1alpha1 resources</li>
+<li><strong>Order Controller</strong> - Reconciles high-level artifact requests into executable units</li>
+<li><strong>Argo Workflows</strong> - Executes artifact processing workflows defined by <code>ArtifactTypeDefinition</code> resources</li>
+</ul>
+<h2 id="resource-type-hierarchy">Resource Type Hierarchy<a class="headerlink" href="#resource-type-hierarchy" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Resource Type</strong></th>
+<th><strong>API Group</strong></th>
+<th><strong>Purpose</strong></th>
+<th><strong>Lifecycle Owner</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Order</td>
+<td>arc.bwi.de/v1alpha1</td>
+<td>High-level artifact request containing multiple artifacts</td>
+<td>User/GitOps</td>
+</tr>
+<tr>
+<td>Fragment</td>
+<td>arc.bwi.de/v1alpha1</td>
+<td>Single artifact operation unit, child of Order</td>
+<td>Order Controller</td>
+</tr>
+<tr>
+<td>Endpoint</td>
+<td>arc.bwi.de/v1alpha1</td>
+<td>Configuration for artifact source/destination</td>
+<td>User/Admin</td>
+</tr>
+<tr>
+<td>ArtifactTypeDefinition</td>
+<td>arc.bwi.de/v1alpha1</td>
+<td>Type rules and workflow reference for artifact processing</td>
+<td>Admin</td>
+</tr>
+</tbody>
+</table>
+<p>The resource hierarchy establishes a declarative model where users create <code>Order</code> resources that reference shared <code>Endpoint</code> configurations. The Order Controller decomposes each Order into individual <code>Fragment</code> resources based on the <code>ArtifactTypeDefinition</code> rules, which then trigger corresponding Argo Workflows.</p>
+<h2 id="order-reconciliation-sequence">Order Reconciliation Sequence<a class="headerlink" href="#order-reconciliation-sequence" title="Permanent link">&para;</a></h2>
+<p>The <code>OrderController</code> watches for <code>Order</code> resources and implements the reconciliation logic. When an <code>Order</code> is created, the controller:</p>
+<ol>
+<li>Retrieves the <code>Order</code> and referenced <code>Endpoint</code> resources</li>
+<li>Looks up the appropriate <code>ArtifactTypeDefinition</code> for each artifact</li>
+<li>Creates individual <code>Fragment</code> resources</li>
+<li>Creates Argo Workflow instances based on the <code>workflowTemplateRef</code></li>
+</ol>
 
 
 
