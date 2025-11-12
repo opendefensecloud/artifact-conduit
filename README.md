@@ -1,6 +1,6 @@
 # Artifact Conduit (ARC)
 
-[![Build status](https://go.opendefense.cloud/arc/actions/workflows/golang.yaml/badge.svg)](https://go.opendefense.cloud/arc/actions/workflows/golang.yaml)
+[![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=develop)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=develop)
 
 <img src="docs/arc_logo.png" width="100" style="float: left">
@@ -66,6 +66,7 @@ These scans include malware, CVE, license scans including validation of signatur
 > ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/development/contribution.md)
 
 Please see our documentation in the [`/docs`](docs) folder for more details.
+The hosted version of the documentation can be found at <https://arc.opendefense.cloud/develop/>.
 
 ## Contributing
 
