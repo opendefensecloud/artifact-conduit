@@ -1,0 +1,20 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Order
+metadata:
+  name: example-order
+spec:
+  defaults:
+    srcRef:
+      name: docker-hub
+    dstRef:
+      name: internal-registry
+  artifacts:
+    - type: oci # artifactType, correcesponds to workflow
+      dstRef:
+        name: other-internal-registry
+      spec:
+        image: library/alpine:3.18
+        override: myteam/alpine:3.18-dev # default alpine:3.18; support CEL?
+    - type: oci
+      spec:
+        image: library/ubuntu:1.0
