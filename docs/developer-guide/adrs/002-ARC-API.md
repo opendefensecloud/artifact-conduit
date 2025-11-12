@@ -1,3 +1,5 @@
+# Define an Optimal API for the Project Beginning
+
 ## Context and Problem Statement
 
 This ADR is about finding the right API for ARC.
@@ -78,11 +80,11 @@ metadata:
 spec:
   rules:
     srcTypes:
-    - s3 # Endpoint Types!
-    - oci
-    - helm
+      - s3 # Endpoint Types!
+      - oci
+      - helm
     dstTypes:
-    - oci
+      - oci
   defaults:
     dstRef: internal-registry
   workflowTemplateRef: # argo.Workflow
