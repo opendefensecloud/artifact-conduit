@@ -14,96 +14,101 @@ This ADR is about finding the right architecture for the ARC suite of services b
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
 - `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderFragment` Resources, creates `Workflow` resources for necessary workload
 
-### Design Advantages of utilizing Kubernetes Operators
-
-- **Native Declarative Management**
-  - End users manage artifact lifecycle via `kubectl` or GitOps like any other Kubernetes resource.
-- **Resiliency**
-  - If a worker Pod fails mid-transfer, Kubernetes reschedules the job automatically.
-- **Horizontal Scalability**
-  - Controller and workers can scale independently.
-
 ## Considered Options
 
-### Solution A
-
-#### Technology
-
-- Instead of [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/), `ARC` uses an [Extension API Server](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-extension-api-server/) via the [Kubernetes API Aggregation Layer](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to handle API requests.
-- This gives it the possibility to use a dedicated etcd or a even more suitable storage backend for the high amount of resources and status information in case this is necessary.
-- While `etcd` still can be used as storage backend, it is one separated from the `etcd` used by the Kubernetes control plane and reduces the risk of bringing the whole cluster into trouble.
-- Additional links
-  - <https://github.com/kubernetes-sigs/apiserver-runtime>
-  - <https://github.com/kubernetes/sample-apiserver/tree/master>
-
-#### Architecture Diagram
-
-![ARC Architecture Diagram](img/0-arc-architecture.drawio.svg "ARC Architecture")
-
-#### Pros
-
-- Usin dedicated etcd does not clutter the infra etcd
-- Storage can be changed later on if necessary
-- Keep the declarative style of Kubernetes while having complete freedom on the API implementation
-- Utilize [Argo Workflows](https://argo-workflows.readthedocs.io) to handle the workflows necessary to process different artifact types without reinventing the wheel
-- Optionally use [Kueue](https://kueue.sigs.k8s.io/docs/overview/) to handle quotas and enhanced scheduling
-
-#### Cons
-
-- Building addon apiservers directly on the raw api-machinery libraries requires non-trivial code that must be maintained and rebased as the raw libraries change.
-- Steep learning curve when starting the project and steeper learning curve when joining the project.
-
-### Solution B
+### Classic Kubernetes Operators
 
 - [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/) are used to interact with ARC via the Kubernetes API Server.
-- Namespaces are used to separate resources in a multi-tenant environment.
 - Several operators come into play which reconcile the different custom resources.
 - A sharding mechanism is implemented to be able to scale the workers horizontally and give every worker a given chunk of resources to reconcile.
 
 #### Pros
 
 - CRDs and Kubernetes are relatively simple to implement
-- AuthN & AuthZ are included with Kubernetes
-- Storage via etcd included with Kubernetes
 
 #### Cons
 
-- Storage may be limited by etcd and can bring the control plane of Kubernetes into trouble if too many resources are present
+- Storage may be limited by `etcd` and can bring the control plane of Kubernetes into trouble if too many resources are present
 - The necessity to implement sharding may be hard work and error prone
 - Thus said it may not scale in way necessary for such a solution
-- The concept of Kubernetes Operators might not fit the problem
-  - ARC handles only things outside of Kubernetes
-  - Tight coupling between the software and the hosting
 
-### Solution C
+### Extension API Server and CNCF Landscape Tooling
 
-- This solution doesn't stick to declarative Kubernetes in any way and provides it's own opinionated API.
-- Runs based on Kubernetes without being part of it's API
-- AuthN & AuthZ based on OIDC and is independent of Kubernetes cluster hosting it
-- Uses message queueing for being able to have multiple workers scaling horizontally
+![Considered Options](img/0-arc-architecture-arcdb.drawio.svg "Considered Options")
+
+#### Flavor A
+
+Flavor uses several controllers to handle different parts of the API.
+Orders are reconciled and converted to hydrated Orders which contain the source and destination information along with the artifact to process.
+This information are published to some message queue which is subscribed by workers working on that queue.
+Optionally [KEDA](https://keda.sh/) is used to scale, handle quotas and fairness.
+The database to be used for the API Server is etcd.
+
+#### Flavor B
+
+Same as [Flavor A](#flavor-a) except the database for the API Server is something like Postgres instead of etcd.
+Additionally the option is considered to let the controller access the Postgres directly to reconcile without using the Kubernetes API Server.
+
+#### Flavor C
+
+Same as [Flavor B](#flavor-b) except that no message queue is used but the job queue is stored directly in the Postgres database.
+
+#### Flavor D
+
+Same as [Flavor A](#flavor-a) except that no message queue is used.
+The Order controller creates hydrated orders directly in `etcd` as readonly resource which is then consumed by workers directly.
+This approach needs some kind of sharding mechanism to have the workers to know which shard of resources they need to handle.
+
+#### Flavor E
+
+This flavor is the most compelling due to the reduced amount of code that is necessary to bring this solution to live.
+etcd is used as storage for the API server.
+Argo Workflows is used to build workflows which do the steps necessary to process one artifact.
+Kueue can be used to bring fairness, scaling, quotas into play which workflows.
+The order controller creates "jobs" which are actually Argo Workflows.
+
+This option is described in detail in the following document.
+
+#### Technology
+
+- Instead of [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/), `ARC` uses an [Extension API Server](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-extension-api-server/) via the [Kubernetes API Aggregation Layer](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to handle API requests.
+- This gives it the possibility to use a dedicated `etcd` or a even more suitable storage backend for the high amount of resources and status information in case this is necessary.
+- While `etcd` still can be used as storage backend, it is one separated from the `etcd` used by the Kubernetes control plane and reduces the risk of bringing the whole cluster into trouble.
+- Additional links
+  - <https://github.com/kubernetes-sigs/apiserver-runtime>
+  - <https://github.com/kubernetes/sample-apiserver/tree/master>
+- Utilize [Argo Workflows](https://argo-workflows.readthedocs.io) to handle the workflows necessary to process different artifact types
+- Optionally use [Kueue](https://kueue.sigs.k8s.io/docs/overview/) to handle quotas and enhanced scheduling
+- Namespaces are used to separate resources in a multi-tenant environment.
+
+#### Architecture Diagram
+
+![ARC Architecture Diagram](img/0-arc-architecture.drawio.svg "ARC Architecture")
+
+The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
+`etcd` is used as storage solution.
+`Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and `Endpoints`.
+An `Order` contains the information what artifacts should be processed.
+An `Endpoint` contains the information about a source or destination for artifacts.
+The `Order Controller` creates `Fragment` resources which are single artifacts from an `Order`.
 
 #### Pros
 
-- Free from Kubernetes boundaries
-  - Storage
-  - AuthN & AuthZ
-  - Scaling issues
-
+- Using dedicated `etcd` does not clutter the infra etcd
+- Storage can be changed later on if necessary
+- Keep the declarative style of Kubernetes while having complete freedom on the API implementation
+- Argo Workflows allows us to focus on the domain of the product without reinventing the wheel
+- Qotas and Fairness easy without writing code via Kueue
+  
 #### Cons
 
-- AuthN & AuthZ must be implemented
-- Own Database must be used
-
-### Solution C.A
-
-- Uses a classical CRUD based approach to store data
-
-### Solution C.B
-
-- Uses Event Sourcing to give full auditability of every change at any given time in the system
+- Building addon apiservers directly on the raw api-machinery libraries requires non-trivial code that must be maintained and rebased as the raw libraries change.
+- Steep learning curve when starting the project and steeper learning curve when joining the project.
 
 ## Decision Outcome
 
-Chosen Option: Solution A
+Chosen Option: Solution A, because
 
-> //TODO explain in detail why
+the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
+The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
+The project itself can focus on the order process and the handling of endpoints.
