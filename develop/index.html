@@ -464,22 +464,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#system-capabilities" class="md-nav__link">
+  <a href="#system-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        System Capabilities
+        System Architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="System Capabilities">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Components">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#artifact-procurement" class="md-nav__link">
+  <a href="#arc-api-server" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Artifact Procurement
+        ARC API Server
       
     </span>
   </a>
@@ -487,32 +509,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#endpoint-management" class="md-nav__link">
+  <a href="#order-controller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Endpoint Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-and-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security and Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#transport-and-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transport and Optimization
+        Order Controller
       
     </span>
   </a>
@@ -1277,22 +1277,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#system-capabilities" class="md-nav__link">
+  <a href="#system-architecture" class="md-nav__link">
     <span class="md-ellipsis">
       
-        System Capabilities
+        System Architecture
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="System Capabilities">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core Concepts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Components
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Components">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#artifact-procurement" class="md-nav__link">
+  <a href="#arc-api-server" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Artifact Procurement
+        ARC API Server
       
     </span>
   </a>
@@ -1300,32 +1322,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#endpoint-management" class="md-nav__link">
+  <a href="#order-controller" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Endpoint Management
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#security-and-validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Security and Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#transport-and-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Transport and Optimization
+        Order Controller
       
     </span>
   </a>
@@ -1371,38 +1371,231 @@
 
 
 <h1 id="what-is-artifact-conduit-arc">What is Artifact Conduit (ARC)?<a class="headerlink" href="#what-is-artifact-conduit-arc" title="Permanent link">&para;</a></h1>
-<p>Project ARC is an open-source system to bring a variety of artifact types into air-gapped environments.
-It acts as a gateway to get artifacts from one zone to another while scans assure that only artifacts that match certain policies are transported.
-These scans include malware, CVE, license scans including validation of signatures and the attestation of that process.</p>
-<h2 id="system-capabilities">System Capabilities<a class="headerlink" href="#system-capabilities" title="Permanent link">&para;</a></h2>
-<p>ARC provides a comprehensive artifact management platform with the following key capabilities:</p>
-<h3 id="artifact-procurement">Artifact Procurement<a class="headerlink" href="#artifact-procurement" title="Permanent link">&para;</a></h3>
+<p>ARC (Artifact Conduit) is an open-source system that acts as a gateway for procuring various artifact types and transferring them across security zones while ensuring policy compliance through automated scanning and validation. The system addresses the challenge of bringing external artifacts—container images, Helm charts, software packages, and other resources—into restricted environments where direct internet access is prohibited.</p>
+<p><strong>Primary Goals:</strong></p>
 <ul>
-<li><strong>Multiple Source Types</strong>: OCI registries (container images, Helm charts, OCM packages), Helm repositories, S3-compatible storage, Google Cloud Storage, Azure Blob Storage, HTTP(S) endpoints</li>
-<li><strong>Flexible Ordering</strong>: One-shot orders for specific versions, watchers using semver for continuous ordering, complete registry mirroring</li>
+<li><strong>Artifact Procurement</strong>: Pull artifacts from diverse sources including OCI registries, Helm repositories, S3-compatible storage, and HTTP endpoints</li>
+<li><strong>Security Validation</strong>: Perform malware scanning, CVE analysis, license verification, and signature validation before artifact transfer</li>
+<li><strong>Policy Enforcement</strong>: Ensure only artifacts meeting defined security and compliance policies cross security boundaries</li>
+<li><strong>Declarative Management</strong>: Leverage Kubernetes-native declarative configuration for artifact lifecycle management</li>
+<li><strong>Auditability</strong>: Provide attestation and traceability of all artifact processing operations</li>
 </ul>
-<h3 id="endpoint-management">Endpoint Management<a class="headerlink" href="#endpoint-management" title="Permanent link">&para;</a></h3>
+<p><strong>Out of Scope:</strong> ARC does not replace existing registry solutions or artifact repositories. It functions as an orchestration layer that coordinates artifact transfer and validation between existing infrastructure components.</p>
+<h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">&para;</a></h2>
+<p>ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.</p>
+<pre class="mermaid"><code>graph TB
+    subgraph "User Layer"
+        Users["Users/Operators"]
+        arcctl["arcctl CLI&lt;br/&gt;cmd/arcctl/main.go"]
+    end
+
+    subgraph "Kubernetes Control Plane"
+        K8sAPI["Kubernetes API Server&lt;br/&gt;API Aggregation Layer"]
+    end
+
+    subgraph "ARC Control Plane"
+        ARCAPI["ARC API Server&lt;br/&gt;pkg/apiserver/&lt;br/&gt;Extension API Server"]
+        etcdStore["Dedicated etcd&lt;br/&gt;Isolated Storage"]
+        OrderCtrl["Order Controller&lt;br/&gt;pkg/controller/&lt;br/&gt;Reconciliation Logic"]
+    end
+
+    subgraph "API Resources (api/arc.bwi.de/v1alpha1)"
+        Order["Order&lt;br/&gt;High-level request"]
+        Fragment["Fragment&lt;br/&gt;Single artifact op"]
+        Endpoint["Endpoint&lt;br/&gt;Source/Destination"]
+        ATD["ArtifactTypeDefinition&lt;br/&gt;Type rules"]
+    end
+
+    subgraph "Execution Layer"
+        ArgoWorkflows["Argo Workflows&lt;br/&gt;Workflow Execution"]
+        WorkflowTemplates["WorkflowTemplate&lt;br/&gt;Processing Logic"]
+    end
+
+    subgraph "External Systems"
+        OCIReg["OCI Registries"]
+        HelmRepo["Helm Repositories"]
+        S3Storage["S3 Compatible Storage"]
+        Scanners["Security Scanners&lt;br/&gt;Trivy, ClamAV"]
+    end
+
+    Users --&gt;|"CLI commands"| arcctl
+    arcctl --&gt;|"API requests"| K8sAPI
+
+    K8sAPI --&gt;|"forwards arc.bwi.de/*"| ARCAPI
+    ARCAPI --&gt;|"stores/retrieves"| etcdStore
+
+    OrderCtrl --&gt;|"watches"| etcdStore
+    OrderCtrl --&gt;|"creates"| Fragment
+    OrderCtrl --&gt;|"creates"| ArgoWorkflows
+
+    Order --&gt;|"references"| Endpoint
+    Order --&gt;|"uses"| ATD
+    Fragment --&gt;|"references"| Endpoint
+
+    ATD --&gt;|"specifies"| WorkflowTemplates
+    ArgoWorkflows --&gt;|"instantiates"| WorkflowTemplates
+
+    ArgoWorkflows --&gt;|"pulls from"| OCIReg
+    ArgoWorkflows --&gt;|"pulls from"| HelmRepo
+    ArgoWorkflows --&gt;|"pulls from"| S3Storage
+    ArgoWorkflows --&gt;|"scans with"| Scanners
+    ArgoWorkflows --&gt;|"pushes to"| OCIReg</code></pre>
+<p><strong>Architecture: ARC System Components and Data Flow</strong></p>
+<p>The system follows a layered architecture where users interact through the <code>arcctl</code> CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable Fragments.</p>
+<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
+<p>ARC introduces four primary custom resource types under the <code>arc.bwi.de/v1alpha1</code> API group:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Purpose</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Order</strong></td>
+<td>Declares intent to procure one or more artifacts with shared configuration defaults</td>
+<td>User-facing, high-level</td>
+</tr>
+<tr>
+<td><strong>Fragment</strong></td>
+<td>Represents a single artifact operation decomposed from an Order</td>
+<td>System-generated, execution unit</td>
+</tr>
+<tr>
+<td><strong>Endpoint</strong></td>
+<td>Defines a source or destination location with credentials</td>
+<td>Configuration, reusable</td>
+</tr>
+<tr>
+<td><strong>ArtifactTypeDefinition</strong></td>
+<td>Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm")</td>
+<td>Configuration, system-wide</td>
+</tr>
+</tbody>
+</table>
+<pre class="mermaid"><code>graph LR
+    subgraph "Declarative Layer"
+        Order["Order&lt;br/&gt;(User Input)"]
+        OrderSpec["spec:&lt;br/&gt;- defaults&lt;br/&gt;- artifacts[]"]
+    end
+
+    subgraph "Generated Layer"
+        Fragment1["Fragment-1"]
+        Fragment2["Fragment-2"]
+        FragmentN["Fragment-N"]
+    end
+
+    subgraph "Configuration"
+        SrcEndpoint["Endpoint&lt;br/&gt;(Source)"]
+        DstEndpoint["Endpoint&lt;br/&gt;(Destination)"]
+        ATD["ArtifactTypeDefinition&lt;br/&gt;(e.g., 'oci')"]
+        Secret["Secret&lt;br/&gt;(Credentials)"]
+    end
+
+    subgraph "Execution"
+        WorkflowTemplate["WorkflowTemplate&lt;br/&gt;(Argo)"]
+        Workflow1["Workflow Instance"]
+        Workflow2["Workflow Instance"]
+    end
+
+    Order --&gt;|"contains"| OrderSpec
+    OrderSpec --&gt;|"generates"| Fragment1
+    OrderSpec --&gt;|"generates"| Fragment2
+    OrderSpec --&gt;|"generates"| FragmentN
+
+    Fragment1 --&gt;|"srcRef"| SrcEndpoint
+    Fragment1 --&gt;|"dstRef"| DstEndpoint
+    Fragment1 --&gt;|"type"| ATD
+    Fragment2 --&gt;|"references"| SrcEndpoint
+    Fragment2 --&gt;|"references"| DstEndpoint
+
+    SrcEndpoint --&gt;|"credentialRef"| Secret
+    DstEndpoint --&gt;|"credentialRef"| Secret
+
+    ATD --&gt;|"workflowTemplateRef"| WorkflowTemplate
+    Fragment1 -.-&gt;|"triggers"| Workflow1
+    Fragment2 -.-&gt;|"triggers"| Workflow2
+    WorkflowTemplate -.-&gt;|"instantiates"| Workflow1
+    WorkflowTemplate -.-&gt;|"instantiates"| Workflow2</code></pre>
+<h2 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h2>
+<h3 id="arc-api-server">ARC API Server<a class="headerlink" href="#arc-api-server" title="Permanent link">&para;</a></h3>
+<p>The ARC API Server is a Kubernetes Extension API Server implemented using the <code>k8s.io/apiserver</code> library. Key characteristics:</p>
 <ul>
-<li><strong>Ownership Tracking</strong>: Define responsible contacts for endpoints and configurations</li>
-<li><strong>Shared Endpoints</strong>: Global endpoint availability across the ARC instance</li>
-<li><strong>Lifecycle Management</strong>: Endpoint expiry based on contract terms</li>
-<li><strong>Policy Enforcement</strong>: Blocklist/allowlist policies for administrators</li>
+<li><strong>Implementation Path</strong>: <code>pkg/apiserver/</code></li>
+<li><strong>Storage Backend</strong>: Dedicated etcd instance (isolated from Kubernetes control plane etcd)</li>
+<li><strong>Registry Pattern</strong>: Uses <code>pkg/registry/</code> for custom storage strategies per resource type</li>
+<li><strong>API Group</strong>: <code>arc.bwi.de</code> with version <code>v1alpha1</code></li>
+<li><strong>Integration</strong>: Registered with Kubernetes API Aggregation Layer to handle requests to <code>arc.bwi.de/*</code> paths</li>
 </ul>
-<h3 id="security-and-validation">Security and Validation<a class="headerlink" href="#security-and-validation" title="Permanent link">&para;</a></h3>
+<p>The dedicated etcd approach provides:</p>
 <ul>
-<li><strong>Signature Validation</strong>: Verify artifact signatures before transport</li>
-<li><strong>Malware Scanning</strong>: Plugin system supporting Trivy, Sysdig, ClamAV</li>
-<li><strong>CVE Scanning</strong>: Security vulnerability detection</li>
-<li><strong>License Scanning</strong>: License compliance verification</li>
-<li><strong>Attestation</strong>: Sign and attest to the scanning process</li>
+<li>Isolation from the hosting cluster's control plane</li>
+<li>Flexibility to change storage backends if needed</li>
+<li>Protection against resource volume impacting cluster stability</li>
 </ul>
-<h3 id="transport-and-optimization">Transport and Optimization<a class="headerlink" href="#transport-and-optimization" title="Permanent link">&para;</a></h3>
+<h3 id="order-controller">Order Controller<a class="headerlink" href="#order-controller" title="Permanent link">&para;</a></h3>
+<p>The Order Controller implements the reconciliation loop for Order resources:</p>
 <ul>
-<li><strong>Multi-Destination</strong>: Deliver artifacts to one or more destinations after validation</li>
-<li><strong>Dry-Run Mode</strong>: Test orders without actual delivery</li>
-<li><strong>Deduplication</strong>: Avoid redundant transfers and scans unless necessary (e.g., CVE database updates)</li>
-<li><strong>TTL Management</strong>: Automatic retirement of orders and resources</li>
+<li><strong>Implementation Path</strong>: <code>pkg/controller/</code></li>
+<li><strong>Framework</strong>: Uses <code>sigs.k8s.io/controller-runtime</code> (version 0.22.4)</li>
+<li>
+<p><strong>Reconciliation Logic</strong>:</p>
+<ol>
+<li>Watch for Order create/update/delete events</li>
+<li>Validate endpoint references exist</li>
+<li>Apply defaults from Order.spec.defaults</li>
+<li>Generate Fragment resources (one per artifact entry)</li>
+<li>Lookup ArtifactTypeDefinition for each fragment's type</li>
+<li>Create Argo Workflow instances with appropriate WorkflowTemplate references</li>
+<li>Update Order status based on Fragment and Workflow statuses</li>
+<li>Handle finalizers for cleanup operations</li>
+</ol>
+</li>
 </ul>
+<pre class="mermaid"><code>sequenceDiagram
+    participant User
+    participant arcctl
+    participant K8sAPI as "Kubernetes API"
+    participant ARCAPI as "ARC API Server&lt;br/&gt;pkg/apiserver/"
+    participant etcd as "Dedicated etcd"
+    participant OrderCtrl as "Order Controller&lt;br/&gt;pkg/controller/"
+    participant ArgoCtrl as "Argo Controller"
+    participant Workflow as "Workflow Pod"
+    participant Registry as "External Registry"
+
+    User-&gt;&gt;arcctl: "arcctl oci pull alpine:3.18"
+    arcctl-&gt;&gt;K8sAPI: "Create Order CR"
+    K8sAPI-&gt;&gt;ARCAPI: "Forward to arc.bwi.de"
+    ARCAPI-&gt;&gt;etcd: "Store Order"
+
+    etcd--&gt;&gt;OrderCtrl: "Watch notification"
+    OrderCtrl-&gt;&gt;OrderCtrl: "Reconcile()"
+    OrderCtrl-&gt;&gt;ARCAPI: "Create Fragment CRs"
+    ARCAPI-&gt;&gt;etcd: "Store Fragments"
+
+    OrderCtrl-&gt;&gt;ARCAPI: "Get ArtifactTypeDefinition"
+    ARCAPI--&gt;&gt;OrderCtrl: "ATD with workflowTemplateRef"
+
+    OrderCtrl-&gt;&gt;K8sAPI: "Create Workflow CR"
+    K8sAPI--&gt;&gt;ArgoCtrl: "Workflow created"
+
+    ArgoCtrl-&gt;&gt;Workflow: "Start workflow pods"
+    Workflow-&gt;&gt;ARCAPI: "Read Endpoint configs"
+    ARCAPI--&gt;&gt;Workflow: "Endpoint details + secrets"
+
+    Workflow-&gt;&gt;Registry: "Pull artifact"
+    Registry--&gt;&gt;Workflow: "Artifact data"
+
+    Workflow-&gt;&gt;Workflow: "Security scan"
+    Workflow-&gt;&gt;Registry: "Push to destination"
+
+    Workflow--&gt;&gt;ArgoCtrl: "Workflow complete"
+    ArgoCtrl-&gt;&gt;K8sAPI: "Update Workflow status"
+
+    OrderCtrl-&gt;&gt;ARCAPI: "Update Order status"
+    ARCAPI-&gt;&gt;etcd: "Store status update"</code></pre>
 
 
 
