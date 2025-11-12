@@ -5,6 +5,9 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
