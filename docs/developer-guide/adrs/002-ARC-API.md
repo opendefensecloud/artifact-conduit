@@ -1,3 +1,8 @@
+---
+status: in discussion
+date: 2025-11-12
+---
+
 # Define an Optimal API for the Project Beginning
 
 ## Context and Problem Statement

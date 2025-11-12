@@ -1,3 +1,8 @@
+---
+status: accepted
+date: 2025-11-11
+---
+
 # Evaluate Future ARC Architecture Based on Predecessors
 
 ## Context and Problem Statement
