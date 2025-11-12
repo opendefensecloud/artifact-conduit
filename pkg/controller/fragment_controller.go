@@ -33,8 +33,8 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	log := ctrl.LoggerFrom(ctx)
 
 	// Fetch the Fragment object
-	frg := &arcv1alpha1.Fragment{}
-	if err := r.Get(ctx, req.NamespacedName, frg); err != nil {
+	frag := &arcv1alpha1.Fragment{}
+	if err := r.Get(ctx, req.NamespacedName, frag); err != nil {
 		if apierrors.IsNotFound(err) {
 			// Object not found, return.
 			return ctrl.Result{}, nil
@@ -43,16 +43,16 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Handle deletion: cleanup fragments, then remove finalizer
-	if !frg.DeletionTimestamp.IsZero() {
+	if !frag.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Fragment is being deleted")
 		// TODO: remove workflow and secret if exists
 		// Workflow and secret was cleaned up, remove finalizer
-		if slices.Contains(frg.Finalizers, fragmentFinalizer) {
+		if slices.Contains(frag.Finalizers, fragmentFinalizer) {
 			log.V(1).Info("Removing finalizer from Fragment")
-			frg.Finalizers = slices.DeleteFunc(frg.Finalizers, func(f string) bool {
-				return f == finalizer
+			frag.Finalizers = slices.DeleteFunc(frag.Finalizers, func(f string) bool {
+				return f == fragmentFinalizer
 			})
-			if err := r.Update(ctx, frg); err != nil {
+			if err := r.Update(ctx, frag); err != nil {
 				log.Error(err, "Failed to remove finalizer from Fragment")
 				return ctrl.Result{}, err
 			}
@@ -61,11 +61,11 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	// Add finalizer if not present and not deleting
-	if frg.DeletionTimestamp.IsZero() {
-		if !slices.Contains(frg.Finalizers, fragmentFinalizer) {
+	if frag.DeletionTimestamp.IsZero() {
+		if !slices.Contains(frag.Finalizers, fragmentFinalizer) {
 			log.V(1).Info("Adding finalizer to Fragment")
-			frg.Finalizers = append(frg.Finalizers, fragmentFinalizer)
-			if err := r.Update(ctx, frg); err != nil {
+			frag.Finalizers = append(frag.Finalizers, fragmentFinalizer)
+			if err := r.Update(ctx, frag); err != nil {
 				log.Error(err, "Failed to add finalizer to Fragment")
 				return ctrl.Result{}, err
 			}
