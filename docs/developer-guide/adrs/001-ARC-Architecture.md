@@ -13,6 +13,7 @@ This ADR is about finding the right architecture for the ARC suite of services b
 - `Workflow`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflow>
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
 - `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderFragment` Resources, creates `Workflow` resources for necessary workload
+- `ArtifactTypeDefinition`: Specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 ## Considered Options
 
@@ -83,14 +84,65 @@ This option is described in detail in the following document.
 
 #### Architecture Diagram
 
+**Overview Diagram**
+
 ![ARC Architecture Diagram](img/0-arc-architecture.drawio.svg "ARC Architecture")
+
+**API Concept Diagram**
+
+```mermaid
+---
+config:
+  layout: elk
+---
+flowchart LR
+ subgraph subGraph0["Declarative Layer"]
+        Order["Order (User Input)"]
+        Spec["spec:<br>- defaults<br>- artifacts[]"]
+  end
+ subgraph subGraph1["Generated Layer"]
+        Fragment1["Fragment-1"]
+        Fragment2["Fragment-2"]
+        FragmentN["Fragment-N"]
+  end
+ subgraph Configuration["Configuration"]
+        ArtifactTypeDef@{ label: "ArtifactTypeDefinition (e.g., 'oci')" }
+        EndpointSrc["Endpoint (Source)"]
+        EndpointDst["Endpoint (Destination)"]
+        Secret["Secret (Credentials)"]
+  end
+ subgraph Execution["Execution"]
+        WorkflowTemplate["WorkflowTemplate (Argo)"]
+        WorkflowInstance1["Workflow Instance"]
+        WorkflowInstance2["Workflow Instance"]
+  end
+    Order -- contains --> Spec
+    Spec -- generates --> Fragment1 & Fragment2 & FragmentN
+    Fragment1 -- type --> ArtifactTypeDef
+    Fragment2 -- type --> ArtifactTypeDef
+    Fragment1 -- srcRef --> EndpointSrc
+    Fragment2 -- srcRef --> EndpointSrc
+    Fragment1 -- dstRef --> EndpointDst
+    Fragment2 -- dstRef --> EndpointDst
+    Fragment1 -- references --> EndpointSrc & EndpointDst
+    Fragment2 -- references --> EndpointSrc & EndpointDst
+    EndpointSrc -- credentialRef --> Secret
+    EndpointDst -- credentialRef --> Secret
+    ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
+    Fragment1 -- triggers --> WorkflowTemplate
+    Fragment2 -- triggers --> WorkflowTemplate
+    WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
+    ArtifactTypeDef@{ shape: rect}
+
+```
 
 The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
 `etcd` is used as storage solution.
 `Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and `Endpoints`.
 An `Order` contains the information what artifacts should be processed.
 An `Endpoint` contains the information about a source or destination for artifacts.
-The `Order Controller` creates `Fragment` resources which are single artifacts from an `Order`.
+The `Order Controller` creates `Fragment` resources which are single artifacts decomposed from an `Order`.
+An `ArtifactTypeDefinition` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 #### Pros
 
@@ -107,8 +159,8 @@ The `Order Controller` creates `Fragment` resources which are single artifacts f
 
 ## Decision Outcome
 
-Chosen Option: Solution A, because
+Chosen Option: Solution A.
 
-the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
+Because the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
 The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
 The project itself can focus on the order process and the handling of endpoints.
