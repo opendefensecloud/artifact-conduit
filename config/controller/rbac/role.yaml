@@ -20,14 +20,28 @@ rules:
 - apiGroups:
   - arc.bwi.de
   resources:
+  - fragments/finalizers
   - orders/finalizers
   verbs:
   - update
 - apiGroups:
   - arc.bwi.de
   resources:
+  - fragments/status
   - orders/status
   verbs:
   - get
   - patch
   - update
+- apiGroups:
+  - argoproj.io
+  resources:
+  - workflows
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
