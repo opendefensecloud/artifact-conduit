@@ -17,15 +17,15 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: deep purple
+      primary: teal
+      accent: teal
       toggle:
         icon: material/toggle-switch
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: deep purple
+      primary: teal
+      accent: teal
       toggle:
         icon: material/toggle-switch-off
         name: Switch to system preference
@@ -37,11 +37,11 @@ theme:
     - content.action.view
     - content.code.annotate
     - content.code.copy
-    # - content.code.select
+    - content.code.select
     # - content.footnote.tooltips
     # - content.tabs.link
     - content.tooltips
-    # - header.autohide
+    - header.autohide
     # - navigation.expand
     # - navigation.footer
     - navigation.indexes
@@ -90,20 +90,20 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - User Guide:
-    - user-guide/core-concepts.md
-    - Custom Resources:
-      - user-guide/custom-resources/order.md
+      - user-guide/core-concepts.md
+      - Custom Resources:
+          - user-guide/custom-resources/order.md
   - Operator Manual:
-    - operator-manual/installation.md
-    - operator-manual/releases.md
-    - operator-manual/upgrading.md
-    - operator-manual/new-features.md
-    - operator-manual/security.md
+      - operator-manual/installation.md
+      - operator-manual/releases.md
+      - operator-manual/upgrading.md
+      - operator-manual/new-features.md
+      - operator-manual/security.md
   - Developer Guide:
-    - developer-guide/contributing.md
-    - developer-guide/dod.md
-    - developer-guide/working-with-docs.md
-    - ADRs:
-      - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md
-      - developer-guide/adrs/001-ARC-Architecture.md
-      - developer-guide/adrs/002-ARC-API.md
+      - developer-guide/contributing.md
+      - developer-guide/dod.md
+      - developer-guide/working-with-docs.md
+      - ADRs:
+          - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md
+          - developer-guide/adrs/001-ARC-Architecture.md
+          - developer-guide/adrs/002-ARC-API.md
