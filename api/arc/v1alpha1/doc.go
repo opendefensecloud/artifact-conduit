@@ -3,7 +3,7 @@
 
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen=package
-// +k8s:conversion-gen=github.com/opendefensecloud/artifact-conduit/api/arc
+// +k8s:conversion-gen=go.opendefense.cloud/arc/api/arc
 // +k8s:defaulter-gen=TypeMeta
 // +k8s:prerelease-lifecycle-gen=true
 // +groupName=arc.bwi.de

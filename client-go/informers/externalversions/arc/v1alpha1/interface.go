@@ -6,7 +6,7 @@
 package v1alpha1
 
 import (
-	internalinterfaces "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions/internalinterfaces"
+	internalinterfaces "go.opendefense.cloud/arc/client-go/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to all the informers in this group version.

@@ -8,7 +8,7 @@ package externalversions
 import (
 	fmt "fmt"
 
-	v1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	v1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

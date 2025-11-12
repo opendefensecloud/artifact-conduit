@@ -4,8 +4,8 @@
 package order
 
 import (
-	"github.com/opendefensecloud/artifact-conduit/api/arc"
-	"github.com/opendefensecloud/artifact-conduit/pkg/registry"
+	"go.opendefense.cloud/arc/api/arc"
+	"go.opendefense.cloud/arc/pkg/registry"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"

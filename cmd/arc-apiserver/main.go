@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/opendefensecloud/artifact-conduit/pkg/apiserver"
+	"go.opendefense.cloud/arc/pkg/apiserver"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	"k8s.io/component-base/cli"
 )

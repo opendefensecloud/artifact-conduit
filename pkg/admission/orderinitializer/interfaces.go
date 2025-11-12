@@ -4,7 +4,7 @@
 package orderinitializer
 
 import (
-	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
+	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 	"k8s.io/apiserver/pkg/admission"
 )
 

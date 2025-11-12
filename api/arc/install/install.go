@@ -4,8 +4,8 @@
 package install
 
 import (
-	"github.com/opendefensecloud/artifact-conduit/api/arc"
-	"github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/api/arc"
+	"go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )

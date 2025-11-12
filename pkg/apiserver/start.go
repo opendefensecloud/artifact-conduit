@@ -11,11 +11,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
-	clientset "github.com/opendefensecloud/artifact-conduit/client-go/clientset/versioned"
-	informers "github.com/opendefensecloud/artifact-conduit/client-go/informers/externalversions"
-	sampleopenapi "github.com/opendefensecloud/artifact-conduit/client-go/openapi"
-	"github.com/opendefensecloud/artifact-conduit/pkg/admission/orderinitializer"
+	"go.opendefense.cloud/arc/api/arc/v1alpha1"
+	clientset "go.opendefense.cloud/arc/client-go/clientset/versioned"
+	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
+	sampleopenapi "go.opendefense.cloud/arc/client-go/openapi"
+	"go.opendefense.cloud/arc/pkg/admission/orderinitializer"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"

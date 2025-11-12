@@ -4,7 +4,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-THIS_PKG="github.com/opendefensecloud/artifact-conduit"
+THIS_PKG="go.opendefense.cloud/arc"
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_DIR="$SCRIPT_DIR/.."

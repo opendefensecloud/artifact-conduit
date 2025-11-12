@@ -1,4 +1,4 @@
-module github.com/opendefensecloud/artifact-conduit
+module go.opendefense.cloud/arc
 
 go 1.25.2
 

@@ -6,7 +6,7 @@
 package v1alpha1
 
 import (
-	arcv1alpha1 "github.com/opendefensecloud/artifact-conduit/api/arc/v1alpha1"
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"

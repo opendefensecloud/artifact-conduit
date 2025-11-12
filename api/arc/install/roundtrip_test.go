@@ -6,7 +6,7 @@ package install
 import (
 	"testing"
 
-	"github.com/opendefensecloud/artifact-conduit/api/arc/fuzzer"
+	"go.opendefense.cloud/arc/api/arc/fuzzer"
 	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
 )
 
