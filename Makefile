@@ -76,9 +76,8 @@ manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition o
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
 
 .PHONY: docs
-docs:
+docs: ## Generate and serve the documentation site.
 	mkdocs serve
-
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
