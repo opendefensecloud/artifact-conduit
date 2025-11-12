@@ -36,3 +36,15 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	}
 	return &registry.REST{Store: store}, nil
 }
+
+func NewStatusREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*registry.REST, error) {
+	rest, err := NewREST(scheme, optsGetter)
+	if err != nil {
+		return nil, err
+	}
+
+	strategy := NewStatusStrategy(scheme)
+	rest.UpdateStrategy = strategy
+	rest.ResetFieldsStrategy = strategy
+	return rest, nil
+}

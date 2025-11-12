@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
@@ -57,6 +58,7 @@ var _ = BeforeSuite(func() {
 	By("bootstrapping test environment")
 
 	Expect(arcv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(wfv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	testEnv, err = envtest.NewEnvironment()
 	Expect(err).NotTo(HaveOccurred())
