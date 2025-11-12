@@ -10,6 +10,7 @@
     pkgs.govulncheck
     pkgs.oras
     pkgs.shellcheck
+    pkgs.python313Packages.mkdocs-material
   ];
 
   # aliases for common git commands
