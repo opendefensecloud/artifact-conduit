@@ -21,7 +21,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const finalizer = "arc.bwi.de/order-finalizer"
+const orderFinalizer = "arc.bwi.de/order-finalizer"
 
 // OrderReconciler reconciles a Order object
 type OrderReconciler struct {
@@ -71,10 +71,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{Requeue: true}, nil
 		}
 		// All fragments are gone, remove finalizer
-		if slices.Contains(order.Finalizers, finalizer) {
+		if slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("No fragments, removing finalizer from Order")
 			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
-				return f == finalizer
+				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
 				log.Error(err, "Failed to remove finalizer from Order")
@@ -86,9 +86,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// Add finalizer if not present and not deleting
 	if order.DeletionTimestamp.IsZero() {
-		if !slices.Contains(order.Finalizers, finalizer) {
+		if !slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("Adding finalizer to Order")
-			order.Finalizers = append(order.Finalizers, finalizer)
+			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
 				log.Error(err, "Failed to add finalizer to Order")
 				return ctrl.Result{}, err
