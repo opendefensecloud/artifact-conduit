@@ -14,6 +14,7 @@ LOCALBIN ?= $(BUILD_PATH)/bin
 GO ?= go
 SHELLCHECK ?= shellcheck
 MKDOCS ?= mkdocs
+DOCKER ?= docker
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
@@ -31,6 +32,10 @@ ENVTEST_K8S_VERSION ?= 1.34.1
 export GOPRIVATE=*.opencode.de
 export GNOSUMDB=*.opencode.de
 export GNOPROXY=*.opencode.de
+
+APISERVER_IMG ?= apiserver:latest
+MANAGER_IMG ?= manager:latest
+ARCCTL_IMG ?= arcctl:latest
 
 ##@ General
 
@@ -74,6 +79,21 @@ test: setup-envtest ginkgo ## Run all tests
 .PHONY: manifests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
+
+.PHONY: docker-build
+docker-build: docker-build-apiserver docker-build-manager docker-build-arcctl
+
+.PHONY: docker-build-apiserver
+docker-build-apiserver:
+	docker build --target apiserver -t ${APISERVER_IMG} .
+
+.PHONY: docker-build-manager
+docker-build-manager:
+	docker build --target manager -t ${MANAGER_IMG} .
+
+.PHONY: docker-build-arcctl
+docker-build-arcctl:
+	docker build --target arcctl -t ${ARCCTL_IMG} .
 
 .PHONY: docs
 docs:
