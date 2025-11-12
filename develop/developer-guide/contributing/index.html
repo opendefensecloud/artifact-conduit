@@ -25,7 +25,7 @@
     
     
       
-        <title>Contributors Guide - Artifact Conduit</title>
+        <title>Artifact Conduit (ARC) Developer Guide - Artifact Conduit</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#contributors-guide" class="md-skip">
+        <a href="#artifact-conduit-arc-developer-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -127,7 +127,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Contributors Guide
+              Artifact Conduit (ARC) Developer Guide
             
           </span>
         </div>
@@ -150,7 +150,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
     
       <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
@@ -160,7 +160,7 @@
     
     
     
-    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="teal"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
     
       <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
@@ -931,7 +931,7 @@
   <span class="md-ellipsis">
     
   
-    Contributors Guide
+    Artifact Conduit (ARC) Developer Guide
   
 
     
@@ -949,7 +949,7 @@
   <span class="md-ellipsis">
     
   
-    Contributors Guide
+    Artifact Conduit (ARC) Developer Guide
   
 
     
@@ -975,10 +975,126 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
+  <a href="#development-workflow-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Contributing
+        Development Workflow Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tool-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codebase-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codebase Organization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-generation-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Generation Process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration-ci-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous Integration (CI) Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-custom-resource" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a New Custom Resource
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modifying-existing-api-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifying Existing API Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-quality-linting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Quality &amp; Linting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
       
     </span>
   </a>
@@ -1234,10 +1350,126 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#contributing" class="md-nav__link">
+  <a href="#development-workflow-overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Contributing
+        Development Workflow Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Build System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tool-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#codebase-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Codebase Organization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-generation-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Generation Process
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-integration-ci-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous Integration (CI) Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-custom-resource" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding a New Custom Resource
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modifying-existing-api-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modifying Existing API Types
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#code-quality-linting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Quality &amp; Linting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
       
     </span>
   </a>
@@ -1277,10 +1509,232 @@
   
 
 
-<h1 id="contributors-guide">Contributors Guide<a class="headerlink" href="#contributors-guide" title="Permanent link">&para;</a></h1>
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">&para;</a></h2>
-<p>The ARC project uses OpenCode Gitlab to manage reviews of pull requests.
-<a href="https://devenv.sh">https://devenv.sh</a> is used to provide reproducible developer environments.</p>
+<h1 id="artifact-conduit-arc-developer-guide">Artifact Conduit (ARC) Developer Guide<a class="headerlink" href="#artifact-conduit-arc-developer-guide" title="Permanent link">&para;</a></h1>
+<p>This guide provides technical information for developers contributing to the Artifact Conduit (ARC) project. It covers the development workflow, build system, code organization, and common development tasks. For detailed information about specific topics, see the referenced sections.</p>
+<hr />
+<h2 id="development-workflow-overview">Development Workflow Overview<a class="headerlink" href="#development-workflow-overview" title="Permanent link">&para;</a></h2>
+<p>ARC follows a <strong>code-generation-heavy pattern</strong> typical in Kubernetes ecosystem projects. Changes to API types trigger code regeneration, which produces client libraries, OpenAPI specifications, and CRD manifests.</p>
+<hr />
+<h2 id="build-system">Build System<a class="headerlink" href="#build-system" title="Permanent link">&para;</a></h2>
+<p>The ARC build system uses a Makefile to orchestrate various tools, designed for reproducibility. All required tools are provided in the <code>bin/</code> directory.</p>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Purpose</th>
+<th>Key Tools Used</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make codegen</code></td>
+<td>Generate client-go libraries &amp; OpenAPI</td>
+<td><code>openapi-gen</code>, <code>kube_codegen.sh</code></td>
+</tr>
+<tr>
+<td><code>make manifests</code></td>
+<td>Generate CRDs and RBAC manifests</td>
+<td><code>controller-gen</code></td>
+</tr>
+<tr>
+<td><code>make fmt</code></td>
+<td>Format code, add license headers</td>
+<td><code>addlicense</code>, <code>go fmt</code></td>
+</tr>
+<tr>
+<td><code>make lint</code></td>
+<td>Run linters and checks</td>
+<td><code>golangci-lint</code>, <code>shellcheck</code>, <code>addlicense</code></td>
+</tr>
+<tr>
+<td><code>make test</code></td>
+<td>Run all tests with coverage</td>
+<td><code>ginkgo</code>, <code>setup-envtest</code></td>
+</tr>
+<tr>
+<td><code>make clean</code></td>
+<td>Remove generated binaries</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tool-versions">Tool Versions<a class="headerlink" href="#tool-versions" title="Permanent link">&para;</a></h3>
+<p>The system <strong>pins specific tool versions</strong> for reproducibility:</p>
+<ul>
+<li>BDD testing framework: <code>v2.27.2</code></li>
+<li>Go linter: <code>v2.5.0</code></li>
+<li>CRD/RBAC generator: <code>v0.19.0</code></li>
+<li>Kubernetes test API server: <code>release-0.22</code></li>
+<li>K8s for integration tests: <code>1.34.1</code></li>
+</ul>
+<hr />
+<h2 id="codebase-organization">Codebase Organization<a class="headerlink" href="#codebase-organization" title="Permanent link">&para;</a></h2>
+<p>ARC codebase follows standard Kubernetes project conventions:</p>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Purpose</th>
+<th>Generated/Manual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api/arc/v1alpha1/</code></td>
+<td>Custom resource type definitions</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td><code>client-go/</code></td>
+<td>Client libraries for ARC resources</td>
+<td>Generated</td>
+</tr>
+<tr>
+<td><code>pkg/apiserver/</code></td>
+<td>Extension API server implementation</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td><code>pkg/controller/</code></td>
+<td>Controller reconciliation logic</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td><code>pkg/registry/</code></td>
+<td>Storage strategies for custom resources</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td><code>cmd/arcctl/</code></td>
+<td>CLI tool implementation</td>
+<td>Manual</td>
+</tr>
+<tr>
+<td><code>config/</code></td>
+<td>Kubernetes manifests (CRDs, RBAC)</td>
+<td>Generated</td>
+</tr>
+<tr>
+<td><code>hack/</code></td>
+<td>Build and code generation scripts</td>
+<td>Manual</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="code-generation-process">Code Generation Process<a class="headerlink" href="#code-generation-process" title="Permanent link">&para;</a></h2>
+<p>ARC uses the Kubernetes code-generator to produce client libraries and OpenAPI specs.</p>
+<ul>
+<li><code>make codegen</code> triggers <code>hack/update-codegen.sh</code></li>
+<li>Generates:</li>
+<li>Client-go libraries in <code>client-go/</code></li>
+<li>OpenAPI specs</li>
+<li>CRD manifests</li>
+</ul>
+<p>See Client Libraries section for usage details.</p>
+<hr />
+<h2 id="testing-strategy">Testing Strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">&para;</a></h2>
+<p>ARC uses a multi-layered testing strategy:</p>
+<ul>
+<li><strong>Unit Tests</strong></li>
+<li><strong>Integration Tests</strong> (uses <code>ENVTEST_K8S_VERSION=1.34.1</code>)</li>
+<li><strong>Controller Tests</strong> via envtest</li>
+</ul>
+<p>Run all tests and generate coverage:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span>
+</code></pre></div>
+<p>Setup environment for integration tests:</p>
+<div class="highlight"><pre><span></span><code>setup-envtest
+<span class="nb">export</span><span class="w"> </span><span class="nv">ENVTEST_K8S_VERSION</span><span class="o">=</span><span class="m">1</span>.34.1
+</code></pre></div>
+<p>Test coverage is tracked using Coveralls.</p>
+<hr />
+<h2 id="continuous-integration-ci-pipeline">Continuous Integration (CI) Pipeline<a class="headerlink" href="#continuous-integration-ci-pipeline" title="Permanent link">&para;</a></h2>
+<p>Pipeline runs on every push and pull request, enforcing code quality and test coverage.</p>
+<ul>
+<li><strong>Lint Job</strong></li>
+<li><code>addlicense</code></li>
+<li><code>shellcheck</code></li>
+<li><code>golangci-lint</code></li>
+<li><strong>Test Job</strong> (runs after Lint)</li>
+<li><code>make test</code></li>
+</ul>
+<p>For customization details, see <code>.github/workflows/golang.yaml</code>.</p>
+<hr />
+<h2 id="adding-a-new-custom-resource">Adding a New Custom Resource<a class="headerlink" href="#adding-a-new-custom-resource" title="Permanent link">&para;</a></h2>
+<p>To introduce a new CRD:</p>
+<ol>
+<li><strong>Create type definition</strong> in <code>api/arc/v1alpha1/</code></li>
+<li><strong>Add OpenAPI model name</strong></li>
+<li><strong>Regenerate code</strong> via <code>make codegen</code></li>
+<li><strong>Implement storage</strong> in <code>pkg/registry/</code></li>
+<li><strong>Add controller logic</strong> in <code>pkg/controller/</code> if reconciliation is needed</li>
+</ol>
+<p>See <code>hack/update-codegen.sh</code> for implementation details.</p>
+<hr />
+<h2 id="modifying-existing-api-types">Modifying Existing API Types<a class="headerlink" href="#modifying-existing-api-types" title="Permanent link">&para;</a></h2>
+<p>Typical steps:</p>
+<ol>
+<li>Edit types in <code>api/arc/v1alpha1/</code></li>
+<li>Run <code>make codegen</code></li>
+<li>Run <code>make manifests</code></li>
+<li>Run <code>make test</code></li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Breaking changes may affect existing clients. Follow semantic versioning and provide migration paths.</p>
+</blockquote>
+<hr />
+<h2 id="code-quality-linting">Code Quality &amp; Linting<a class="headerlink" href="#code-quality-linting" title="Permanent link">&para;</a></h2>
+<p>Lint and license checks before committing:</p>
+<ul>
+<li><code>addlicense</code> for Apache 2.0 headers</li>
+<li><code>shellcheck</code> for scripts in <code>hack/</code></li>
+<li><code>golangci-lint</code> for Go linting</li>
+</ul>
+<p>Fix issues with:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>fmt
+make<span class="w"> </span>lint
+</code></pre></div>
+<hr />
+<h2 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Purpose</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BUILD_PATH</code></td>
+<td>Build output directory</td>
+<td><code>$(pwd)</code></td>
+</tr>
+<tr>
+<td><code>LOCALBIN</code></td>
+<td>Tool install directory</td>
+<td><code>$(BUILD_PATH)/bin</code></td>
+</tr>
+<tr>
+<td><code>GOPRIVATE</code></td>
+<td>Private Go modules</td>
+<td><code>*.opencode.de</code></td>
+</tr>
+<tr>
+<td><code>GNOSUMDB</code></td>
+<td>Disable checksum DB</td>
+<td><code>*.opencode.de</code></td>
+</tr>
+<tr>
+<td><code>KUBEBUILDER_ASSETS</code></td>
+<td>envtest binaries</td>
+<td>Set by <code>setup-envtest</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p>For deeper information on development topics, consult the corresponding sections and scripts.</p>
 
 
 
@@ -1335,7 +1789,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
