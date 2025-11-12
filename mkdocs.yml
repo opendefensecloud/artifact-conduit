@@ -101,6 +101,7 @@ nav:
       - operator-manual/upgrading.md
       - operator-manual/new-features.md
       - operator-manual/security.md
+      - operator-manual/workflow-config.md
   - Developer Guide:
       - developer-guide/contributing.md
       - developer-guide/dod.md
