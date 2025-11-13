@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package orderinitializer

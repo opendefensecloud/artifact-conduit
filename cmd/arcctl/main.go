@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package main
@@ -23,7 +23,7 @@ var (
 var rootCmd = &cobra.Command{
 	Use:               "arcctl [command] [flags]",
 	Short:             "CLI of ARC",
-	Long:              `arcctl is the command line interface for Artefact Conduit (ARC).`,
+	Long:              `arcctl is the command line interface for Artifact Conduit (ARC).`,
 	DisableAutoGenTag: true,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
