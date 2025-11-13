@@ -15,7 +15,7 @@ spec:
             template: oci-push
     - name: oci-pull
       container:
-        image: registry.opencode.de/bwi/ace/artifact-conduit/arcctl:latest
+        image: ghcr.io/opendefensecloud/arcctl:latest
         command: [arcctl]
         args:
           [
@@ -43,7 +43,7 @@ spec:
     #         mountPath: /tmp/artifact
     - name: oci-push
       container:
-        image: registry.opencode.de/bwi/ace/artifact-conduit/arcctl:latest
+        image: ghcr.io/opendefensecloud/arcctl:latest
         command: [arcctl]
         args:
           [
@@ -65,7 +65,6 @@ kind: Workflow
 metadata:
   name: oci-workflow-alpine-123123
 spec:
-  entrypoint: oci-workflow
   volumeClaimTemplates:
     - metadata:
         name: workdir
@@ -80,10 +79,21 @@ spec:
         secretName: oci-workflow-config
     - name: oci-workflow-tmp
       emptyDir: {}
-  templates:
-    - name: oci-workflow
-      steps:
-        - - name: oci-workflow
-            templateRef:
-              name: oci-workflow-template
-              template: oci-workflow
+  entrypoint: oci-workflow
+  workflowTemplateRef:
+    name: oci-workflow-template
+    clusterScope: true
+  arguments:
+    parameters:
+      - name: srcType
+        value: "oci"
+      - name: srcRemoteURL
+        value: "https://registry-1.docker.io"
+      - name: spec/image
+        value: "library/alpine:3.12"
+      - name: spec/override
+        value: "opendefensecloud/alpine:3.18-dev"
+      - name: destType
+        value: "oci"
+      - name: destRemoteURL
+        value: "ghcr.io"
