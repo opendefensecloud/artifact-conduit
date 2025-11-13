@@ -19,6 +19,7 @@ jobs:
         run: |
           pip install mkdocs-material
           pip install mkdocs-glightbox
+          pip install mkdocs-mermaid-zoom
           pip install pillow cairosvg mike
       - name: Setup Docs Deploy
         run: |
@@ -27,4 +28,5 @@ jobs:
       - name: Build Docs Website
         run: |
           yq -i '.plugins += "glightbox"' mkdocs.yml
+          yq -i '.plugins += "mermaid-zoom"' mkdocs.yml
           mike deploy --push --update-aliases ${{ github.event.release.tag_name }} latest
