@@ -1,3 +1,6 @@
+// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -132,7 +135,7 @@ func LoadFromViper() (*ArcctlConfig, error) {
 
 func (c *ArcctlConfig) Validate(t ArtifactType) error {
 	if c.Type != t {
-		return fmt.Errorf("Config is of type %s and expected type is %s.", c.Type, t)
+		return fmt.Errorf("Config is of type %s and expected type is %s", c.Type, t)
 	}
 	return nil
 }
