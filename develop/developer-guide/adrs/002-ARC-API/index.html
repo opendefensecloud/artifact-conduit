@@ -20,7 +20,7 @@
     
     
       
-        <title>002 ARC API - Artifact Conduit</title>
+        <title>Define an Optimal API for the Project Beginning - Artifact Conduit</title>
       
     
     
@@ -81,7 +81,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#context-and-problem-statement" class="md-skip">
+        <a href="#define-an-optimal-api-for-the-project-beginning" class="md-skip">
           Skip to content
         </a>
       
@@ -132,7 +132,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              002 ARC API
+              Define an Optimal API for the Project Beginning
             
           </span>
         </div>
@@ -1071,12 +1071,19 @@
   <span class="md-ellipsis">
     
   
-    000 Use Markdown Architectural Decision Records
+    Find a Common Way to Document Architectural Design Decsisions
   
 
     
   </span>
   
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
   
 
       </a>
@@ -1099,12 +1106,19 @@
   <span class="md-ellipsis">
     
   
-    001 ARC Architecture
+    Evaluate Future ARC Architecture Based on Predecessors
   
 
     
   </span>
   
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
   
 
       </a>
@@ -1126,6 +1140,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1134,12 +1150,19 @@
   <span class="md-ellipsis">
     
   
-    002 ARC API
+    Define an Optimal API for the Project Beginning
   
 
     
   </span>
   
+  
+    
+  
+  
+    <span class="md-status md-status--in decission"></span>
+  
+
   
 
           <span class="md-nav__icon md-icon"></span>
@@ -1152,12 +1175,19 @@
   <span class="md-ellipsis">
     
   
-    002 ARC API
+    Define an Optimal API for the Project Beginning
   
 
     
   </span>
   
+  
+    
+  
+  
+    <span class="md-status md-status--in decission"></span>
+  
+
   
 
       </a>
@@ -1167,6 +1197,8 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table of contents">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
@@ -1238,6 +1270,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1300,8 +1334,7 @@
   
 
 
-  <h1>002 ARC API</h1>
-
+<h1 id="define-an-optimal-api-for-the-project-beginning">Define an Optimal API for the Project Beginning<a class="headerlink" href="#define-an-optimal-api-for-the-project-beginning" title="Permanent link">¶</a></h1>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">¶</a></h2>
 <p>This ADR is about finding the right API for ARC.</p>
 <h2 id="proposed-solution">Proposed Solution<a class="headerlink" href="#proposed-solution" title="Permanent link">¶</a></h2>
@@ -1371,11 +1404,11 @@
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">srcTypes</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"> </span><span class="c1"># Endpoint Types!</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"> </span><span class="c1"># Endpoint Types!</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm</span>
 <span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
 <span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
@@ -1386,6 +1419,9 @@
 
 
 
+
+  
+  
 
 
 
