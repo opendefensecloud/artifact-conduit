@@ -24,10 +24,11 @@ jobs:
           pip install mkdocs-material
           pip install mkdocs-glightbox
           pip install pillow cairosvg mike
-          yq -i '.plugins += "glightbox"' mkdocs.yml
       - name: Setup Docs Deploy
         run: |
           git config --global user.name "Docs Deploy"
           git config --global user.email "docs.deploy@opendefense.cloud"
       - name: Build Docs Website
-        run: mike deploy --push develop
+        run: |
+          yq -i '.plugins += "glightbox"' mkdocs.yml
+          mike deploy --push develop
