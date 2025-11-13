@@ -63,7 +63,7 @@ These scans include malware, CVE, license scans including validation of signatur
 
 ## To start developing
 
-> ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/development/contribution.md)
+> ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/developer-guide/contributing.md)
 
 Please see our documentation in the [`/docs`](docs) folder for more details.
 The hosted version of the documentation can be found at <https://arc.opendefense.cloud/develop/>.
