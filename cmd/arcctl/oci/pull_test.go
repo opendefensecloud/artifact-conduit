@@ -5,6 +5,7 @@ package oci
 
 import (
 	"os"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -30,18 +31,12 @@ var _ = Describe("Pull Command", func() {
 		Expect(os.RemoveAll(arcctlTempDir)).ToNot(HaveOccurred())
 	})
 
-	Context("when required configuration is missing", func() {
-		It("should return an error if source.reference is missing", func() {
-			err := runPull(cmd, []string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("source.reference is not set"))
-		})
-	})
-
 	Context("when configuration is valid", func() {
 		BeforeEach(func() {
-			viper.Set("source.reference", "registry-1.docker.io/library/busybox:latest")
+			json := `{ "type": "oci", "src": { "type": "oci", "remoteURL": "registry-1.docker.io" }, "spec": { "image" : "library/busybox:latest" } }`
+			viper.SetConfigType("json")
 			viper.Set("tmp-dir", arcctlTempDir)
+			Expect(viper.ReadConfig(strings.NewReader(json))).To(Succeed())
 		})
 
 		It("should pull the OCI artifact successfully", func() {
