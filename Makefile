@@ -66,6 +66,12 @@ fmt: addlicense ## Add license headers and format code
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -c 'BWI GmbH and Artefact Conduit contributors' -l apache -s=only {} +
 	$(GO) fmt ./...
 
+.PHONY: mod
+mod: ## Do go mod tidy, download, verify
+	@$(GO) mod tidy
+	@$(GO) mod download
+	@$(GO) mod verify
+
 .PHONY: lint
 lint: addlicense golangci-lint ## Run linters such as golangci-lint and addlicence checks
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
