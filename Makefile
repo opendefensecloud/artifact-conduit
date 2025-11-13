@@ -29,9 +29,9 @@ ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_K8S_VERSION ?= 1.34.1
 
-export GOPRIVATE=*.opencode.de
-export GNOSUMDB=*.opencode.de
-export GNOPROXY=*.opencode.de
+export GOPRIVATE=*.go.opendefense.cloud/arc
+export GNOSUMDB=*.go.opendefense.cloud/arc
+export GNOPROXY=*.go.opendefense.cloud/arc
 
 APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest

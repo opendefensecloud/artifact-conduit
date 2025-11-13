@@ -149,17 +149,3 @@ make lint
 ```
 
 ***
-
-## Environment Variables
-
-| Variable             | Purpose                | Default                |
-| -------------------- | ---------------------- | ---------------------- |
-| `BUILD_PATH`         | Build output directory | `$(pwd)`               |
-| `LOCALBIN`           | Tool install directory | `$(BUILD_PATH)/bin`    |
-| `GOPRIVATE`          | Private Go modules     | `*.opencode.de`        |
-| `GNOSUMDB`           | Disable checksum DB    | `*.opencode.de`        |
-| `KUBEBUILDER_ASSETS` | envtest binaries       | Set by `setup-envtest` |
-
-***
-
-For deeper information on development topics, consult the corresponding sections and scripts.
