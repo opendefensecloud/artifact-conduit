@@ -1,0 +1,58 @@
+/* 
+  Styles for mkdocs-mermaid-zoom plugin
+*/
+
+/* 1. Make Mermaid diagrams clickable */
+.mermaid {
+  cursor: zoom-in;
+}
+
+/* 2. Lightbox Overlay */
+.mermaid-lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* High z-index to appear above all content */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* 3. SVG inside the Lightbox */
+.mermaid-lightbox-overlay svg {
+  /* Allow SVG to be larger than the viewport for panning */
+  max-width: none !important;
+  max-height: none !important;
+  /* Sensible initial size */
+  width: 90vw; 
+  height: 90vh;
+  object-fit: contain;
+}
+
+/* 4. Close Button */
+.mermaid-lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1.5rem;
+  width: 3rem;
+  height: 3rem;
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  font-size: 2rem;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mermaid-lightbox-close:hover {
+  background-color: rgba(0, 0, 0, 0.15);
+  transform: rotate(90deg);
+} 
