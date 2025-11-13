@@ -48,7 +48,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/mermaid-zoom.css?v=1763032051">
+      <link rel="stylesheet" href="../../assets/mermaid-zoom.css?v=1763032701">
     
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -2049,7 +2049,7 @@
 <p>The Extension API Server pattern allows ARC to present a Kubernetes-native API surface while maintaining complete control over storage implementation and API behavior.</p>
 <h2 id="system-components">System Components<a class="headerlink" href="#system-components" title="Permanent link">¶</a></h2>
 <h3 id="component-overview">Component Overview<a class="headerlink" href="#component-overview" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="mermaid">graph TB
     subgraph "Control Plane"
         K8sAPI["Kubernetes API Server"]
         APIAgg["API Aggregation Layer"]
@@ -2100,7 +2100,7 @@
 
     Workflow --&gt; Registry
     Workflow --&gt; S3
-    Workflow --&gt; Scanners</code></pre>
+    Workflow --&gt; Scanners</div>
 <h3 id="arc-api-server">ARC API Server<a class="headerlink" href="#arc-api-server" title="Permanent link">¶</a></h3>
 <p>The API Server implements the Kubernetes Extension API Server pattern, registering with the Kubernetes API Aggregation Layer to handle requests for the <code>arc.bwi.de</code> API group.</p>
 <p><strong>Key Characteristics:</strong></p>
@@ -2138,7 +2138,7 @@
 <li>Server-side apply functionality</li>
 </ul>
 <p>The test environment bootstraps the API Server programmatically for integration testing:</p>
-<pre class="mermaid"><code>graph LR
+<div class="mermaid">graph LR
     TestEnv["envtest.Environment"]
     K8sControlPlane["envtest Control Plane"]
     APIServerProc["arc-apiserver Process"]
@@ -2147,7 +2147,7 @@
     TestEnv --&gt; K8sControlPlane
     TestEnv --&gt; APIServerProc
     APIServerProc --&gt; K8sControlPlane
-    K8sControlPlane --&gt; APIService</code></pre>
+    K8sControlPlane --&gt; APIService</div>
 <h3 id="controller-manager">Controller Manager<a class="headerlink" href="#controller-manager" title="Permanent link">¶</a></h3>
 <p>The controller manager binary (<code>arc-controller-manager</code>) hosts the Order controller and other reconciliation loops.</p>
 <p><strong>Binary Location:</strong> <a href="">cmd/arc-controller-manager/main.go:1-196</a></p>
@@ -2192,7 +2192,7 @@
 </ul>
 <h2 id="resource-model">Resource Model<a class="headerlink" href="#resource-model" title="Permanent link">¶</a></h2>
 <h3 id="resource-hierarchy">Resource Hierarchy<a class="headerlink" href="#resource-hierarchy" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="mermaid">graph TB
     User["User/Operator"]
 
     subgraph "Declarative Layer"
@@ -2234,7 +2234,7 @@
 
     Endpoint1 --&gt; EndpointSpec
     EndpointSpec --&gt; Secret
-    ATD --&gt; ATDSpec</code></pre>
+    ATD --&gt; ATDSpec</div>
 <h3 id="resource-definitions">Resource Definitions<a class="headerlink" href="#resource-definitions" title="Permanent link">¶</a></h3>
 <h4 id="order">Order<a class="headerlink" href="#order" title="Permanent link">¶</a></h4>
 <p>High-level declarative resource specifying one or more artifacts to process.</p>
@@ -2270,7 +2270,7 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
 </ul>
 <h2 id="controller-architecture">Controller Architecture<a class="headerlink" href="#controller-architecture" title="Permanent link">¶</a></h2>
 <h3 id="order-reconciliation-flow">Order Reconciliation Flow<a class="headerlink" href="#order-reconciliation-flow" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>sequenceDiagram
+<div class="mermaid">sequenceDiagram
     participant User
     participant K8sAPI as "Kubernetes API"
     participant ARCAPI as "ARC API Server"
@@ -2307,7 +2307,7 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
     K8sAPI--&gt;&gt;OrderReconciler: Status change event
 
     OrderReconciler-&gt;&gt;ARCAPI: Update Order status
-    ARCAPI-&gt;&gt;etcd: Store updated status</code></pre>
+    ARCAPI-&gt;&gt;etcd: Store updated status</div>
 <p>The OrderReconciler implements the controller-runtime <code>Reconciler</code> interface and is registered in the controller manager.</p>
 <p><strong>Reconciliation Logic:</strong></p>
 <ol>
@@ -2359,7 +2359,7 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
 <li>Retry and failure handling</li>
 <li>Status reporting</li>
 </ul>
-<pre class="mermaid"><code>graph TB
+<div class="mermaid">graph TB
     subgraph "ARC Resources"
         Fragment["Fragment"]
         ATD["ArtifactTypeDefinition"]
@@ -2393,7 +2393,7 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
     ValidateStep --&gt; PushStep
 
     Endpoint1 -.credentials.-&gt; PullStep
-    Endpoint2 -.credentials.-&gt; PushStep</code></pre>
+    Endpoint2 -.credentials.-&gt; PushStep</div>
 <p><strong>Workflow Creation:</strong>
 The OrderReconciler creates Workflow instances by:</p>
 <ol>
@@ -2406,7 +2406,7 @@ The OrderReconciler creates Workflow instances by:</p>
 Workflow status changes are watched by the OrderReconciler and propagated to Fragment and Order status fields.</p>
 <h2 id="testing-infrastructure">Testing Infrastructure<a class="headerlink" href="#testing-infrastructure" title="Permanent link">¶</a></h2>
 <h3 id="test-environment-architecture">Test Environment Architecture<a class="headerlink" href="#test-environment-architecture" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="mermaid">graph TB
     subgraph "Test Suite"
         TestCode["Integration Tests&lt;br/&gt;(Ginkgo)"]
     end
@@ -2440,7 +2440,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     TestCode --&gt; TestFragment
 
     TestOrder -.stored in.-&gt; EnvtestEtcd
-    TestFragment -.stored in.-&gt; EnvtestEtcd</code></pre>
+    TestFragment -.stored in.-&gt; EnvtestEtcd</div>
 <p>The test environment (<code>pkg/envtest/environment.go</code>) provides a complete ARC deployment for integration testing:</p>
 <p><strong>Initialization:</strong> <a href="">pkg/envtest/environment.go:30-40</a></p>
 <ul>
@@ -2458,7 +2458,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
 <p><strong>Sources:</strong> <a href="">pkg/envtest/environment.go:1-93</a>, <a href="">pkg/apiserver/suite_test.go:1-84</a></p>
 <h2 id="component-interactions">Component Interactions<a class="headerlink" href="#component-interactions" title="Permanent link">¶</a></h2>
 <h3 id="request-flow-for-artifact-processing">Request Flow for Artifact Processing<a class="headerlink" href="#request-flow-for-artifact-processing" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>sequenceDiagram
+<div class="mermaid">sequenceDiagram
     participant CLI as "arcctl CLI"
     participant K8sAPI as "Kubernetes API"
     participant APIAgg as "API Aggregation"
@@ -2516,7 +2516,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     K8sAPI--&gt;&gt;Ctrl: Status event
 
     Ctrl-&gt;&gt;ARCAPI: PATCH Order status
-    ARCAPI-&gt;&gt;etcd: Update Order status</code></pre>
+    ARCAPI-&gt;&gt;etcd: Update Order status</div>
 <p>This sequence shows the complete lifecycle from user command to artifact delivery, highlighting the separation between declarative resource management (ARC API Server) and execution (Argo Workflows).</p>
 <h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">¶</a></h2>
 <h3 id="separation-of-concerns">Separation of Concerns<a class="headerlink" href="#separation-of-concerns" title="Permanent link">¶</a></h3>
@@ -2640,7 +2640,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
-        <script src="../../assets/mermaid-zoom.js?v=1763032051"></script>
+        <script src="../../assets/mermaid-zoom.js?v=1763032701"></script>
       
     
   

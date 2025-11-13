@@ -48,7 +48,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/mermaid-zoom.css?v=1763032051">
+      <link rel="stylesheet" href="../../../assets/mermaid-zoom.css?v=1763032701">
     
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1789,7 +1789,7 @@ The order controller creates "jobs" which are actually Argo Workflows.</p>
 <p><strong>Overview Diagram</strong></p>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../img/0-arc-architecture.drawio.svg" data-desc-position="bottom"><img alt="ARC Architecture Diagram" src="../img/0-arc-architecture.drawio.svg" title="ARC Architecture"></a></p>
 <p><strong>API Concept Diagram</strong></p>
-<pre class="mermaid"><code>---
+<div class="mermaid">---
 config:
   layout: elk
 ---
@@ -1831,7 +1831,7 @@ flowchart LR
     Fragment2 -- triggers --&gt; WorkflowTemplate
     WorkflowTemplate -- instantiates --&gt; WorkflowInstance1 &amp; WorkflowInstance2
     ArtifactTypeDef@{ shape: rect}
-</code></pre>
+</div>
 <p>The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
 <code>etcd</code> is used as storage solution.
 <code>Order Controller</code> is a classic Kubernetes controller implementation which reconciles <code>Orders</code> and <code>Endpoints</code>.
@@ -1919,7 +1919,7 @@ The project itself can focus on the order process and the handling of endpoints.
     
       <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
-        <script src="../../../assets/mermaid-zoom.js?v=1763032051"></script>
+        <script src="../../../assets/mermaid-zoom.js?v=1763032701"></script>
       
     
   
