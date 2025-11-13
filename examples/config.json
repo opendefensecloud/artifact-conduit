@@ -2,7 +2,7 @@
   "type": "oci",
   "src": {
     "type": "oci",
-    "remoteURL": "https://...",
+    "remoteURL": "registry-1.docker.io",
     "auth": {
       "username": "user",
       "password": "pass"
@@ -10,7 +10,7 @@
   },
   "dst": {
     "type": "oci",
-    "remoteURL": "https://...",
+    "remoteURL": "gcr.io",
     "auth": {
       "username": "user",
       "password": "pass"
@@ -18,6 +18,6 @@
   },
   "spec": {
     "image": "library/alpine:3.18",
-    "override": "myteam/alpine:3.18-dev"
+    "override": "opendefensecloud/alpine:3.18-dev"
   }
 }

@@ -58,6 +58,7 @@ A workflow created by ARC is composed out of three parts:
 3. An ephemeral configuration (`config.json`) which is mounted by the workflow (stored as Kubernetes-Secret as it may contain credentials)
 
 When a `Fragment` is created (usually by an `Order` from a user) it might look as follows:
+
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: Fragment
@@ -75,6 +76,7 @@ spec:
 ```
 
 The two referenced `Endpoints` by `srcRef` and `dstRef` might look as follows respectively:
+
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: Endpoint
@@ -100,6 +102,7 @@ spec:
 ```
 
 How these objects are tied into a workflow is described by the `ArtifactTypeDefinition`:
+
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: ArtifactTypeDefinition
@@ -137,33 +140,37 @@ The above resources will instantiate the workflow with the following parameters:
 * `specOverride`: TODO
 
 The `config.json`-file looks as follows:
+
 ```json
 {
+  "type": "oci",
+  "src": {
     "type": "oci",
-    "src": {
-        "type": "oci",
-        "remoteURL": "https://...",
-        "secret": {
-            // key-values from referenced secret
-        }
-    },
-    "dst": {
-        "type": "oci",
-        "remoteURL": "https://...",
-        "secret": {
-            // key-values from the referenced secret
-        }
-    },   
-    "spec": {
-        "image": "library/alpine:3.18",
-        "override": "myteam/alpine:3.18-dev"
+    "remoteURL": "registry-1.docker.io",
+    "auth": { // optional, from secret key/values
+      "username": "user",
+      "password": "pass"
     }
+  },
+  "dst": {
+    "type": "oci",
+    "remoteURL": "gcr.io",
+    "auth": { // optional, from secret key/values
+      "username": "user",
+      "password": "pass"
+    }
+  },
+  "spec": {
+    "image": "library/alpine:3.18",
+    "override": "opendefensecloud/alpine:3.18-dev"
+  }
 }
 ```
 
 The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.
 
 `arcctl` providers commands to extract values from the config, e.g.:
+
 ```bash
 source <(arcctl env --from="dst.secret" --prefix="DOCKER")
 docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
