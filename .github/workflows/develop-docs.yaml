@@ -32,6 +32,5 @@ jobs:
           git config --global user.email "docs.deploy@opendefense.cloud"
       - name: Build Docs Website
         run: |
-          yq -i '.plugins += "glightbox"' mkdocs.yml
-          yq -i '.plugins += "mermaid-zoom"' mkdocs.yml
+          mv mkdocs.live.yml mkdocs.yml
           mike deploy --push develop
