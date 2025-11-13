@@ -97,7 +97,12 @@ docker-build-arcctl:
 
 .PHONY: docs
 docs: ## Generate and serve the documentation site.
-	mkdocs serve
+	$(MKDOCS) serve
+
+.PHONY: docs-patch-config
+docs-patch-config: ## Patch mkdocs.yml with mkdocs_patch.yml for docs building.
+	@yq eval-all '. as $$item ireduce ({}; . * $$item)' mkdocs.yml mkdocs_patch.yml > mkdocs_temp.yml
+	@mv mkdocs_temp.yml mkdocs_temp.yml
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)

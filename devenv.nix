@@ -11,6 +11,7 @@
     pkgs.oras
     pkgs.shellcheck
     pkgs.python313Packages.mkdocs-material
+    pkgs.yq-go
   ];
 
   # aliases for common git commands
