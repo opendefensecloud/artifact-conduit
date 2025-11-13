@@ -172,6 +172,6 @@ The parameters do not contain secrets, but can be used to interact with third-pa
 `arcctl` providers commands to extract values from the config, e.g.:
 
 ```bash
-source <(arcctl env --from="dst.secret" --prefix="DOCKER")
+source <(arcctl env --from="dst.auth" --prefix="DOCKER")
 docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
 ```
