@@ -101,6 +101,7 @@ func (c completedConfig) New() (*ARCServer, error) {
 	// TODO: refactor how we construct storage, I just copied some things around to create NewStatusREST
 	v1alpha1storage["orders/status"] = arcregistry.RESTInPeace(orderstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["fragments"] = arcregistry.RESTInPeace(fragmentstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["fragments/status"] = arcregistry.RESTInPeace(fragmentstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["endpoints"] = arcregistry.RESTInPeace(endpointstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["artifacttypedefinitions"] = arcregistry.RESTInPeace(artifacttypedefinitionstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage

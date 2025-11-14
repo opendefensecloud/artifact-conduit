@@ -28,7 +28,9 @@ type Environment struct {
 // TODO: add options to override APIServiceDirectoryPaths and MainPath
 
 func NewEnvironment() (*Environment, error) {
-	env := &envtest.Environment{}
+	env := &envtest.Environment{
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "external")},
+	}
 	ext := &utilsenvtest.EnvironmentExtensions{
 		APIServiceDirectoryPaths:       []string{filepath.Join("..", "..", "config", "apiserver", "apiservice", "bases")},
 		ErrorIfAPIServicePathIsMissing: true,

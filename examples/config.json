@@ -1,16 +1,23 @@
 {
-  "source": {
-    "reference": "registry-1.docker.io/library/busybox:latest",
+  "type": "oci",
+  "src": {
+    "type": "oci",
+    "remoteURL": "registry-1.docker.io",
     "auth": {
-      "username": "myuser",
-      "password": "mypassword"
+      "username": "user",
+      "password": "pass"
     }
   },
-  "destination": {
-    "reference": "registry.example.com/myrepo/busybox:latest",
+  "dst": {
+    "type": "oci",
+    "remoteURL": "gcr.io",
     "auth": {
-      "username": "destuser",
-      "password": "destpassword"
+      "username": "user",
+      "password": "pass"
     }
+  },
+  "spec": {
+    "image": "library/alpine:3.18",
+    "override": "opendefensecloud/alpine:3.18-dev"
   }
 }

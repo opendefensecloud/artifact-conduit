@@ -15,13 +15,19 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-const finalizer = "arc.bwi.de/order-finalizer"
+const orderFinalizer = "arc.bwi.de/order-finalizer"
 
 // OrderReconciler reconciles a Order object
 type OrderReconciler struct {
@@ -29,10 +35,12 @@ type OrderReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -71,10 +79,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{Requeue: true}, nil
 		}
 		// All fragments are gone, remove finalizer
-		if slices.Contains(order.Finalizers, finalizer) {
+		if slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("No fragments, removing finalizer from Order")
 			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
-				return f == finalizer
+				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
 				log.Error(err, "Failed to remove finalizer from Order")
@@ -86,9 +94,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// Add finalizer if not present and not deleting
 	if order.DeletionTimestamp.IsZero() {
-		if !slices.Contains(order.Finalizers, finalizer) {
+		if !slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("Adding finalizer to Order")
-			order.Finalizers = append(order.Finalizers, finalizer)
+			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
 				log.Error(err, "Failed to add finalizer to Order")
 				return ctrl.Result{}, err
@@ -214,10 +222,41 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
+// generateReconcileRequestsForSecret generates reconcile requests for all secrets referenced by an Order
+func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
+	resourcesReferencingSecret := &arcv1alpha1.OrderList{}
+	listOps := &client.ListOptions{
+		FieldSelector: fields.SelectorFromSet(fields.Set{".spec.srcRef.name": secret.GetName(), ".spec.dstRef.name": secret.GetName()}),
+		Namespace:     secret.GetNamespace(),
+	}
+	err := r.List(ctx, resourcesReferencingSecret, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(resourcesReferencingSecret.Items))
+	for i, item := range resourcesReferencingSecret.Items {
+		log := ctrl.LoggerFrom(ctx)
+		log.V(1).Info("Generating reconcile request for resource because referenced secret has changed...")
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      item.GetName(),
+				Namespace: item.GetNamespace(),
+			},
+		}
+	}
+	return requests
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
+		Watches(
+			&corev1.Secret{},
+			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret),
+			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+		).
 		Owns(&arcv1alpha1.Fragment{}).
 		Complete(r)
 }
