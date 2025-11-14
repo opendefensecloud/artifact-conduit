@@ -9,9 +9,10 @@ import (
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -82,6 +83,25 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// TODO: Fragment is not finished, then check if workflow is referenced in status.
 
 	// TODO: If no workflow referenced, create secret and workflow.
+	configSecretName := types.NamespacedName{Name: frag.Name, Namespace: frag.Namespace}
+	foundWorkflowConfig := &corev1.Secret{}
+	if err := r.Get(ctx, configSecretName, foundWorkflowConfig); err != nil && apierrors.IsNotFound(err) {
+		// Create configuration secret
+		configSecret := &corev1.Secret{}
+		configSecret.StringData = map[string]string{
+			"config.json": ``, // TODO: actual config data
+		}
+		log.Info("Creating new workflow config", "namespace", configSecretName.Namespace, "name", configSecretName.Name)
+		if err := r.Create(ctx, configSecret); err != nil {
+			log.Error(err, "Failed to create new workflow config", "namespace", configSecret.Namespace, "name", configSecret.Name)
+			return ctrl.Result{}, err
+		}
+		// Requeue the request to ensure the Deployment is created
+		return ctrl.Result{}, err
+	} else if err != nil {
+		log.Error(err, "Failed to get workflow config")
+		return ctrl.Result{}, err
+	}
 
 	// TODO: If workflow exists, check and update status if necessary.
 
@@ -93,6 +113,6 @@ func (r *FragmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Fragment{}).
 		Owns(&wfv1alpha1.Workflow{}).
-		Owns(&v1.Secret{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
