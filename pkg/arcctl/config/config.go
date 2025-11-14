@@ -25,6 +25,7 @@ type ArcctlConfig struct {
 	Spec any          `mapstructure:"spec"`
 }
 
+// GetOCISpec returns the OCI spec from the config
 func (c *ArcctlConfig) GetOCISpec() *OCISpec {
 	if s, ok := c.Spec.(*OCISpec); ok {
 		return s
@@ -39,6 +40,7 @@ type Endpoint struct {
 	Auth      any          `mapstructure:"auth"`
 }
 
+// GetOCIAuth returns the OCI auth from the endpoint
 func (e *Endpoint) GetOCIAuth() *OCIAuth {
 	if a, ok := e.Auth.(*OCIAuth); ok {
 		return a
@@ -56,6 +58,7 @@ type OCIAuth struct {
 	Password string `mapstructure:"password"`
 }
 
+// parseOCIAuth parses the OCI auth from the configuration
 func parseOCIAuth(e *Endpoint) error {
 	if e.Auth == nil {
 		return nil
@@ -72,6 +75,7 @@ func parseOCIAuth(e *Endpoint) error {
 	return nil
 }
 
+// parseOCISpec parses the OCI spec
 func (c *ArcctlConfig) parseOCISpec() error {
 	if c.Spec == nil {
 		return fmt.Errorf("spec must not be empty")
@@ -82,12 +86,13 @@ func (c *ArcctlConfig) parseOCISpec() error {
 		return fmt.Errorf("failed to parse oci auth: %w", err)
 	}
 	if err := json.Unmarshal(bytes, ociSpec); err != nil {
-		return err
+		return fmt.Errorf("failed to parse oci spec: %w", err)
 	}
 	c.Spec = ociSpec
 	return nil
 }
 
+// parseEndpointAuth parses the typed auth information
 func (c *ArcctlConfig) parseEndpointAuth() error {
 	switch c.Src.Type {
 	case AT_OCI:
@@ -104,16 +109,15 @@ func (c *ArcctlConfig) parseEndpointAuth() error {
 	return nil
 }
 
+// parseOCI parses OCI authentication information
 func (c *ArcctlConfig) parseOCI() error {
 	if err := c.parseOCISpec(); err != nil {
-		return err
-	}
-	if err := c.parseEndpointAuth(); err != nil {
 		return err
 	}
 	return nil
 }
 
+// parseTypedSpec parses the typed spec from the configuration based on the given type
 func (c *ArcctlConfig) parseTypedSpec() error {
 	if c.Spec == nil {
 		return nil
@@ -134,6 +138,10 @@ func LoadFromViper() (*ArcctlConfig, error) {
 	if err := config.parseTypedSpec(); err != nil {
 		return nil, err
 	}
+	if err := config.parseEndpointAuth(); err != nil {
+		return nil, err
+	}
+
 	return &config, nil
 }
 
