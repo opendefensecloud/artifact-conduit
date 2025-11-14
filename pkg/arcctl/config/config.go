@@ -19,15 +19,17 @@ const (
 
 // ArcctlConfig represents the configuration for arcctl
 type ArcctlConfig struct {
-	Type    ArtifactType `mapstructure:"type"`
-	Src     Endpoint     `mapstructure:"src"`
-	Dst     Endpoint     `mapstructure:"dst"`
-	Spec    any          `mapstructure:"spec"`
-	ociSpec *OCISpec     `mapstructure:"-"`
+	Type ArtifactType `mapstructure:"type"`
+	Src  Endpoint     `mapstructure:"src"`
+	Dst  Endpoint     `mapstructure:"dst"`
+	Spec any          `mapstructure:"spec"`
 }
 
 func (c *ArcctlConfig) GetOCISpec() *OCISpec {
-	return c.ociSpec
+	if s, ok := c.Spec.(*OCISpec); ok {
+		return s
+	}
+	return nil
 }
 
 // Endpoint represents a source or destination endpoint configuration
@@ -35,11 +37,13 @@ type Endpoint struct {
 	Type      ArtifactType `mapstructure:"type"`
 	RemoteURL string       `mapstructure:"remoteURL"`
 	Auth      any          `mapstructure:"auth"`
-	ociAuth   *OCIAuth     `mapstructure:"-"`
 }
 
 func (e *Endpoint) GetOCIAuth() *OCIAuth {
-	return e.ociAuth
+	if a, ok := e.Auth.(*OCIAuth); ok {
+		return a
+	}
+	return nil
 }
 
 type OCISpec struct {
@@ -64,7 +68,7 @@ func parseOCIAuth(e *Endpoint) error {
 	if err := json.Unmarshal(bytes, ociAuth); err != nil {
 		return err
 	}
-	e.ociAuth = ociAuth
+	e.Auth = ociAuth
 	return nil
 }
 
@@ -80,7 +84,7 @@ func (c *ArcctlConfig) parseOCISpec() error {
 	if err := json.Unmarshal(bytes, ociSpec); err != nil {
 		return err
 	}
-	c.ociSpec = ociSpec
+	c.Spec = ociSpec
 	return nil
 }
 
