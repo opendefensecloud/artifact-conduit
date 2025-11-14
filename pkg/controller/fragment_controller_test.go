@@ -43,7 +43,10 @@ var _ = Describe("FragmentController", func() {
 				return k8sClient.Get(ctx, types.NamespacedName{Namespace: fragment.Namespace, Name: fragment.Name}, workflowConfig)
 			}).Should(Succeed())
 
-			// TODO: Verify workflowConfig contents
+			// Verify workflowConfig contents
+			s, ok := workflowConfig.Data[workflowConfigSecretKey]
+			Expect(ok).To(BeTrue())
+			GinkgoWriter.Println(string(s))
 		})
 	})
 })
