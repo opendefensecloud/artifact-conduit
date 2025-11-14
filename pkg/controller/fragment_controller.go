@@ -5,16 +5,20 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/workflow/config"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const fragmentFinalizer = "arc.bwi.de/fragment-finalizer"
@@ -25,11 +29,12 @@ type FragmentReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=argoproj.io,resources=workflows,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=argoproj.io,resources=workflows,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -83,19 +88,43 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// TODO: Fragment is not finished, then check if workflow is referenced in status.
 
 	// TODO: If no workflow referenced, create secret and workflow.
+	log.V(1).Info("Checking if workflowConfigSecret already exists...")
 	configSecretName := types.NamespacedName{Name: frag.Name, Namespace: frag.Namespace}
 	foundWorkflowConfig := &corev1.Secret{}
 	if err := r.Get(ctx, configSecretName, foundWorkflowConfig); err != nil && apierrors.IsNotFound(err) {
-		// Create configuration secret
-		configSecret := &corev1.Secret{}
-		configSecret.StringData = map[string]string{
-			"config.json": ``, // TODO: actual config data
-		}
 		log.Info("Creating new workflow config", "namespace", configSecretName.Namespace, "name", configSecretName.Name)
+		// Create configuration secret
+		workflowConfig, err := r.createWorkflowConfig(ctx, frag)
+		if err != nil {
+			log.Error(err, "Failed to create workflow config from fragment")
+			return ctrl.Result{}, err
+		}
+		json, err := workflowConfig.ToJson()
+		if err != nil {
+			log.Error(err, "Failed to marshal json from workflow config")
+			return ctrl.Result{}, err
+		}
+		configSecret := &corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Name:      frag.Name,
+				Namespace: frag.Namespace,
+			},
+		}
+		configSecret.StringData = map[string]string{
+			"config.json": string(json),
+		}
+
+		// Set owner reference so Secret is garbage-collected with the Fragment
+		if err := controllerutil.SetControllerReference(frag, configSecret, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		// Create the Secret in the namespace of the Fragment
 		if err := r.Create(ctx, configSecret); err != nil {
 			log.Error(err, "Failed to create new workflow config", "namespace", configSecret.Namespace, "name", configSecret.Name)
 			return ctrl.Result{}, err
 		}
+
 		// Requeue the request to ensure the Deployment is created
 		return ctrl.Result{}, err
 	} else if err != nil {
@@ -108,6 +137,49 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	return ctrl.Result{}, nil
 }
 
+// createWorkflowConfig creates a new workflow config for the given fragment.
+func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1alpha1.Fragment) (*config.ArcctlConfig, error) {
+	c := &config.ArcctlConfig{}
+	c.Type = config.ArtifactType(f.Spec.Type)
+	c.Spec = f.Spec.Spec
+
+	srcEp, err := r.createWorkflowEndpoint(ctx, f.Namespace, f.Spec.SrcRef.Name)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
+	}
+	c.Src = *srcEp
+
+	dstEp, err := r.createWorkflowEndpoint(ctx, f.Namespace, f.Spec.DstRef.Name)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
+	}
+	c.Dst = *dstEp
+
+	return c, nil
+}
+
+// createWorkflowEndpoint creates a new workflow endpoint for the given reference.
+func (r *FragmentReconciler) createWorkflowEndpoint(ctx context.Context, namespace, name string) (*config.Endpoint, error) {
+	srcEp, err := r.resolveEndpoint(ctx, namespace, name)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return nil, fmt.Errorf("failed to resolve endpoint: %w", err)
+	}
+
+	if srcEp != nil {
+		secret, err := r.resolveSecret(ctx, srcEp.Namespace, srcEp.Spec.SecretRef.Name)
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve endpoint secret: %w", err)
+		}
+		return &config.Endpoint{
+			Type:      config.ArtifactType(srcEp.Spec.Type),
+			RemoteURL: srcEp.Spec.RemoteURL,
+			Auth:      secret.Data,
+		}, nil
+	}
+
+	return nil, nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *FragmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -115,4 +187,22 @@ func (r *FragmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&wfv1alpha1.Workflow{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
+}
+
+// resolveEndpoint resolves the endpoint for a given reference.
+func (r *FragmentReconciler) resolveEndpoint(ctx context.Context, namespace, name string) (*arcv1alpha1.Endpoint, error) {
+	ep := &arcv1alpha1.Endpoint{}
+	if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, ep); err != nil {
+		return nil, fmt.Errorf("failed to get endpoint: %w", err)
+	}
+	return ep, nil
+}
+
+// resolveSecret resolves the secret for a given reference.
+func (r *FragmentReconciler) resolveSecret(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
+	secret := &corev1.Secret{}
+	if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, secret); err != nil {
+		return nil, fmt.Errorf("failed to get secret: %w", err)
+	}
+	return secret, nil
 }
