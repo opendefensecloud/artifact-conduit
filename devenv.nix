@@ -1,4 +1,10 @@
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
 
 {
   # https://devenv.sh/packages/
@@ -36,14 +42,14 @@
   languages.go.package = pkgs.go_1_25;
 
   git-hooks.hooks = {
-    govet = {
-      enable = true;
-      pass_filenames = false;
-    };
-    golangci-lint = {
-      enable = true;
-      pass_filenames = false;
-    };
+    # Format Nix code
+    nixfmt.enable = true;
+
+    # Lint shell scripts
+    shellcheck.enable = true;
+
+    gofmt.enable = true;
+    golangci-lint.enable = true;
   };
   # See full reference at https://devenv.sh/reference/options/
 
