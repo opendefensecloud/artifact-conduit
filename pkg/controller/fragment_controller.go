@@ -21,7 +21,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-const fragmentFinalizer = "arc.bwi.de/fragment-finalizer"
+const (
+	fragmentFinalizer       = "arc.bwi.de/fragment-finalizer"
+	workflowConfigSecretKey = "config.json"
+)
 
 // FragmentReconciler reconciles a Fragment object
 type FragmentReconciler struct {
@@ -125,7 +128,7 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			return ctrl.Result{}, err
 		}
 
-		// Requeue the request to ensure the Deployment is created
+		// Requeue the request to ensure the secret is created
 		return ctrl.Result{}, err
 	} else if err != nil {
 		log.Error(err, "Failed to get workflow config")
@@ -147,14 +150,17 @@ func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1a
 	if err != nil && !apierrors.IsNotFound(err) {
 		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
 	}
-	c.Src = *srcEp
+	if srcEp != nil {
+		c.Src = *srcEp
+	}
 
 	dstEp, err := r.createWorkflowEndpoint(ctx, f.Namespace, f.Spec.DstRef.Name)
 	if err != nil && !apierrors.IsNotFound(err) {
 		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
 	}
-	c.Dst = *dstEp
-
+	if dstEp != nil {
+		c.Dst = *dstEp
+	}
 	return c, nil
 }
 
