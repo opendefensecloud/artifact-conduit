@@ -147,43 +147,41 @@ func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1a
 	c.Spec = f.Spec.Spec
 
 	srcEp, err := r.createWorkflowEndpoint(ctx, f.Namespace, f.Spec.SrcRef.Name)
-	if err != nil && !apierrors.IsNotFound(err) {
+	if err != nil {
 		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
 	}
-	if srcEp != nil {
-		c.Src = *srcEp
-	}
+	c.Src = *srcEp
 
 	dstEp, err := r.createWorkflowEndpoint(ctx, f.Namespace, f.Spec.DstRef.Name)
-	if err != nil && !apierrors.IsNotFound(err) {
+	if err != nil {
 		return nil, fmt.Errorf("failed to create source endpoint: %w", err)
 	}
-	if dstEp != nil {
-		c.Dst = *dstEp
-	}
+	c.Dst = *dstEp
+
 	return c, nil
 }
 
 // createWorkflowEndpoint creates a new workflow endpoint for the given reference.
 func (r *FragmentReconciler) createWorkflowEndpoint(ctx context.Context, namespace, name string) (*config.Endpoint, error) {
-	srcEp, err := r.resolveEndpoint(ctx, namespace, name)
-	if err != nil && !apierrors.IsNotFound(err) {
+	ep, err := r.resolveEndpoint(ctx, namespace, name)
+	if err != nil {
 		return nil, fmt.Errorf("failed to resolve endpoint: %w", err)
 	}
 
-	if srcEp != nil {
-		secret, err := r.resolveSecret(ctx, srcEp.Namespace, srcEp.Spec.SecretRef.Name)
+	confEp := &config.Endpoint{
+		Type:      config.ArtifactType(ep.Spec.Type),
+		RemoteURL: ep.Spec.RemoteURL,
+	}
+
+	if ep.Spec.SecretRef.Name != "" {
+		secret, err := r.resolveSecret(ctx, ep.Namespace, ep.Spec.SecretRef.Name)
 		if err != nil {
 			return nil, fmt.Errorf("failed to resolve endpoint secret: %w", err)
 		}
-		return &config.Endpoint{
-			Type:      config.ArtifactType(srcEp.Spec.Type),
-			RemoteURL: srcEp.Spec.RemoteURL,
-			Auth:      secret.Data,
-		}, nil
+		confEp.Auth = secret.Data
 	}
 
-	return nil, nil
+	return confEp, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
