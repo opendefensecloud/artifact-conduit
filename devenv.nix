@@ -42,12 +42,6 @@
   languages.go.package = pkgs.go_1_25;
 
   git-hooks.hooks = {
-    # Format Nix code
-    nixfmt.enable = true;
-
-    # Lint shell scripts
-    shellcheck.enable = true;
-
     gofmt.enable = true;
     golangci-lint.enable = true;
   };
