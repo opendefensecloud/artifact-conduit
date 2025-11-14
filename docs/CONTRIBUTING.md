@@ -1,122 +1,151 @@
-# Welcome to GitHub docs contributing guide <!-- omit in toc -->
+# Artifact Conduit (ARC) Developer Guide
 
-Thank you for investing your time in contributing to our project! Any contribution you make will be reflected on [docs.github.com](https://docs.github.com/en) :sparkles:.
+This guide provides technical information for developers contributing to the Artifact Conduit (ARC) project. It covers the development workflow, build system, code organization, and common development tasks. For detailed information about specific topics, see the referenced sections.
 
-**📖 For comprehensive contribution guidance, please visit our official documentation at [docs.github.com/en/contributing](https://docs.github.com/en/contributing). This is our canonical source for all contribution processes and policies.**
+***
 
-Read our [Code of Conduct](./CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
+## Development Workflow Overview
 
-This guide provides repository-specific information to supplement the official contribution documentation. For detailed processes, policies, and best practices, always refer to [docs.github.com/en/contributing](https://docs.github.com/en/contributing).
+ARC follows a **code-generation-heavy pattern** typical in Kubernetes ecosystem projects. Changes to API types trigger code regeneration, which produces client libraries, OpenAPI specifications, and CRD manifests.
 
-Use the table of contents icon <img alt="Table of contents icon" src="/contributing/images/table-of-contents.png" width="25" height="25" /> in the top corner of this document to get to a specific section of this guide quickly.
+***
 
-## New contributor guide
+## Build System
 
-**Start here:** Visit [docs.github.com/en/contributing](https://docs.github.com/en/contributing) for complete contributor onboarding and guidelines.
+The ARC build system uses a Makefile to orchestrate various tools, designed for reproducibility. All required tools are provided in the `bin/` directory.
 
-For repository-specific setup, read the [README](../README.md) file. The official docs site also provides these helpful resources:
+| Target           | Purpose                                | Key Tools Used                              |
+| ---------------- | -------------------------------------- | ------------------------------------------- |
+| `make codegen`   | Generate client-go libraries & OpenAPI | `openapi-gen`, `kube_codegen.sh`            |
+| `make manifests` | Generate CRDs and RBAC manifests       | `controller-gen`                            |
+| `make fmt`       | Format code, add license headers       | `addlicense`, `go fmt`                      |
+| `make lint`      | Run linters and checks                 | `golangci-lint`, `shellcheck`, `addlicense` |
+| `make test`      | Run all tests with coverage            | `ginkgo`, `setup-envtest`                   |
+| `make clean`     | Remove generated binaries              | -                                           |
 
-- [Finding ways to contribute to open source on GitHub](https://docs.github.com/en/get-started/exploring-projects-on-github/finding-ways-to-contribute-to-open-source-on-github)
-- [Set up Git](https://docs.github.com/en/get-started/git-basics/set-up-git)
-- [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow)
-- [Collaborating with pull requests](https://docs.github.com/en/github/collaborating-with-pull-requests)
+### Tool Versions
 
-## Contribution types and what we're looking for
+The system **pins specific tool versions** for reproducibility:
 
-Content we accept:
-* Technical and grammatical corrections
-* Typo fixes
-* Expanded explanations of existing products or features, when the expansion has a compelling reason
-* New content filling important gaps in our documentation. For example, [this pull request](https://github.com/github/docs/pull/38048) added a useful section on security hardening for GitHub Actions.
+- BDD testing framework: `v2.27.2`
+- Go linter: `v2.5.0`
+- CRD/RBAC generator: `v0.19.0`
+- Kubernetes test API server: `release-0.22`
+- K8s for integration tests: `1.34.1`
 
-Content we do not currently accept:
-* Edits purely for tone, readability, or efficiency
-* Topics that are too niche or a matter of personal preference
-* Changes to the underlying site and workflows
+***
 
-These are general guidelines, but if you’re not sure what category your proposed change would fall under, feel free to open an issue to discuss it with us!
+## Codebase Organization
 
-## Getting started
+ARC codebase follows standard Kubernetes project conventions:
 
-📚 **Primary resource:** [docs.github.com/en/contributing](https://docs.github.com/en/contributing) contains our complete contribution workflow and policies.
+| Directory           | Purpose                                 | Generated/Manual |
+| ------------------- | --------------------------------------- | ---------------- |
+| `api/arc/v1alpha1/` | Custom resource type definitions        | Manual           |
+| `client-go/`        | Client libraries for ARC resources      | Generated        |
+| `pkg/apiserver/`    | Extension API server implementation     | Manual           |
+| `pkg/controller/`   | Controller reconciliation logic         | Manual           |
+| `pkg/registry/`     | Storage strategies for custom resources | Manual           |
+| `cmd/arcctl/`       | CLI tool implementation                 | Manual           |
+| `config/`           | Kubernetes manifests (CRDs, RBAC)       | Generated        |
+| `hack/`             | Build and code generation scripts       | Manual           |
 
-For repository-specific information:
-- See [the introduction to working in the docs repository](/contributing/README.md) :confetti_ball:
-- Check our [types of contributions](/contributing/types-of-contributions.md) we accept
-- Review our markdown style guidelines in the `/contributing` directory
+***
 
-### Writing style guidelines
+## Code Generation Process
 
-When contributing content, please follow these key principles from our [style guide](https://docs.github.com/en/contributing/style-guide-and-content-model/style-guide):
+ARC uses the Kubernetes code-generator to produce client libraries and OpenAPI specs.
 
-- **Clarity and simplicity**: The goal of our writing style is clarity and simplicity.
-- **Meaning over grammar**: Grammatical correctness is important, but not as important as clarity and meaning.
-- **Second person**: The docs use second-person ("you") to communicate directly with readers.
-- **Inclusive language**: Use inclusive language by not assuming gender or ability level, and by avoiding slang and idioms.
-- **Accessible technical language**: Jargon is sometimes necessary, but don't assume every reader has your technical expertise.
-- **Active voice**: Use active voice wherever possible. Active voice means avoiding "be" verbs like "is" or "are" when you can, but also choosing more dynamic verbs to get your point across. "Press (a key)" is less dynamic than "tap (a key)," for example.
-- **Clear terminology**: Avoid technical abbreviations like "repo" and "PR," and Latin abbreviations like "i.e." and "e.g."
+- `make codegen` triggers `hack/update-codegen.sh`
+- Generates:
+  - Client-go libraries in `client-go/`
+  - OpenAPI specs
+  - CRD manifests
 
-For complete style guidance, see our [style guide](https://docs.github.com/en/contributing/style-guide-and-content-model/style-guide).
+See Client Libraries section for usage details.
 
-### Issues
+***
 
-**For detailed issue guidelines, see [docs.github.com/en/contributing](https://docs.github.com/en/contributing).**
+## Testing Strategy
 
-#### Repository-specific notes:
-- Search [existing issues](https://github.com/github/docs/issues) before creating new ones
-- Use our [label reference](https://docs.github.com/en/contributing/collaborating-on-github-docs/label-reference) to categorize appropriately
-- Follow the issue templates provided in this repository
+ARC uses a multi-layered testing strategy:
 
-### Make Changes
+- **Unit Tests**
+- **Integration Tests** (uses `ENVTEST_K8S_VERSION=1.34.1`)
+- **Controller Tests** via envtest
 
-**Complete change guidelines are available at [docs.github.com/en/contributing](https://docs.github.com/en/contributing).**
+Run all tests and generate coverage:
 
-#### Repository-specific options:
+```sh
+make test
+```
 
-**Make changes in the UI:** Click **Make a contribution** at the bottom of any docs page for small changes like typos or broken links.
+Setup environment for integration tests:
 
-<img src="/contributing/images/contribution_cta.png" />
+```sh
+setup-envtest
+export ENVTEST_K8S_VERSION=1.34.1
+```
 
-**Make changes in a codespace:** See "[Working in a codespace](https://github.com/github/docs/blob/main/contributing/codespace.md)" for documentation-specific setup.
+Test coverage is tracked using Coveralls.
 
-**Make changes locally:** 
-1. Fork the repository (see [official forking guide](https://docs.github.com/en/contributing))
-2. Install Node.js at the version specified in `.node-version` (see [development guide](../contributing/development.md))
-3. Create a working branch and start with your changes
+***
 
-### Commit your update
+## Continuous Integration (CI) Pipeline
 
-Follow the guidelines at [docs.github.com/en/contributing](https://docs.github.com/en/contributing) for commit best practices. 
+Pipeline runs on every push and pull request, enforcing code quality and test coverage.
 
-Use our "[Self review checklist](https://docs.github.com/en/contributing/collaborating-on-github-docs/self-review-checklist)" before committing.
+- **Lint Job**
+  - `addlicense`
+  - `shellcheck`
+  - `golangci-lint`
+- **Test Job** (runs after Lint)
+  - `make test`
 
-### Pull Request
+For customization details, see `.github/workflows/golang.yaml`.
 
-**Complete pull request (PR) guidelines:** [docs.github.com/en/contributing](https://docs.github.com/en/contributing)
+***
 
-**Repository-specific notes:**
-- Fill the "Ready for review" template
-- [Link PR to issue](https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue) if applicable
-- Enable [maintainer edits](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork)
+## Adding a New Custom Resource
 
-A Docs team member will review following our [standard review process](https://docs.github.com/en/contributing).
+To introduce a new CRD:
 
-### Your PR is merged!
+1. **Create type definition** in `api/arc/v1alpha1/`
+2. **Add OpenAPI model name**
+3. **Regenerate code** via `make codegen`
+4. **Implement storage** in `pkg/registry/`
+5. **Add controller logic** in `pkg/controller/` if reconciliation is needed
 
-Congratulations :tada::tada: The GitHub team thanks you :sparkles:.
+See `hack/update-codegen.sh` for implementation details.
 
-Once merged, your contributions will be visible on [GitHub docs](https://docs.github.com/en). 
+***
 
-Continue contributing using our [types of contributions guide](/contributing/types-of-contributions.md) or explore more opportunities at [docs.github.com/en/contributing](https://docs.github.com/en/contributing).
+## Modifying Existing API Types
 
-## Windows
+Typical steps:
 
-This site can be developed on Windows, however a few potential gotchas need to be kept in mind:
+1. Edit types in `api/arc/v1alpha1/`
+2. Run `make codegen`
+3. Run `make manifests`
+4. Run `make test`
 
-1. Regular Expressions: Windows uses `\r\n` for line endings, while Unix-based systems use `\n`. Therefore, when working on Regular Expressions, use `\r?\n` instead of `\n` in order to support both environments. The Node.js [`os.EOL`](https://nodejs.org/api/os.html#os_os_eol) property can be used to get an OS-specific end-of-line marker.
-2. Paths: Windows systems use `\` for the path separator, which would be returned by `path.join` and others. You could use `path.posix`, `path.posix.join` etc and the [slash](https://ghub.io/slash) module, if you need forward slashes - like for constructing URLs - or ensure your code works with either.
-3. Bash: Not every Windows developer has a terminal that fully supports Bash, so it's generally preferred to write [scripts](/script) in JavaScript instead of Bash.
-4. Filename too long error: There is a 260 character limit for a filename when Git is compiled with `msys`. While the suggestions below are not guaranteed to work and could cause other issues, a few workarounds include:
-    - Update Git configuration: `git config --system core.longpaths true`
-    - Consider using a different Git client on Windows
+> **Note:** Breaking changes may affect existing clients. Follow semantic versioning and provide migration paths.
+
+***
+
+## Code Quality & Linting
+
+Lint and license checks before committing:
+
+- `addlicense` for Apache 2.0 headers
+- `shellcheck` for scripts in `hack/`
+- `golangci-lint` for Go linting
+
+Fix issues with:
+
+```sh
+make fmt
+make lint
+```
+
+***
