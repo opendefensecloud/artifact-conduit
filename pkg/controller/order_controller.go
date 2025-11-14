@@ -13,7 +13,6 @@ import (
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -250,7 +249,7 @@ func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
-		Watches(&v1.Secret{}, handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret)).
+		Watches(&corev1.Secret{}, handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret)).
 		Owns(&arcv1alpha1.Fragment{}).
 		Complete(r)
 }
