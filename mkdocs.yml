@@ -103,7 +103,8 @@ nav:
       - operator-manual/security.md
       - operator-manual/workflow-config.md
   - Developer Guide:
-      - developer-guide/contributing.md
+      - CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
       - developer-guide/dod.md
       - developer-guide/working-with-docs.md
       - ADRs:
