@@ -129,6 +129,11 @@ func (c *ArcctlConfig) parseTypedSpec() error {
 	return fmt.Errorf("type %s unknown", c.Type)
 }
 
+// ToJSON serializes the configuration to JSON
+func (c *ArcctlConfig) ToJson() ([]byte, error) {
+	return json.Marshal(c)
+}
+
 // LoadFromViper loads the arcctl configuration from viper
 func LoadFromViper() (*ArcctlConfig, error) {
 	var config ArcctlConfig
