@@ -89,9 +89,9 @@ spec:
         value: "oci"
       - name: srcRemoteURL
         value: "https://registry-1.docker.io"
-      - name: spec_image
+      - name: specImage
         value: "library/alpine:3.12"
-      - name: spec_override
+      - name: specOverride
         value: "opendefensecloud/alpine:3.18-dev"
       - name: destType
         value: "oci"
