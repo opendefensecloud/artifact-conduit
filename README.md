@@ -71,6 +71,7 @@ The hosted version of the documentation can be found at <https://arc.opendefense
 ## Contributing
 
 We'd love to get feedback from you. Please report bugs, suggestions or post questions by opening an issue.
+Please read our code of conduct
 
 ## License
 
