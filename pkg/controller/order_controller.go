@@ -13,12 +13,17 @@ import (
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const orderFinalizer = "arc.bwi.de/order-finalizer"
@@ -215,10 +220,37 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
+// generateReconcileRequestsForSecret generates reconcile requests for all secrets referenced by an Order
+func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
+	resourcesReferencingSecret := &arcv1alpha1.OrderList{}
+	listOps := &client.ListOptions{
+		FieldSelector: fields.SelectorFromSet(fields.Set{".spec.srcRef.name": secret.GetName(), ".spec.dstRef.name": secret.GetName()}),
+		Namespace:     secret.GetNamespace(),
+	}
+	err := r.List(ctx, resourcesReferencingSecret, listOps)
+	if err != nil {
+		return []reconcile.Request{}
+	}
+
+	requests := make([]reconcile.Request, len(resourcesReferencingSecret.Items))
+	for i, item := range resourcesReferencingSecret.Items {
+		log := ctrl.LoggerFrom(ctx)
+		log.V(1).Info("Generating reconcile request for resource because referenced secret has changed...")
+		requests[i] = reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Name:      item.GetName(),
+				Namespace: item.GetNamespace(),
+			},
+		}
+	}
+	return requests
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
+		Watches(&v1.Secret{}, handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret)).
 		Owns(&arcv1alpha1.Fragment{}).
 		Complete(r)
 }
