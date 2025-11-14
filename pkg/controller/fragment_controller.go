@@ -27,6 +27,7 @@ type FragmentReconciler struct {
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
