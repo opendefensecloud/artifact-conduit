@@ -49,4 +49,8 @@
 
   difftastic.enable = true;
   delta.enable = true;
+
+  enterShell = ''
+    make mod
+  '';
 }
