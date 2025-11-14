@@ -19,25 +19,25 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName():             schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref),
-		v1alpha1.ArtifactTypeDefinitionList{}.OpenAPIModelName():         schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref),
-		v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName():        schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref),
-		v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName():         schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref),
-		v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName():       schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref),
-		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref),
-		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref),
-		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_EndpointSpec(ref),
-		v1alpha1.EndpointStatus{}.OpenAPIModelName():                     schema_artifact_conduit_api_arc_v1alpha1_EndpointStatus(ref),
-		v1alpha1.Fragment{}.OpenAPIModelName():                           schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref),
-		v1alpha1.FragmentList{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref),
-		v1alpha1.FragmentSpec{}.OpenAPIModelName():                       schema_artifact_conduit_api_arc_v1alpha1_FragmentSpec(ref),
-		v1alpha1.FragmentStatus{}.OpenAPIModelName():                     schema_artifact_conduit_api_arc_v1alpha1_FragmentStatus(ref),
-		v1alpha1.Order{}.OpenAPIModelName():                              schema_artifact_conduit_api_arc_v1alpha1_Order(ref),
-		v1alpha1.OrderArtifact{}.OpenAPIModelName():                      schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref),
-		v1alpha1.OrderDefaults{}.OpenAPIModelName():                      schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref),
-		v1alpha1.OrderList{}.OpenAPIModelName():                          schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref),
-		v1alpha1.OrderSpec{}.OpenAPIModelName():                          schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref),
-		v1alpha1.OrderStatus{}.OpenAPIModelName():                        schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref),
+		v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactTypeDefinition(ref),
+		v1alpha1.ArtifactTypeDefinitionList{}.OpenAPIModelName():         schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref),
+		v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName():        schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref),
+		v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName():         schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref),
+		v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName():       schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref),
+		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
+		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointList(ref),
+		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointSpec(ref),
+		v1alpha1.EndpointStatus{}.OpenAPIModelName():                     schema_arc_api_arc_v1alpha1_EndpointStatus(ref),
+		v1alpha1.Fragment{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Fragment(ref),
+		v1alpha1.FragmentList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_FragmentList(ref),
+		v1alpha1.FragmentSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_FragmentSpec(ref),
+		v1alpha1.FragmentStatus{}.OpenAPIModelName():                     schema_arc_api_arc_v1alpha1_FragmentStatus(ref),
+		v1alpha1.Order{}.OpenAPIModelName():                              schema_arc_api_arc_v1alpha1_Order(ref),
+		v1alpha1.OrderArtifact{}.OpenAPIModelName():                      schema_arc_api_arc_v1alpha1_OrderArtifact(ref),
+		v1alpha1.OrderDefaults{}.OpenAPIModelName():                      schema_arc_api_arc_v1alpha1_OrderDefaults(ref),
+		v1alpha1.OrderList{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderList(ref),
+		v1alpha1.OrderSpec{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderSpec(ref),
+		v1alpha1.OrderStatus{}.OpenAPIModelName():                        schema_arc_api_arc_v1alpha1_OrderStatus(ref),
 		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":            schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                    schema_k8sio_api_core_v1_Affinity(ref),
 		"k8s.io/api/core/v1.AppArmorProfile":                             schema_k8sio_api_core_v1_AppArmorProfile(ref),
@@ -331,7 +331,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -378,7 +378,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -427,7 +427,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref com
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -470,7 +470,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref co
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -507,7 +507,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref com
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -518,7 +518,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref c
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_Endpoint(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -565,7 +565,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_Endpoint(ref common.ReferenceCallb
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_EndpointList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -614,7 +614,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_EndpointList(ref common.ReferenceC
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -662,7 +662,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceC
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_EndpointStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_EndpointStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -673,7 +673,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_EndpointStatus(ref common.Referenc
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_Fragment(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -720,7 +720,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_Fragment(ref common.ReferenceCallb
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_FragmentList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -769,7 +769,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_FragmentList(ref common.ReferenceC
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -813,7 +813,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceC
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_FragmentStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_FragmentStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -824,7 +824,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_FragmentStatus(ref common.Referenc
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_Order(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_Order(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -871,7 +871,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_Order(ref common.ReferenceCallback
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -915,7 +915,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderArtifact(ref common.Reference
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -944,7 +944,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderDefaults(ref common.Reference
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_OrderList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -993,7 +993,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderList(ref common.ReferenceCall
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
@@ -1029,7 +1029,7 @@ func schema_artifact_conduit_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCall
 	}
 }
 
-func schema_artifact_conduit_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{

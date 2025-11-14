@@ -19,6 +19,14 @@ rules:
 - apiGroups:
   - arc.bwi.de
   resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - arc.bwi.de
+  resources:
   - fragments
   - orders
   verbs:
