@@ -8,11 +8,17 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.opendefense.cloud/arc/test/oci"
+)
+
+var (
+	registry oci.Registry
 )
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "OCI Suite")
+	registry = *oci.NewRegistry()
 }
 
 var _ = BeforeSuite(func() {
