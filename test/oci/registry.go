@@ -25,11 +25,12 @@ type Registry struct {
 func NewRegistry() *Registry {
 	r := &Registry{}
 	r.dockerRegistryHandler = registry.New()
-	r.Server = httptest.NewServer(http.HandlerFunc(r.root))
+	r.Server = httptest.NewServer(http.HandlerFunc(r.handle))
 	return r
 }
 
-func (r *Registry) root(w http.ResponseWriter, req *http.Request) {
+// handle is the handler function to handle requests to the registry
+func (r *Registry) handle(w http.ResponseWriter, req *http.Request) {
 	if r.wantedAuthHeader != "" && req.Header.Get("Authorization") != r.wantedAuthHeader {
 		w.Header().Set("Www-Authenticate", `Basic realm="Test Server"`)
 		w.WriteHeader(http.StatusUnauthorized)
