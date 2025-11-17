@@ -79,7 +79,7 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
 			// Verify fragments were created
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				if err != nil {
@@ -129,7 +129,7 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
 			// Verify fragments were created
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				if err != nil {
@@ -184,7 +184,7 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
 			// Verify fragments were created
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				if err != nil {
@@ -216,7 +216,7 @@ var _ = Describe("OrderController", func() {
 				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
 					return 0
 				}
-				return len(order.Status.Fragments)
+				return len(order.Status.ArtifactWorkflows)
 			}).Should(Equal(3))
 		})
 
@@ -235,7 +235,7 @@ var _ = Describe("OrderController", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				return len(fragmentList.Items)
@@ -263,7 +263,7 @@ var _ = Describe("OrderController", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				return len(fragmentList.Items)
@@ -288,7 +288,7 @@ var _ = Describe("OrderController", func() {
 			// Status should be updated
 			Eventually(func() int {
 				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
-				return len(order.Status.Fragments)
+				return len(order.Status.ArtifactWorkflows)
 			}).Should(Equal(2))
 		})
 
@@ -307,7 +307,7 @@ var _ = Describe("OrderController", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
-			fragmentList := &arcv1alpha1.FragmentList{}
+			fragmentList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, fragmentList, client.InNamespace(ns.Name))
 				return len(fragmentList.Items)
@@ -328,7 +328,7 @@ var _ = Describe("OrderController", func() {
 			// Status should be updated
 			Eventually(func() int {
 				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
-				return len(order.Status.Fragments)
+				return len(order.Status.ArtifactWorkflows)
 			}).Should(Equal(1))
 		})
 	})

@@ -19,7 +19,7 @@ type OrderDefaults struct {
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 }
 
-// OrderArtifact specifies a single artifact which is translated into a corresponding Fragment
+// OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow
 type OrderArtifact struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
@@ -44,7 +44,7 @@ type OrderSpec struct {
 
 // OrderStatus defines the observed state of Order
 type OrderStatus struct {
-	Fragments map[string]corev1.LocalObjectReference `json:"fragments,omitempty"`
+	ArtifactWorkflows map[string]corev1.LocalObjectReference `json:"fragments,omitempty"`
 }
 
 // +genclient

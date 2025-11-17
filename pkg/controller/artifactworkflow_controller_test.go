@@ -14,13 +14,13 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-var _ = Describe("FragmentController", func() {
+var _ = Describe("ArtifactWorkflowController", func() {
 	var (
 		ctx = envtest.Context()
 		ns  = SetupTest(ctx)
 	)
 
-	Context("when reconciling Fragments", func() {
+	Context("when reconciling ArtifactWorkflows", func() {
 		It("should create workflowConfig secret for a fragment and a workflow", func() {
 			srcEndpointAuth := &corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -60,12 +60,12 @@ var _ = Describe("FragmentController", func() {
 			Expect(k8sClient.Create(ctx, dstEndpoint)).To(Succeed())
 
 			// Create test Order with multiple artifacts, no defaults
-			fragment := &arcv1alpha1.Fragment{
+			fragment := &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-fragment",
 					Namespace: ns.Name,
 				},
-				Spec: arcv1alpha1.FragmentSpec{
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					Type:   "test-type-1",
 					SrcRef: corev1.LocalObjectReference{Name: srcEndpoint.Name},
 					DstRef: corev1.LocalObjectReference{Name: dstEndpoint.Name},

@@ -23,19 +23,19 @@ type ArtifactTypeLister interface {
 	ArtifactTypeListerExpansion
 }
 
-// artifactTypeDefinitionLister implements the ArtifactTypeLister interface.
-type artifactTypeDefinitionLister struct {
+// artifactTypeLister implements the ArtifactTypeLister interface.
+type artifactTypeLister struct {
 	listers.ResourceIndexer[*arcv1alpha1.ArtifactType]
 }
 
 // NewArtifactTypeLister returns a new ArtifactTypeLister.
 func NewArtifactTypeLister(indexer cache.Indexer) ArtifactTypeLister {
-	return &artifactTypeDefinitionLister{listers.New[*arcv1alpha1.ArtifactType](indexer, arcv1alpha1.Resource("artifacttypedefinition"))}
+	return &artifactTypeLister{listers.New[*arcv1alpha1.ArtifactType](indexer, arcv1alpha1.Resource("artifacttype"))}
 }
 
 // ArtifactTypes returns an object that can list and get ArtifactTypes.
-func (s *artifactTypeDefinitionLister) ArtifactTypes(namespace string) ArtifactTypeNamespaceLister {
-	return artifactTypeDefinitionNamespaceLister{listers.NewNamespaced[*arcv1alpha1.ArtifactType](s.ResourceIndexer, namespace)}
+func (s *artifactTypeLister) ArtifactTypes(namespace string) ArtifactTypeNamespaceLister {
+	return artifactTypeNamespaceLister{listers.NewNamespaced[*arcv1alpha1.ArtifactType](s.ResourceIndexer, namespace)}
 }
 
 // ArtifactTypeNamespaceLister helps list and get ArtifactTypes.
@@ -50,8 +50,8 @@ type ArtifactTypeNamespaceLister interface {
 	ArtifactTypeNamespaceListerExpansion
 }
 
-// artifactTypeDefinitionNamespaceLister implements the ArtifactTypeNamespaceLister
+// artifactTypeNamespaceLister implements the ArtifactTypeNamespaceLister
 // interface.
-type artifactTypeDefinitionNamespaceLister struct {
+type artifactTypeNamespaceLister struct {
 	listers.ResourceIndexer[*arcv1alpha1.ArtifactType]
 }

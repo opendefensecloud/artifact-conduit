@@ -19,71 +19,71 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ArtifactTypeInformer provides access to a shared informer and lister for
-// ArtifactTypes.
-type ArtifactTypeInformer interface {
+// ArtifactWorkflowInformer provides access to a shared informer and lister for
+// ArtifactWorkflows.
+type ArtifactWorkflowInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() arcv1alpha1.ArtifactTypeLister
+	Lister() arcv1alpha1.ArtifactWorkflowLister
 }
 
-type artifactTypeDefinitionInformer struct {
+type artifactWorkflowInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewArtifactTypeInformer constructs a new informer for ArtifactType type.
+// NewArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredArtifactTypeInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredArtifactWorkflowInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredArtifactTypeInformer constructs a new informer for ArtifactType type.
+// NewFilteredArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).List(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactWorkflows(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactWorkflows(namespace).Watch(context.Background(), options)
 			},
 			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).List(ctx, options)
+				return client.ArcV1alpha1().ArtifactWorkflows(namespace).List(ctx, options)
 			},
 			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(ctx, options)
+				return client.ArcV1alpha1().ArtifactWorkflows(namespace).Watch(ctx, options)
 			},
 		},
-		&apiarcv1alpha1.ArtifactType{},
+		&apiarcv1alpha1.ArtifactWorkflow{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *artifactTypeDefinitionInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredArtifactTypeInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *artifactWorkflowInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredArtifactWorkflowInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *artifactTypeDefinitionInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiarcv1alpha1.ArtifactType{}, f.defaultInformer)
+func (f *artifactWorkflowInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&apiarcv1alpha1.ArtifactWorkflow{}, f.defaultInformer)
 }
 
-func (f *artifactTypeDefinitionInformer) Lister() arcv1alpha1.ArtifactTypeLister {
-	return arcv1alpha1.NewArtifactTypeLister(f.Informer().GetIndexer())
+func (f *artifactWorkflowInformer) Lister() arcv1alpha1.ArtifactWorkflowLister {
+	return arcv1alpha1.NewArtifactWorkflowLister(f.Informer().GetIndexer())
 }

@@ -34,6 +34,26 @@ func (in ArtifactTypeStatus) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflow) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactWorkflow"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflowList) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactWorkflowList"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflowSpec) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactWorkflowSpec"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflowStatus) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactWorkflowStatus"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in Endpoint) OpenAPIModelName() string {
 	return "de.bwi.arc.v1alpha1.Endpoint"
 }
@@ -51,26 +71,6 @@ func (in EndpointSpec) OpenAPIModelName() string {
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in EndpointStatus) OpenAPIModelName() string {
 	return "de.bwi.arc.v1alpha1.EndpointStatus"
-}
-
-// OpenAPIModelName returns the OpenAPI model name for this type.
-func (in Fragment) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.Fragment"
-}
-
-// OpenAPIModelName returns the OpenAPI model name for this type.
-func (in FragmentList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.FragmentList"
-}
-
-// OpenAPIModelName returns the OpenAPI model name for this type.
-func (in FragmentSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.FragmentSpec"
-}
-
-// OpenAPIModelName returns the OpenAPI model name for this type.
-func (in FragmentStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.FragmentStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.

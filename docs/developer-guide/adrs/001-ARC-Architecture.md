@@ -13,13 +13,13 @@ This ADR is about finding the right architecture for the ARC suite of services b
 
 - `arcctl`: Command line utility to interact with the ARC API.
 - `Order`: Represents an order of one or more artifacts. Even ordering artifacts that may exist in the future can be reference here using semver expressions for example.
-- `OrderFragment`: Represents a single artifact order which is part of an `Order`.
+- `OrderArtifactWorkflow`: Represents a single artifact order which is part of an `Order`.
 - `OrderTypeDefinition`: Defines rules and defaults for a specific order type like 'OCI'. References a certain workflow to use for that type.
 - `Endpoint`: General term for source or destination. Can be a source or destination for artifacts. Includes optional credentials to access it.
 - `WorkflowTemplate`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflowtemplate>
 - `Workflow`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflow>
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
-- `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderFragment` Resources, creates `Workflow` resources for necessary workload
+- `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderArtifactWorkflow` Resources, creates `Workflow` resources for necessary workload
 - `ArtifactType`: Specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 ## Considered Options
@@ -108,9 +108,9 @@ flowchart LR
         Spec["spec:<br>- defaults<br>- artifacts[]"]
   end
  subgraph subGraph1["Generated Layer"]
-        Fragment1["Fragment-1"]
-        Fragment2["Fragment-2"]
-        FragmentN["Fragment-N"]
+        ArtifactWorkflow1["ArtifactWorkflow-1"]
+        ArtifactWorkflow2["ArtifactWorkflow-2"]
+        ArtifactWorkflowN["ArtifactWorkflow-N"]
   end
  subgraph Configuration["Configuration"]
         ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
@@ -124,20 +124,20 @@ flowchart LR
         WorkflowInstance2["Workflow Instance"]
   end
     Order -- contains --> Spec
-    Spec -- generates --> Fragment1 & Fragment2 & FragmentN
-    Fragment1 -- type --> ArtifactTypeDef
-    Fragment2 -- type --> ArtifactTypeDef
-    Fragment1 -- srcRef --> EndpointSrc
-    Fragment2 -- srcRef --> EndpointSrc
-    Fragment1 -- dstRef --> EndpointDst
-    Fragment2 -- dstRef --> EndpointDst
-    Fragment1 -- references --> EndpointSrc & EndpointDst
-    Fragment2 -- references --> EndpointSrc & EndpointDst
+    Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflow2 & ArtifactWorkflowN
+    ArtifactWorkflow1 -- type --> ArtifactTypeDef
+    ArtifactWorkflow2 -- type --> ArtifactTypeDef
+    ArtifactWorkflow1 -- srcRef --> EndpointSrc
+    ArtifactWorkflow2 -- srcRef --> EndpointSrc
+    ArtifactWorkflow1 -- dstRef --> EndpointDst
+    ArtifactWorkflow2 -- dstRef --> EndpointDst
+    ArtifactWorkflow1 -- references --> EndpointSrc & EndpointDst
+    ArtifactWorkflow2 -- references --> EndpointSrc & EndpointDst
     EndpointSrc -- credentialRef --> Secret
     EndpointDst -- credentialRef --> Secret
     ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
-    Fragment1 -- triggers --> WorkflowTemplate
-    Fragment2 -- triggers --> WorkflowTemplate
+    ArtifactWorkflow1 -- triggers --> WorkflowTemplate
+    ArtifactWorkflow2 -- triggers --> WorkflowTemplate
     WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
     ArtifactTypeDef@{ shape: rect}
 
@@ -148,7 +148,7 @@ The solution shows the ARC API Server which handles storage for the custom resou
 `Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and `Endpoints`.
 An `Order` contains the information what artifacts should be processed.
 An `Endpoint` contains the information about a source or destination for artifacts.
-The `Order Controller` creates `Fragment` resources which are single artifacts decomposed from an `Order`.
+The `Order Controller` creates `ArtifactWorkflow` resources which are single artifacts decomposed from an `Order`.
 An `ArtifactType` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 #### Pros

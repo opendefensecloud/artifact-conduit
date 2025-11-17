@@ -13,10 +13,10 @@ import (
 type Interface interface {
 	// ArtifactTypes returns a ArtifactTypeInformer.
 	ArtifactTypes() ArtifactTypeInformer
+	// ArtifactWorkflows returns a ArtifactWorkflowInformer.
+	ArtifactWorkflows() ArtifactWorkflowInformer
 	// Endpoints returns a EndpointInformer.
 	Endpoints() EndpointInformer
-	// Fragments returns a FragmentInformer.
-	Fragments() FragmentInformer
 	// Orders returns a OrderInformer.
 	Orders() OrderInformer
 }
@@ -34,17 +34,17 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // ArtifactTypes returns a ArtifactTypeInformer.
 func (v *version) ArtifactTypes() ArtifactTypeInformer {
-	return &artifactTypeDefinitionInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &artifactTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// ArtifactWorkflows returns a ArtifactWorkflowInformer.
+func (v *version) ArtifactWorkflows() ArtifactWorkflowInformer {
+	return &artifactWorkflowInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Endpoints returns a EndpointInformer.
 func (v *version) Endpoints() EndpointInformer {
 	return &endpointInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// Fragments returns a FragmentInformer.
-func (v *version) Fragments() FragmentInformer {
-	return &fragmentInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Orders returns a OrderInformer.

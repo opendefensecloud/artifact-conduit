@@ -19,71 +19,71 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// FragmentInformer provides access to a shared informer and lister for
-// Fragments.
-type FragmentInformer interface {
+// ArtifactTypeInformer provides access to a shared informer and lister for
+// ArtifactTypes.
+type ArtifactTypeInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() arcv1alpha1.FragmentLister
+	Lister() arcv1alpha1.ArtifactTypeLister
 }
 
-type fragmentInformer struct {
+type artifactTypeInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewFragmentInformer constructs a new informer for Fragment type.
+// NewArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFragmentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredFragmentInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredArtifactTypeInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredFragmentInformer constructs a new informer for Fragment type.
+// NewFilteredArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredFragmentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().Fragments(namespace).List(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactTypes(namespace).List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().Fragments(namespace).Watch(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(context.Background(), options)
 			},
 			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().Fragments(namespace).List(ctx, options)
+				return client.ArcV1alpha1().ArtifactTypes(namespace).List(ctx, options)
 			},
 			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().Fragments(namespace).Watch(ctx, options)
+				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(ctx, options)
 			},
 		},
-		&apiarcv1alpha1.Fragment{},
+		&apiarcv1alpha1.ArtifactType{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *fragmentInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredFragmentInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *artifactTypeInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredArtifactTypeInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *fragmentInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiarcv1alpha1.Fragment{}, f.defaultInformer)
+func (f *artifactTypeInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&apiarcv1alpha1.ArtifactType{}, f.defaultInformer)
 }
 
-func (f *fragmentInformer) Lister() arcv1alpha1.FragmentLister {
-	return arcv1alpha1.NewFragmentLister(f.Informer().GetIndexer())
+func (f *artifactTypeInformer) Lister() arcv1alpha1.ArtifactTypeLister {
+	return arcv1alpha1.NewArtifactTypeLister(f.Informer().GetIndexer())
 }

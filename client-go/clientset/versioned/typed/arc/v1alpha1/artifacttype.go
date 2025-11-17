@@ -25,32 +25,32 @@ type ArtifactTypesGetter interface {
 
 // ArtifactTypeInterface has methods to work with ArtifactType resources.
 type ArtifactTypeInterface interface {
-	Create(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.CreateOptions) (*arcv1alpha1.ArtifactType, error)
-	Update(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
+	Create(ctx context.Context, artifactType *arcv1alpha1.ArtifactType, opts v1.CreateOptions) (*arcv1alpha1.ArtifactType, error)
+	Update(ctx context.Context, artifactType *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
+	UpdateStatus(ctx context.Context, artifactType *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*arcv1alpha1.ArtifactType, error)
 	List(ctx context.Context, opts v1.ListOptions) (*arcv1alpha1.ArtifactTypeList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *arcv1alpha1.ArtifactType, err error)
-	Apply(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
+	Apply(ctx context.Context, artifactType *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
+	ApplyStatus(ctx context.Context, artifactType *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
 	ArtifactTypeExpansion
 }
 
-// artifactTypeDefinitions implements ArtifactTypeInterface
-type artifactTypeDefinitions struct {
+// artifactTypes implements ArtifactTypeInterface
+type artifactTypes struct {
 	*gentype.ClientWithListAndApply[*arcv1alpha1.ArtifactType, *arcv1alpha1.ArtifactTypeList, *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration]
 }
 
 // newArtifactTypes returns a ArtifactTypes
-func newArtifactTypes(c *ArcV1alpha1Client, namespace string) *artifactTypeDefinitions {
-	return &artifactTypeDefinitions{
+func newArtifactTypes(c *ArcV1alpha1Client, namespace string) *artifactTypes {
+	return &artifactTypes{
 		gentype.NewClientWithListAndApply[*arcv1alpha1.ArtifactType, *arcv1alpha1.ArtifactTypeList, *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration](
-			"artifacttypedefinitions",
+			"artifacttypes",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,

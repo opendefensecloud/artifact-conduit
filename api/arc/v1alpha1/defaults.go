@@ -16,8 +16,8 @@ func SetDefaults_OrderSpec(obj *OrderSpec) {
 	// ...
 }
 
-// SetDefaults_FragmentSpec sets defaults for Fragment spec
-func SetDefaults_FragmentSpec(obj *FragmentSpec) {
+// SetDefaults_ArtifactWorkflowSpec sets defaults for ArtifactWorkflow spec
+func SetDefaults_ArtifactWorkflowSpec(obj *ArtifactWorkflowSpec) {
 	// ...
 }
 

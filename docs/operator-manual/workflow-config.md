@@ -9,7 +9,7 @@ The following diagram illustrates how ARC resources work together to instantiate
 ```mermaid
 graph TB
     Order["📋 Order<br/>(User Request)"]
-    Fragment["📦 Fragment"]
+    ArtifactWorkflow["📦 ArtifactWorkflow"]
     ArtifactTypeDef["🏷️ ArtifactType"]
     SrcEndpoint["🔌 Endpoint (Source)"]
     DstEndpoint["🔌 Endpoint (Destination)"]
@@ -19,13 +19,13 @@ graph TB
     Workflow["🚀 Workflow"]
     Config["⚙️ config.json<br/>(Runtime Config)"]
 
-    Order -->|creates| Fragment
-    Fragment -->|specifies type| ArtifactTypeDef
-    Fragment -->|references| SrcEndpoint
-    Fragment -->|references| DstEndpoint
-    Fragment -->|contains spec params| Workflow
+    Order -->|creates| ArtifactWorkflow
+    ArtifactWorkflow -->|specifies type| ArtifactTypeDef
+    ArtifactWorkflow -->|references| SrcEndpoint
+    ArtifactWorkflow -->|references| DstEndpoint
+    ArtifactWorkflow -->|contains spec params| Workflow
 
-    ArtifactTypeDef -->|validates src/dst types| Fragment
+    ArtifactTypeDef -->|validates src/dst types| ArtifactWorkflow
     ArtifactTypeDef -->|references| WorkflowTemplate
 
     SrcEndpoint -->|references| SrcSecret
@@ -34,11 +34,11 @@ graph TB
     WorkflowTemplate -->|instantiates| Workflow
     SrcEndpoint -->|provides src config| Config
     DstEndpoint -->|provides dst config| Config
-    Fragment -->|provides spec params| Config
+    ArtifactWorkflow -->|provides spec params| Config
     Config -->|mounts to| Workflow
 
     style Order stroke:#e1f5ff,stroke-width:2px
-    style Fragment stroke:#f3e5f5,stroke-width:2px
+    style ArtifactWorkflow stroke:#f3e5f5,stroke-width:2px
     style ArtifactTypeDef stroke:#e8f5e9,stroke-width:2px
     style SrcEndpoint stroke:#fff3e0,stroke-width:2px
     style DstEndpoint stroke:#fff3e0,stroke-width:2px
@@ -57,11 +57,11 @@ A workflow created by ARC is composed out of three parts:
 2. Parameters passed to the entrypoint of the workflow
 3. An ephemeral configuration (`config.json`) which is mounted by the workflow (stored as Kubernetes-Secret as it may contain credentials)
 
-When a `Fragment` is created (usually by an `Order` from a user) it might look as follows:
+When a `ArtifactWorkflow` is created (usually by an `Order` from a user) it might look as follows:
 
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
-kind: Fragment
+kind: ArtifactWorkflow
 metadata:
   name: example-frag
 spec:
@@ -118,9 +118,9 @@ spec:
     name: oci-workflow-template
 ```
 
-The `Fragment` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
+The `ArtifactWorkflow` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
 
-The two endpoints specified by the `Fragment` are compliant as the workflow does only support endpoints of the type `oci`. It is important to understand that there are both endpoint types and artifact types.
+The two endpoints specified by the `ArtifactWorkflow` are compliant as the workflow does only support endpoints of the type `oci`. It is important to understand that there are both endpoint types and artifact types.
 
 The controller will verify the endpoints and retrieve the associated secrets.
 

@@ -10,24 +10,24 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// FragmentSpecApplyConfiguration represents a declarative configuration of the FragmentSpec type for use
+// ArtifactWorkflowSpecApplyConfiguration represents a declarative configuration of the ArtifactWorkflowSpec type for use
 // with apply.
-type FragmentSpecApplyConfiguration struct {
+type ArtifactWorkflowSpecApplyConfiguration struct {
 	Type       *string                      `json:"type,omitempty"`
 	Parameters []workflowv1alpha1.Parameter `json:"parameters,omitempty"`
 	SecretRef  *v1.LocalObjectReference     `json:"secretRef,omitempty"`
 }
 
-// FragmentSpecApplyConfiguration constructs a declarative configuration of the FragmentSpec type for use with
+// ArtifactWorkflowSpecApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowSpec type for use with
 // apply.
-func FragmentSpec() *FragmentSpecApplyConfiguration {
-	return &FragmentSpecApplyConfiguration{}
+func ArtifactWorkflowSpec() *ArtifactWorkflowSpecApplyConfiguration {
+	return &ArtifactWorkflowSpecApplyConfiguration{}
 }
 
 // WithType sets the Type field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Type field is set to the value of the last call.
-func (b *FragmentSpecApplyConfiguration) WithType(value string) *FragmentSpecApplyConfiguration {
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithType(value string) *ArtifactWorkflowSpecApplyConfiguration {
 	b.Type = &value
 	return b
 }
@@ -35,7 +35,7 @@ func (b *FragmentSpecApplyConfiguration) WithType(value string) *FragmentSpecApp
 // WithParameters adds the given value to the Parameters field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Parameters field.
-func (b *FragmentSpecApplyConfiguration) WithParameters(values ...workflowv1alpha1.Parameter) *FragmentSpecApplyConfiguration {
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithParameters(values ...workflowv1alpha1.Parameter) *ArtifactWorkflowSpecApplyConfiguration {
 	for i := range values {
 		b.Parameters = append(b.Parameters, values[i])
 	}
@@ -45,7 +45,7 @@ func (b *FragmentSpecApplyConfiguration) WithParameters(values ...workflowv1alph
 // WithSecretRef sets the SecretRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the SecretRef field is set to the value of the last call.
-func (b *FragmentSpecApplyConfiguration) WithSecretRef(value v1.LocalObjectReference) *FragmentSpecApplyConfiguration {
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithSecretRef(value v1.LocalObjectReference) *ArtifactWorkflowSpecApplyConfiguration {
 	b.SecretRef = &value
 	return b
 }

@@ -40,12 +40,12 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=arc.bwi.de, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("artifacttypedefinitions"):
+	case v1alpha1.SchemeGroupVersion.WithResource("artifacttypes"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactTypes().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("artifactworkflows"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactWorkflows().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("endpoints"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Endpoints().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("fragments"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Fragments().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("orders"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Orders().Informer()}, nil
 

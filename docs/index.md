@@ -35,7 +35,7 @@ graph TB
     
     subgraph "API Resources (api/arc.bwi.de/v1alpha1)"
         Order["Order<br/>High-level request"]
-        Fragment["Fragment<br/>Single artifact op"]
+        ArtifactWorkflow["ArtifactWorkflow<br/>Single artifact op"]
         Endpoint["Endpoint<br/>Source/Destination"]
         ATD["ArtifactType<br/>Type rules"]
     end
@@ -59,12 +59,12 @@ graph TB
     ARCAPI -->|"stores/retrieves"| etcdStore
     
     OrderCtrl -->|"watches"| etcdStore
-    OrderCtrl -->|"creates"| Fragment
+    OrderCtrl -->|"creates"| ArtifactWorkflow
     OrderCtrl -->|"creates"| ArgoWorkflows
     
     Order -->|"references"| Endpoint
     Order -->|"uses"| ATD
-    Fragment -->|"references"| Endpoint
+    ArtifactWorkflow -->|"references"| Endpoint
     
     ATD -->|"specifies"| WorkflowTemplates
     ArgoWorkflows -->|"instantiates"| WorkflowTemplates
@@ -78,7 +78,7 @@ graph TB
 
 **Architecture: ARC System Components and Data Flow**
 
-The system follows a layered architecture where users interact through the `arcctl` CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable Fragments.
+The system follows a layered architecture where users interact through the `arcctl` CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.
 
 ## Core Concepts
 
@@ -87,7 +87,7 @@ ARC introduces four primary custom resource types under the `arc.bwi.de/v1alpha1
 | Resource                   | Purpose                                                                                    | Scope                            |
 | -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------- |
 | **Order**                  | Declares intent to procure one or more artifacts with shared configuration defaults        | User-facing, high-level          |
-| **Fragment**               | Represents a single artifact operation decomposed from an Order                            | System-generated, execution unit |
+| **ArtifactWorkflow**               | Represents a single artifact operation decomposed from an Order                            | System-generated, execution unit |
 | **Endpoint**               | Defines a source or destination location with credentials                                  | Configuration, reusable          |
 | **ArtifactType** | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
 
@@ -99,9 +99,9 @@ graph LR
     end
     
     subgraph "Generated Layer"
-        Fragment1["Fragment-1"]
-        Fragment2["Fragment-2"]
-        FragmentN["Fragment-N"]
+        ArtifactWorkflow1["ArtifactWorkflow-1"]
+        ArtifactWorkflow2["ArtifactWorkflow-2"]
+        ArtifactWorkflowN["ArtifactWorkflow-N"]
     end
     
     subgraph "Configuration"
@@ -118,22 +118,22 @@ graph LR
     end
     
     Order -->|"contains"| OrderSpec
-    OrderSpec -->|"generates"| Fragment1
-    OrderSpec -->|"generates"| Fragment2
-    OrderSpec -->|"generates"| FragmentN
+    OrderSpec -->|"generates"| ArtifactWorkflow1
+    OrderSpec -->|"generates"| ArtifactWorkflow2
+    OrderSpec -->|"generates"| ArtifactWorkflowN
     
-    Fragment1 -->|"srcRef"| SrcEndpoint
-    Fragment1 -->|"dstRef"| DstEndpoint
-    Fragment1 -->|"type"| ATD
-    Fragment2 -->|"references"| SrcEndpoint
-    Fragment2 -->|"references"| DstEndpoint
+    ArtifactWorkflow1 -->|"srcRef"| SrcEndpoint
+    ArtifactWorkflow1 -->|"dstRef"| DstEndpoint
+    ArtifactWorkflow1 -->|"type"| ATD
+    ArtifactWorkflow2 -->|"references"| SrcEndpoint
+    ArtifactWorkflow2 -->|"references"| DstEndpoint
     
     SrcEndpoint -->|"credentialRef"| Secret
     DstEndpoint -->|"credentialRef"| Secret
     
     ATD -->|"workflowTemplateRef"| WorkflowTemplate
-    Fragment1 -.->|"triggers"| Workflow1
-    Fragment2 -.->|"triggers"| Workflow2
+    ArtifactWorkflow1 -.->|"triggers"| Workflow1
+    ArtifactWorkflow2 -.->|"triggers"| Workflow2
     WorkflowTemplate -.->|"instantiates"| Workflow1
     WorkflowTemplate -.->|"instantiates"| Workflow2
 ```
@@ -167,10 +167,10 @@ The Order Controller implements the reconciliation loop for Order resources:
     1. Watch for Order create/update/delete events
     2. Validate endpoint references exist
     3. Apply defaults from Order.spec.defaults
-    4. Generate Fragment resources (one per artifact entry)
+    4. Generate ArtifactWorkflow resources (one per artifact entry)
     5. Lookup ArtifactType for each fragment's type
     6. Create Argo Workflow instances with appropriate WorkflowTemplate references
-    7. Update Order status based on Fragment and Workflow statuses
+    7. Update Order status based on ArtifactWorkflow and Workflow statuses
     8. Handle finalizers for cleanup operations
 
 ```mermaid
@@ -192,8 +192,8 @@ sequenceDiagram
     
     etcd-->>OrderCtrl: "Watch notification"
     OrderCtrl->>OrderCtrl: "Reconcile()"
-    OrderCtrl->>ARCAPI: "Create Fragment CRs"
-    ARCAPI->>etcd: "Store Fragments"
+    OrderCtrl->>ARCAPI: "Create ArtifactWorkflow CRs"
+    ARCAPI->>etcd: "Store ArtifactWorkflows"
     
     OrderCtrl->>ARCAPI: "Get ArtifactType"
     ARCAPI-->>OrderCtrl: "ATD with workflowTemplateRef"

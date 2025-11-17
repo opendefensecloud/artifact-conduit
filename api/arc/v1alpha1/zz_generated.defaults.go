@@ -18,10 +18,10 @@ import (
 func RegisterDefaults(scheme *runtime.Scheme) error {
 	scheme.AddTypeDefaultingFunc(&ArtifactType{}, func(obj interface{}) { SetObjectDefaults_ArtifactType(obj.(*ArtifactType)) })
 	scheme.AddTypeDefaultingFunc(&ArtifactTypeList{}, func(obj interface{}) { SetObjectDefaults_ArtifactTypeList(obj.(*ArtifactTypeList)) })
+	scheme.AddTypeDefaultingFunc(&ArtifactWorkflow{}, func(obj interface{}) { SetObjectDefaults_ArtifactWorkflow(obj.(*ArtifactWorkflow)) })
+	scheme.AddTypeDefaultingFunc(&ArtifactWorkflowList{}, func(obj interface{}) { SetObjectDefaults_ArtifactWorkflowList(obj.(*ArtifactWorkflowList)) })
 	scheme.AddTypeDefaultingFunc(&Endpoint{}, func(obj interface{}) { SetObjectDefaults_Endpoint(obj.(*Endpoint)) })
 	scheme.AddTypeDefaultingFunc(&EndpointList{}, func(obj interface{}) { SetObjectDefaults_EndpointList(obj.(*EndpointList)) })
-	scheme.AddTypeDefaultingFunc(&Fragment{}, func(obj interface{}) { SetObjectDefaults_Fragment(obj.(*Fragment)) })
-	scheme.AddTypeDefaultingFunc(&FragmentList{}, func(obj interface{}) { SetObjectDefaults_FragmentList(obj.(*FragmentList)) })
 	scheme.AddTypeDefaultingFunc(&Order{}, func(obj interface{}) { SetObjectDefaults_Order(obj.(*Order)) })
 	scheme.AddTypeDefaultingFunc(&OrderList{}, func(obj interface{}) { SetObjectDefaults_OrderList(obj.(*OrderList)) })
 	return nil
@@ -38,6 +38,17 @@ func SetObjectDefaults_ArtifactTypeList(in *ArtifactTypeList) {
 	}
 }
 
+func SetObjectDefaults_ArtifactWorkflow(in *ArtifactWorkflow) {
+	SetDefaults_ArtifactWorkflowSpec(&in.Spec)
+}
+
+func SetObjectDefaults_ArtifactWorkflowList(in *ArtifactWorkflowList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_ArtifactWorkflow(a)
+	}
+}
+
 func SetObjectDefaults_Endpoint(in *Endpoint) {
 	SetDefaults_EndpointSpec(&in.Spec)
 }
@@ -46,17 +57,6 @@ func SetObjectDefaults_EndpointList(in *EndpointList) {
 	for i := range in.Items {
 		a := &in.Items[i]
 		SetObjectDefaults_Endpoint(a)
-	}
-}
-
-func SetObjectDefaults_Fragment(in *Fragment) {
-	SetDefaults_FragmentSpec(&in.Spec)
-}
-
-func SetObjectDefaults_FragmentList(in *FragmentList) {
-	for i := range in.Items {
-		a := &in.Items[i]
-		SetObjectDefaults_Fragment(a)
 	}
 }
 

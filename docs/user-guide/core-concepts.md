@@ -39,7 +39,7 @@ graph TB
     
     subgraph "Custom Resources"
         Order["Order CR"]
-        Fragment["Fragment CR"]
+        ArtifactWorkflow["ArtifactWorkflow CR"]
         Endpoint["Endpoint CR"]
         ATD["ArtifactType CR"]
     end
@@ -65,11 +65,11 @@ graph TB
     OrderCtrl --> APIServer
     
     Order --> OrderCtrl
-    OrderCtrl --> Fragment
+    OrderCtrl --> ArtifactWorkflow
     OrderCtrl --> Argo
     
-    Fragment --> Endpoint
-    Fragment --> ATD
+    ArtifactWorkflow --> Endpoint
+    ArtifactWorkflow --> ATD
     ATD --> WorkflowTemplate
     Argo --> Workflow
     
@@ -151,9 +151,9 @@ graph TB
     end
     
     subgraph "Execution Layer"
-        Fragment1["Fragment<br/>apiVersion: arc.bwi.de/v1alpha1<br/>kind: Fragment"]
-        Fragment2["Fragment"]
-        FragmentSpec["spec:<br/>- type<br/>- srcRef<br/>- dstRef<br/>- spec (type-specific)"]
+        ArtifactWorkflow1["ArtifactWorkflow<br/>apiVersion: arc.bwi.de/v1alpha1<br/>kind: ArtifactWorkflow"]
+        ArtifactWorkflow2["ArtifactWorkflow"]
+        ArtifactWorkflowSpec["spec:<br/>- type<br/>- srcRef<br/>- dstRef<br/>- spec (type-specific)"]
     end
     
     subgraph "Configuration Layer"
@@ -172,13 +172,13 @@ graph TB
     OrderSpec --> OrderDefaults
     OrderSpec --> OrderArtifacts
     
-    OrderArtifacts -.generates.-> Fragment1
-    OrderArtifacts -.generates.-> Fragment2
+    OrderArtifacts -.generates.-> ArtifactWorkflow1
+    OrderArtifacts -.generates.-> ArtifactWorkflow2
     
-    Fragment1 --> FragmentSpec
-    FragmentSpec --> Endpoint1
-    FragmentSpec --> Endpoint2
-    FragmentSpec --> ATD
+    ArtifactWorkflow1 --> ArtifactWorkflowSpec
+    ArtifactWorkflowSpec --> Endpoint1
+    ArtifactWorkflowSpec --> Endpoint2
+    ArtifactWorkflowSpec --> ATD
     
     Endpoint1 --> EndpointSpec
     EndpointSpec --> Secret
@@ -200,12 +200,12 @@ High-level declarative resource specifying one or more artifacts to process.
   - `defaults`: Default source and destination endpoints
   - `artifacts`: Array of artifact specifications
 
-#### Fragment
+#### ArtifactWorkflow
 
 Represents a single artifact operation, generated from Order resources by the Order controller.
 
 **Generation Logic:**
-The OrderReconciler decomposes an Order into individual Fragments, applying defaults from the Order spec to each Fragment that doesn't specify its own `srcRef` or `dstRef`.
+The OrderReconciler decomposes an Order into individual ArtifactWorkflows, applying defaults from the Order spec to each ArtifactWorkflow that doesn't specify its own `srcRef` or `dstRef`.
 
 #### Endpoint
 
@@ -250,13 +250,13 @@ sequenceDiagram
     etcd-->>OrderReconciler: Order event
     OrderReconciler->>OrderReconciler: Reconcile()
     
-    OrderReconciler->>ARCAPI: List existing Fragments for Order
-    ARCAPI-->>OrderReconciler: Fragment list
+    OrderReconciler->>ARCAPI: List existing ArtifactWorkflows for Order
+    ARCAPI-->>OrderReconciler: ArtifactWorkflow list
     
-    OrderReconciler->>OrderReconciler: Calculate desired Fragments<br/>from Order.spec.artifacts
+    OrderReconciler->>OrderReconciler: Calculate desired ArtifactWorkflows<br/>from Order.spec.artifacts
     
-    OrderReconciler->>ARCAPI: Create/Update Fragments
-    ARCAPI->>etcd: Store Fragments
+    OrderReconciler->>ARCAPI: Create/Update ArtifactWorkflows
+    ARCAPI->>etcd: Store ArtifactWorkflows
     
     OrderReconciler->>ARCAPI: Get ArtifactType
     ARCAPI-->>OrderReconciler: ATD with workflowTemplateRef
@@ -278,12 +278,12 @@ The OrderReconciler implements the controller-runtime `Reconciler` interface and
 **Reconciliation Logic:**
 
 1. Fetch Order resource
-2. Generate Fragment specifications from `Order.spec.artifacts`
-3. Apply defaults from `Order.spec.defaults` to Fragments
-4. Create/update Fragment resources via ARC API Server
-5. Lookup ArtifactType for each Fragment type
+2. Generate ArtifactWorkflow specifications from `Order.spec.artifacts`
+3. Apply defaults from `Order.spec.defaults` to ArtifactWorkflows
+4. Create/update ArtifactWorkflow resources via ARC API Server
+5. Lookup ArtifactType for each ArtifactWorkflow type
 6. Create Argo Workflow instances using WorkflowTemplate from ATD
-7. Update Order status based on Fragment and Workflow states
+7. Update Order status based on ArtifactWorkflow and Workflow states
 
 ## Storage Architecture
 
@@ -316,7 +316,7 @@ ARC delegates actual artifact processing to Argo Workflows, which provides:
 ```mermaid
 graph TB
     subgraph "ARC Resources"
-        Fragment["Fragment"]
+        ArtifactWorkflow["ArtifactWorkflow"]
         ATD["ArtifactType"]
         Endpoint1["Endpoint (source)"]
         Endpoint2["Endpoint (destination)"]
@@ -334,13 +334,13 @@ graph TB
         PushStep["Push Artifact<br/>(to dstRef)"]
     end
     
-    Fragment --> ATD
+    ArtifactWorkflow --> ATD
     ATD --> WorkflowTemplate
-    Fragment --> Workflow
+    ArtifactWorkflow --> Workflow
     WorkflowTemplate --> Workflow
     
-    Fragment --> Endpoint1
-    Fragment --> Endpoint2
+    ArtifactWorkflow --> Endpoint1
+    ArtifactWorkflow --> Endpoint2
     
     Workflow --> PullStep
     PullStep --> ScanStep
@@ -356,11 +356,11 @@ The OrderReconciler creates Workflow instances by:
 
 1. Reading the `workflowTemplateRef` from the ArtifactType
 2. Instantiating a Workflow from the template
-3. Passing Fragment metadata and Endpoint references as workflow parameters
+3. Passing ArtifactWorkflow metadata and Endpoint references as workflow parameters
 4. Submitting the Workflow to Argo via Kubernetes API
 
 **Status Propagation:**
-Workflow status changes are watched by the OrderReconciler and propagated to Fragment and Order status fields.
+Workflow status changes are watched by the OrderReconciler and propagated to ArtifactWorkflow and Order status fields.
 
 ## Testing Infrastructure
 
@@ -384,7 +384,7 @@ graph TB
     subgraph "Test Resources"
         TestNS["Test Namespace"]
         TestOrder["Test Order"]
-        TestFragment["Test Fragment"]
+        TestArtifactWorkflow["Test ArtifactWorkflow"]
     end
     
     TestCode --> EnvtestCtrl
@@ -398,10 +398,10 @@ graph TB
     
     TestCode --> TestNS
     TestCode --> TestOrder
-    TestCode --> TestFragment
+    TestCode --> TestArtifactWorkflow
     
     TestOrder -.stored in.-> EnvtestEtcd
-    TestFragment -.stored in.-> EnvtestEtcd
+    TestArtifactWorkflow -.stored in.-> EnvtestEtcd
 ```
 
 The test environment (`pkg/envtest/environment.go`) provides a complete ARC deployment for integration testing:
@@ -451,10 +451,10 @@ sequenceDiagram
     etcd-->>ARCAPI: Order data
     ARCAPI-->>Ctrl: Order object
     
-    Ctrl->>Ctrl: Generate Fragments
+    Ctrl->>Ctrl: Generate ArtifactWorkflows
     
-    Ctrl->>ARCAPI: POST Fragments
-    ARCAPI->>etcd: Write Fragments
+    Ctrl->>ARCAPI: POST ArtifactWorkflows
+    ARCAPI->>etcd: Write ArtifactWorkflows
     
     Ctrl->>ARCAPI: GET ArtifactType
     ARCAPI->>etcd: Read ATD
@@ -496,7 +496,7 @@ This sequence shows the complete lifecycle from user command to artifact deliver
 | Layer                   | Responsibility                      | Implementation          |
 | ----------------------- | ----------------------------------- | ----------------------- |
 | **API Layer**           | Resource CRUD, validation, storage  | arc-apiserver + etcd    |
-| **Control Layer**       | Reconciliation, Fragment generation | OrderReconciler         |
+| **Control Layer**       | Reconciliation, ArtifactWorkflow generation | OrderReconciler         |
 | **Execution Layer**     | Artifact processing, scanning       | Argo Workflows          |
 | **Configuration Layer** | Endpoint definitions, type rules    | Endpoint, ATD resources |
 
@@ -528,7 +528,7 @@ The Extension API Server pattern provides:
 ARC's architecture achieves Kubernetes-native artifact management through:
 
 1. **Extension API Server:** Provides declarative resource model with flexible storage backend
-2. **Controller Pattern:** OrderReconciler decomposes high-level Orders into executable Fragments
+2. **Controller Pattern:** OrderReconciler decomposes high-level Orders into executable ArtifactWorkflows
 3. **Argo Integration:** Leverages proven workflow engine for artifact processing
 4. **Dedicated Storage:** Isolated etcd prevents impact on cluster control plane
-5. **Resource Model:** Clean separation between configuration (Endpoint, ATD) and operations (Order, Fragment)
+5. **Resource Model:** Clean separation between configuration (Endpoint, ATD) and operations (Order, ArtifactWorkflow)

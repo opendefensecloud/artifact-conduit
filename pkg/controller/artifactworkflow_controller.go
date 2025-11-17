@@ -26,8 +26,8 @@ const (
 	workflowConfigSecretKey = "config.json"
 )
 
-// FragmentReconciler reconciles a Fragment object
-type FragmentReconciler struct {
+// ArtifactWorkflowReconciler reconciles a ArtifactWorkflow object
+type ArtifactWorkflowReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
@@ -40,11 +40,11 @@ type FragmentReconciler struct {
 //+kubebuilder:rbac:groups=argoproj.io,resources=workflows,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile moves the current state of the cluster closer to the desired state
-func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
 
-	// Fetch the Fragment object
-	frag := &arcv1alpha1.Fragment{}
+	// Fetch the ArtifactWorkflow object
+	frag := &arcv1alpha1.ArtifactWorkflow{}
 	if err := r.Get(ctx, req.NamespacedName, frag); err != nil {
 		if apierrors.IsNotFound(err) {
 			// Object not found, return.
@@ -55,16 +55,16 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// Handle deletion: cleanup fragments, then remove finalizer
 	if !frag.DeletionTimestamp.IsZero() {
-		log.V(1).Info("Fragment is being deleted")
+		log.V(1).Info("ArtifactWorkflow is being deleted")
 		// TODO: remove workflow and secret if exists
 		// Workflow and secret was cleaned up, remove finalizer
 		if slices.Contains(frag.Finalizers, fragmentFinalizer) {
-			log.V(1).Info("Removing finalizer from Fragment")
+			log.V(1).Info("Removing finalizer from ArtifactWorkflow")
 			frag.Finalizers = slices.DeleteFunc(frag.Finalizers, func(f string) bool {
 				return f == fragmentFinalizer
 			})
 			if err := r.Update(ctx, frag); err != nil {
-				log.Error(err, "Failed to remove finalizer from Fragment")
+				log.Error(err, "Failed to remove finalizer from ArtifactWorkflow")
 				return ctrl.Result{}, err
 			}
 		}
@@ -74,10 +74,10 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// Add finalizer if not present and not deleting
 	if frag.DeletionTimestamp.IsZero() {
 		if !slices.Contains(frag.Finalizers, fragmentFinalizer) {
-			log.V(1).Info("Adding finalizer to Fragment")
+			log.V(1).Info("Adding finalizer to ArtifactWorkflow")
 			frag.Finalizers = append(frag.Finalizers, fragmentFinalizer)
 			if err := r.Update(ctx, frag); err != nil {
-				log.Error(err, "Failed to add finalizer to Fragment")
+				log.Error(err, "Failed to add finalizer to ArtifactWorkflow")
 				return ctrl.Result{}, err
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
@@ -88,7 +88,7 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// TODO: Is fragment status "done" or "error", then check if secret is still referenced in status.
 	//       If secret exists, clean up and update status.
 
-	// TODO: Fragment is not finished, then check if workflow is referenced in status.
+	// TODO: ArtifactWorkflow is not finished, then check if workflow is referenced in status.
 
 	// TODO: If no workflow referenced, create secret and workflow.
 	log.V(1).Info("Checking if workflowConfigSecret already exists...")
@@ -117,12 +117,12 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			"config.json": string(json),
 		}
 
-		// Set owner reference so Secret is garbage-collected with the Fragment
+		// Set owner reference so Secret is garbage-collected with the ArtifactWorkflow
 		if err := controllerutil.SetControllerReference(frag, configSecret, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
 
-		// Create the Secret in the namespace of the Fragment
+		// Create the Secret in the namespace of the ArtifactWorkflow
 		if err := r.Create(ctx, configSecret); err != nil {
 			log.Error(err, "Failed to create new workflow config", "namespace", configSecret.Namespace, "name", configSecret.Name)
 			return ctrl.Result{}, err
@@ -141,7 +141,7 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // createWorkflowConfig creates a new workflow config for the given fragment.
-func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1alpha1.Fragment) (*config.ArcctlConfig, error) {
+func (r *ArtifactWorkflowReconciler) createWorkflowConfig(ctx context.Context, f *arcv1alpha1.ArtifactWorkflow) (*config.ArcctlConfig, error) {
 	c := &config.ArcctlConfig{}
 	c.Type = config.ArtifactType(f.Spec.Type)
 	c.Spec = f.Spec.Spec
@@ -162,7 +162,7 @@ func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1a
 }
 
 // createWorkflowEndpoint creates a new workflow endpoint for the given reference.
-func (r *FragmentReconciler) createWorkflowEndpoint(ctx context.Context, namespace, name string) (*config.Endpoint, error) {
+func (r *ArtifactWorkflowReconciler) createWorkflowEndpoint(ctx context.Context, namespace, name string) (*config.Endpoint, error) {
 	ep, err := r.resolveEndpoint(ctx, namespace, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve endpoint: %w", err)
@@ -185,16 +185,16 @@ func (r *FragmentReconciler) createWorkflowEndpoint(ctx context.Context, namespa
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *FragmentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&arcv1alpha1.Fragment{}).
+		For(&arcv1alpha1.ArtifactWorkflow{}).
 		Owns(&wfv1alpha1.Workflow{}).
 		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
 // resolveEndpoint resolves the endpoint for a given reference.
-func (r *FragmentReconciler) resolveEndpoint(ctx context.Context, namespace, name string) (*arcv1alpha1.Endpoint, error) {
+func (r *ArtifactWorkflowReconciler) resolveEndpoint(ctx context.Context, namespace, name string) (*arcv1alpha1.Endpoint, error) {
 	ep := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, ep); err != nil {
 		return nil, fmt.Errorf("failed to get endpoint: %w", err)
@@ -203,7 +203,7 @@ func (r *FragmentReconciler) resolveEndpoint(ctx context.Context, namespace, nam
 }
 
 // resolveSecret resolves the secret for a given reference.
-func (r *FragmentReconciler) resolveSecret(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
+func (r *ArtifactWorkflowReconciler) resolveSecret(ctx context.Context, namespace, name string) (*corev1.Secret, error) {
 	secret := &corev1.Secret{}
 	if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, secret); err != nil {
 		return nil, fmt.Errorf("failed to get secret: %w", err)
