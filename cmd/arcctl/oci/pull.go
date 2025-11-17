@@ -33,6 +33,7 @@ func runPull(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("tmp-dir is not set")
 	}
 	tmpDir := viper.GetString("tmp-dir")
+	plainHTTP := viper.GetBool("plain-http")
 
 	// Load configuration
 	conf, err := config.LoadFromViper()
@@ -54,6 +55,7 @@ func runPull(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get source repository: %w", err)
 	}
+	repo.PlainHTTP = plainHTTP
 
 	// Set up authentication if provided
 	if conf.Src.Auth != nil {
