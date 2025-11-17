@@ -23,18 +23,18 @@ func NewStrategy(typer runtime.ObjectTyper) artifactTypeDefinitionStrategy {
 	return artifactTypeDefinitionStrategy{typer, names.SimpleNameGenerator}
 }
 
-// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactTypeDefinition
+// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactType
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*arc.ArtifactTypeDefinition)
+	apiserver, ok := obj.(*arc.ArtifactType)
 	if !ok {
-		return nil, nil, fmt.Errorf("given object is not an ArtifactTypeDefinition")
+		return nil, nil, fmt.Errorf("given object is not an ArtifactType")
 	}
 	return labels.Set(apiserver.Labels), SelectableFields(apiserver), nil
 }
 
-// MatchArtifactTypeDefinition is the filter used by the generic etcd backend to watch events
+// MatchArtifactType is the filter used by the generic etcd backend to watch events
 // from etcd to clients of the apiserver only interested in specific labels/fields.
-func MatchArtifactTypeDefinition(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
+func MatchArtifactType(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
 		Field:    field,
@@ -43,7 +43,7 @@ func MatchArtifactTypeDefinition(label labels.Selector, field fields.Selector) s
 }
 
 // SelectableFields returns a field set that represents the object.
-func SelectableFields(obj *arc.ArtifactTypeDefinition) fields.Set {
+func SelectableFields(obj *arc.ArtifactType) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 

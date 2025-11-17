@@ -41,7 +41,7 @@ graph TB
         Order["Order CR"]
         Fragment["Fragment CR"]
         Endpoint["Endpoint CR"]
-        ATD["ArtifactTypeDefinition CR"]
+        ATD["ArtifactType CR"]
     end
     
     subgraph "Execution Layer"
@@ -161,7 +161,7 @@ graph TB
         Endpoint2["Endpoint"]
         EndpointSpec["spec:<br/>- type<br/>- remoteURL<br/>- secretRef<br/>- usage"]
         
-        ATD["ArtifactTypeDefinition<br/>kind: ArtifactTypeDefinition"]
+        ATD["ArtifactType<br/>kind: ArtifactType"]
         ATDSpec["spec:<br/>- rules<br/>- workflowTemplateRef"]
         
         Secret["Secret<br/>(credentials)"]
@@ -218,7 +218,7 @@ Defines connection details for artifact sources and destinations.
 - `secretRef`: Reference to Secret containing credentials
 - `usage`: Enum (`PullOnly`, `PushOnly`, `All`)
 
-#### ArtifactTypeDefinition
+#### ArtifactType
 
 Defines processing rules and workflow templates for specific artifact types.
 
@@ -258,7 +258,7 @@ sequenceDiagram
     OrderReconciler->>ARCAPI: Create/Update Fragments
     ARCAPI->>etcd: Store Fragments
     
-    OrderReconciler->>ARCAPI: Get ArtifactTypeDefinition
+    OrderReconciler->>ARCAPI: Get ArtifactType
     ARCAPI-->>OrderReconciler: ATD with workflowTemplateRef
     
     OrderReconciler->>K8sAPI: Create Workflow (via Argo API)
@@ -281,7 +281,7 @@ The OrderReconciler implements the controller-runtime `Reconciler` interface and
 2. Generate Fragment specifications from `Order.spec.artifacts`
 3. Apply defaults from `Order.spec.defaults` to Fragments
 4. Create/update Fragment resources via ARC API Server
-5. Lookup ArtifactTypeDefinition for each Fragment type
+5. Lookup ArtifactType for each Fragment type
 6. Create Argo Workflow instances using WorkflowTemplate from ATD
 7. Update Order status based on Fragment and Workflow states
 
@@ -317,7 +317,7 @@ ARC delegates actual artifact processing to Argo Workflows, which provides:
 graph TB
     subgraph "ARC Resources"
         Fragment["Fragment"]
-        ATD["ArtifactTypeDefinition"]
+        ATD["ArtifactType"]
         Endpoint1["Endpoint (source)"]
         Endpoint2["Endpoint (destination)"]
     end
@@ -354,7 +354,7 @@ graph TB
 **Workflow Creation:**
 The OrderReconciler creates Workflow instances by:
 
-1. Reading the `workflowTemplateRef` from the ArtifactTypeDefinition
+1. Reading the `workflowTemplateRef` from the ArtifactType
 2. Instantiating a Workflow from the template
 3. Passing Fragment metadata and Endpoint references as workflow parameters
 4. Submitting the Workflow to Argo via Kubernetes API
@@ -456,7 +456,7 @@ sequenceDiagram
     Ctrl->>ARCAPI: POST Fragments
     ARCAPI->>etcd: Write Fragments
     
-    Ctrl->>ARCAPI: GET ArtifactTypeDefinition
+    Ctrl->>ARCAPI: GET ArtifactType
     ARCAPI->>etcd: Read ATD
     etcd-->>ARCAPI: ATD with workflowTemplateRef
     ARCAPI-->>Ctrl: ATD object

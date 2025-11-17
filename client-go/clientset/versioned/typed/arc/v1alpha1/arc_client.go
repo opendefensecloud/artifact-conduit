@@ -15,7 +15,7 @@ import (
 
 type ArcV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	ArtifactTypeDefinitionsGetter
+	ArtifactTypesGetter
 	EndpointsGetter
 	FragmentsGetter
 	OrdersGetter
@@ -26,8 +26,8 @@ type ArcV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *ArcV1alpha1Client) ArtifactTypeDefinitions(namespace string) ArtifactTypeDefinitionInterface {
-	return newArtifactTypeDefinitions(c, namespace)
+func (c *ArcV1alpha1Client) ArtifactTypes(namespace string) ArtifactTypeInterface {
+	return newArtifactTypes(c, namespace)
 }
 
 func (c *ArcV1alpha1Client) Endpoints(namespace string) EndpointInterface {

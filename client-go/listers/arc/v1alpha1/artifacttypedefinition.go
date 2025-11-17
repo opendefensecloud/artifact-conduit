@@ -12,46 +12,46 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ArtifactTypeDefinitionLister helps list ArtifactTypeDefinitions.
+// ArtifactTypeLister helps list ArtifactTypes.
 // All objects returned here must be treated as read-only.
-type ArtifactTypeDefinitionLister interface {
-	// List lists all ArtifactTypeDefinitions in the indexer.
+type ArtifactTypeLister interface {
+	// List lists all ArtifactTypes in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactTypeDefinition, err error)
-	// ArtifactTypeDefinitions returns an object that can list and get ArtifactTypeDefinitions.
-	ArtifactTypeDefinitions(namespace string) ArtifactTypeDefinitionNamespaceLister
-	ArtifactTypeDefinitionListerExpansion
+	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactType, err error)
+	// ArtifactTypes returns an object that can list and get ArtifactTypes.
+	ArtifactTypes(namespace string) ArtifactTypeNamespaceLister
+	ArtifactTypeListerExpansion
 }
 
-// artifactTypeDefinitionLister implements the ArtifactTypeDefinitionLister interface.
+// artifactTypeDefinitionLister implements the ArtifactTypeLister interface.
 type artifactTypeDefinitionLister struct {
-	listers.ResourceIndexer[*arcv1alpha1.ArtifactTypeDefinition]
+	listers.ResourceIndexer[*arcv1alpha1.ArtifactType]
 }
 
-// NewArtifactTypeDefinitionLister returns a new ArtifactTypeDefinitionLister.
-func NewArtifactTypeDefinitionLister(indexer cache.Indexer) ArtifactTypeDefinitionLister {
-	return &artifactTypeDefinitionLister{listers.New[*arcv1alpha1.ArtifactTypeDefinition](indexer, arcv1alpha1.Resource("artifacttypedefinition"))}
+// NewArtifactTypeLister returns a new ArtifactTypeLister.
+func NewArtifactTypeLister(indexer cache.Indexer) ArtifactTypeLister {
+	return &artifactTypeDefinitionLister{listers.New[*arcv1alpha1.ArtifactType](indexer, arcv1alpha1.Resource("artifacttypedefinition"))}
 }
 
-// ArtifactTypeDefinitions returns an object that can list and get ArtifactTypeDefinitions.
-func (s *artifactTypeDefinitionLister) ArtifactTypeDefinitions(namespace string) ArtifactTypeDefinitionNamespaceLister {
-	return artifactTypeDefinitionNamespaceLister{listers.NewNamespaced[*arcv1alpha1.ArtifactTypeDefinition](s.ResourceIndexer, namespace)}
+// ArtifactTypes returns an object that can list and get ArtifactTypes.
+func (s *artifactTypeDefinitionLister) ArtifactTypes(namespace string) ArtifactTypeNamespaceLister {
+	return artifactTypeDefinitionNamespaceLister{listers.NewNamespaced[*arcv1alpha1.ArtifactType](s.ResourceIndexer, namespace)}
 }
 
-// ArtifactTypeDefinitionNamespaceLister helps list and get ArtifactTypeDefinitions.
+// ArtifactTypeNamespaceLister helps list and get ArtifactTypes.
 // All objects returned here must be treated as read-only.
-type ArtifactTypeDefinitionNamespaceLister interface {
-	// List lists all ArtifactTypeDefinitions in the indexer for a given namespace.
+type ArtifactTypeNamespaceLister interface {
+	// List lists all ArtifactTypes in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactTypeDefinition, err error)
-	// Get retrieves the ArtifactTypeDefinition from the indexer for a given namespace and name.
+	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactType, err error)
+	// Get retrieves the ArtifactType from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*arcv1alpha1.ArtifactTypeDefinition, error)
-	ArtifactTypeDefinitionNamespaceListerExpansion
+	Get(name string) (*arcv1alpha1.ArtifactType, error)
+	ArtifactTypeNamespaceListerExpansion
 }
 
-// artifactTypeDefinitionNamespaceLister implements the ArtifactTypeDefinitionNamespaceLister
+// artifactTypeDefinitionNamespaceLister implements the ArtifactTypeNamespaceLister
 // interface.
 type artifactTypeDefinitionNamespaceLister struct {
-	listers.ResourceIndexer[*arcv1alpha1.ArtifactTypeDefinition]
+	listers.ResourceIndexer[*arcv1alpha1.ArtifactType]
 }

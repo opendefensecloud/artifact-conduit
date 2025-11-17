@@ -9,28 +9,28 @@
 package v1alpha1
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
-func (in ArtifactTypeDefinition) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeDefinition"
+func (in ArtifactType) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactType"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
-func (in ArtifactTypeDefinitionList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeDefinitionList"
+func (in ArtifactTypeList) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactTypeList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
-func (in ArtifactTypeDefinitionRules) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeDefinitionRules"
+func (in ArtifactTypeRules) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactTypeRules"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
-func (in ArtifactTypeDefinitionSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeDefinitionSpec"
+func (in ArtifactTypeSpec) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactTypeSpec"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
-func (in ArtifactTypeDefinitionStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeDefinitionStatus"
+func (in ArtifactTypeStatus) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactTypeStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.

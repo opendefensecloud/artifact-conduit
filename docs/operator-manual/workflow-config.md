@@ -10,7 +10,7 @@ The following diagram illustrates how ARC resources work together to instantiate
 graph TB
     Order["📋 Order<br/>(User Request)"]
     Fragment["📦 Fragment"]
-    ArtifactTypeDef["🏷️ ArtifactTypeDefinition"]
+    ArtifactTypeDef["🏷️ ArtifactType"]
     SrcEndpoint["🔌 Endpoint (Source)"]
     DstEndpoint["🔌 Endpoint (Destination)"]
     SrcSecret["🔐 Secret<br/>(Source Credentials)"]
@@ -101,11 +101,11 @@ spec:
   usage: PushOnly
 ```
 
-How these objects are tied into a workflow is described by the `ArtifactTypeDefinition`:
+How these objects are tied into a workflow is described by the `ArtifactType`:
 
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactTypeDefinition
+kind: ArtifactType
 metadata:
   name: oci
 spec:
@@ -118,7 +118,7 @@ spec:
     name: oci-workflow-template
 ```
 
-The `Fragment` defines which `ArtifactTypeDefinition` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
+The `Fragment` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
 
 The two endpoints specified by the `Fragment` are compliant as the workflow does only support endpoints of the type `oci`. It is important to understand that there are both endpoint types and artifact types.
 

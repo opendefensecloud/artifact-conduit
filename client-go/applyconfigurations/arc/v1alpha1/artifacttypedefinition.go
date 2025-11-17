@@ -12,31 +12,31 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ArtifactTypeDefinitionApplyConfiguration represents a declarative configuration of the ArtifactTypeDefinition type for use
+// ArtifactTypeApplyConfiguration represents a declarative configuration of the ArtifactType type for use
 // with apply.
-type ArtifactTypeDefinitionApplyConfiguration struct {
+type ArtifactTypeApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *ArtifactTypeDefinitionSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *arcv1alpha1.ArtifactTypeDefinitionStatus     `json:"status,omitempty"`
+	Spec                             *ArtifactTypeSpecApplyConfiguration `json:"spec,omitempty"`
+	Status                           *arcv1alpha1.ArtifactTypeStatus     `json:"status,omitempty"`
 }
 
-// ArtifactTypeDefinition constructs a declarative configuration of the ArtifactTypeDefinition type for use with
+// ArtifactType constructs a declarative configuration of the ArtifactType type for use with
 // apply.
-func ArtifactTypeDefinition(name, namespace string) *ArtifactTypeDefinitionApplyConfiguration {
-	b := &ArtifactTypeDefinitionApplyConfiguration{}
+func ArtifactType(name, namespace string) *ArtifactTypeApplyConfiguration {
+	b := &ArtifactTypeApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("ArtifactTypeDefinition")
+	b.WithKind("ArtifactType")
 	b.WithAPIVersion("arc.bwi.de/v1alpha1")
 	return b
 }
-func (b ArtifactTypeDefinitionApplyConfiguration) IsApplyConfiguration() {}
+func (b ArtifactTypeApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithKind(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithKind(value string) *ArtifactTypeApplyConfiguration {
 	b.TypeMetaApplyConfiguration.Kind = &value
 	return b
 }
@@ -44,7 +44,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithKind(value string) *Artif
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithAPIVersion(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithAPIVersion(value string) *ArtifactTypeApplyConfiguration {
 	b.TypeMetaApplyConfiguration.APIVersion = &value
 	return b
 }
@@ -52,7 +52,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithAPIVersion(value string) 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithName(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithName(value string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Name = &value
 	return b
@@ -61,7 +61,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithName(value string) *Artif
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithGenerateName(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithGenerateName(value string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.GenerateName = &value
 	return b
@@ -70,7 +70,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithGenerateName(value string
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithNamespace(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithNamespace(value string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Namespace = &value
 	return b
@@ -79,7 +79,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithNamespace(value string) *
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithUID(value types.UID) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithUID(value types.UID) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.UID = &value
 	return b
@@ -88,7 +88,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithUID(value types.UID) *Art
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithResourceVersion(value string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithResourceVersion(value string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.ResourceVersion = &value
 	return b
@@ -97,7 +97,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithResourceVersion(value str
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithGeneration(value int64) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithGeneration(value int64) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Generation = &value
 	return b
@@ -106,7 +106,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithGeneration(value int64) *
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithCreationTimestamp(value metav1.Time) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithCreationTimestamp(value metav1.Time) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.CreationTimestamp = &value
 	return b
@@ -115,7 +115,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithCreationTimestamp(value m
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionTimestamp = &value
 	return b
@@ -124,7 +124,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithDeletionTimestamp(value m
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionGracePeriodSeconds = &value
 	return b
@@ -134,7 +134,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithDeletionGracePeriodSecond
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithLabels(entries map[string]string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithLabels(entries map[string]string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Labels == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Labels = make(map[string]string, len(entries))
@@ -149,7 +149,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithLabels(entries map[string
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithAnnotations(entries map[string]string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithAnnotations(entries map[string]string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Annotations == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Annotations = make(map[string]string, len(entries))
@@ -163,7 +163,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithAnnotations(entries map[s
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -177,7 +177,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithOwnerReferences(values ..
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithFinalizers(values ...string) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithFinalizers(values ...string) *ArtifactTypeApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.ObjectMetaApplyConfiguration.Finalizers = append(b.ObjectMetaApplyConfiguration.Finalizers, values[i])
@@ -185,7 +185,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithFinalizers(values ...stri
 	return b
 }
 
-func (b *ArtifactTypeDefinitionApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *ArtifactTypeApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -194,7 +194,7 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) ensureObjectMetaApplyConfigur
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithSpec(value *ArtifactTypeDefinitionSpecApplyConfiguration) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithSpec(value *ArtifactTypeSpecApplyConfiguration) *ArtifactTypeApplyConfiguration {
 	b.Spec = value
 	return b
 }
@@ -202,29 +202,29 @@ func (b *ArtifactTypeDefinitionApplyConfiguration) WithSpec(value *ArtifactTypeD
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionApplyConfiguration) WithStatus(value arcv1alpha1.ArtifactTypeDefinitionStatus) *ArtifactTypeDefinitionApplyConfiguration {
+func (b *ArtifactTypeApplyConfiguration) WithStatus(value arcv1alpha1.ArtifactTypeStatus) *ArtifactTypeApplyConfiguration {
 	b.Status = &value
 	return b
 }
 
 // GetKind retrieves the value of the Kind field in the declarative configuration.
-func (b *ArtifactTypeDefinitionApplyConfiguration) GetKind() *string {
+func (b *ArtifactTypeApplyConfiguration) GetKind() *string {
 	return b.TypeMetaApplyConfiguration.Kind
 }
 
 // GetAPIVersion retrieves the value of the APIVersion field in the declarative configuration.
-func (b *ArtifactTypeDefinitionApplyConfiguration) GetAPIVersion() *string {
+func (b *ArtifactTypeApplyConfiguration) GetAPIVersion() *string {
 	return b.TypeMetaApplyConfiguration.APIVersion
 }
 
 // GetName retrieves the value of the Name field in the declarative configuration.
-func (b *ArtifactTypeDefinitionApplyConfiguration) GetName() *string {
+func (b *ArtifactTypeApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
 }
 
 // GetNamespace retrieves the value of the Namespace field in the declarative configuration.
-func (b *ArtifactTypeDefinitionApplyConfiguration) GetNamespace() *string {
+func (b *ArtifactTypeApplyConfiguration) GetNamespace() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Namespace
 }

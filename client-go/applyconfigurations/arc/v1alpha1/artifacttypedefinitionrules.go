@@ -5,23 +5,23 @@
 
 package v1alpha1
 
-// ArtifactTypeDefinitionRulesApplyConfiguration represents a declarative configuration of the ArtifactTypeDefinitionRules type for use
+// ArtifactTypeRulesApplyConfiguration represents a declarative configuration of the ArtifactTypeRules type for use
 // with apply.
-type ArtifactTypeDefinitionRulesApplyConfiguration struct {
+type ArtifactTypeRulesApplyConfiguration struct {
 	SrcTypes []string `json:"srcTypes,omitempty"`
 	DstTypes []string `json:"dstType,omitempty"`
 }
 
-// ArtifactTypeDefinitionRulesApplyConfiguration constructs a declarative configuration of the ArtifactTypeDefinitionRules type for use with
+// ArtifactTypeRulesApplyConfiguration constructs a declarative configuration of the ArtifactTypeRules type for use with
 // apply.
-func ArtifactTypeDefinitionRules() *ArtifactTypeDefinitionRulesApplyConfiguration {
-	return &ArtifactTypeDefinitionRulesApplyConfiguration{}
+func ArtifactTypeRules() *ArtifactTypeRulesApplyConfiguration {
+	return &ArtifactTypeRulesApplyConfiguration{}
 }
 
 // WithSrcTypes adds the given value to the SrcTypes field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the SrcTypes field.
-func (b *ArtifactTypeDefinitionRulesApplyConfiguration) WithSrcTypes(values ...string) *ArtifactTypeDefinitionRulesApplyConfiguration {
+func (b *ArtifactTypeRulesApplyConfiguration) WithSrcTypes(values ...string) *ArtifactTypeRulesApplyConfiguration {
 	for i := range values {
 		b.SrcTypes = append(b.SrcTypes, values[i])
 	}
@@ -31,7 +31,7 @@ func (b *ArtifactTypeDefinitionRulesApplyConfiguration) WithSrcTypes(values ...s
 // WithDstTypes adds the given value to the DstTypes field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the DstTypes field.
-func (b *ArtifactTypeDefinitionRulesApplyConfiguration) WithDstTypes(values ...string) *ArtifactTypeDefinitionRulesApplyConfiguration {
+func (b *ArtifactTypeRulesApplyConfiguration) WithDstTypes(values ...string) *ArtifactTypeRulesApplyConfiguration {
 	for i := range values {
 		b.DstTypes = append(b.DstTypes, values[i])
 	}

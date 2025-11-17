@@ -11,7 +11,7 @@ import (
 
 // FragmentSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type FragmentSpec struct {
-	// Type specifies which ArtifactTypeDefinition is used to process this artifact.
+	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	//
 	Parameters []wfv1alpha1.Parameter `json:"parameters,omitempty"`

@@ -19,12 +19,12 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=arc.bwi.de, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeDefinition"):
-		return &arcv1alpha1.ArtifactTypeDefinitionApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeDefinitionRules"):
-		return &arcv1alpha1.ArtifactTypeDefinitionRulesApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeDefinitionSpec"):
-		return &arcv1alpha1.ArtifactTypeDefinitionSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactType"):
+		return &arcv1alpha1.ArtifactTypeApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeRules"):
+		return &arcv1alpha1.ArtifactTypeRulesApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeSpec"):
+		return &arcv1alpha1.ArtifactTypeSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Endpoint"):
 		return &arcv1alpha1.EndpointApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EndpointSpec"):

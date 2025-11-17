@@ -79,7 +79,7 @@ spec:
 
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactTypeDefinition
+kind: ArtifactType
 metadata:
   name: oci
 spec:

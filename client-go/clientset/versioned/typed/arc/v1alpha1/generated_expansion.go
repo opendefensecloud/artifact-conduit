@@ -5,7 +5,7 @@
 
 package v1alpha1
 
-type ArtifactTypeDefinitionExpansion interface{}
+type ArtifactTypeExpansion interface{}
 
 type EndpointExpansion interface{}
 
