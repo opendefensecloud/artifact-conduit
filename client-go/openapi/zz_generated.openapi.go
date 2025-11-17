@@ -784,32 +784,31 @@ func schema_arc_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceCallback) comm
 							Format:      "",
 						},
 					},
-					"srcRef": {
+					"parameters": {
 						SchemaProps: spec.SchemaProps{
-							Description: "SrcRef defines which Endpoint object is used as source.",
-							Default:     map[string]interface{}{},
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1.Parameter"),
+									},
+								},
+							},
 						},
 					},
-					"dstRef": {
+					"secretRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "SrcRef defines which Endpoint object is used as destination.",
-							Default:     map[string]interface{}{},
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Spec specifies parameters used by the underlying Workflow.",
-							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
 				},
-				Required: []string{"type", "srcRef", "dstRef"},
+				Required: []string{"type", "secretRef"},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1.Parameter", "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 

@@ -6,17 +6,16 @@
 package v1alpha1
 
 import (
+	workflowv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	v1 "k8s.io/api/core/v1"
-	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
 // FragmentSpecApplyConfiguration represents a declarative configuration of the FragmentSpec type for use
 // with apply.
 type FragmentSpecApplyConfiguration struct {
-	Type   *string                  `json:"type,omitempty"`
-	SrcRef *v1.LocalObjectReference `json:"srcRef,omitempty"`
-	DstRef *v1.LocalObjectReference `json:"dstRef,omitempty"`
-	Spec   *runtime.RawExtension    `json:"spec,omitempty"`
+	Type       *string                      `json:"type,omitempty"`
+	Parameters []workflowv1alpha1.Parameter `json:"parameters,omitempty"`
+	SecretRef  *v1.LocalObjectReference     `json:"secretRef,omitempty"`
 }
 
 // FragmentSpecApplyConfiguration constructs a declarative configuration of the FragmentSpec type for use with
@@ -33,26 +32,20 @@ func (b *FragmentSpecApplyConfiguration) WithType(value string) *FragmentSpecApp
 	return b
 }
 
-// WithSrcRef sets the SrcRef field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the SrcRef field is set to the value of the last call.
-func (b *FragmentSpecApplyConfiguration) WithSrcRef(value v1.LocalObjectReference) *FragmentSpecApplyConfiguration {
-	b.SrcRef = &value
+// WithParameters adds the given value to the Parameters field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Parameters field.
+func (b *FragmentSpecApplyConfiguration) WithParameters(values ...workflowv1alpha1.Parameter) *FragmentSpecApplyConfiguration {
+	for i := range values {
+		b.Parameters = append(b.Parameters, values[i])
+	}
 	return b
 }
 
-// WithDstRef sets the DstRef field in the declarative configuration to the given value
+// WithSecretRef sets the SecretRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the DstRef field is set to the value of the last call.
-func (b *FragmentSpecApplyConfiguration) WithDstRef(value v1.LocalObjectReference) *FragmentSpecApplyConfiguration {
-	b.DstRef = &value
-	return b
-}
-
-// WithSpec sets the Spec field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Spec field is set to the value of the last call.
-func (b *FragmentSpecApplyConfiguration) WithSpec(value runtime.RawExtension) *FragmentSpecApplyConfiguration {
-	b.Spec = &value
+// If called multiple times, the SecretRef field is set to the value of the last call.
+func (b *FragmentSpecApplyConfiguration) WithSecretRef(value v1.LocalObjectReference) *FragmentSpecApplyConfiguration {
+	b.SecretRef = &value
 	return b
 }
