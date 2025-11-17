@@ -13,7 +13,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/registry"
 )
 
-// Registry basic http test server to mock a chart registry
+// Registry basic http test server to mock an oci registry
 type Registry struct {
 	*httptest.Server
 
