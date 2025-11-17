@@ -1,6 +1,8 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build !release
+
 package oci
 
 import (
@@ -15,6 +17,7 @@ import (
 	"github.com/spf13/viper"
 	"go.opendefense.cloud/arc/pkg/workflow/config"
 	ocitest "go.opendefense.cloud/arc/test/oci"
+	"oras.land/oras-go/v2/registry/remote"
 )
 
 var _ = Describe("Pull Command", func() {
@@ -27,36 +30,37 @@ var _ = Describe("Pull Command", func() {
 		authpass            = "pass"
 	)
 	var (
-		ctx           context.Context
 		cmd           *cobra.Command
 		mockRegistry  *ocitest.Registry
 		mockReference string
 	)
 
-	setupRegistry := func(needsAuth bool) {
-		if needsAuth {
-			mockRegistry = ocitest.NewRegistry().WithAuth(authuser, authpass)
-		} else {
-			mockRegistry = ocitest.NewRegistry()
-		}
+	setupRegistry := func(ctx context.Context, needsAuth bool) {
+		// create registry
+		mockRegistry = ocitest.NewRegistry()
 
+		// create oras repo
 		repo := fmt.Sprintf("%s/%s/%s", mockRegistry.Listener.Addr().String(), mockImageRepository, mockImageName)
-		mockRepository, err := ocitest.NewRepo(repo)
+		mockRepository, err := remote.NewRepository(repo)
 		Expect(err).ToNot(HaveOccurred())
-		if needsAuth {
-			mockRepository = ocitest.WithInsecureAuth(mockRepository, authuser, authpass)
-		}
+		mockRepository.PlainHTTP = true
+
+		// push test image
 		mockReference = fmt.Sprintf("%s/%s:%s", mockImageRepository, mockImageName, mockImageVersion)
 		_, err = ocitest.PushTestManifest(ctx, mockRepository, mockImageVersion)
 		Expect(err).To(Succeed())
+
+		if needsAuth {
+			mockRegistry = mockRegistry.WithAuth(authuser, authpass)
+		}
 	}
 
 	BeforeEach(func() {
-		ctx = context.Background()
 		cmd = NewPullCommand()
 		cmd.SetContext(GinkgoT().Context())
 		viper.SetConfigType("json")
 		viper.Set("tmp-dir", arcctlTempDir)
+		viper.Set("plain-http", true)
 	})
 
 	AfterEach(func() {
@@ -80,7 +84,7 @@ var _ = Describe("Pull Command", func() {
 	})
 	Context("when auth is necessary", func() {
 		BeforeEach(func() {
-			setupRegistry(true)
+			setupRegistry(cmd.Context(), true)
 		})
 		AfterEach(func() {
 			mockRegistry.Close()
