@@ -28,7 +28,7 @@ var _ = Describe("OrderController", func() {
 					Namespace: ns.Name,
 				},
 				StringData: map[string]string{
-					"testkey": "testval",
+					"testkey": name,
 				},
 			}
 			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
@@ -38,8 +38,8 @@ var _ = Describe("OrderController", func() {
 					Namespace: ns.Name,
 				},
 				Spec: arcv1alpha1.EndpointSpec{
-					Type:      "oci",
-					RemoteURL: "testurl",
+					Type:      name,
+					RemoteURL: name,
 					SecretRef: corev1.LocalObjectReference{
 						Name: name,
 					},
@@ -51,7 +51,7 @@ var _ = Describe("OrderController", func() {
 	}
 
 	Context("when reconciling Orders", func() {
-		It("should create fragments for an order with multiple artifacts and no defaults", func() {
+		It("should create ArtifactWorkflows for an order with multiple artifacts and no defaults", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			// Create test Order with multiple artifacts, no defaults
 			order := &arcv1alpha1.Order{
@@ -62,13 +62,13 @@ var _ = Describe("OrderController", func() {
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type:   "test-type-1",
+							Type:   "art-1",
 							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value1"}`)},
 						},
 						{
-							Type:   "test-type-2",
+							Type:   "art-2",
 							SrcRef: corev1.LocalObjectReference{Name: "src-2"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-2"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value2"}`)},
@@ -78,7 +78,7 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify fragments were created
+			// Verify artifact workflows were created
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -88,18 +88,42 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(2))
 
-			// TODO: check parameters and secret!
-			// // Verify fragment contents
-			// for _, fragment := range awList.Items {
-			// 	Expect(fragment.Spec.Type).To(Or(Equal("test-type-1"), Equal("test-type-2")))
-			// 	if fragment.Spec.Type == "test-type-1" {
-			// 		Expect(fragment.Spec.SrcRef.Name).To(Equal("src-1"))
-			// 		Expect(fragment.Spec.DstRef.Name).To(Equal("dst-1"))
-			// 	} else {
-			// 		Expect(fragment.Spec.SrcRef.Name).To(Equal("src-2"))
-			// 		Expect(fragment.Spec.DstRef.Name).To(Equal("dst-2"))
-			// 	}
-			// }
+			// Verify artifact workflows contents
+			for _, aw := range awList.Items {
+				Expect(aw.Spec.Type).To(Or(Equal("art-1"), Equal("art-2")))
+				suffix := "2"
+				if aw.Spec.Type == "art-1" {
+					suffix = "1"
+				}
+				for _, param := range aw.Spec.Parameters {
+					switch param.Name {
+					case "srcType":
+						Expect(param.Value).To(Equal("src-" + suffix))
+					case "srcRemoteURL":
+						Expect(param.Value).To(Equal("src-" + suffix))
+					case "dstType":
+						Expect(param.Value).To(Equal("dst-" + suffix))
+					case "dstRemoteURL":
+						Expect(param.Value).To(Equal("dst-" + suffix))
+					}
+				}
+			}
+
+			// Verify contents of secrets created by the controller
+			secrets := &corev1.SecretList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, secrets, client.InNamespace(ns.Name), client.MatchingLabels(secretLabels))
+				if err != nil {
+					return 0
+				}
+				return len(secrets.Items)
+			}).Should(Equal(2))
+
+			data1 := `{"type":"art-1","src":{"type":"src-1","remoteURL":"src-1","auth":{"testkey":"src-1"}},"dst":{"type":"dst-1","remoteURL":"dst-1","auth":{"testkey":"dst-1"}},"spec":{"key":"value1"}}`
+			data2 := `{"type":"art-2","src":{"type":"src-2","remoteURL":"src-2","auth":{"testkey":"src-2"}},"dst":{"type":"dst-2","remoteURL":"dst-2","auth":{"testkey":"dst-2"}},"spec":{"key":"value2"}}`
+			for _, secret := range secrets.Items {
+				Expect(string(secret.Data["config.json"])).To(Or(Equal(data1), Equal(data2)))
+			}
 		})
 
 		It("should create fragments for an order with multiple artifacts using defaults", func() {
