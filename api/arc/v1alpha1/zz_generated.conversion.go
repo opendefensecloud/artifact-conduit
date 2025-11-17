@@ -11,6 +11,7 @@ package v1alpha1
 import (
 	unsafe "unsafe"
 
+	workflowv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arc "go.opendefense.cloud/arc/api/arc"
 	v1 "k8s.io/api/core/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
@@ -497,9 +498,8 @@ func Convert_arc_FragmentList_To_v1alpha1_FragmentList(in *arc.FragmentList, out
 
 func autoConvert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(in *FragmentSpec, out *arc.FragmentSpec, s conversion.Scope) error {
 	out.Type = in.Type
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Spec = in.Spec
+	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
+	out.SecretRef = in.SecretRef
 	return nil
 }
 
@@ -510,9 +510,8 @@ func Convert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(in *FragmentSpec, out *ar
 
 func autoConvert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(in *arc.FragmentSpec, out *FragmentSpec, s conversion.Scope) error {
 	out.Type = in.Type
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Spec = in.Spec
+	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
+	out.SecretRef = in.SecretRef
 	return nil
 }
 
