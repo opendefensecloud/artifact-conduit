@@ -15,6 +15,8 @@ func NewOCICommand() *cobra.Command {
 		Short:                 "Subcommand to manage OCI artifacts",
 	}
 
+	pflags := cmd.PersistentFlags()
+	_ = pflags.Bool("plain-http", false, "allow insecure connections to registry without SSL check")
 	cmd.AddCommand(NewPullCommand())
 	cmd.AddCommand(NewPushCommand())
 
