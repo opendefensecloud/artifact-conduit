@@ -25,10 +25,10 @@ const (
 
 // ArcctlConfig represents the configuration for arcctl
 type ArcctlConfig struct {
-	Type ArtifactType `mapstructure:"type"`
-	Src  Endpoint     `mapstructure:"src"`
-	Dst  Endpoint     `mapstructure:"dst"`
-	Spec any          `mapstructure:"spec"`
+	Type ArtifactType `json:"type" mapstructure:"type"`
+	Src  Endpoint     `json:"src" mapstructure:"src"`
+	Dst  Endpoint     `json:"dst" mapstructure:"dst"`
+	Spec any          `json:"spec" mapstructure:"spec"`
 }
 
 // GetOCISpec returns the OCI spec from the config
@@ -41,9 +41,9 @@ func (c *ArcctlConfig) GetOCISpec() *OCISpec {
 
 // Endpoint represents a source or destination endpoint configuration
 type Endpoint struct {
-	Type      EndpointType `mapstructure:"type"`
-	RemoteURL string       `mapstructure:"remoteURL"`
-	Auth      any          `mapstructure:"auth"`
+	Type      EndpointType `json:"type" mapstructure:"type"`
+	RemoteURL string       `json:"remoteURL" mapstructure:"remoteURL"`
+	Auth      any          `json:"auth" mapstructure:"auth"`
 }
 
 // GetOCIAuth returns the OCI auth from the endpoint

@@ -32,6 +32,12 @@ import (
 
 const orderFinalizer = "arc.bwi.de/order-finalizer"
 
+var (
+	secretLabels = map[string]string{
+		"arc.bwi.de/managed-by-controller": "true",
+	}
+)
+
 // OrderReconciler reconciles a Order object
 type OrderReconciler struct {
 	client.Client
@@ -291,12 +297,12 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 		Src: config.Endpoint{
 			Type:      config.EndpointType(daw.srcEndpoint.Spec.Type),
 			RemoteURL: daw.srcEndpoint.Spec.RemoteURL,
-			Auth:      daw.srcSecret.Data,
+			Auth:      stringifyMap(daw.srcSecret.Data),
 		},
 		Dst: config.Endpoint{
 			Type:      config.EndpointType(daw.dstEndpoint.Spec.Type),
 			RemoteURL: daw.dstEndpoint.Spec.RemoteURL,
-			Auth:      daw.dstSecret.Data,
+			Auth:      stringifyMap(daw.dstSecret.Data),
 		},
 	}
 	json, err := wc.ToJson()
@@ -305,10 +311,11 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 	}
 	secret := &corev1.Secret{
 		ObjectMeta: daw.objectMeta,
+		StringData: map[string]string{
+			"config.json": string(json),
+		},
 	}
-	secret.StringData = map[string]string{
-		"config.json": string(json),
-	}
+	secret.Labels = secretLabels
 
 	params, err := toParameters(daw)
 	if err != nil {
@@ -319,6 +326,7 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 	aw := &arcv1alpha1.ArtifactWorkflow{
 		ObjectMeta: daw.objectMeta,
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
+			Type:       daw.artifact.Type,
 			Parameters: params,
 			SecretRef: corev1.LocalObjectReference{
 				Name: daw.objectMeta.Name,
@@ -407,7 +415,11 @@ func toParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, erro
 	}
 
 	spec := map[string]any{}
-	if err := json.Unmarshal(daw.artifact.Spec.Raw, &spec); err != nil {
+	raw := daw.artifact.Spec.Raw
+	if len(raw) == 0 {
+		raw = []byte("{}")
+	}
+	if err := json.Unmarshal(raw, &spec); err != nil {
 		return nil, err
 	}
 	flattened := map[string]any{}
@@ -440,4 +452,12 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 			dst[prefix+kt] = v
 		}
 	}
+}
+
+func stringifyMap(d map[string][]byte) map[string]string {
+	o := map[string]string{}
+	for k, v := range d {
+		o[k] = string(v)
+	}
+	return o
 }
