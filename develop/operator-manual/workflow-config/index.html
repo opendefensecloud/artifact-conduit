@@ -5,13 +5,13 @@
       
       
       
-        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/upgrading/">
+        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/workflow-config/">
       
       
-        <link rel="prev" href="../releases/">
+        <link rel="prev" href="../security/">
       
       
-        <link rel="next" href="../new-features/">
+        <link rel="next" href="../../CODE_OF_CONDUCT/">
       
       
         
@@ -22,7 +22,7 @@
     
     
       
-        <title>Upgrading - Artifact Conduit</title>
+        <title>Workflow Config - Artifact Conduit</title>
       
     
     
@@ -83,7 +83,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#upgrading" class="md-skip">
+        <a href="#workflow-config" class="md-skip">
           Skip to content
         </a>
       
@@ -134,7 +134,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Upgrading
+              Workflow Config
             
           </span>
         </div>
@@ -770,19 +770,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
         
   
   
@@ -798,7 +789,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -864,10 +854,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../workflow-config/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Config
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -883,6 +900,59 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resource-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Relationships
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#walkthrough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Walkthrough
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resulting-parameters-and-runtime-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resulting parameters and runtime-configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1267,6 +1337,47 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#resource-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Relationships
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#walkthrough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Walkthrough
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resulting-parameters-and-runtime-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resulting parameters and runtime-configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1282,7 +1393,7 @@
 
 
   
-    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/upgrading.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/workflow-config.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1291,15 +1402,163 @@
     
       
     
-    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/upgrading.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/workflow-config.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
     </a>
   
 
 
-<h1 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">¶</a></h1>
-<p>TODO</p>
+<h1 id="workflow-config">Workflow Config<a class="headerlink" href="#workflow-config" title="Permanent link">¶</a></h1>
+<p>ARC does not orchestrate the workflows, but relies on <a href="https://github.com/argoproj/argo-workflows">Argo Workflows</a> as workflow engine.</p>
+<h2 id="resource-relationships">Resource Relationships<a class="headerlink" href="#resource-relationships" title="Permanent link">¶</a></h2>
+<p>The following diagram illustrates how ARC resources work together to instantiate and configure Argo Workflows:</p>
+<pre class="mermaid"><code>graph TB
+    Order["📋 Order&lt;br/&gt;(User Request)"]
+    Fragment["📦 Fragment"]
+    ArtifactTypeDef["🏷️ ArtifactTypeDefinition"]
+    SrcEndpoint["🔌 Endpoint (Source)"]
+    DstEndpoint["🔌 Endpoint (Destination)"]
+    SrcSecret["🔐 Secret&lt;br/&gt;(Source Credentials)"]
+    DstSecret["🔐 Secret&lt;br/&gt;(Destination Credentials)"]
+    WorkflowTemplate["⚙️ WorkflowTemplate"]
+    Workflow["🚀 Workflow"]
+    Config["⚙️ config.json&lt;br/&gt;(Runtime Config)"]
+
+    Order --&gt;|creates| Fragment
+    Fragment --&gt;|specifies type| ArtifactTypeDef
+    Fragment --&gt;|references| SrcEndpoint
+    Fragment --&gt;|references| DstEndpoint
+    Fragment --&gt;|contains spec params| Workflow
+
+    ArtifactTypeDef --&gt;|validates src/dst types| Fragment
+    ArtifactTypeDef --&gt;|references| WorkflowTemplate
+
+    SrcEndpoint --&gt;|references| SrcSecret
+    DstEndpoint --&gt;|references| DstSecret
+
+    WorkflowTemplate --&gt;|instantiates| Workflow
+    SrcEndpoint --&gt;|provides src config| Config
+    DstEndpoint --&gt;|provides dst config| Config
+    Fragment --&gt;|provides spec params| Config
+    Config --&gt;|mounts to| Workflow
+
+    style Order stroke:#e1f5ff,stroke-width:2px
+    style Fragment stroke:#f3e5f5,stroke-width:2px
+    style ArtifactTypeDef stroke:#e8f5e9,stroke-width:2px
+    style SrcEndpoint stroke:#fff3e0,stroke-width:2px
+    style DstEndpoint stroke:#fff3e0,stroke-width:2px
+    style SrcSecret stroke:#fce4ec,stroke-width:2px
+    style DstSecret stroke:#fce4ec,stroke-width:2px
+    style WorkflowTemplate stroke:#f1f8e9,stroke-width:2px
+    style Workflow stroke:#ffe0b2,stroke-width:2px
+    style Config stroke:#e0f2f1,stroke-width:2px</code></pre>
+<h2 id="walkthrough">Walkthrough<a class="headerlink" href="#walkthrough" title="Permanent link">¶</a></h2>
+<p>A workflow created by ARC is composed out of three parts:</p>
+<ol>
+<li>A <code>workflowTemplateRef</code> which references a <code>WorkflowTemplate</code>-Object</li>
+<li>Parameters passed to the entrypoint of the workflow</li>
+<li>An ephemeral configuration (<code>config.json</code>) which is mounted by the workflow (stored as Kubernetes-Secret as it may contain credentials)</li>
+</ol>
+<p>When a <code>Fragment</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fragment</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-frag</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Artifact Type!</span>
+<span class="w">  </span><span class="nt">srcRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc</span>
+<span class="w">  </span><span class="nt">dstRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst</span>
+<span class="w">  </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
+<span class="w">    </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span><span class="w"> </span><span class="c1"># default alpine:3.18; support CEL?</span>
+</code></pre></div>
+<p>The two referenced <code>Endpoints</code> by <code>srcRef</code> and <code>dstRef</code> might look as follows respectively:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Endpoint Type!</span>
+<span class="w">  </span><span class="nt">remoteURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://...</span>
+<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc-creds</span>
+<span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PullOnly</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Endpoint Type!</span>
+<span class="w">  </span><span class="nt">remoteURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://...</span>
+<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst-creds</span>
+<span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PushOnly</span>
+</code></pre></div>
+<p>How these objects are tied into a workflow is described by the <code>ArtifactTypeDefinition</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactTypeDefinition</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srcTypes</span><span class="p">:</span><span class="w"> </span><span class="c1"># Endpoint Types</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-workflow-template</span>
+</code></pre></div>
+<p>The <code>Fragment</code> defines which <code>ArtifactTypeDefinition</code> is used. In our case <code>oci</code> and therefore the controller will instantiate the <code>oci-workflow-template</code>.</p>
+<p>The two endpoints specified by the <code>Fragment</code> are compliant as the workflow does only support endpoints of the type <code>oci</code>. It is important to understand that there are both endpoint types and artifact types.</p>
+<p>The controller will verify the endpoints and retrieve the associated secrets.</p>
+<h2 id="resulting-parameters-and-runtime-configuration">Resulting parameters and runtime-configuration<a class="headerlink" href="#resulting-parameters-and-runtime-configuration" title="Permanent link">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code>config.json</code> is ephemeral and only exists for the duration of the running workflow!</p>
+</div>
+<p>The above resources will instantiate the workflow with the following parameters:</p>
+<ul>
+<li><code>srcType</code>: TODO</li>
+<li><code>srcRemoteURL</code>: TODO</li>
+<li><code>dstType</code>: TODO</li>
+<li><code>dstRemoteURL</code>: TODO</li>
+<li><code>specImage</code>: TODO</li>
+<li><code>specOverride</code>: TODO</li>
+</ul>
+<p>The <code>config.json</code>-file looks as follows:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"src"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"remoteURL"</span><span class="p">:</span><span class="w"> </span><span class="s2">"registry-1.docker.io"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"auth"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// optional, from secret key/values</span>
+<span class="w">      </span><span class="nt">"username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"password"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pass"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"dst"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"remoteURL"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gcr.io"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"auth"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// optional, from secret key/values</span>
+<span class="w">      </span><span class="nt">"username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"password"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pass"</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"spec"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"image"</span><span class="p">:</span><span class="w"> </span><span class="s2">"library/alpine:3.18"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"override"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opendefensecloud/alpine:3.18-dev"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.</p>
+<p><code>arcctl</code> providers commands to extract values from the config, e.g.:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>&lt;<span class="o">(</span>arcctl<span class="w"> </span>env<span class="w"> </span>--from<span class="o">=</span><span class="s2">"dst.auth"</span><span class="w"> </span>--prefix<span class="o">=</span><span class="s2">"DOCKER"</span><span class="o">)</span>
+docker<span class="w"> </span>login<span class="w"> </span>-u<span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">DOCKER_USERNAME</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">DOCKER_PASSWORD</span><span class="si">}</span><span class="s2">"</span>
+</code></pre></div>
 
 
 
