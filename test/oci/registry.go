@@ -25,7 +25,7 @@ type Registry struct {
 func NewRegistry() *Registry {
 	r := &Registry{}
 	r.dockerRegistryHandler = registry.New()
-	r.Server = httptest.NewServer(http.HandlerFunc(r.root))
+	r.Server = httptest.NewTLSServer(http.HandlerFunc(r.root))
 	return r
 }
 

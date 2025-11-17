@@ -14,7 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.opendefense.cloud/arc/pkg/workflow/config"
-	"go.opendefense.cloud/arc/test/oci"
+	ocitest "go.opendefense.cloud/arc/test/oci"
 )
 
 var _ = Describe("Pull Command", func() {
@@ -23,13 +23,33 @@ var _ = Describe("Pull Command", func() {
 		mockImageRepository = "arc"
 		mockImageName       = "test"
 		mockImageVersion    = "v0.0.0"
+		authuser            = "user"
+		authpass            = "pass"
 	)
 	var (
 		ctx           context.Context
 		cmd           *cobra.Command
-		mockRegistry  *oci.Registry
+		mockRegistry  *ocitest.Registry
 		mockReference string
 	)
+
+	setupRegistry := func(needsAuth bool) {
+		if needsAuth {
+			mockRegistry = ocitest.NewRegistry().WithAuth(authuser, authpass)
+		} else {
+			mockRegistry = ocitest.NewRegistry()
+		}
+
+		repo := fmt.Sprintf("%s/%s/%s", mockRegistry.Listener.Addr().String(), mockImageRepository, mockImageName)
+		mockRepository, err := ocitest.NewRepo(repo)
+		Expect(err).ToNot(HaveOccurred())
+		if needsAuth {
+			mockRepository = ocitest.WithInsecureAuth(mockRepository, authuser, authpass)
+		}
+		mockReference = fmt.Sprintf("%s/%s:%s", mockImageRepository, mockImageName, mockImageVersion)
+		_, err = ocitest.PushTestManifest(ctx, mockRepository, mockImageVersion)
+		Expect(err).To(Succeed())
+	}
 
 	BeforeEach(func() {
 		ctx = context.Background()
@@ -37,25 +57,63 @@ var _ = Describe("Pull Command", func() {
 		cmd.SetContext(GinkgoT().Context())
 		viper.SetConfigType("json")
 		viper.Set("tmp-dir", arcctlTempDir)
-		viper.Set("plain-http", true)
-
-		mockRegistry = oci.NewRegistry()
-		mockRepository := fmt.Sprintf("%s/%s/%s", mockRegistry.Listener.Addr().String(), mockImageRepository, mockImageName)
-
-		mockReference = fmt.Sprintf("%s/%s:%s", mockImageRepository, mockImageName, mockImageVersion)
-		_, err := oci.PushTestManifest(ctx, mockRepository, mockImageVersion)
-		Expect(err).ToNot(HaveOccurred())
 	})
 
 	AfterEach(func() {
 		viper.Reset()
 		Expect(os.RemoveAll(arcctlTempDir)).ToNot(HaveOccurred())
-		mockRegistry.Close()
-
 	})
 
-	Context("when configuration is valid", func() {
-		It("should pull the OCI artifact successfully", func() {
+	Context("when configuration is invalid", func() {
+		It("should fail to pull the OCI artifact", func() {
+			// setup config
+			conf := &config.ArcctlConfig{}
+
+			confJson, err := conf.ToJson()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(viper.ReadConfig(bytes.NewReader(confJson))).To(Succeed())
+
+			// actually pull
+			err = runPull(cmd, []string{})
+			Expect(err).To(HaveOccurred())
+		})
+	})
+	Context("when auth is necessary", func() {
+		BeforeEach(func() {
+			setupRegistry(true)
+		})
+		AfterEach(func() {
+			mockRegistry.Close()
+		})
+
+		It("should pull the OCI artifact successfully with auth set", func() {
+			// setup config
+			conf := &config.ArcctlConfig{}
+			conf.Type = config.AT_OCI
+			conf.Src.Type = config.AT_OCI
+			conf.Src.RemoteURL = mockRegistry.Listener.Addr().String()
+			conf.Src.Auth = config.OCIAuth{
+				Username: authuser,
+				Password: authpass,
+			}
+			conf.Spec = config.OCISpec{
+				Image: mockReference,
+			}
+
+			confJson, err := conf.ToJson()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(viper.ReadConfig(bytes.NewReader(confJson))).To(Succeed())
+
+			// actually pull
+			Expect(runPull(cmd, []string{})).To(Succeed())
+
+			// verify oci layout on disk exists
+			_, err = os.Stat(arcctlTempDir + "/index.json")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should fail to pull the OCI artifact successfully with auth missing", func() {
+			// setup config
 			conf := &config.ArcctlConfig{}
 			conf.Type = config.AT_OCI
 			conf.Src.Type = config.AT_OCI
@@ -68,10 +126,9 @@ var _ = Describe("Pull Command", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(viper.ReadConfig(bytes.NewReader(confJson))).To(Succeed())
 
-			Expect(runPull(cmd, []string{})).To(Succeed())
-			// Verify oci layout on disk exists
-			_, err = os.Stat(arcctlTempDir + "/index.json")
-			Expect(err).ToNot(HaveOccurred())
+			// actually pull
+			err = runPull(cmd, []string{})
+			Expect(err).To(HaveOccurred())
 		})
 	})
 })
