@@ -23,7 +23,7 @@ func newFakeArtifactTypes(fake *FakeArcV1alpha1, namespace string) typedarcv1alp
 		gentype.NewFakeClientWithListAndApply[*v1alpha1.ArtifactType, *v1alpha1.ArtifactTypeList, *arcv1alpha1.ArtifactTypeApplyConfiguration](
 			fake.Fake,
 			namespace,
-			v1alpha1.SchemeGroupVersion.WithResource("artifacttypedefinitions"),
+			v1alpha1.SchemeGroupVersion.WithResource("artifacttypes"),
 			v1alpha1.SchemeGroupVersion.WithKind("ArtifactType"),
 			func() *v1alpha1.ArtifactType { return &v1alpha1.ArtifactType{} },
 			func() *v1alpha1.ArtifactTypeList { return &v1alpha1.ArtifactTypeList{} },

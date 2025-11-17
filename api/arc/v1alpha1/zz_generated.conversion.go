@@ -75,6 +75,46 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactWorkflow)(nil), (*arc.ArtifactWorkflow)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactWorkflow_To_arc_ArtifactWorkflow(a.(*ArtifactWorkflow), b.(*arc.ArtifactWorkflow), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactWorkflow)(nil), (*ArtifactWorkflow)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactWorkflow_To_v1alpha1_ArtifactWorkflow(a.(*arc.ArtifactWorkflow), b.(*ArtifactWorkflow), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactWorkflowList)(nil), (*arc.ArtifactWorkflowList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactWorkflowList_To_arc_ArtifactWorkflowList(a.(*ArtifactWorkflowList), b.(*arc.ArtifactWorkflowList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactWorkflowList)(nil), (*ArtifactWorkflowList)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList(a.(*arc.ArtifactWorkflowList), b.(*ArtifactWorkflowList), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactWorkflowSpec)(nil), (*arc.ArtifactWorkflowSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(a.(*ArtifactWorkflowSpec), b.(*arc.ArtifactWorkflowSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactWorkflowSpec)(nil), (*ArtifactWorkflowSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(a.(*arc.ArtifactWorkflowSpec), b.(*ArtifactWorkflowSpec), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ArtifactWorkflowStatus)(nil), (*arc.ArtifactWorkflowStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(a.(*ArtifactWorkflowStatus), b.(*arc.ArtifactWorkflowStatus), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*arc.ArtifactWorkflowStatus)(nil), (*ArtifactWorkflowStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(a.(*arc.ArtifactWorkflowStatus), b.(*ArtifactWorkflowStatus), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*Endpoint)(nil), (*arc.Endpoint)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1alpha1_Endpoint_To_arc_Endpoint(a.(*Endpoint), b.(*arc.Endpoint), scope)
 	}); err != nil {
@@ -112,46 +152,6 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*arc.EndpointStatus)(nil), (*EndpointStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(a.(*arc.EndpointStatus), b.(*EndpointStatus), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*Fragment)(nil), (*arc.Fragment)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha1_Fragment_To_arc_Fragment(a.(*Fragment), b.(*arc.Fragment), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*arc.Fragment)(nil), (*Fragment)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_arc_Fragment_To_v1alpha1_Fragment(a.(*arc.Fragment), b.(*Fragment), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*FragmentList)(nil), (*arc.FragmentList)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha1_FragmentList_To_arc_FragmentList(a.(*FragmentList), b.(*arc.FragmentList), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*arc.FragmentList)(nil), (*FragmentList)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_arc_FragmentList_To_v1alpha1_FragmentList(a.(*arc.FragmentList), b.(*FragmentList), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*FragmentSpec)(nil), (*arc.FragmentSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(a.(*FragmentSpec), b.(*arc.FragmentSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*arc.FragmentSpec)(nil), (*FragmentSpec)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(a.(*arc.FragmentSpec), b.(*FragmentSpec), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*FragmentStatus)(nil), (*arc.FragmentStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_v1alpha1_FragmentStatus_To_arc_FragmentStatus(a.(*FragmentStatus), b.(*arc.FragmentStatus), scope)
-	}); err != nil {
-		return err
-	}
-	if err := s.AddGeneratedConversionFunc((*arc.FragmentStatus)(nil), (*FragmentStatus)(nil), func(a, b interface{}, scope conversion.Scope) error {
-		return Convert_arc_FragmentStatus_To_v1alpha1_FragmentStatus(a.(*arc.FragmentStatus), b.(*FragmentStatus), scope)
 	}); err != nil {
 		return err
 	}
@@ -344,6 +344,102 @@ func Convert_arc_ArtifactTypeStatus_To_v1alpha1_ArtifactTypeStatus(in *arc.Artif
 	return autoConvert_arc_ArtifactTypeStatus_To_v1alpha1_ArtifactTypeStatus(in, out, s)
 }
 
+func autoConvert_v1alpha1_ArtifactWorkflow_To_arc_ArtifactWorkflow(in *ArtifactWorkflow, out *arc.ArtifactWorkflow, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactWorkflow_To_arc_ArtifactWorkflow is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactWorkflow_To_arc_ArtifactWorkflow(in *ArtifactWorkflow, out *arc.ArtifactWorkflow, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactWorkflow_To_arc_ArtifactWorkflow(in, out, s)
+}
+
+func autoConvert_arc_ArtifactWorkflow_To_v1alpha1_ArtifactWorkflow(in *arc.ArtifactWorkflow, out *ArtifactWorkflow, s conversion.Scope) error {
+	out.ObjectMeta = in.ObjectMeta
+	if err := Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(&in.Spec, &out.Spec, s); err != nil {
+		return err
+	}
+	if err := Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(&in.Status, &out.Status, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Convert_arc_ArtifactWorkflow_To_v1alpha1_ArtifactWorkflow is an autogenerated conversion function.
+func Convert_arc_ArtifactWorkflow_To_v1alpha1_ArtifactWorkflow(in *arc.ArtifactWorkflow, out *ArtifactWorkflow, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactWorkflow_To_v1alpha1_ArtifactWorkflow(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactWorkflowList_To_arc_ArtifactWorkflowList(in *ArtifactWorkflowList, out *arc.ArtifactWorkflowList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]arc.ArtifactWorkflow)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactWorkflowList_To_arc_ArtifactWorkflowList is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactWorkflowList_To_arc_ArtifactWorkflowList(in *ArtifactWorkflowList, out *arc.ArtifactWorkflowList, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactWorkflowList_To_arc_ArtifactWorkflowList(in, out, s)
+}
+
+func autoConvert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList(in *arc.ArtifactWorkflowList, out *ArtifactWorkflowList, s conversion.Scope) error {
+	out.ListMeta = in.ListMeta
+	out.Items = *(*[]ArtifactWorkflow)(unsafe.Pointer(&in.Items))
+	return nil
+}
+
+// Convert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList is an autogenerated conversion function.
+func Convert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList(in *arc.ArtifactWorkflowList, out *ArtifactWorkflowList, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *ArtifactWorkflowSpec, out *arc.ArtifactWorkflowSpec, s conversion.Scope) error {
+	out.Type = in.Type
+	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
+	out.SecretRef = in.SecretRef
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *ArtifactWorkflowSpec, out *arc.ArtifactWorkflowSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in, out, s)
+}
+
+func autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.ArtifactWorkflowSpec, out *ArtifactWorkflowSpec, s conversion.Scope) error {
+	out.Type = in.Type
+	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
+	out.SecretRef = in.SecretRef
+	return nil
+}
+
+// Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec is an autogenerated conversion function.
+func Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.ArtifactWorkflowSpec, out *ArtifactWorkflowSpec, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *ArtifactWorkflowStatus, out *arc.ArtifactWorkflowStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus is an autogenerated conversion function.
+func Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *ArtifactWorkflowStatus, out *arc.ArtifactWorkflowStatus, s conversion.Scope) error {
+	return autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in, out, s)
+}
+
+func autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *arc.ArtifactWorkflowStatus, out *ArtifactWorkflowStatus, s conversion.Scope) error {
+	return nil
+}
+
+// Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus is an autogenerated conversion function.
+func Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *arc.ArtifactWorkflowStatus, out *ArtifactWorkflowStatus, s conversion.Scope) error {
+	return autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in, out, s)
+}
+
 func autoConvert_v1alpha1_Endpoint_To_arc_Endpoint(in *Endpoint, out *arc.Endpoint, s conversion.Scope) error {
 	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(&in.Spec, &out.Spec, s); err != nil {
@@ -440,102 +536,6 @@ func autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointS
 // Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus is an autogenerated conversion function.
 func Convert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointStatus, out *EndpointStatus, s conversion.Scope) error {
 	return autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in, out, s)
-}
-
-func autoConvert_v1alpha1_Fragment_To_arc_Fragment(in *Fragment, out *arc.Fragment, s conversion.Scope) error {
-	out.ObjectMeta = in.ObjectMeta
-	if err := Convert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(&in.Spec, &out.Spec, s); err != nil {
-		return err
-	}
-	if err := Convert_v1alpha1_FragmentStatus_To_arc_FragmentStatus(&in.Status, &out.Status, s); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Convert_v1alpha1_Fragment_To_arc_Fragment is an autogenerated conversion function.
-func Convert_v1alpha1_Fragment_To_arc_Fragment(in *Fragment, out *arc.Fragment, s conversion.Scope) error {
-	return autoConvert_v1alpha1_Fragment_To_arc_Fragment(in, out, s)
-}
-
-func autoConvert_arc_Fragment_To_v1alpha1_Fragment(in *arc.Fragment, out *Fragment, s conversion.Scope) error {
-	out.ObjectMeta = in.ObjectMeta
-	if err := Convert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(&in.Spec, &out.Spec, s); err != nil {
-		return err
-	}
-	if err := Convert_arc_FragmentStatus_To_v1alpha1_FragmentStatus(&in.Status, &out.Status, s); err != nil {
-		return err
-	}
-	return nil
-}
-
-// Convert_arc_Fragment_To_v1alpha1_Fragment is an autogenerated conversion function.
-func Convert_arc_Fragment_To_v1alpha1_Fragment(in *arc.Fragment, out *Fragment, s conversion.Scope) error {
-	return autoConvert_arc_Fragment_To_v1alpha1_Fragment(in, out, s)
-}
-
-func autoConvert_v1alpha1_FragmentList_To_arc_FragmentList(in *FragmentList, out *arc.FragmentList, s conversion.Scope) error {
-	out.ListMeta = in.ListMeta
-	out.Items = *(*[]arc.Fragment)(unsafe.Pointer(&in.Items))
-	return nil
-}
-
-// Convert_v1alpha1_FragmentList_To_arc_FragmentList is an autogenerated conversion function.
-func Convert_v1alpha1_FragmentList_To_arc_FragmentList(in *FragmentList, out *arc.FragmentList, s conversion.Scope) error {
-	return autoConvert_v1alpha1_FragmentList_To_arc_FragmentList(in, out, s)
-}
-
-func autoConvert_arc_FragmentList_To_v1alpha1_FragmentList(in *arc.FragmentList, out *FragmentList, s conversion.Scope) error {
-	out.ListMeta = in.ListMeta
-	out.Items = *(*[]Fragment)(unsafe.Pointer(&in.Items))
-	return nil
-}
-
-// Convert_arc_FragmentList_To_v1alpha1_FragmentList is an autogenerated conversion function.
-func Convert_arc_FragmentList_To_v1alpha1_FragmentList(in *arc.FragmentList, out *FragmentList, s conversion.Scope) error {
-	return autoConvert_arc_FragmentList_To_v1alpha1_FragmentList(in, out, s)
-}
-
-func autoConvert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(in *FragmentSpec, out *arc.FragmentSpec, s conversion.Scope) error {
-	out.Type = in.Type
-	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
-	out.SecretRef = in.SecretRef
-	return nil
-}
-
-// Convert_v1alpha1_FragmentSpec_To_arc_FragmentSpec is an autogenerated conversion function.
-func Convert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(in *FragmentSpec, out *arc.FragmentSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha1_FragmentSpec_To_arc_FragmentSpec(in, out, s)
-}
-
-func autoConvert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(in *arc.FragmentSpec, out *FragmentSpec, s conversion.Scope) error {
-	out.Type = in.Type
-	out.Parameters = *(*[]workflowv1alpha1.Parameter)(unsafe.Pointer(&in.Parameters))
-	out.SecretRef = in.SecretRef
-	return nil
-}
-
-// Convert_arc_FragmentSpec_To_v1alpha1_FragmentSpec is an autogenerated conversion function.
-func Convert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(in *arc.FragmentSpec, out *FragmentSpec, s conversion.Scope) error {
-	return autoConvert_arc_FragmentSpec_To_v1alpha1_FragmentSpec(in, out, s)
-}
-
-func autoConvert_v1alpha1_FragmentStatus_To_arc_FragmentStatus(in *FragmentStatus, out *arc.FragmentStatus, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_v1alpha1_FragmentStatus_To_arc_FragmentStatus is an autogenerated conversion function.
-func Convert_v1alpha1_FragmentStatus_To_arc_FragmentStatus(in *FragmentStatus, out *arc.FragmentStatus, s conversion.Scope) error {
-	return autoConvert_v1alpha1_FragmentStatus_To_arc_FragmentStatus(in, out, s)
-}
-
-func autoConvert_arc_FragmentStatus_To_v1alpha1_FragmentStatus(in *arc.FragmentStatus, out *FragmentStatus, s conversion.Scope) error {
-	return nil
-}
-
-// Convert_arc_FragmentStatus_To_v1alpha1_FragmentStatus is an autogenerated conversion function.
-func Convert_arc_FragmentStatus_To_v1alpha1_FragmentStatus(in *arc.FragmentStatus, out *FragmentStatus, s conversion.Scope) error {
-	return autoConvert_arc_FragmentStatus_To_v1alpha1_FragmentStatus(in, out, s)
 }
 
 func autoConvert_v1alpha1_Order_To_arc_Order(in *Order, out *arc.Order, s conversion.Scope) error {
@@ -667,7 +667,7 @@ func Convert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *OrderSp
 }
 
 func autoConvert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.OrderStatus, s conversion.Scope) error {
-	out.Fragments = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.Fragments))
+	out.ArtifactWorkflows = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.ArtifactWorkflows))
 	return nil
 }
 
@@ -677,7 +677,7 @@ func Convert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.O
 }
 
 func autoConvert_arc_OrderStatus_To_v1alpha1_OrderStatus(in *arc.OrderStatus, out *OrderStatus, s conversion.Scope) error {
-	out.Fragments = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.Fragments))
+	out.ArtifactWorkflows = *(*map[string]v1.LocalObjectReference)(unsafe.Pointer(&in.ArtifactWorkflows))
 	return nil
 }
 

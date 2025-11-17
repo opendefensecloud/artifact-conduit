@@ -17,9 +17,9 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 	strategy := NewStrategy(scheme)
 
 	store := &genericregistry.Store{
-		NewFunc:                   func() runtime.Object { return &arc.Fragment{} },
-		NewListFunc:               func() runtime.Object { return &arc.FragmentList{} },
-		PredicateFunc:             MatchFragment,
+		NewFunc:                   func() runtime.Object { return &arc.ArtifactWorkflow{} },
+		NewListFunc:               func() runtime.Object { return &arc.ArtifactWorkflowList{} },
+		PredicateFunc:             MatchArtifactWorkflow,
 		DefaultQualifiedResource:  arc.Resource("fragments"),
 		SingularQualifiedResource: arc.Resource("fragment"),
 

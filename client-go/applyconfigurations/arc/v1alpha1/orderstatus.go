@@ -12,7 +12,7 @@ import (
 // OrderStatusApplyConfiguration represents a declarative configuration of the OrderStatus type for use
 // with apply.
 type OrderStatusApplyConfiguration struct {
-	Fragments map[string]v1.LocalObjectReference `json:"fragments,omitempty"`
+	ArtifactWorkflows map[string]v1.LocalObjectReference `json:"fragments,omitempty"`
 }
 
 // OrderStatusApplyConfiguration constructs a declarative configuration of the OrderStatus type for use with
@@ -21,16 +21,16 @@ func OrderStatus() *OrderStatusApplyConfiguration {
 	return &OrderStatusApplyConfiguration{}
 }
 
-// WithFragments puts the entries into the Fragments field in the declarative configuration
+// WithArtifactWorkflows puts the entries into the ArtifactWorkflows field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, the entries provided by each call will be put on the Fragments field,
-// overwriting an existing map entries in Fragments field with the same key.
-func (b *OrderStatusApplyConfiguration) WithFragments(entries map[string]v1.LocalObjectReference) *OrderStatusApplyConfiguration {
-	if b.Fragments == nil && len(entries) > 0 {
-		b.Fragments = make(map[string]v1.LocalObjectReference, len(entries))
+// If called multiple times, the entries provided by each call will be put on the ArtifactWorkflows field,
+// overwriting an existing map entries in ArtifactWorkflows field with the same key.
+func (b *OrderStatusApplyConfiguration) WithArtifactWorkflows(entries map[string]v1.LocalObjectReference) *OrderStatusApplyConfiguration {
+	if b.ArtifactWorkflows == nil && len(entries) > 0 {
+		b.ArtifactWorkflows = make(map[string]v1.LocalObjectReference, len(entries))
 	}
 	for k, v := range entries {
-		b.Fragments[k] = v
+		b.ArtifactWorkflows[k] = v
 	}
 	return b
 }

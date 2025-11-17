@@ -59,28 +59,28 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Handle deletion: cleanup fragments, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
-		if len(order.Status.Fragments) > 0 {
-			for sha, ref := range order.Status.Fragments {
-				frag := &arcv1alpha1.Fragment{
+		if len(order.Status.ArtifactWorkflows) > 0 {
+			for sha, ref := range order.Status.ArtifactWorkflows {
+				aw := &arcv1alpha1.ArtifactWorkflow{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: order.Namespace,
 						Name:      ref.Name,
 					},
 				}
-				_ = r.Delete(ctx, frag) // ignore not found errors
-				delete(order.Status.Fragments, sha)
+				_ = r.Delete(ctx, aw) // ignore not found errors
+				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
-				log.Error(err, "Failed to update fragments in Order.Status")
+				log.Error(err, "Failed to update artifact workflows in Order.Status")
 				return ctrl.Result{}, err
 			}
-			log.V(1).Info("Order fragments cleaned up")
+			log.V(1).Info("Order artifact workflows cleaned up")
 			// Requeue until all fragments are gone
 			return ctrl.Result{Requeue: true}, nil
 		}
 		// All fragments are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
-			log.V(1).Info("No fragments, removing finalizer from Order")
+			log.V(1).Info("No artifact workflows, removing finalizer from Order")
 			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
 				return f == orderFinalizer
 			})
@@ -106,37 +106,39 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	desiredFrags := map[string]*arcv1alpha1.Fragment{}
+	desiredAWs := map[string]*arcv1alpha1.ArtifactWorkflow{}
 	for _, artifact := range order.Spec.Artifacts {
-		spec := runtime.RawExtension(artifact.Spec)
+		// spec := runtime.RawExtension(artifact.Spec)
 
 		// Let's collect the necessary data for the fragment from the artifact and order
-		frag := &arcv1alpha1.Fragment{
+		aw := &arcv1alpha1.ArtifactWorkflow{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: order.Namespace,
 				Name:      "",
 			},
-			Spec: arcv1alpha1.FragmentSpec{
-				Type:   artifact.Type,
-				SrcRef: artifact.SrcRef,
-				DstRef: artifact.DstRef,
-				Spec:   spec,
+			Spec: arcv1alpha1.ArtifactWorkflowSpec{
+				Type: artifact.Type,
+				// SrcRef: artifact.SrcRef,
+				// DstRef: artifact.DstRef,
+				// Spec:   spec,
 			},
 		}
-		if frag.Spec.SrcRef.Name == "" {
-			frag.Spec.SrcRef = order.Spec.Defaults.SrcRef
+		srcRef := artifact.SrcRef
+		if srcRef.Name == "" {
+			srcRef = order.Spec.Defaults.SrcRef
 		}
-		if frag.Spec.DstRef.Name == "" {
-			frag.Spec.DstRef = order.Spec.Defaults.DstRef
+		dstRef := artifact.DstRef
+		if dstRef.Name == "" {
+			dstRef = order.Spec.Defaults.DstRef
 		}
 
 		// Create a hash based on fragment fields for idempotency and compute the fragment name
 		h := sha256.New()
 		data := map[string]any{
-			"type": frag.Spec.Type,
-			"src":  frag.Spec.SrcRef.Name,
-			"dst":  frag.Spec.DstRef.Name,
-			"spec": frag.Spec.Spec.Raw,
+			"type": aw.Spec.Type,
+			"src":  srcRef.Name,
+			"dst":  dstRef.Name,
+			"spec": artifact.Spec.Raw,
 		}
 		jsonData, err := json.Marshal(data)
 		if err != nil {
@@ -144,41 +146,41 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
-		frag.Name = fmt.Sprintf("%s-%s", order.Name, sha)
+		aw.Name = fmt.Sprintf("%s-%s", order.Name, sha)
 
-		desiredFrags[sha] = frag
+		desiredAWs[sha] = aw
 	}
 
 	// List missing fragments
-	fragsToCreate := []string{}
-	for sha := range desiredFrags {
-		_, exists := order.Status.Fragments[sha]
+	createAWs := []string{}
+	for sha := range desiredAWs {
+		_, exists := order.Status.ArtifactWorkflows[sha]
 		if exists {
 			continue
 		}
-		fragsToCreate = append(fragsToCreate, sha)
+		createAWs = append(createAWs, sha)
 	}
 
 	// Make sure status is initialized
-	if order.Status.Fragments == nil {
-		order.Status.Fragments = map[string]corev1.LocalObjectReference{}
+	if order.Status.ArtifactWorkflows == nil {
+		order.Status.ArtifactWorkflows = map[string]corev1.LocalObjectReference{}
 	}
 
 	// Find obsolete fragments
-	fragsToDelete := []string{}
-	for sha := range order.Status.Fragments {
-		_, exists := desiredFrags[sha]
+	deleteAWs := []string{}
+	for sha := range order.Status.ArtifactWorkflows {
+		_, exists := desiredAWs[sha]
 		if exists {
 			continue
 		}
-		fragsToDelete = append(fragsToDelete, sha)
+		deleteAWs = append(deleteAWs, sha)
 	}
 
 	// Create missing fragments
-	for _, sha := range fragsToCreate {
-		frag := desiredFrags[sha]
+	for _, sha := range createAWs {
+		frag := desiredAWs[sha]
 
-		// Set owner reference so Fragment is garbage-collected with the Order
+		// Set owner reference so ArtifactWorkflow is garbage-collected with the Order
 		if err := controllerutil.SetControllerReference(order, frag, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -192,27 +194,27 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 
 		// Update status
-		order.Status.Fragments[sha] = corev1.LocalObjectReference{Name: frag.Name}
+		order.Status.ArtifactWorkflows[sha] = corev1.LocalObjectReference{Name: frag.Name}
 	}
 
 	// Delete obsolete fragments
-	for _, sha := range fragsToDelete {
+	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
-		if err := r.Delete(ctx, &arcv1alpha1.Fragment{
+		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: order.Namespace,
-				Name:      order.Status.Fragments[sha].Name,
+				Name:      order.Status.ArtifactWorkflows[sha].Name,
 			},
 		}); err != nil {
 			return ctrl.Result{}, err
 		}
 
 		// Update status
-		delete(order.Status.Fragments, sha)
+		delete(order.Status.ArtifactWorkflows, sha)
 	}
 
 	// Update status
-	if len(fragsToCreate) > 0 || len(fragsToDelete) > 0 {
+	if len(createAWs) > 0 || len(deleteAWs) > 0 {
 		log.V(1).Info("Updating Order.Status")
 		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, err
@@ -257,6 +259,6 @@ func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
-		Owns(&arcv1alpha1.Fragment{}).
+		Owns(&arcv1alpha1.ArtifactWorkflow{}).
 		Complete(r)
 }

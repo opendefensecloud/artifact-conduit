@@ -24,18 +24,18 @@ func NewStrategy(typer runtime.ObjectTyper) fragmentStrategy {
 	return fragmentStrategy{typer, names.SimpleNameGenerator}
 }
 
-// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an Fragment
+// GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactWorkflow
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*arc.Fragment)
+	apiserver, ok := obj.(*arc.ArtifactWorkflow)
 	if !ok {
-		return nil, nil, fmt.Errorf("given object is not an Fragment")
+		return nil, nil, fmt.Errorf("given object is not an ArtifactWorkflow")
 	}
 	return labels.Set(apiserver.Labels), SelectableFields(apiserver), nil
 }
 
-// MatchFragment is the filter used by the generic etcd backend to watch events
+// MatchArtifactWorkflow is the filter used by the generic etcd backend to watch events
 // from etcd to clients of the apiserver only interested in specific labels/fields.
-func MatchFragment(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
+func MatchArtifactWorkflow(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
 		Field:    field,
@@ -44,7 +44,7 @@ func MatchFragment(label labels.Selector, field fields.Selector) storage.Selecti
 }
 
 // SelectableFields returns a field set that represents the object.
-func SelectableFields(obj *arc.Fragment) fields.Set {
+func SelectableFields(obj *arc.ArtifactWorkflow) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 
@@ -111,9 +111,9 @@ func (fragmentStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpa
 }
 
 func (fragmentStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
-	newFragment := obj.(*arc.Fragment)
-	oldFragment := old.(*arc.Fragment)
-	newFragment.Spec = oldFragment.Spec
+	newArtifactWorkflow := obj.(*arc.ArtifactWorkflow)
+	oldArtifactWorkflow := old.(*arc.ArtifactWorkflow)
+	newArtifactWorkflow.Spec = oldArtifactWorkflow.Spec
 }
 
 func (fragmentStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {

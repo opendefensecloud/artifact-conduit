@@ -12,31 +12,31 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// FragmentApplyConfiguration represents a declarative configuration of the Fragment type for use
+// ArtifactWorkflowApplyConfiguration represents a declarative configuration of the ArtifactWorkflow type for use
 // with apply.
-type FragmentApplyConfiguration struct {
+type ArtifactWorkflowApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *FragmentSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *arcv1alpha1.FragmentStatus     `json:"status,omitempty"`
+	Spec                             *ArtifactWorkflowSpecApplyConfiguration `json:"spec,omitempty"`
+	Status                           *arcv1alpha1.ArtifactWorkflowStatus     `json:"status,omitempty"`
 }
 
-// Fragment constructs a declarative configuration of the Fragment type for use with
+// ArtifactWorkflow constructs a declarative configuration of the ArtifactWorkflow type for use with
 // apply.
-func Fragment(name, namespace string) *FragmentApplyConfiguration {
-	b := &FragmentApplyConfiguration{}
+func ArtifactWorkflow(name, namespace string) *ArtifactWorkflowApplyConfiguration {
+	b := &ArtifactWorkflowApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("Fragment")
+	b.WithKind("ArtifactWorkflow")
 	b.WithAPIVersion("arc.bwi.de/v1alpha1")
 	return b
 }
-func (b FragmentApplyConfiguration) IsApplyConfiguration() {}
+func (b ArtifactWorkflowApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithKind(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithKind(value string) *ArtifactWorkflowApplyConfiguration {
 	b.TypeMetaApplyConfiguration.Kind = &value
 	return b
 }
@@ -44,7 +44,7 @@ func (b *FragmentApplyConfiguration) WithKind(value string) *FragmentApplyConfig
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithAPIVersion(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithAPIVersion(value string) *ArtifactWorkflowApplyConfiguration {
 	b.TypeMetaApplyConfiguration.APIVersion = &value
 	return b
 }
@@ -52,7 +52,7 @@ func (b *FragmentApplyConfiguration) WithAPIVersion(value string) *FragmentApply
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithName(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithName(value string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Name = &value
 	return b
@@ -61,7 +61,7 @@ func (b *FragmentApplyConfiguration) WithName(value string) *FragmentApplyConfig
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithGenerateName(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithGenerateName(value string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.GenerateName = &value
 	return b
@@ -70,7 +70,7 @@ func (b *FragmentApplyConfiguration) WithGenerateName(value string) *FragmentApp
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithNamespace(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithNamespace(value string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Namespace = &value
 	return b
@@ -79,7 +79,7 @@ func (b *FragmentApplyConfiguration) WithNamespace(value string) *FragmentApplyC
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithUID(value types.UID) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithUID(value types.UID) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.UID = &value
 	return b
@@ -88,7 +88,7 @@ func (b *FragmentApplyConfiguration) WithUID(value types.UID) *FragmentApplyConf
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithResourceVersion(value string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithResourceVersion(value string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.ResourceVersion = &value
 	return b
@@ -97,7 +97,7 @@ func (b *FragmentApplyConfiguration) WithResourceVersion(value string) *Fragment
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithGeneration(value int64) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithGeneration(value int64) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.Generation = &value
 	return b
@@ -106,7 +106,7 @@ func (b *FragmentApplyConfiguration) WithGeneration(value int64) *FragmentApplyC
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithCreationTimestamp(value metav1.Time) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithCreationTimestamp(value metav1.Time) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.CreationTimestamp = &value
 	return b
@@ -115,7 +115,7 @@ func (b *FragmentApplyConfiguration) WithCreationTimestamp(value metav1.Time) *F
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionTimestamp = &value
 	return b
@@ -124,7 +124,7 @@ func (b *FragmentApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *F
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ObjectMetaApplyConfiguration.DeletionGracePeriodSeconds = &value
 	return b
@@ -134,7 +134,7 @@ func (b *FragmentApplyConfiguration) WithDeletionGracePeriodSeconds(value int64)
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *FragmentApplyConfiguration) WithLabels(entries map[string]string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithLabels(entries map[string]string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Labels == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Labels = make(map[string]string, len(entries))
@@ -149,7 +149,7 @@ func (b *FragmentApplyConfiguration) WithLabels(entries map[string]string) *Frag
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *FragmentApplyConfiguration) WithAnnotations(entries map[string]string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithAnnotations(entries map[string]string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.ObjectMetaApplyConfiguration.Annotations == nil && len(entries) > 0 {
 		b.ObjectMetaApplyConfiguration.Annotations = make(map[string]string, len(entries))
@@ -163,7 +163,7 @@ func (b *FragmentApplyConfiguration) WithAnnotations(entries map[string]string) 
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *FragmentApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -177,7 +177,7 @@ func (b *FragmentApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerRefe
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *FragmentApplyConfiguration) WithFinalizers(values ...string) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithFinalizers(values ...string) *ArtifactWorkflowApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.ObjectMetaApplyConfiguration.Finalizers = append(b.ObjectMetaApplyConfiguration.Finalizers, values[i])
@@ -185,7 +185,7 @@ func (b *FragmentApplyConfiguration) WithFinalizers(values ...string) *FragmentA
 	return b
 }
 
-func (b *FragmentApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *ArtifactWorkflowApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -194,7 +194,7 @@ func (b *FragmentApplyConfiguration) ensureObjectMetaApplyConfigurationExists() 
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithSpec(value *FragmentSpecApplyConfiguration) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithSpec(value *ArtifactWorkflowSpecApplyConfiguration) *ArtifactWorkflowApplyConfiguration {
 	b.Spec = value
 	return b
 }
@@ -202,29 +202,29 @@ func (b *FragmentApplyConfiguration) WithSpec(value *FragmentSpecApplyConfigurat
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *FragmentApplyConfiguration) WithStatus(value arcv1alpha1.FragmentStatus) *FragmentApplyConfiguration {
+func (b *ArtifactWorkflowApplyConfiguration) WithStatus(value arcv1alpha1.ArtifactWorkflowStatus) *ArtifactWorkflowApplyConfiguration {
 	b.Status = &value
 	return b
 }
 
 // GetKind retrieves the value of the Kind field in the declarative configuration.
-func (b *FragmentApplyConfiguration) GetKind() *string {
+func (b *ArtifactWorkflowApplyConfiguration) GetKind() *string {
 	return b.TypeMetaApplyConfiguration.Kind
 }
 
 // GetAPIVersion retrieves the value of the APIVersion field in the declarative configuration.
-func (b *FragmentApplyConfiguration) GetAPIVersion() *string {
+func (b *ArtifactWorkflowApplyConfiguration) GetAPIVersion() *string {
 	return b.TypeMetaApplyConfiguration.APIVersion
 }
 
 // GetName retrieves the value of the Name field in the declarative configuration.
-func (b *FragmentApplyConfiguration) GetName() *string {
+func (b *ArtifactWorkflowApplyConfiguration) GetName() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Name
 }
 
 // GetNamespace retrieves the value of the Namespace field in the declarative configuration.
-func (b *FragmentApplyConfiguration) GetNamespace() *string {
+func (b *ArtifactWorkflowApplyConfiguration) GetNamespace() *string {
 	b.ensureObjectMetaApplyConfigurationExists()
 	return b.ObjectMetaApplyConfiguration.Namespace
 }

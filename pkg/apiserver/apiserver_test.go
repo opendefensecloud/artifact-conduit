@@ -40,22 +40,22 @@ var _ = Describe("Order", func() {
 
 })
 
-var _ = Describe("Fragment", func() {
+var _ = Describe("ArtifactWorkflow", func() {
 	var (
 		ctx  = envtest.Context()
 		ns   = SetupTest(ctx)
-		frag = &arcv1alpha1.Fragment{}
+		frag = &arcv1alpha1.ArtifactWorkflow{}
 	)
 
-	Context("Fragment", func() {
+	Context("ArtifactWorkflow", func() {
 		It("should allow creating a fragment", func() {
 			By("creating a test fragment")
-			frag = &arcv1alpha1.Fragment{
+			frag = &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:    ns.Name,
 					GenerateName: "test-",
 				},
-				Spec: arcv1alpha1.FragmentSpec{},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{},
 			}
 			Expect(k8sClient.Create(ctx, frag)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(frag), frag)).To(Succeed())

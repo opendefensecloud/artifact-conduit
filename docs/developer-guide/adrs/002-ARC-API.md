@@ -49,7 +49,7 @@ spec:
 
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
-kind: Fragment
+kind: ArtifactWorkflow
 metadata:
   name: example-order-1 # sha256 for procedural
 spec:
