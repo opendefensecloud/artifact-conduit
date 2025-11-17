@@ -11,6 +11,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
@@ -27,7 +28,7 @@ import (
 )
 
 const (
-	pollingInterval      = 50 * time.Millisecond
+	pollingInterval      = 300 * time.Millisecond
 	eventuallyTimeout    = 3 * time.Second
 	consistentlyDuration = 1 * time.Second
 	apiServiceTimeout    = 5 * time.Minute
@@ -57,6 +58,7 @@ var _ = BeforeSuite(func() {
 	By("bootstrapping test environment")
 
 	Expect(arcv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
+	Expect(wfv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
 	testEnv, err = envtest.NewEnvironment()
 	Expect(err).NotTo(HaveOccurred())
@@ -82,6 +84,10 @@ var _ = BeforeSuite(func() {
 
 	// setup reconcilers
 	Expect((&OrderReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr)).To(Succeed())
+	Expect((&FragmentReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr)).To(Succeed())

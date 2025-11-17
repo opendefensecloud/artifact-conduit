@@ -59,7 +59,7 @@ clean:
 
 .PHONY: codegen
 codegen: openapi-gen ## Run code generation, e.g. openapi
-	./hack/update-codegen.sh
+	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
 
 .PHONY: fmt
 fmt: addlicense ## Add license headers and format code

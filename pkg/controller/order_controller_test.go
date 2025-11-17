@@ -20,8 +20,39 @@ var _ = Describe("OrderController", func() {
 		ns  = SetupTest(ctx)
 	)
 
+	createEndpoints := func(names ...string) {
+		for _, name := range names {
+			secret := corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: ns.Name,
+				},
+				StringData: map[string]string{
+					"testkey": "testval",
+				},
+			}
+			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+			endpoint := arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type:      "oci",
+					RemoteURL: "testurl",
+					SecretRef: corev1.LocalObjectReference{
+						Name: name,
+					},
+					Usage: arcv1alpha1.EndpointUsageAll,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+		}
+	}
+
 	Context("when reconciling Orders", func() {
 		It("should create fragments for an order with multiple artifacts and no defaults", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			// Create test Order with multiple artifacts, no defaults
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
@@ -71,6 +102,7 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should create fragments for an order with multiple artifacts using defaults", func() {
+			createEndpoints("default-src", "default-dst")
 			// Create test Order with defaults
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
@@ -115,6 +147,7 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should create fragments for an order with mixed default usage", func() {
+			createEndpoints("default-src", "default-dst", "custom-src", "custom-src-2", "custom-dst-2", "custom-dst-3")
 			// Create test Order with some artifacts using defaults, others specifying refs
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
@@ -188,6 +221,7 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should delete fragments when order is deleted", func() {
+			createEndpoints("src-a", "dst-a", "src-b", "dst-b")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-delete",
@@ -216,6 +250,7 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should create a new fragment and update status when an artifact is added", func() {
+			createEndpoints("src-c", "dst-c", "src-d", "dst-d")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-add-artifact",
@@ -258,6 +293,7 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should delete a fragment and update status when an artifact is removed", func() {
+			createEndpoints("src-e", "dst-e", "src-f", "dst-f")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-remove-artifact",

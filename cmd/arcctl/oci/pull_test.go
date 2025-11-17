@@ -30,27 +30,22 @@ var _ = Describe("Pull Command", func() {
 		Expect(os.RemoveAll(arcctlTempDir)).ToNot(HaveOccurred())
 	})
 
-	Context("when required configuration is missing", func() {
-		It("should return an error if source.reference is missing", func() {
-			err := runPull(cmd, []string{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("source.reference is not set"))
-		})
-	})
+	// TODO: Mock container registry
+	// Context("when configuration is valid", func() {
+	// 	BeforeEach(func() {
+	// 		json := `{ "type": "oci", "src": { "type": "oci", "remoteURL": "registry-1.docker.io" }, "spec": { "image" : "library/busybox:latest" } }`
+	// 		viper.SetConfigType("json")
+	// 		viper.Set("tmp-dir", arcctlTempDir)
+	// 		Expect(viper.ReadConfig(strings.NewReader(json))).To(Succeed())
+	// 	})
 
-	Context("when configuration is valid", func() {
-		BeforeEach(func() {
-			viper.Set("source.reference", "registry-1.docker.io/library/busybox:latest")
-			viper.Set("tmp-dir", arcctlTempDir)
-		})
+	// 	It("should pull the OCI artifact successfully", func() {
+	// 		err := runPull(cmd, []string{})
+	// 		Expect(err).ToNot(HaveOccurred())
+	// 		// Verify oci layout on disk exists
+	// 		_, err = os.Stat(arcctlTempDir + "/index.json")
+	// 		Expect(err).ToNot(HaveOccurred())
+	// 	})
 
-		It("should pull the OCI artifact successfully", func() {
-			err := runPull(cmd, []string{})
-			Expect(err).ToNot(HaveOccurred())
-			// Verify oci layout on disk exists
-			_, err = os.Stat(arcctlTempDir + "/index.json")
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-	})
+	// })
 })

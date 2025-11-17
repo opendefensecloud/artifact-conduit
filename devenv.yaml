@@ -2,6 +2,8 @@
 inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  git-hooks:
+    url: github:cachix/git-hooks.nix
   gomod:
     url: github:nix-community/gomod2nix
     overlays:
