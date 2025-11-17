@@ -18,6 +18,8 @@ import (
 func RegisterDefaults(scheme *runtime.Scheme) error {
 	scheme.AddTypeDefaultingFunc(&ArtifactType{}, func(obj interface{}) { SetObjectDefaults_ArtifactType(obj.(*ArtifactType)) })
 	scheme.AddTypeDefaultingFunc(&ArtifactTypeList{}, func(obj interface{}) { SetObjectDefaults_ArtifactTypeList(obj.(*ArtifactTypeList)) })
+	scheme.AddTypeDefaultingFunc(&ArtifactWorkflow{}, func(obj interface{}) { SetObjectDefaults_ArtifactWorkflow(obj.(*ArtifactWorkflow)) })
+	scheme.AddTypeDefaultingFunc(&ArtifactWorkflowList{}, func(obj interface{}) { SetObjectDefaults_ArtifactWorkflowList(obj.(*ArtifactWorkflowList)) })
 	scheme.AddTypeDefaultingFunc(&Endpoint{}, func(obj interface{}) { SetObjectDefaults_Endpoint(obj.(*Endpoint)) })
 	scheme.AddTypeDefaultingFunc(&EndpointList{}, func(obj interface{}) { SetObjectDefaults_EndpointList(obj.(*EndpointList)) })
 	scheme.AddTypeDefaultingFunc(&Order{}, func(obj interface{}) { SetObjectDefaults_Order(obj.(*Order)) })
@@ -33,6 +35,17 @@ func SetObjectDefaults_ArtifactTypeList(in *ArtifactTypeList) {
 	for i := range in.Items {
 		a := &in.Items[i]
 		SetObjectDefaults_ArtifactType(a)
+	}
+}
+
+func SetObjectDefaults_ArtifactWorkflow(in *ArtifactWorkflow) {
+	SetDefaults_ArtifactWorkflowSpec(&in.Spec)
+}
+
+func SetObjectDefaults_ArtifactWorkflowList(in *ArtifactWorkflowList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_ArtifactWorkflow(a)
 	}
 }
 

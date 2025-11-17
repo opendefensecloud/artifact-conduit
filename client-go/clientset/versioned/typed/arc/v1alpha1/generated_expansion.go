@@ -7,8 +7,8 @@ package v1alpha1
 
 type ArtifactTypeExpansion interface{}
 
-type EndpointExpansion interface{}
+type ArtifactWorkflowExpansion interface{}
 
-type FragmentExpansion interface{}
+type EndpointExpansion interface{}
 
 type OrderExpansion interface{}

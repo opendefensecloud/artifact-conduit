@@ -5,6 +5,7 @@ package envtest
 
 import (
 	"errors"
+	"io"
 	"path/filepath"
 	"time"
 
@@ -41,7 +42,7 @@ func NewEnvironment() (*Environment, error) {
 	}, nil
 }
 
-func (e *Environment) Start(scheme *runtime.Scheme) (client.Client, error) {
+func (e *Environment) Start(scheme *runtime.Scheme, writer io.Writer) (client.Client, error) {
 	cfg, err := utilsenvtest.StartWithExtensions(e.env, e.ext)
 	if err != nil {
 		return nil, err
@@ -59,6 +60,8 @@ func (e *Environment) Start(scheme *runtime.Scheme) (client.Client, error) {
 		Host:         e.ext.APIServiceInstallOptions.LocalServingHost,
 		Port:         e.ext.APIServiceInstallOptions.LocalServingPort,
 		CertDir:      e.ext.APIServiceInstallOptions.LocalServingCertDir,
+		Stdout:       writer,
+		Stderr:       writer,
 	})
 	if err != nil {
 		return nil, errors.Join(err, e.Stop())
