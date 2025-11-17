@@ -65,5 +65,18 @@ Similar to the detailed ones, but using abbreviations. Those could be `feat/`, `
 
 ## Decission Outcome
 
-> [!NOTE]
-> See _status_, still in disccussion.
+As a compromise, proposal 3 was initially introduced without compulsion. Its use is based on the conventions in the still manageable team and the limited number of developers who can perform reviews. If the prefixes are not used, an initial note is sufficient.
+
+In a second step, local hooks could be made available and documented for the project's supporters, and a GitHub Action could be defined that prohibits the merging of such branches. These steps are optional for the future.
+
+The branch prefixes and their meanings are:
+
+- `hot/` for hotfixes with very high priority,
+- `bug/` for regular bug fixes,
+- `feat/` for the introduction of new features,
+- `imp/` for refactorings and improvements to the code without introducing new features or API changes,
+- `eval/` for the evaluation of new approaches and technologies,
+- `doc/` for changes in the documentation and not in the code, and
+- `rel/` for releases to be released.
+
+For all designations, the issue must be mentioned, for example `feat/176-etcd-garbage-cleanup`. Additional verbs like `176-add-etcd-garbage-cleanup` are not needed. For a release, however, the identifier for example it is `rel/2.0.7`.
