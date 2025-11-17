@@ -4,15 +4,16 @@
 package oci
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.opendefense.cloud/arc/pkg/workflow/config"
 	"go.opendefense.cloud/arc/test/oci"
 )
 
@@ -55,11 +56,19 @@ var _ = Describe("Pull Command", func() {
 
 	Context("when configuration is valid", func() {
 		It("should pull the OCI artifact successfully", func() {
-			json := `{ "type": "oci", "src": { "type": "oci", "remoteURL": "` + mockRegistry.Listener.Addr().String() + `" }, "spec": { "image" : "` + mockReference + `" } }`
-			Expect(viper.ReadConfig(strings.NewReader(json))).To(Succeed())
+			conf := &config.ArcctlConfig{}
+			conf.Type = config.AT_OCI
+			conf.Src.Type = config.AT_OCI
+			conf.Src.RemoteURL = mockRegistry.Listener.Addr().String()
+			conf.Spec = config.OCISpec{
+				Image: mockReference,
+			}
 
-			err := runPull(cmd, []string{})
+			confJson, err := conf.ToJson()
 			Expect(err).ToNot(HaveOccurred())
+			Expect(viper.ReadConfig(bytes.NewReader(confJson))).To(Succeed())
+
+			Expect(runPull(cmd, []string{})).To(Succeed())
 			// Verify oci layout on disk exists
 			_, err = os.Stat(arcctlTempDir + "/index.json")
 			Expect(err).ToNot(HaveOccurred())
