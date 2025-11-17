@@ -21,7 +21,7 @@ type OrderDefaults struct {
 
 // OrderArtifact specifies a single artifact which is translated into a corresponding Fragment
 type OrderArtifact struct {
-	// Type specifies which ArtifactTypeDefinition is used to process this artifact.
+	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	// SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).
 	// +optional

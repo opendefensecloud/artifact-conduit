@@ -9,24 +9,24 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// ArtifactTypeDefinitionSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeDefinitionSpec type for use
+// ArtifactTypeSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeSpec type for use
 // with apply.
-type ArtifactTypeDefinitionSpecApplyConfiguration struct {
-	Rules               *ArtifactTypeDefinitionRulesApplyConfiguration `json:"rules,omitempty"`
-	Defaults            *OrderDefaultsApplyConfiguration               `json:"defaults,omitempty"`
-	WorkflowTemplateRef *v1.LocalObjectReference                       `json:"workflowTemplateRef,omitempty"`
+type ArtifactTypeSpecApplyConfiguration struct {
+	Rules               *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
+	Defaults            *OrderDefaultsApplyConfiguration     `json:"defaults,omitempty"`
+	WorkflowTemplateRef *v1.LocalObjectReference             `json:"workflowTemplateRef,omitempty"`
 }
 
-// ArtifactTypeDefinitionSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeDefinitionSpec type for use with
+// ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with
 // apply.
-func ArtifactTypeDefinitionSpec() *ArtifactTypeDefinitionSpecApplyConfiguration {
-	return &ArtifactTypeDefinitionSpecApplyConfiguration{}
+func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
+	return &ArtifactTypeSpecApplyConfiguration{}
 }
 
 // WithRules sets the Rules field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Rules field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionSpecApplyConfiguration) WithRules(value *ArtifactTypeDefinitionRulesApplyConfiguration) *ArtifactTypeDefinitionSpecApplyConfiguration {
+func (b *ArtifactTypeSpecApplyConfiguration) WithRules(value *ArtifactTypeRulesApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.Rules = value
 	return b
 }
@@ -34,7 +34,7 @@ func (b *ArtifactTypeDefinitionSpecApplyConfiguration) WithRules(value *Artifact
 // WithDefaults sets the Defaults field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Defaults field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionSpecApplyConfiguration) WithDefaults(value *OrderDefaultsApplyConfiguration) *ArtifactTypeDefinitionSpecApplyConfiguration {
+func (b *ArtifactTypeSpecApplyConfiguration) WithDefaults(value *OrderDefaultsApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.Defaults = value
 	return b
 }
@@ -42,7 +42,7 @@ func (b *ArtifactTypeDefinitionSpecApplyConfiguration) WithDefaults(value *Order
 // WithWorkflowTemplateRef sets the WorkflowTemplateRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the WorkflowTemplateRef field is set to the value of the last call.
-func (b *ArtifactTypeDefinitionSpecApplyConfiguration) WithWorkflowTemplateRef(value v1.LocalObjectReference) *ArtifactTypeDefinitionSpecApplyConfiguration {
+func (b *ArtifactTypeSpecApplyConfiguration) WithWorkflowTemplateRef(value v1.LocalObjectReference) *ArtifactTypeSpecApplyConfiguration {
 	b.WorkflowTemplateRef = &value
 	return b
 }

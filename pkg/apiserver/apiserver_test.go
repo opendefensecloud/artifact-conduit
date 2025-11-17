@@ -96,22 +96,22 @@ var _ = Describe("Endpoint", func() {
 
 })
 
-var _ = Describe("ArtifactTypeDefinition", func() {
+var _ = Describe("ArtifactType", func() {
 	var (
 		ctx = envtest.Context()
 		ns  = SetupTest(ctx)
-		atd = &arcv1alpha1.ArtifactTypeDefinition{}
+		atd = &arcv1alpha1.ArtifactType{}
 	)
 
-	Context("ArtifactTypeDefinition", func() {
+	Context("ArtifactType", func() {
 		It("should allow creating an artifact type definition", func() {
 			By("creating a test artifact type definition")
-			atd = &arcv1alpha1.ArtifactTypeDefinition{
+			atd = &arcv1alpha1.ArtifactType{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:    ns.Name,
 					GenerateName: "test-",
 				},
-				Spec: arcv1alpha1.ArtifactTypeDefinitionSpec{},
+				Spec: arcv1alpha1.ArtifactTypeSpec{},
 			}
 			Expect(k8sClient.Create(ctx, atd)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(atd), atd)).To(Succeed())

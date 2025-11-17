@@ -37,7 +37,7 @@ graph TB
         Order["Order<br/>High-level request"]
         Fragment["Fragment<br/>Single artifact op"]
         Endpoint["Endpoint<br/>Source/Destination"]
-        ATD["ArtifactTypeDefinition<br/>Type rules"]
+        ATD["ArtifactType<br/>Type rules"]
     end
     
     subgraph "Execution Layer"
@@ -89,7 +89,7 @@ ARC introduces four primary custom resource types under the `arc.bwi.de/v1alpha1
 | **Order**                  | Declares intent to procure one or more artifacts with shared configuration defaults        | User-facing, high-level          |
 | **Fragment**               | Represents a single artifact operation decomposed from an Order                            | System-generated, execution unit |
 | **Endpoint**               | Defines a source or destination location with credentials                                  | Configuration, reusable          |
-| **ArtifactTypeDefinition** | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
+| **ArtifactType** | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
 
 ```mermaid
 graph LR
@@ -107,7 +107,7 @@ graph LR
     subgraph "Configuration"
         SrcEndpoint["Endpoint<br/>(Source)"]
         DstEndpoint["Endpoint<br/>(Destination)"]
-        ATD["ArtifactTypeDefinition<br/>(e.g., 'oci')"]
+        ATD["ArtifactType<br/>(e.g., 'oci')"]
         Secret["Secret<br/>(Credentials)"]
     end
     
@@ -168,7 +168,7 @@ The Order Controller implements the reconciliation loop for Order resources:
     2. Validate endpoint references exist
     3. Apply defaults from Order.spec.defaults
     4. Generate Fragment resources (one per artifact entry)
-    5. Lookup ArtifactTypeDefinition for each fragment's type
+    5. Lookup ArtifactType for each fragment's type
     6. Create Argo Workflow instances with appropriate WorkflowTemplate references
     7. Update Order status based on Fragment and Workflow statuses
     8. Handle finalizers for cleanup operations
@@ -195,7 +195,7 @@ sequenceDiagram
     OrderCtrl->>ARCAPI: "Create Fragment CRs"
     ARCAPI->>etcd: "Store Fragments"
     
-    OrderCtrl->>ARCAPI: "Get ArtifactTypeDefinition"
+    OrderCtrl->>ARCAPI: "Get ArtifactType"
     ARCAPI-->>OrderCtrl: "ATD with workflowTemplateRef"
     
     OrderCtrl->>K8sAPI: "Create Workflow CR"

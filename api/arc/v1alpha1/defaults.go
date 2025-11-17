@@ -26,7 +26,7 @@ func SetDefaults_EndpointSpec(obj *EndpointSpec) {
 	// ...
 }
 
-// SetDefaults_ArtifactTypeDefinitionSpec sets defaults for ArtifactTypeDefinition spec
-func SetDefaults_ArtifactTypeDefinitionSpec(obj *ArtifactTypeDefinitionSpec) {
+// SetDefaults_ArtifactTypeSpec sets defaults for ArtifactType spec
+func SetDefaults_ArtifactTypeSpec(obj *ArtifactTypeSpec) {
 	// ...
 }

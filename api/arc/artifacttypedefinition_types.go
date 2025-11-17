@@ -8,18 +8,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// ArtifactTypeDefinitionRules is a set of rules to be used for this type of artifact.
-type ArtifactTypeDefinitionRules struct {
+// ArtifactTypeRules is a set of rules to be used for this type of artifact.
+type ArtifactTypeRules struct {
 	// SrcTypes is a list of Endpoint types, that are supported as source.
 	SrcTypes []string `json:"srcTypes,omitempty"`
 	// DstTypes is a list of Endpoint types, that are supported as destination.
 	DstTypes []string `json:"dstType,omitempty"`
 }
 
-// ArtifactTypeDefinitionSpec specifies a type of artifact and describes the corresponding workflow.
-type ArtifactTypeDefinitionSpec struct {
+// ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
+type ArtifactTypeSpec struct {
 	// Rules defines a set of rules for this type.
-	Rules ArtifactTypeDefinitionRules `json:"rules"`
+	Rules ArtifactTypeRules `json:"rules"`
 	// Defaults optionally sets defaults for this type of artifact.
 	// +optional
 	Defaults OrderDefaults `json:"defaults,omitempty"`
@@ -27,28 +27,28 @@ type ArtifactTypeDefinitionSpec struct {
 	WorkflowTemplateRef corev1.LocalObjectReference `json:"workflowTemplateRef"`
 }
 
-// ArtifactTypeDefinitionStatus defines the observed state of ArtifactTypeDefinition
-type ArtifactTypeDefinitionStatus struct {
+// ArtifactTypeStatus defines the observed state of ArtifactType
+type ArtifactTypeStatus struct {
 }
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactTypeDefinition is the Schema for the endpoints API
-type ArtifactTypeDefinition struct {
+// ArtifactType is the Schema for the endpoints API
+type ArtifactType struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   ArtifactTypeDefinitionSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
-	Status ArtifactTypeDefinitionStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+	Spec   ArtifactTypeSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status ArtifactTypeStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactTypeDefinitionList is a list of ArtifactTypeDefinition objects.
-type ArtifactTypeDefinitionList struct {
+// ArtifactTypeList is a list of ArtifactType objects.
+type ArtifactTypeList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Items []ArtifactTypeDefinition `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items []ArtifactType `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

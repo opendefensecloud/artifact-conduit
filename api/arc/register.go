@@ -40,8 +40,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&FragmentList{},
 		&Endpoint{},
 		&EndpointList{},
-		&ArtifactTypeDefinition{},
-		&ArtifactTypeDefinitionList{},
+		&ArtifactType{},
+		&ArtifactTypeList{},
 	)
 	return nil
 }

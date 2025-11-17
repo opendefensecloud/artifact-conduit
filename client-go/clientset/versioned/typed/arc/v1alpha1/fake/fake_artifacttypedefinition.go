@@ -12,26 +12,26 @@ import (
 	gentype "k8s.io/client-go/gentype"
 )
 
-// fakeArtifactTypeDefinitions implements ArtifactTypeDefinitionInterface
-type fakeArtifactTypeDefinitions struct {
-	*gentype.FakeClientWithListAndApply[*v1alpha1.ArtifactTypeDefinition, *v1alpha1.ArtifactTypeDefinitionList, *arcv1alpha1.ArtifactTypeDefinitionApplyConfiguration]
+// fakeArtifactTypes implements ArtifactTypeInterface
+type fakeArtifactTypes struct {
+	*gentype.FakeClientWithListAndApply[*v1alpha1.ArtifactType, *v1alpha1.ArtifactTypeList, *arcv1alpha1.ArtifactTypeApplyConfiguration]
 	Fake *FakeArcV1alpha1
 }
 
-func newFakeArtifactTypeDefinitions(fake *FakeArcV1alpha1, namespace string) typedarcv1alpha1.ArtifactTypeDefinitionInterface {
-	return &fakeArtifactTypeDefinitions{
-		gentype.NewFakeClientWithListAndApply[*v1alpha1.ArtifactTypeDefinition, *v1alpha1.ArtifactTypeDefinitionList, *arcv1alpha1.ArtifactTypeDefinitionApplyConfiguration](
+func newFakeArtifactTypes(fake *FakeArcV1alpha1, namespace string) typedarcv1alpha1.ArtifactTypeInterface {
+	return &fakeArtifactTypes{
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.ArtifactType, *v1alpha1.ArtifactTypeList, *arcv1alpha1.ArtifactTypeApplyConfiguration](
 			fake.Fake,
 			namespace,
 			v1alpha1.SchemeGroupVersion.WithResource("artifacttypedefinitions"),
-			v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeDefinition"),
-			func() *v1alpha1.ArtifactTypeDefinition { return &v1alpha1.ArtifactTypeDefinition{} },
-			func() *v1alpha1.ArtifactTypeDefinitionList { return &v1alpha1.ArtifactTypeDefinitionList{} },
-			func(dst, src *v1alpha1.ArtifactTypeDefinitionList) { dst.ListMeta = src.ListMeta },
-			func(list *v1alpha1.ArtifactTypeDefinitionList) []*v1alpha1.ArtifactTypeDefinition {
+			v1alpha1.SchemeGroupVersion.WithKind("ArtifactType"),
+			func() *v1alpha1.ArtifactType { return &v1alpha1.ArtifactType{} },
+			func() *v1alpha1.ArtifactTypeList { return &v1alpha1.ArtifactTypeList{} },
+			func(dst, src *v1alpha1.ArtifactTypeList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.ArtifactTypeList) []*v1alpha1.ArtifactType {
 				return gentype.ToPointerSlice(list.Items)
 			},
-			func(list *v1alpha1.ArtifactTypeDefinitionList, items []*v1alpha1.ArtifactTypeDefinition) {
+			func(list *v1alpha1.ArtifactTypeList, items []*v1alpha1.ArtifactType) {
 				list.Items = gentype.FromPointerSlice(items)
 			},
 		),

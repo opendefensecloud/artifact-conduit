@@ -19,11 +19,11 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactTypeDefinition(ref),
-		v1alpha1.ArtifactTypeDefinitionList{}.OpenAPIModelName():         schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref),
-		v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName():        schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref),
-		v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName():         schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref),
-		v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName():       schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref),
+		v1alpha1.ArtifactType{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_ArtifactType(ref),
+		v1alpha1.ArtifactTypeList{}.OpenAPIModelName():                   schema_arc_api_arc_v1alpha1_ArtifactTypeList(ref),
+		v1alpha1.ArtifactTypeRules{}.OpenAPIModelName():                  schema_arc_api_arc_v1alpha1_ArtifactTypeRules(ref),
+		v1alpha1.ArtifactTypeSpec{}.OpenAPIModelName():                   schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref),
+		v1alpha1.ArtifactTypeStatus{}.OpenAPIModelName():                 schema_arc_api_arc_v1alpha1_ArtifactTypeStatus(ref),
 		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
 		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointList(ref),
 		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointSpec(ref),
@@ -331,11 +331,11 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactType(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeDefinition is the Schema for the endpoints API",
+				Description: "ArtifactType is the Schema for the endpoints API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -361,28 +361,28 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinition(ref common.ReferenceCall
 					"spec": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref(v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName()),
+							Ref:     ref(v1alpha1.ArtifactTypeSpec{}.OpenAPIModelName()),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
-							Ref:     ref(v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName()),
+							Ref:     ref(v1alpha1.ArtifactTypeStatus{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeDefinitionSpec{}.OpenAPIModelName(), v1alpha1.ArtifactTypeDefinitionStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			v1alpha1.ArtifactTypeSpec{}.OpenAPIModelName(), v1alpha1.ArtifactTypeStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeList(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeDefinitionList is a list of ArtifactTypeDefinition objects.",
+				Description: "ArtifactTypeList is a list of ArtifactType objects.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -412,7 +412,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref common.Reference
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref(v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName()),
+										Ref:     ref(v1alpha1.ArtifactType{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -423,15 +423,15 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionList(ref common.Reference
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeDefinition{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.ArtifactType{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeRules(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeDefinitionRules is a set of rules to be used for this type of artifact.",
+				Description: "ArtifactTypeRules is a set of rules to be used for this type of artifact.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"srcTypes": {
@@ -470,18 +470,18 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionRules(ref common.Referenc
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeDefinitionSpec specifies a type of artifact and describes the corresponding workflow.",
+				Description: "ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"rules": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Rules defines a set of rules for this type.",
 							Default:     map[string]interface{}{},
-							Ref:         ref(v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName()),
+							Ref:         ref(v1alpha1.ArtifactTypeRules{}.OpenAPIModelName()),
 						},
 					},
 					"defaults": {
@@ -503,15 +503,15 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionSpec(ref common.Reference
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeDefinitionRules{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_ArtifactTypeDefinitionStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_arc_api_arc_v1alpha1_ArtifactTypeStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeDefinitionStatus defines the observed state of ArtifactTypeDefinition",
+				Description: "ArtifactTypeStatus defines the observed state of ArtifactType",
 				Type:        []string{"object"},
 			},
 		},
@@ -623,7 +623,7 @@ func schema_arc_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) comm
 				Properties: map[string]spec.Schema{
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactTypeDefinition is used to process this artifact.",
+							Description: "Type specifies which ArtifactType is used to process this artifact.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
@@ -778,7 +778,7 @@ func schema_arc_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceCallback) comm
 				Properties: map[string]spec.Schema{
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactTypeDefinition is used to process this artifact.",
+							Description: "Type specifies which ArtifactType is used to process this artifact.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
@@ -879,7 +879,7 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 				Properties: map[string]spec.Schema{
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactTypeDefinition is used to process this artifact.",
+							Description: "Type specifies which ArtifactType is used to process this artifact.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",

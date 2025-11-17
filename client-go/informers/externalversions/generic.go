@@ -41,7 +41,7 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	switch resource {
 	// Group=arc.bwi.de, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("artifacttypedefinitions"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactTypeDefinitions().Informer()}, nil
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactTypes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("endpoints"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Endpoints().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("fragments"):

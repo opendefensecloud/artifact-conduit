@@ -15,8 +15,8 @@ type FakeArcV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeArcV1alpha1) ArtifactTypeDefinitions(namespace string) v1alpha1.ArtifactTypeDefinitionInterface {
-	return newFakeArtifactTypeDefinitions(c, namespace)
+func (c *FakeArcV1alpha1) ArtifactTypes(namespace string) v1alpha1.ArtifactTypeInterface {
+	return newFakeArtifactTypes(c, namespace)
 }
 
 func (c *FakeArcV1alpha1) Endpoints(namespace string) v1alpha1.EndpointInterface {

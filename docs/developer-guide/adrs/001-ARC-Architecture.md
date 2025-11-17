@@ -20,7 +20,7 @@ This ADR is about finding the right architecture for the ARC suite of services b
 - `Workflow`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflow>
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
 - `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderFragment` Resources, creates `Workflow` resources for necessary workload
-- `ArtifactTypeDefinition`: Specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
+- `ArtifactType`: Specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 ## Considered Options
 
@@ -113,7 +113,7 @@ flowchart LR
         FragmentN["Fragment-N"]
   end
  subgraph Configuration["Configuration"]
-        ArtifactTypeDef@{ label: "ArtifactTypeDefinition (e.g., 'oci')" }
+        ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
         EndpointSrc["Endpoint (Source)"]
         EndpointDst["Endpoint (Destination)"]
         Secret["Secret (Credentials)"]
@@ -149,7 +149,7 @@ The solution shows the ARC API Server which handles storage for the custom resou
 An `Order` contains the information what artifacts should be processed.
 An `Endpoint` contains the information about a source or destination for artifacts.
 The `Order Controller` creates `Fragment` resources which are single artifacts decomposed from an `Order`.
-An `ArtifactTypeDefinition` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
+An `ArtifactType` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
 
 #### Pros
 

@@ -23,7 +23,7 @@ const (
 
 // EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type EndpointSpec struct {
-	// Type specifies which ArtifactTypeDefinition is used to process this artifact.
+	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	// RemoteURL defines the URL which is used to interact with the endpoint.
 	RemoteURL string `json:"remoteURL"`

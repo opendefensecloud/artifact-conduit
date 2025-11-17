@@ -17,45 +17,45 @@ import (
 	gentype "k8s.io/client-go/gentype"
 )
 
-// ArtifactTypeDefinitionsGetter has a method to return a ArtifactTypeDefinitionInterface.
+// ArtifactTypesGetter has a method to return a ArtifactTypeInterface.
 // A group's client should implement this interface.
-type ArtifactTypeDefinitionsGetter interface {
-	ArtifactTypeDefinitions(namespace string) ArtifactTypeDefinitionInterface
+type ArtifactTypesGetter interface {
+	ArtifactTypes(namespace string) ArtifactTypeInterface
 }
 
-// ArtifactTypeDefinitionInterface has methods to work with ArtifactTypeDefinition resources.
-type ArtifactTypeDefinitionInterface interface {
-	Create(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactTypeDefinition, opts v1.CreateOptions) (*arcv1alpha1.ArtifactTypeDefinition, error)
-	Update(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactTypeDefinition, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactTypeDefinition, error)
+// ArtifactTypeInterface has methods to work with ArtifactType resources.
+type ArtifactTypeInterface interface {
+	Create(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.CreateOptions) (*arcv1alpha1.ArtifactType, error)
+	Update(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactTypeDefinition, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactTypeDefinition, error)
+	UpdateStatus(ctx context.Context, artifactTypeDefinition *arcv1alpha1.ArtifactType, opts v1.UpdateOptions) (*arcv1alpha1.ArtifactType, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*arcv1alpha1.ArtifactTypeDefinition, error)
-	List(ctx context.Context, opts v1.ListOptions) (*arcv1alpha1.ArtifactTypeDefinitionList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*arcv1alpha1.ArtifactType, error)
+	List(ctx context.Context, opts v1.ListOptions) (*arcv1alpha1.ArtifactTypeList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *arcv1alpha1.ArtifactTypeDefinition, err error)
-	Apply(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeDefinitionApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactTypeDefinition, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *arcv1alpha1.ArtifactType, err error)
+	Apply(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeDefinitionApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactTypeDefinition, err error)
-	ArtifactTypeDefinitionExpansion
+	ApplyStatus(ctx context.Context, artifactTypeDefinition *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration, opts v1.ApplyOptions) (result *arcv1alpha1.ArtifactType, err error)
+	ArtifactTypeExpansion
 }
 
-// artifactTypeDefinitions implements ArtifactTypeDefinitionInterface
+// artifactTypeDefinitions implements ArtifactTypeInterface
 type artifactTypeDefinitions struct {
-	*gentype.ClientWithListAndApply[*arcv1alpha1.ArtifactTypeDefinition, *arcv1alpha1.ArtifactTypeDefinitionList, *applyconfigurationsarcv1alpha1.ArtifactTypeDefinitionApplyConfiguration]
+	*gentype.ClientWithListAndApply[*arcv1alpha1.ArtifactType, *arcv1alpha1.ArtifactTypeList, *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration]
 }
 
-// newArtifactTypeDefinitions returns a ArtifactTypeDefinitions
-func newArtifactTypeDefinitions(c *ArcV1alpha1Client, namespace string) *artifactTypeDefinitions {
+// newArtifactTypes returns a ArtifactTypes
+func newArtifactTypes(c *ArcV1alpha1Client, namespace string) *artifactTypeDefinitions {
 	return &artifactTypeDefinitions{
-		gentype.NewClientWithListAndApply[*arcv1alpha1.ArtifactTypeDefinition, *arcv1alpha1.ArtifactTypeDefinitionList, *applyconfigurationsarcv1alpha1.ArtifactTypeDefinitionApplyConfiguration](
+		gentype.NewClientWithListAndApply[*arcv1alpha1.ArtifactType, *arcv1alpha1.ArtifactTypeList, *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration](
 			"artifacttypedefinitions",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *arcv1alpha1.ArtifactTypeDefinition { return &arcv1alpha1.ArtifactTypeDefinition{} },
-			func() *arcv1alpha1.ArtifactTypeDefinitionList { return &arcv1alpha1.ArtifactTypeDefinitionList{} },
+			func() *arcv1alpha1.ArtifactType { return &arcv1alpha1.ArtifactType{} },
+			func() *arcv1alpha1.ArtifactTypeList { return &arcv1alpha1.ArtifactTypeList{} },
 		),
 	}
 }
