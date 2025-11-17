@@ -10,6 +10,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/workflow/config"
@@ -308,12 +310,16 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 		"config.json": string(json),
 	}
 
+	params, err := toParameters(daw)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	// Next we create the ArtifactWorkflow instance
 	aw := &arcv1alpha1.ArtifactWorkflow{
 		ObjectMeta: daw.objectMeta,
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
-			// TODO: Parameters
-			// Parameters: []wfv1alpha1.Parameter{},
+			Parameters: params,
 			SecretRef: corev1.LocalObjectReference{
 				Name: daw.objectMeta.Name,
 			},
@@ -377,5 +383,61 @@ func namespacedName(namespace, name string) types.NamespacedName {
 	return types.NamespacedName{
 		Namespace: namespace,
 		Name:      name,
+	}
+}
+
+func toParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
+	params := []arcv1alpha1.ArtifactWorkflowParameter{
+		{
+			Name:  paramName("src", "type"),
+			Value: string(daw.srcEndpoint.Spec.Type),
+		},
+		{
+			Name:  paramName("src", "remoteUrl"),
+			Value: daw.srcEndpoint.Spec.RemoteURL,
+		},
+		{
+			Name:  paramName("dst", "type"),
+			Value: string(daw.dstEndpoint.Spec.Type),
+		},
+		{
+			Name:  paramName("dst", "remoteUrl"),
+			Value: daw.dstEndpoint.Spec.RemoteURL,
+		},
+	}
+
+	spec := map[string]any{}
+	if err := json.Unmarshal(daw.artifact.Spec.Raw, &spec); err != nil {
+		return nil, err
+	}
+	flattened := map[string]any{}
+	flattenMap("spec", spec, flattened)
+	for name, value := range flattened {
+		params = append(params, arcv1alpha1.ArtifactWorkflowParameter{
+			Name:  name,
+			Value: fmt.Sprintf("%v", value),
+		})
+	}
+
+	return params, nil
+}
+
+func paramName(prefix, suffix string) string {
+	return prefix + strings.ToUpper(suffix[:1]) + suffix[1:]
+}
+
+func flattenMap(prefix string, src map[string]any, dst map[string]any) {
+	for k, v := range src {
+		kt := strings.ToUpper(k[:1]) + k[1:]
+		switch child := v.(type) {
+		case map[string]any:
+			flattenMap(prefix+k, child, dst)
+		case []any:
+			for i, av := range child {
+				dst[prefix+kt+strconv.Itoa(i)] = av
+			}
+		default:
+			dst[prefix+kt] = v
+		}
 	}
 }

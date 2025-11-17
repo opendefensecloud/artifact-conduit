@@ -44,6 +44,11 @@ func (in ArtifactWorkflowList) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflowParameter) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactWorkflowParameter"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowSpec) OpenAPIModelName() string {
 	return "de.bwi.arc.v1alpha1.ArtifactWorkflowSpec"
 }

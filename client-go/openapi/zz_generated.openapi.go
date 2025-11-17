@@ -26,6 +26,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.ArtifactTypeStatus{}.OpenAPIModelName():                 schema_arc_api_arc_v1alpha1_ArtifactTypeStatus(ref),
 		v1alpha1.ArtifactWorkflow{}.OpenAPIModelName():                   schema_arc_api_arc_v1alpha1_ArtifactWorkflow(ref),
 		v1alpha1.ArtifactWorkflowList{}.OpenAPIModelName():               schema_arc_api_arc_v1alpha1_ArtifactWorkflowList(ref),
+		v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName():          schema_arc_api_arc_v1alpha1_ArtifactWorkflowParameter(ref),
 		v1alpha1.ArtifactWorkflowSpec{}.OpenAPIModelName():               schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref),
 		v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref),
 		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
@@ -615,6 +616,33 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowList(ref common.ReferenceCallba
 	}
 }
 
+func schema_arc_api_arc_v1alpha1_ArtifactWorkflowParameter(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+					"value": {
+						SchemaProps: spec.SchemaProps{
+							Default: "",
+							Type:    []string{"string"},
+							Format:  "",
+						},
+					},
+				},
+				Required: []string{"name", "value"},
+			},
+		},
+	}
+}
+
 func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -630,11 +658,24 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 							Format:      "",
 						},
 					},
+					"parameters": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The following doesn't work due to openapi-gen :/",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
 					"secretRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The following doesn't work due to openapi-gen :/ Parameters []wfv1alpha1.Parameter `json:\"parameters,omitempty\"`",
-							Default:     map[string]interface{}{},
-							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
 				},
@@ -642,7 +683,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
