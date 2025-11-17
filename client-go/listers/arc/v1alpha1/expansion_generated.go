@@ -13,14 +13,6 @@ type ArtifactTypeListerExpansion interface{}
 // ArtifactTypeNamespaceLister.
 type ArtifactTypeNamespaceListerExpansion interface{}
 
-// ArtifactWorkflowListerExpansion allows custom methods to be added to
-// ArtifactWorkflowLister.
-type ArtifactWorkflowListerExpansion interface{}
-
-// ArtifactWorkflowNamespaceListerExpansion allows custom methods to be added to
-// ArtifactWorkflowNamespaceLister.
-type ArtifactWorkflowNamespaceListerExpansion interface{}
-
 // EndpointListerExpansion allows custom methods to be added to
 // EndpointLister.
 type EndpointListerExpansion interface{}
@@ -28,6 +20,14 @@ type EndpointListerExpansion interface{}
 // EndpointNamespaceListerExpansion allows custom methods to be added to
 // EndpointNamespaceLister.
 type EndpointNamespaceListerExpansion interface{}
+
+// FragmentListerExpansion allows custom methods to be added to
+// FragmentLister.
+type FragmentListerExpansion interface{}
+
+// FragmentNamespaceListerExpansion allows custom methods to be added to
+// FragmentNamespaceLister.
+type FragmentNamespaceListerExpansion interface{}
 
 // OrderListerExpansion allows custom methods to be added to
 // OrderLister.

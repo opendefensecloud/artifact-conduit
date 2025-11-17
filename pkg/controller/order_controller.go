@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"slices"
 
+	"go.opendefense.cloud/arc/api/arc/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -33,6 +34,12 @@ const orderFinalizer = "arc.bwi.de/order-finalizer"
 type OrderReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+}
+
+type desiredAW struct {
+	wf     *arcv1alpha1.ArtifactWorkflow
+	secret *corev1.Secret
+	index  int
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
@@ -60,14 +67,22 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
 		if len(order.Status.ArtifactWorkflows) > 0 {
-			for sha, ref := range order.Status.ArtifactWorkflows {
+			for sha, _ := range order.Status.ArtifactWorkflows {
+				// Remove Secret and ArtifactWorkflow
 				aw := &arcv1alpha1.ArtifactWorkflow{
 					ObjectMeta: metav1.ObjectMeta{
 						Namespace: order.Namespace,
-						Name:      ref.Name,
+						Name:      awName(order, sha),
 					},
 				}
-				_ = r.Delete(ctx, aw) // ignore not found errors
+				_ = r.Delete(ctx, aw) // ignore errors
+				s := &corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: order.Namespace,
+						Name:      awName(order, sha),
+					},
+				}
+				_ = r.Delete(ctx, s) // ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
@@ -106,36 +121,49 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	desiredAWs := map[string]*arcv1alpha1.ArtifactWorkflow{}
-	for _, artifact := range order.Spec.Artifacts {
-		// spec := runtime.RawExtension(artifact.Spec)
+	desiredAWs := map[string]desiredAW{}
+	for i, artifact := range order.Spec.Artifacts {
+		// Let's get the endpoint names
+		srcRefName := artifact.SrcRef.Name
+		if srcRefName == "" {
+			srcRefName = order.Spec.Defaults.SrcRef.Name
+		}
+		dstRefName := artifact.DstRef.Name
+		if dstRefName == "" {
+			dstRefName = order.Spec.Defaults.DstRef.Name
+		}
 
-		// Let's collect the necessary data for the fragment from the artifact and order
-		aw := &arcv1alpha1.ArtifactWorkflow{
+		// Let's fetch the endpoints
+		srcEndpoint := &arcv1alpha1.Endpoint{
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: order.Namespace,
-				Name:      "",
-			},
-			Spec: arcv1alpha1.ArtifactWorkflowSpec{
-				Type: artifact.Type,
-				// SrcRef: artifact.SrcRef,
-				// DstRef: artifact.DstRef,
-				// Spec:   spec,
+				Name:      srcRefName,
 			},
 		}
-		srcRef := artifact.SrcRef
-		if srcRef.Name == "" {
-			srcRef = order.Spec.Defaults.SrcRef
+		if err := r.Get(ctx, client.ObjectKeyFromObject(srcEndpoint), srcEndpoint); err != nil {
+			// TODO: should we set status to something and not error here?
+			log.Error(err, "Failed to fetch Endpoint (srcRef) for Order")
+			return ctrl.Result{}, err
 		}
-		dstRef := artifact.DstRef
-		if dstRef.Name == "" {
-			dstRef = order.Spec.Defaults.DstRef
+
+		dstEndpoint := &arcv1alpha1.Endpoint{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: order.Namespace,
+				Name:      dstRefName,
+			},
 		}
+		if err := r.Get(ctx, client.ObjectKeyFromObject(dstEndpoint), dstEndpoint); err != nil {
+			// TODO: should we set status to something and not error here?
+			log.Error(err, "Failed to fetch Endpoint (dstRef) for Order")
+			return ctrl.Result{}, err
+		}
+
+		// Next, we need the secret contents
 
 		// Create a hash based on fragment fields for idempotency and compute the fragment name
 		h := sha256.New()
 		data := map[string]any{
-			"type": aw.Spec.Type,
+			"type": artifact.Type,
 			"src":  srcRef.Name,
 			"dst":  dstRef.Name,
 			"spec": artifact.Spec.Raw,
@@ -146,9 +174,27 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
-		aw.Name = fmt.Sprintf("%s-%s", order.Name, sha)
 
-		desiredAWs[sha] = aw
+		// Let's collect the necessary data for the fragment from the artifact and order
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: order.Namespace,
+				Name:      awName(order, sha),
+			},
+			Spec: arcv1alpha1.ArtifactWorkflowSpec{
+				Type: artifact.Type,
+				// TODO
+				// SrcRef: artifact.SrcRef,
+				// DstRef: artifact.DstRef,
+				// Spec:   spec,
+			},
+		}
+
+		desiredAWs[sha] = desiredAW{
+			wf:     aw,
+			secret: nil, // TODO
+			index:  i,
+		}
 	}
 
 	// List missing fragments
@@ -261,4 +307,8 @@ func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
 		Complete(r)
+}
+
+func awName(order *v1alpha1.Order, sha string) string {
+	return fmt.Sprintf("%s-%s", order.Name, sha)
 }

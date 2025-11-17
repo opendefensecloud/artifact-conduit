@@ -25,18 +25,20 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.ArtifactTypeRulesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeSpec"):
 		return &arcv1alpha1.ArtifactTypeSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflow"):
-		return &arcv1alpha1.ArtifactWorkflowApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowSpec"):
-		return &arcv1alpha1.ArtifactWorkflowSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Endpoint"):
 		return &arcv1alpha1.EndpointApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EndpointSpec"):
 		return &arcv1alpha1.EndpointSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Fragment"):
+		return &arcv1alpha1.FragmentApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("FragmentSpec"):
+		return &arcv1alpha1.FragmentSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Order"):
 		return &arcv1alpha1.OrderApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifact"):
 		return &arcv1alpha1.OrderArtifactApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifactWorkflowStatus"):
+		return &arcv1alpha1.OrderArtifactWorkflowStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderDefaults"):
 		return &arcv1alpha1.OrderDefaultsApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderSpec"):
