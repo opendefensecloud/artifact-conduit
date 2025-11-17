@@ -17,7 +17,7 @@ import (
 type Registry struct {
 	*httptest.Server
 
-	auth                  string
+	wantedAuthHeader      string
 	dockerRegistryHandler http.Handler
 }
 
@@ -25,23 +25,20 @@ type Registry struct {
 func NewRegistry() *Registry {
 	r := &Registry{}
 	r.dockerRegistryHandler = registry.New()
-	r.Server = httptest.NewTLSServer(http.HandlerFunc(r.root))
+	r.Server = httptest.NewServer(http.HandlerFunc(r.root))
 	return r
 }
 
-func (r *Registry) root(res http.ResponseWriter, req *http.Request) {
-	if req.RequestURI != "/v2/" &&
-		len(r.auth) != 0 &&
-		req.Header.Get("Authorization") != r.auth {
-		res.WriteHeader(401)
-		return
+func (r *Registry) root(w http.ResponseWriter, req *http.Request) {
+	if r.wantedAuthHeader != "" && req.Header.Get("Authorization") != r.wantedAuthHeader {
+		w.Header().Set("Www-Authenticate", `Basic realm="Test Server"`)
+		w.WriteHeader(http.StatusUnauthorized)
 	}
-
-	r.dockerRegistryHandler.ServeHTTP(res, req)
+	r.dockerRegistryHandler.ServeHTTP(w, req)
 }
 
 // WithAuth sets the authorization header for the http test server
 func (r *Registry) WithAuth(username string, password string) *Registry {
-	r.auth = "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
+	r.wantedAuthHeader = "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
 	return r
 }

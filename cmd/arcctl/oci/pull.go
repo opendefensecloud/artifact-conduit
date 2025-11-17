@@ -30,7 +30,6 @@ func NewPullCommand() *cobra.Command {
 
 func runPull(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
-	httpClient := retry.DefaultClient
 
 	if !viper.IsSet("tmp-dir") {
 		return fmt.Errorf("tmp-dir is not set")
@@ -61,6 +60,9 @@ func runPull(cmd *cobra.Command, args []string) error {
 	}
 	repo.PlainHTTP = plainHTTP
 
+	httpClient := retry.DefaultClient
+	repo.Client = httpClient
+
 	// allow insecure connection
 	if insecure {
 		httpClient.Transport = &http.Transport{
@@ -69,7 +71,6 @@ func runPull(cmd *cobra.Command, args []string) error {
 			},
 		}
 	}
-	repo.Client = httpClient
 
 	// Set up authentication if provided
 	if conf.Src.Auth != nil {
