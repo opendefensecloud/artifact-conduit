@@ -9,6 +9,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// TODO
+// +enum
+type WorkflowPhase string
+
+const (
+	// TODO
+	WorkflowPhaseInit WorkflowPhaseInit = "Init"
+)
+
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.

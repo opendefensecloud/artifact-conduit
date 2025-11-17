@@ -44,7 +44,12 @@ type OrderSpec struct {
 
 // OrderStatus defines the observed state of Order
 type OrderStatus struct {
-	ArtifactWorkflows map[string]corev1.LocalObjectReference `json:"fragments,omitempty"`
+	ArtifactWorkflows map[string]OrderArtifactWorkflowStatus `json:"artifactWorkflows,omitempty"`
+}
+
+type OrderArtifactWorkflowStatus struct {
+	ArtifactIndex int           `json:"artifactIndex"`
+	Phase         WorkflowPhase `json:"phase"`
 }
 
 // +genclient

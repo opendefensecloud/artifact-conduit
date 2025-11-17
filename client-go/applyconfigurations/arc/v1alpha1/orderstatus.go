@@ -5,14 +5,10 @@
 
 package v1alpha1
 
-import (
-	v1 "k8s.io/api/core/v1"
-)
-
 // OrderStatusApplyConfiguration represents a declarative configuration of the OrderStatus type for use
 // with apply.
 type OrderStatusApplyConfiguration struct {
-	ArtifactWorkflows map[string]v1.LocalObjectReference `json:"fragments,omitempty"`
+	ArtifactWorkflows map[string]OrderArtifactWorkflowStatusApplyConfiguration `json:"artifactWorkflows,omitempty"`
 }
 
 // OrderStatusApplyConfiguration constructs a declarative configuration of the OrderStatus type for use with
@@ -25,9 +21,9 @@ func OrderStatus() *OrderStatusApplyConfiguration {
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the ArtifactWorkflows field,
 // overwriting an existing map entries in ArtifactWorkflows field with the same key.
-func (b *OrderStatusApplyConfiguration) WithArtifactWorkflows(entries map[string]v1.LocalObjectReference) *OrderStatusApplyConfiguration {
+func (b *OrderStatusApplyConfiguration) WithArtifactWorkflows(entries map[string]OrderArtifactWorkflowStatusApplyConfiguration) *OrderStatusApplyConfiguration {
 	if b.ArtifactWorkflows == nil && len(entries) > 0 {
-		b.ArtifactWorkflows = make(map[string]v1.LocalObjectReference, len(entries))
+		b.ArtifactWorkflows = make(map[string]OrderArtifactWorkflowStatusApplyConfiguration, len(entries))
 	}
 	for k, v := range entries {
 		b.ArtifactWorkflows[k] = v
