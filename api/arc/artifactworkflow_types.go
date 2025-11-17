@@ -22,9 +22,14 @@ type ArtifactWorkflowSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	//
-	// Parameters []wfv1alpha1.Parameter `json:"parameters,omitempty"`
+	Parameters []ArtifactWorkflowParameter `json:"parameters,omitempty"`
 	//
 	SecretRef corev1.LocalObjectReference `json:"secretRef"`
+}
+
+type ArtifactWorkflowParameter struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 // ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
