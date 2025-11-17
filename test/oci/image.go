@@ -20,13 +20,7 @@ const (
 	PlatformArchAMD64 = "amd64"
 )
 
-func PushTestManifest(ctx context.Context, repository, version string) (*ocispec.Descriptor, error) {
-	repo, err := remote.NewRepository(repository)
-	if err != nil {
-		return nil, err
-	}
-	repo.PlainHTTP = true
-
+func PushTestManifest(ctx context.Context, repo *remote.Repository, version string) (*ocispec.Descriptor, error) {
 	// push a layer to the repository
 	layer := []byte("example manifest layer")
 	layerDescriptor, err := oras.PushBytes(ctx, repo, ocispec.MediaTypeImageLayer, layer)
