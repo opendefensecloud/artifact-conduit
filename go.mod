@@ -3,7 +3,7 @@ module go.opendefense.cloud/arc
 go 1.25.2
 
 require (
-	github.com/argoproj/argo-workflows/v3 v3.7.2
+	github.com/argoproj/argo-workflows/v3 v3.7.3
 	github.com/ironcore-dev/controller-utils v0.11.0
 	github.com/ironcore-dev/ironcore v0.2.4
 	github.com/jastBytes/sprint v0.0.3
