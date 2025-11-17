@@ -19,12 +19,12 @@ func (c *FakeArcV1alpha1) ArtifactTypes(namespace string) v1alpha1.ArtifactTypeI
 	return newFakeArtifactTypes(c, namespace)
 }
 
-func (c *FakeArcV1alpha1) Endpoints(namespace string) v1alpha1.EndpointInterface {
-	return newFakeEndpoints(c, namespace)
+func (c *FakeArcV1alpha1) ArtifactWorkflows(namespace string) v1alpha1.ArtifactWorkflowInterface {
+	return newFakeArtifactWorkflows(c, namespace)
 }
 
-func (c *FakeArcV1alpha1) Fragments(namespace string) v1alpha1.FragmentInterface {
-	return newFakeFragments(c, namespace)
+func (c *FakeArcV1alpha1) Endpoints(namespace string) v1alpha1.EndpointInterface {
+	return newFakeEndpoints(c, namespace)
 }
 
 func (c *FakeArcV1alpha1) Orders(namespace string) v1alpha1.OrderInterface {

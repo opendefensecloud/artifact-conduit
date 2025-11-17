@@ -64,7 +64,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(testEnv).NotTo(BeNil())
 
-	k8sClient, err = testEnv.Start(scheme.Scheme)
+	k8sClient, err = testEnv.Start(scheme.Scheme, GinkgoWriter)
 	Expect(err).NotTo(HaveOccurred())
 	DeferCleanup(testEnv.Stop)
 

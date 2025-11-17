@@ -14,9 +14,9 @@ import (
 	"go.opendefense.cloud/arc/api/arc"
 	"go.opendefense.cloud/arc/api/arc/install"
 	arcregistry "go.opendefense.cloud/arc/pkg/registry"
-	artifacttypedefinitionstorage "go.opendefense.cloud/arc/pkg/registry/artifacttypedefinition"
+	artifacttypestorage "go.opendefense.cloud/arc/pkg/registry/artifacttype"
+	artifactworkflowstorage "go.opendefense.cloud/arc/pkg/registry/artifactworkflow"
 	endpointstorage "go.opendefense.cloud/arc/pkg/registry/endpoint"
-	fragmentstorage "go.opendefense.cloud/arc/pkg/registry/fragment"
 	orderstorage "go.opendefense.cloud/arc/pkg/registry/order"
 )
 
@@ -100,10 +100,10 @@ func (c completedConfig) New() (*ARCServer, error) {
 	v1alpha1storage["orders"] = arcregistry.RESTInPeace(orderstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	// TODO: refactor how we construct storage, I just copied some things around to create NewStatusREST
 	v1alpha1storage["orders/status"] = arcregistry.RESTInPeace(orderstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
-	v1alpha1storage["fragments"] = arcregistry.RESTInPeace(fragmentstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
-	v1alpha1storage["fragments/status"] = arcregistry.RESTInPeace(fragmentstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["artifactworkflows"] = arcregistry.RESTInPeace(artifactworkflowstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["artifactworkflows/status"] = arcregistry.RESTInPeace(artifactworkflowstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["endpoints"] = arcregistry.RESTInPeace(endpointstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
-	v1alpha1storage["artifacttypedefinitions"] = arcregistry.RESTInPeace(artifacttypedefinitionstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["artifacttypes"] = arcregistry.RESTInPeace(artifacttypestorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	// v1beta1storage := map[string]rest.Storage{}

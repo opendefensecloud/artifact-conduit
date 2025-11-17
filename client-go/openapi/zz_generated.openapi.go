@@ -24,14 +24,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.ArtifactTypeRules{}.OpenAPIModelName():                  schema_arc_api_arc_v1alpha1_ArtifactTypeRules(ref),
 		v1alpha1.ArtifactTypeSpec{}.OpenAPIModelName():                   schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref),
 		v1alpha1.ArtifactTypeStatus{}.OpenAPIModelName():                 schema_arc_api_arc_v1alpha1_ArtifactTypeStatus(ref),
+		v1alpha1.ArtifactWorkflow{}.OpenAPIModelName():                   schema_arc_api_arc_v1alpha1_ArtifactWorkflow(ref),
+		v1alpha1.ArtifactWorkflowList{}.OpenAPIModelName():               schema_arc_api_arc_v1alpha1_ArtifactWorkflowList(ref),
+		v1alpha1.ArtifactWorkflowSpec{}.OpenAPIModelName():               schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref),
+		v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref),
 		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
 		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointList(ref),
 		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointSpec(ref),
 		v1alpha1.EndpointStatus{}.OpenAPIModelName():                     schema_arc_api_arc_v1alpha1_EndpointStatus(ref),
-		v1alpha1.Fragment{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Fragment(ref),
-		v1alpha1.FragmentList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_FragmentList(ref),
-		v1alpha1.FragmentSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_FragmentSpec(ref),
-		v1alpha1.FragmentStatus{}.OpenAPIModelName():                     schema_arc_api_arc_v1alpha1_FragmentStatus(ref),
 		v1alpha1.Order{}.OpenAPIModelName():                              schema_arc_api_arc_v1alpha1_Order(ref),
 		v1alpha1.OrderArtifact{}.OpenAPIModelName():                      schema_arc_api_arc_v1alpha1_OrderArtifact(ref),
 		v1alpha1.OrderArtifactWorkflowStatus{}.OpenAPIModelName():        schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref),
@@ -519,6 +519,144 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeStatus(ref common.ReferenceCallback
 	}
 }
 
+func schema_arc_api_arc_v1alpha1_ArtifactWorkflow(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ArtifactWorkflow is the Schema for the fragments API",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1alpha1.ArtifactWorkflowSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			v1alpha1.ArtifactWorkflowSpec{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_ArtifactWorkflowList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ArtifactWorkflowList is a list of ArtifactWorkflow objects.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(v1alpha1.ArtifactWorkflow{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"items"},
+			},
+		},
+		Dependencies: []string{
+			v1alpha1.ArtifactWorkflow{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"type": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Type specifies which ArtifactType is used to process this artifact.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"secretRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The following doesn't work due to openapi-gen :/ Parameters []wfv1alpha1.Parameter `json:\"parameters,omitempty\"`",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+				},
+				Required: []string{"type", "secretRef"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.LocalObjectReference"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow",
+				Type:        []string{"object"},
+			},
+		},
+	}
+}
+
 func schema_arc_api_arc_v1alpha1_Endpoint(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -674,156 +812,6 @@ func schema_arc_api_arc_v1alpha1_EndpointStatus(ref common.ReferenceCallback) co
 	}
 }
 
-func schema_arc_api_arc_v1alpha1_Fragment(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "Fragment is the Schema for the fragments API",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
-						},
-					},
-					"spec": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref(v1alpha1.FragmentSpec{}.OpenAPIModelName()),
-						},
-					},
-					"status": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref(v1alpha1.FragmentStatus{}.OpenAPIModelName()),
-						},
-					},
-				},
-			},
-		},
-		Dependencies: []string{
-			v1alpha1.FragmentSpec{}.OpenAPIModelName(), v1alpha1.FragmentStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
-	}
-}
-
-func schema_arc_api_arc_v1alpha1_FragmentList(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "FragmentList is a list of Fragment objects.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"kind": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"apiVersion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"metadata": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
-						},
-					},
-					"items": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref(v1alpha1.Fragment{}.OpenAPIModelName()),
-									},
-								},
-							},
-						},
-					},
-				},
-				Required: []string{"items"},
-			},
-		},
-		Dependencies: []string{
-			v1alpha1.Fragment{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
-	}
-}
-
-func schema_arc_api_arc_v1alpha1_FragmentSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "FragmentSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"type": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactTypeDefinition is used to process this artifact.",
-							Default:     "",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"parameters": {
-						SchemaProps: spec.SchemaProps{
-							Type: []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Default: map[string]interface{}{},
-										Ref:     ref("github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1.Parameter"),
-									},
-								},
-							},
-						},
-					},
-					"secretRef": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
-						},
-					},
-				},
-				Required: []string{"type", "secretRef"},
-			},
-		},
-		Dependencies: []string{
-			"github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1.Parameter", "k8s.io/api/core/v1.LocalObjectReference"},
-	}
-}
-
-func schema_arc_api_arc_v1alpha1_FragmentStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "FragmentStatus defines the observed state of Fragment",
-				Type:        []string{"object"},
-			},
-		},
-	}
-}
-
 func schema_arc_api_arc_v1alpha1_Order(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -930,10 +918,11 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Default: "",
-							Type:    []string{"string"},
-							Format:  "",
-							Enum:    []interface{}{},
+							Description: "Possible enum values:\n - `\"Init\"` TODO",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"Init"},
 						},
 					},
 				},

@@ -4,7 +4,6 @@
 package arc
 
 import (
-	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -15,7 +14,7 @@ type WorkflowPhase string
 
 const (
 	// TODO
-	WorkflowPhaseInit WorkflowPhaseInit = "Init"
+	WorkflowPhaseInit WorkflowPhase = "Init"
 )
 
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
@@ -23,7 +22,7 @@ type ArtifactWorkflowSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	//
-	Parameters []wfv1alpha1.Parameter `json:"parameters,omitempty"`
+	// Parameters []wfv1alpha1.Parameter `json:"parameters,omitempty"`
 	//
 	SecretRef corev1.LocalObjectReference `json:"secretRef"`
 }

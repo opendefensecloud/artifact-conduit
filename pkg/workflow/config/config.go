@@ -17,6 +17,12 @@ const (
 	AT_HELM ArtifactType = "helm"
 )
 
+type EndpointType string
+
+const (
+	ET_OCI EndpointType = "oci"
+)
+
 // ArcctlConfig represents the configuration for arcctl
 type ArcctlConfig struct {
 	Type ArtifactType `mapstructure:"type"`
@@ -35,7 +41,7 @@ func (c *ArcctlConfig) GetOCISpec() *OCISpec {
 
 // Endpoint represents a source or destination endpoint configuration
 type Endpoint struct {
-	Type      ArtifactType `mapstructure:"type"`
+	Type      EndpointType `mapstructure:"type"`
 	RemoteURL string       `mapstructure:"remoteURL"`
 	Auth      any          `mapstructure:"auth"`
 }
@@ -95,13 +101,13 @@ func (c *ArcctlConfig) parseOCISpec() error {
 // parseEndpointAuth parses the typed auth information
 func (c *ArcctlConfig) parseEndpointAuth() error {
 	switch c.Src.Type {
-	case AT_OCI:
+	case ET_OCI:
 		if err := parseOCIAuth(&c.Src); err != nil {
 			return err
 		}
 	}
 	switch c.Dst.Type {
-	case AT_OCI:
+	case ET_OCI:
 		if err := parseOCIAuth(&c.Src); err != nil {
 			return err
 		}
