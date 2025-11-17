@@ -21,6 +21,7 @@ type Registry struct {
 	dockerRegistryHandler http.Handler
 }
 
+// NewRegistry creates a new http test server to mock an oci registry
 func NewRegistry() *Registry {
 	r := &Registry{}
 	r.dockerRegistryHandler = registry.New()
@@ -39,6 +40,7 @@ func (r *Registry) root(res http.ResponseWriter, req *http.Request) {
 	r.dockerRegistryHandler.ServeHTTP(res, req)
 }
 
+// WithAuth sets the authorization header for the http test server
 func (r *Registry) WithAuth(username string, password string) *Registry {
 	r.auth = "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
 	return r
