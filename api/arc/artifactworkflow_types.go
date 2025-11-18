@@ -8,12 +8,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TODO
+// WorkflowPhase is an enum tracking in which phase a Workflow can be.
 // +enum
 type WorkflowPhase string
 
 const (
-	// TODO
+	// WorkflowPhaseInit represents the initialization phase of a workflow.
 	WorkflowPhaseInit WorkflowPhase = "Init"
 )
 
@@ -21,16 +21,19 @@ const (
 type ArtifactWorkflowSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
-	//
+	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.
 	Parameters []ArtifactWorkflowParameter `json:"parameters,omitempty"`
-	//
+	// SrcSecretRef references the secret containing credentials for the source.
 	SrcSecretRef corev1.LocalObjectReference `json:"srcSecretRef"`
-	//
+	// DstSecretRef references the secret containing credentials for the destination.
 	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
 }
 
+// ArtifactWorkflowParameter represents a single key-value parameter pair.
 type ArtifactWorkflowParameter struct {
-	Name  string `json:"name"`
+	// Name is the key of the parameter.
+	Name string `json:"name"`
+	// Value is the string value of the parameter.
 	Value string `json:"value"`
 }
 
