@@ -13,7 +13,6 @@ import (
 // with apply.
 type ArtifactTypeSpecApplyConfiguration struct {
 	Rules               *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
-	Defaults            *OrderDefaultsApplyConfiguration     `json:"defaults,omitempty"`
 	WorkflowTemplateRef *v1.LocalObjectReference             `json:"workflowTemplateRef,omitempty"`
 }
 
@@ -28,14 +27,6 @@ func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
 // If called multiple times, the Rules field is set to the value of the last call.
 func (b *ArtifactTypeSpecApplyConfiguration) WithRules(value *ArtifactTypeRulesApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.Rules = value
-	return b
-}
-
-// WithDefaults sets the Defaults field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Defaults field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithDefaults(value *OrderDefaultsApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
-	b.Defaults = value
 	return b
 }
 
