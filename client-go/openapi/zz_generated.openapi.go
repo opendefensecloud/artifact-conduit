@@ -665,14 +665,20 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 							},
 						},
 					},
-					"secretRef": {
+					"srcSecretRef": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+					"dstSecretRef": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
 							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
 				},
-				Required: []string{"type", "secretRef"},
+				Required: []string{"type", "srcSecretRef", "dstSecretRef"},
 			},
 		},
 		Dependencies: []string{

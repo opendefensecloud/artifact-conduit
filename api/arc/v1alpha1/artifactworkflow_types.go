@@ -24,7 +24,9 @@ type ArtifactWorkflowSpec struct {
 	// The following doesn't work due to openapi-gen :/
 	Parameters []ArtifactWorkflowParameter `json:"parameters,omitempty"`
 	//
-	SecretRef corev1.LocalObjectReference `json:"secretRef"`
+	SrcSecretRef corev1.LocalObjectReference `json:"srcSecretRef"`
+	//
+	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
 }
 
 type ArtifactWorkflowParameter struct {

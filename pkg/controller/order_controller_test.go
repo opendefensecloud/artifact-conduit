@@ -91,10 +91,12 @@ var _ = Describe("OrderController", func() {
 			// Verify artifact workflows contents
 			for _, aw := range awList.Items {
 				Expect(aw.Spec.Type).To(Or(Equal("art-1"), Equal("art-2")))
-				suffix := "2"
-				if aw.Spec.Type == "art-1" {
-					suffix = "1"
+				suffix := "1"
+				if aw.Spec.Type == "art-2" {
+					suffix = "2"
 				}
+				Expect(aw.Spec.SrcSecretRef.Name).To(Equal("src-" + suffix))
+				Expect(aw.Spec.DstSecretRef.Name).To(Equal("dst-" + suffix))
 				Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
 					{
 						Name:  "srcType",
@@ -117,22 +119,6 @@ var _ = Describe("OrderController", func() {
 						Value: "value-" + suffix,
 					},
 				}))
-			}
-
-			// Verify contents of secrets created by the controller
-			secrets := &corev1.SecretList{}
-			Eventually(func() int {
-				err := k8sClient.List(ctx, secrets, client.InNamespace(ns.Name), client.MatchingLabels(secretLabels))
-				if err != nil {
-					return 0
-				}
-				return len(secrets.Items)
-			}).Should(Equal(2))
-
-			data1 := `{"type":"art-1","src":{"type":"src-1","remoteURL":"src-1","auth":{"testkey":"src-1"}},"dst":{"type":"dst-1","remoteURL":"dst-1","auth":{"testkey":"dst-1"}},"spec":{"key":"value-1"}}`
-			data2 := `{"type":"art-2","src":{"type":"src-2","remoteURL":"src-2","auth":{"testkey":"src-2"}},"dst":{"type":"dst-2","remoteURL":"dst-2","auth":{"testkey":"dst-2"}},"spec":{"key":"value-2"}}`
-			for _, secret := range secrets.Items {
-				Expect(string(secret.Data["config.json"])).To(Or(Equal(data1), Equal(data2)))
 			}
 		})
 
@@ -409,6 +395,21 @@ var _ = Describe("OrderController", func() {
 				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
 				return len(order.Status.ArtifactWorkflows)
 			}).Should(Equal(1))
+		})
+
+		It("should work with endpoints without a secret", func() {
+			endpoint := arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "no-secret",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type:      "no-secret",
+					RemoteURL: "no-secret",
+					Usage:     arcv1alpha1.EndpointUsageAll,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
 		})
 	})
 })
