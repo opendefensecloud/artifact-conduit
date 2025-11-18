@@ -1,5 +1,5 @@
 ---
-status: in decission
+status: in decision
 date: 2025-11-14
 ---
 
@@ -7,17 +7,17 @@ date: 2025-11-14
 
 ## Context and Problem Statement
 
-In our developing using git as a versioned source control system we're implementing our features, improvements, bugfixes etc. in parallel branches before they'll get merged into the main branch. The names of these branches can lead to a misinerpretation of it's intention. A naming status could help.
+In our development using git as a versioned source control system, we're implementing our features, improvements, bugfixes, etc. in parallel branches before they get merged into the main branch. The names of these branches can lead to a misinterpretation of their intention. A naming scheme could help.
 
 ## Considered Solutions
 
 ### Free Branch Naming
 
-Branches can be named without any classification. The naming does not need any intention while a helpful name surely is allowed. Examles are
+Branches can be named without any classification. The naming does not need any intention while a helpful name surely is allowed. Examples are:
 
 - `comment-adding`
 - `readme`
-- `evaluate-artiface-workflow`
+- `evaluate-artifact-workflow`
 
 #### Pros
 
@@ -25,13 +25,13 @@ Branches can be named without any classification. The naming does not need any i
 
 #### Cons
 
-- Not allways helpfule (see `readme`)
-- Verbs describing the branch on different positions
+- Not always helpful (see `readme`)
+- Verbs describing the branch in different positions
 - No grouping possible
 
 ### Detailed Prefixed Branch Names
 
-Prefixes in full writtend standard terms seperated by a slash follow a well known standard. These prefixis describe, why a branch exists. Behind the slash a small detail is used. Well known prefixes as examples are
+Prefixes in fully written standard terms separated by a slash follow a well-known standard. These prefixes describe why a branch exists. Behind the slash, a small detail is used. Well-known prefixes as examples are:
 
 - `feature/short-description`
 - `bugfix/issue-42`
@@ -42,8 +42,8 @@ Prefixes in full writtend standard terms seperated by a slash follow a well know
 
 #### Pros
 
-- Intention of a branch is more clear
-- Grouping makes it easier to recognise parallel work
+- Intention of a branch is clearer
+- Grouping makes it easier to recognize parallel work
 - Prefixes help to identify urgent tasks as opposed to regular tasks (`hotfix` opposite `experiment`)
 
 #### Cons
@@ -57,13 +57,13 @@ Similar to the detailed ones, but using abbreviations. Those could be `feat/`, `
 
 #### Pros
 
-- Shorter names w/o loosing the benefits of the detailed names
+- Shorter names without losing the benefits of the detailed names
 
 #### Cons
 
 - Same attention must be paid to the grouping
 
-## Decission Outcome
+## Decision Outcome
 
 As a compromise, proposal 3 was initially introduced without compulsion. Its use is based on the conventions in the still manageable team and the limited number of developers who can perform reviews. If the prefixes are not used, an initial note is sufficient.
 
@@ -71,12 +71,12 @@ In a second step, local hooks could be made available and documented for the pro
 
 The branch prefixes and their meanings are:
 
-- `hot/` for hotfixes with very high priority,
-- `bug/` for regular bug fixes,
-- `feat/` for the introduction of new features,
-- `imp/` for refactorings and improvements to the code without introducing new features or API changes,
-- `eval/` for the evaluation of new approaches and technologies,
-- `doc/` for changes in the documentation and not in the code, and
-- `rel/` for releases to be released.
+- `hot/` for hotfixes with very high priority
+- `bug/` for regular bug fixes
+- `feat/` for the introduction of new features
+- `imp/` for refactorings and improvements to the code without introducing new features or API changes
+- `eval/` for the evaluation of new approaches and technologies
+- `doc/` for changes in the documentation and not in the code
+- `rel/` for releases to be released
 
-For all designations, the issue must be mentioned, for example `feat/176-etcd-garbage-cleanup`. Additional verbs like `176-add-etcd-garbage-cleanup` are not needed. For a release, however, the identifier for example it is `rel/2.0.7`.
+For all designations, the issue must be mentioned, for example `feat/176-etcd-garbage-cleanup`. Additional verbs like `176-add-etcd-garbage-cleanup` are not needed. For a release, however, the identifier for example is `rel/2.0.7`.
