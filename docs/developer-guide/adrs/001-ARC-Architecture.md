@@ -19,8 +19,7 @@ This ADR is about finding the right architecture for the ARC suite of services b
 - `WorkflowTemplate`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflowtemplate>
 - `Workflow`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflow>
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
-- `Order Controller`: A Kubernetes Controller which reconciles `Orders`, creates/updates `ArtifactWorkflow` resources from `Order` artifacts, manages rendered configuration `Secrets`, and instantiates `Workflow` resources for each `ArtifactWorkflow`. Tracks `Endpoint` and `Secret` generations to ensure idempotency.
-- `Rendered Configuration Secret`: A `Secret` managed by the `Order Controller` that contains the hydrated configuration (resolved `Endpoint` references, credentials, artifact specs) required to instantiate a `Workflow`. One secret per `ArtifactWorkflow`.
+- `ARC Controller Manager`: A set of Kubernetes Controller which reconciles `Orders`, creates/updates `ArtifactWorkflow` resources from `Order` artifacts and instantiates `Workflow` resources for each `ArtifactWorkflow`. Tracks `Endpoint` and `Secret` generations to ensure idempotency.
 
 ## Considered Options
 
@@ -82,6 +81,7 @@ This option is described in detail in the following document.
 - Instead of [CRDs](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/), `ARC` uses an [Extension API Server](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-extension-api-server/) via the [Kubernetes API Aggregation Layer](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/) to handle API requests.
 - This gives it the possibility to use a dedicated `etcd` or a even more suitable storage backend for the high amount of resources and status information in case this is necessary.
 - While `etcd` still can be used as storage backend, it is one separated from the `etcd` used by the Kubernetes control plane and reduces the risk of bringing the whole cluster into trouble.
+- As the storage implementation is under our control, we can implement a custom storage interface or use `kind` down the line.
 - Additional links
   - <https://github.com/kubernetes-sigs/apiserver-runtime>
   - <https://github.com/kubernetes/sample-apiserver/tree/master>
@@ -108,17 +108,15 @@ flowchart LR
         Spec["spec:<br>- defaults<br>- artifacts[]<br>--- <br>status:<br>- endpointGenerations<br>- secretGenerations"]
   end
  subgraph subGraph1["Generated Layer"]
-        ArtifactWorkflow1["ArtifactWorkflow-1<br/>(Minimal Params)"]
-        ArtifactWorkflow2["ArtifactWorkflow-2<br/>(Minimal Params)"]
-        ArtifactWorkflowN["ArtifactWorkflow-N<br/>(Minimal Params)"]
+        ArtifactWorkflow1["ArtifactWorkflow-1<br>(Minimal Params)"]
+        ArtifactWorkflow2["ArtifactWorkflow-2<br>(Minimal Params)"]
+        ArtifactWorkflowN["ArtifactWorkflow-N<br>(Minimal Params)"]
   end
  subgraph Configuration["Configuration & Secrets"]
         ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
-        EndpointSrc["Endpoint (Source)<br/>+ Generation Tracking"]
-        EndpointDst["Endpoint (Destination)<br/>+ Generation Tracking"]
-        EndpointSecret["Secret (Credentials)<br/>+ Generation Tracking"]
-        RenderedSecret1["Rendered Config Secret-1<br/>(Managed by Controller)"]
-        RenderedSecret2["Rendered Config Secret-2<br/>(Managed by Controller)"]
+        EndpointSrc["Endpoint (Source)"]
+        EndpointDst["Endpoint (Destination)"]
+        EndpointSecret@{ shape: procs, label: "Secrets (e.g. Credentials)"}
   end
  subgraph Execution["Execution"]
         WorkflowTemplate["WorkflowTemplate (Argo)"]
@@ -127,47 +125,36 @@ flowchart LR
   end
     Order -- contains --> Spec
     Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflow2 & ArtifactWorkflowN
-    Spec -- tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
+    Spec -- reads & tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
     ArtifactWorkflow1 -- type --> ArtifactTypeDef
     ArtifactWorkflow2 -- type --> ArtifactTypeDef
     ArtifactWorkflow1 -- srcRef --> EndpointSrc
     ArtifactWorkflow2 -- srcRef --> EndpointSrc
     ArtifactWorkflow1 -- dstRef --> EndpointDst
     ArtifactWorkflow2 -- dstRef --> EndpointDst
-    EndpointSrc -- credentialRef --> EndpointSecret
-    EndpointDst -- credentialRef --> EndpointSecret
+    EndpointSrc -- secretRef --> EndpointSecret
+    EndpointDst -- secretRef --> EndpointSecret
     ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
-    ArtifactWorkflow1 -- references --> RenderedSecret1
-    ArtifactWorkflow2 -- references --> RenderedSecret2
-    RenderedSecret1 -- contains hydrated config --> RenderedSecret1
-    RenderedSecret2 -- contains hydrated config --> RenderedSecret2
-    ArtifactWorkflow1 -- triggers --> WorkflowTemplate
-    ArtifactWorkflow2 -- triggers --> WorkflowTemplate
+    ArtifactWorkflow1 -- references --> EndpointSecret
+    ArtifactWorkflow2 -- references --> EndpointSecret
+    ArtifactWorkflow1 -- instantiates --> WorkflowTemplate
+    ArtifactWorkflow2 -- instantiates --> WorkflowTemplate
     WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
-    WorkflowInstance1 -- mounts --> RenderedSecret1
-    WorkflowInstance2 -- mounts --> RenderedSecret2
-    ArtifactTypeDef@{ shape: rect}
+    WorkflowInstance1 -- mounts --> EndpointSecret
+    WorkflowInstance2 -- mounts --> EndpointSecret
 
+    ArtifactTypeDef@{ shape: rect}
 ```
 
 The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
 `etcd` is used as storage solution.
-`Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and monitors `Endpoints` and `Secrets`.
+`Order Controller` is classic Kubernetes controller implementation which reconciles `Orders` and monitors `Endpoints` and `Secrets`. In a similar fashion the `ArtifactWorkflow Controller` reconciles `ArtifactWorkflows` and instantiates and tracks Argo Workflows based on the `ArtifactType`. Both controllers are contained in the `ARC Controller Manager`.
+
 An `Order` contains the information what artifacts should be processed and tracks generation numbers of referenced `Endpoints` and `Secrets` to detect changes.
 An `Endpoint` contains the information about a source or destination for artifacts.
 The `Order Controller` creates `ArtifactWorkflow` resources which are minimal, idempotent representations of artifacts to be processed.
-For each `ArtifactWorkflow`, the controller manages a rendered configuration `Secret` containing the hydrated configuration (resolved endpoints, credentials, artifact specifications) needed to instantiate the `Workflow`.
-When an `Endpoint` or referenced `Secret` changes (detected via generation tracking), the controller automatically recreates the rendered configuration and triggers `Workflow` recreation.
+When an `Endpoint` or referenced `Secret` changes (detected via generation tracking), the controller automatically recreates the rendered configuration and triggers `ArtifactWorkflow` recreation.
 An `ArtifactType` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
-
-#### Idempotency and Generation Tracking
-
-To ensure robust and idempotent handling of artifact processing:
-
-- **Generation Tracking**: The `Order` status maintains generation numbers (`metadata.generation`) of all referenced `Endpoints` and `Secrets`. This allows detection of configuration changes.
-- **Change Detection**: When an `Endpoint` or `Secret` generation changes, the `Order Controller` detects this and automatically triggers reconciliation of affected `ArtifactWorkflows`.
-- **Rendered Secrets**: The `Order Controller` manages rendered configuration `Secrets` (one per `ArtifactWorkflow`) containing the complete hydrated configuration needed for the workflow. These secrets are recreated whenever their dependencies change, ensuring consistency.
-- **Minimal ArtifactWorkflow**: `ArtifactWorkflow` resources are kept minimal, containing only the artifact type reference and source/destination endpoint references. The actual configuration is stored in the managed rendered secret, reducing reconciliation complexity and enabling efficient change detection.
 
 #### Pros
 
@@ -187,7 +174,7 @@ To ensure robust and idempotent handling of artifact processing:
 
 ## Decision Outcome
 
-Chosen Option: Solution A.
+Chosen Option: Solution E.
 
 Because the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
 The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
