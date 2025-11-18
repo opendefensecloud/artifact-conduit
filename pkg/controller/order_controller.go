@@ -294,22 +294,22 @@ func (r *OrderReconciler) createArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.A
 	return aw, nil
 }
 
-// generateReconcileRequestsForSecret generates reconcile requests for all secrets referenced by an Order
-func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context, secret client.Object) []reconcile.Request {
-	resourcesReferencingSecret := &arcv1alpha1.OrderList{}
+// generateReconcileRequestsForEndpoint generates reconcile requests for all Endpoints referenced by an Order
+func (r *OrderReconciler) generateReconcileRequestsForEndpoint(ctx context.Context, endpoint client.Object) []reconcile.Request {
+	resourcesReferencingEndpoint := &arcv1alpha1.OrderList{}
 	listOps := &client.ListOptions{
-		FieldSelector: fields.SelectorFromSet(fields.Set{".spec.srcRef.name": secret.GetName(), ".spec.dstRef.name": secret.GetName()}),
-		Namespace:     secret.GetNamespace(),
+		FieldSelector: fields.SelectorFromSet(fields.Set{".spec.srcRef.name": endpoint.GetName(), ".spec.dstRef.name": endpoint.GetName()}),
+		Namespace:     endpoint.GetNamespace(),
 	}
-	err := r.List(ctx, resourcesReferencingSecret, listOps)
+	err := r.List(ctx, resourcesReferencingEndpoint, listOps)
 	if err != nil {
 		return []reconcile.Request{}
 	}
 
-	requests := make([]reconcile.Request, len(resourcesReferencingSecret.Items))
-	for i, item := range resourcesReferencingSecret.Items {
+	requests := make([]reconcile.Request, len(resourcesReferencingEndpoint.Items))
+	for i, item := range resourcesReferencingEndpoint.Items {
 		log := ctrl.LoggerFrom(ctx)
-		log.V(1).Info("Generating reconcile request for resource because referenced secret has changed...")
+		log.V(1).Info("Generating reconcile request for resource because referenced endpoint has changed...")
 		requests[i] = reconcile.Request{
 			NamespacedName: types.NamespacedName{
 				Name:      item.GetName(),
@@ -324,9 +324,9 @@ func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
-		Watches( // TODO: same for endpoints?
-			&corev1.Secret{},
-			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret),
+		Watches(
+			&arcv1alpha1.Endpoint{},
+			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForEndpoint),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
