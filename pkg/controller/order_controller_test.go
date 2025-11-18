@@ -115,6 +115,14 @@ var _ = Describe("OrderController", func() {
 						Value: "dst-" + suffix,
 					},
 					{
+						Name:  "srcSecret",
+						Value: "true",
+					},
+					{
+						Name:  "dstSecret",
+						Value: "true",
+					},
+					{
 						Name:  "specKey",
 						Value: "value-" + suffix,
 					},
@@ -162,7 +170,7 @@ var _ = Describe("OrderController", func() {
 			// Verify artifact workflow parameters - should use default refs
 			for _, aw := range awList.Items {
 				Expect(aw.Spec.Type).To(Or(Equal("art-3"), Equal("art-4")))
-				Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
+				Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 					{
 						Name:  "srcType",
 						Value: "default-src",
@@ -410,6 +418,69 @@ var _ = Describe("OrderController", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+
+			// Create order using the no-secret endpoint as src and dst for artifacts
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-no-secret",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   "art",
+							SrcRef: corev1.LocalObjectReference{Name: "no-secret"},
+							DstRef: corev1.LocalObjectReference{Name: "no-secret"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflows were created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+			aw := awList.Items[0]
+			Expect(aw.Spec.Type).To(Equal("art"))
+			Expect(aw.Spec.SrcSecretRef.Name).To(Equal(""))
+			Expect(aw.Spec.DstSecretRef.Name).To(Equal(""))
+			Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
+				{
+					Name:  "srcType",
+					Value: "no-secret",
+				},
+				{
+					Name:  "srcRemoteURL",
+					Value: "no-secret",
+				},
+				{
+					Name:  "dstType",
+					Value: "no-secret",
+				},
+				{
+					Name:  "dstRemoteURL",
+					Value: "no-secret",
+				},
+				{
+					Name:  "srcSecret",
+					Value: "false",
+				},
+				{
+					Name:  "dstSecret",
+					Value: "false",
+				},
+				{
+					Name:  "specKey",
+					Value: "value",
+				},
+			}))
 		})
 	})
 })

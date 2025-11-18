@@ -370,6 +370,14 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 			Name:  paramName("dst", "remoteURL"),
 			Value: daw.dstEndpoint.Spec.RemoteURL,
 		},
+		{
+			Name:  "srcSecret",
+			Value: fmt.Sprintf("%v", daw.srcSecret.Name != ""),
+		},
+		{
+			Name:  "dstSecret",
+			Value: fmt.Sprintf("%v", daw.dstSecret.Name != ""),
+		},
 	}
 
 	spec := map[string]any{}
