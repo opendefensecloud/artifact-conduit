@@ -35,7 +35,6 @@ export GNOPROXY=*.go.opendefense.cloud/arc
 
 APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
-ARCCTL_IMG ?= arcctl:latest
 
 ##@ General
 
@@ -87,7 +86,7 @@ manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition o
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
 
 .PHONY: docker-build
-docker-build: docker-build-apiserver docker-build-manager docker-build-arcctl
+docker-build: docker-build-apiserver docker-build-manager
 
 .PHONY: docker-build-apiserver
 docker-build-apiserver:
@@ -96,10 +95,6 @@ docker-build-apiserver:
 .PHONY: docker-build-manager
 docker-build-manager:
 	docker build --target manager -t ${MANAGER_IMG} .
-
-.PHONY: docker-build-arcctl
-docker-build-arcctl:
-	docker build --target arcctl -t ${ARCCTL_IMG} .
 
 .PHONY: docs
 docs: ## Generate and serve the documentation site.

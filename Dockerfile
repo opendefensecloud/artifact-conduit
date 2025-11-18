@@ -32,12 +32,6 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -ldflags="-s -w" -a -o bin/arc-controller-manager ./cmd/arc-controller-manager
 
-
-FROM builder AS arcctl-builder
-RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
-    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -ldflags="-s -w" -a -o bin/arcctl ./cmd/arcctl
-
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot AS apiserver
@@ -51,9 +45,3 @@ WORKDIR /
 COPY --from=manager-builder /workspace/bin/arc-controller-manager .
 USER 65532:65532
 ENTRYPOINT ["/arc-controller-manager"]
-
-FROM gcr.io/distroless/static:nonroot AS arcctl
-WORKDIR /
-COPY --from=arcctl-builder /workspace/bin/arcctl .
-USER 65532:65532
-ENTRYPOINT ["/arcctl"]

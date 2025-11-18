@@ -27,8 +27,6 @@ jobs:
           target: manager
         - name: arc-apiserver
           target: apiserver
-        - name: arcctl
-          target: arcctl
     permissions:
       contents: read
       packages: write
