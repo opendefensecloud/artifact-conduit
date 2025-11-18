@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content/oci"
 	"oras.land/oras-go/v2/registry/remote"
@@ -29,6 +28,7 @@ func NewPushCommand() *cobra.Command {
 
 func runPush(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
+	httpClient := retry.DefaultClient
 
 	// Load configuration
 	if err := loadViperConfig(); err != nil {
@@ -44,12 +44,10 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("failed to get destination repository: %w", err)
 	}
 	repo.PlainHTTP = plainHTTP
-
-	httpClient := retry.DefaultClient
 	repo.Client = httpClient
 
-	// allow insecure connection
-	if insecure {
+	// allow insecure connection if configured via args
+	if allowInsecureConnection {
 		httpClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
@@ -58,16 +56,15 @@ func runPush(cmd *cobra.Command, args []string) error {
 	}
 
 	// Set up authentication if provided
-	if viper.IsSet("destination.auth") {
-		srcUser := viper.GetString("destination.auth.username")
-		srcPassword := viper.GetString("destination.auth.password")
+	if conf.Dst.Auth != nil {
+		ociAuth := conf.Dst.GetOCIAuth()
 
 		repo.Client = &auth.Client{
 			Client: httpClient,
 			Cache:  auth.NewCache(),
 			Credential: auth.StaticCredential(repo.Reference.Registry, auth.Credential{
-				Username: srcUser,
-				Password: srcPassword,
+				Username: ociAuth.Username,
+				Password: ociAuth.Password,
 			}),
 		}
 	}

@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	tmpDir    string
-	plainHTTP bool
-	insecure  bool
-	conf      *config.WorkflowConfig
+	tmpDir                  string
+	plainHTTP               bool
+	allowInsecureConnection bool
+	conf                    *config.WorkflowConfig
 )
 
 func NewOCICommand() *cobra.Command {
@@ -42,7 +42,7 @@ func loadViperConfig() error {
 	}
 	tmpDir = viper.GetString("tmp-dir")
 	plainHTTP = viper.GetBool("plain-http")
-	insecure = viper.GetBool("insecure")
+	allowInsecureConnection = viper.GetBool("insecure")
 
 	// Load workflow config
 	wc, err := config.LoadFromViper()

@@ -28,6 +28,7 @@ func NewPullCommand() *cobra.Command {
 
 func runPull(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
+	httpClient := retry.DefaultClient
 
 	// Load configuration
 	if err := loadViperConfig(); err != nil {
@@ -42,13 +43,11 @@ func runPull(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get source repository: %w", err)
 	}
-	repo.PlainHTTP = plainHTTP
-
-	httpClient := retry.DefaultClient
+	repo.PlainHTTP = plainHTTP // allow plain http via args
 	repo.Client = httpClient
 
-	// allow insecure connection
-	if insecure {
+	// allow insecure connection if configured via args
+	if allowInsecureConnection {
 		httpClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
@@ -58,7 +57,6 @@ func runPull(cmd *cobra.Command, args []string) error {
 
 	// Set up authentication if provided
 	if conf.Src.Auth != nil {
-		// Get typed auth
 		ociAuth := conf.Src.GetOCIAuth()
 		repo.Client = &auth.Client{
 			Client: httpClient,
