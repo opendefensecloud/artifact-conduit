@@ -44,12 +44,15 @@ type OrderSpec struct {
 
 // OrderStatus defines the observed state of Order
 type OrderStatus struct {
+	// ArtifactWorkflows tracks the created workflows
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatus `json:"artifactWorkflows,omitempty"`
 }
 
 type OrderArtifactWorkflowStatus struct {
-	ArtifactIndex int           `json:"artifactIndex"`
-	Phase         WorkflowPhase `json:"phase"`
+	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
+	ArtifactIndex int `json:"artifactIndex"`
+	// Phase tracks which phase the corresponding Workflow is in
+	Phase WorkflowPhase `json:"phase"`
 }
 
 // +genclient
