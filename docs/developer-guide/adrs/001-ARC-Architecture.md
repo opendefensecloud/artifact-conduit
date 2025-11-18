@@ -12,15 +12,15 @@ This ADR is about finding the right architecture for the ARC suite of services b
 ### Glossary
 
 - `arcctl`: Command line utility to interact with the ARC API.
-- `Order`: Represents an order of one or more artifacts. Even ordering artifacts that may exist in the future can be reference here using semver expressions for example.
-- `OrderArtifactWorkflow`: Represents a single artifact order which is part of an `Order`.
-- `OrderTypeDefinition`: Defines rules and defaults for a specific order type like 'OCI'. References a certain workflow to use for that type.
-- `Endpoint`: General term for source or destination. Can be a source or destination for artifacts. Includes optional credentials to access it.
+- `Order`: Represents an order of one or more artifacts. Tracks generation numbers of referenced `Endpoints` and `Secrets` to detect changes and trigger `ArtifactWorkflow` reconciliation for idempotency.
+- `ArtifactWorkflow`: Represents a single artifact to be processed as part of an `Order`. Minimal resource containing artifact type reference and source/destination endpoint references. Replaces legacy `OrderArtifactWorkflow`.
+- `ArtifactType`: Defines rules, defaults, and the `WorkflowTemplate` reference for a specific artifact type like 'OCI'. Replaces legacy `OrderTypeDefinition`.
+- `Endpoint`: General term for source or destination. Can be a source or destination for artifacts. Includes optional credentials to access it. Changes to `Endpoint` or its referenced `Secret` trigger `Order` reconciliation.
 - `WorkflowTemplate`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflowtemplate>
 - `Workflow`: Argo Workflows, see <https://argo-workflows.readthedocs.io/en/latest/fields/#workflow>
 - `ARC API Server`: A Kubernetes Extension API Server which handles storage of ARC API
-- `Order Controller`: A Kubernetes Controller which reconciles `Orders`, splits up `Order` resources into `OrderArtifactWorkflow` Resources, creates `Workflow` resources for necessary workload
-- `ArtifactType`: Specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
+- `Order Controller`: A Kubernetes Controller which reconciles `Orders`, creates/updates `ArtifactWorkflow` resources from `Order` artifacts, manages rendered configuration `Secrets`, and instantiates `Workflow` resources for each `ArtifactWorkflow`. Tracks `Endpoint` and `Secret` generations to ensure idempotency.
+- `Rendered Configuration Secret`: A `Secret` managed by the `Order Controller` that contains the hydrated configuration (resolved `Endpoint` references, credentials, artifact specs) required to instantiate a `Workflow`. One secret per `ArtifactWorkflow`.
 
 ## Considered Options
 
@@ -105,18 +105,20 @@ config:
 flowchart LR
  subgraph subGraph0["Declarative Layer"]
         Order["Order (User Input)"]
-        Spec["spec:<br>- defaults<br>- artifacts[]"]
+        Spec["spec:<br>- defaults<br>- artifacts[]<br>--- <br>status:<br>- endpointGenerations<br>- secretGenerations"]
   end
  subgraph subGraph1["Generated Layer"]
-        ArtifactWorkflow1["ArtifactWorkflow-1"]
-        ArtifactWorkflow2["ArtifactWorkflow-2"]
-        ArtifactWorkflowN["ArtifactWorkflow-N"]
+        ArtifactWorkflow1["ArtifactWorkflow-1<br/>(Minimal Params)"]
+        ArtifactWorkflow2["ArtifactWorkflow-2<br/>(Minimal Params)"]
+        ArtifactWorkflowN["ArtifactWorkflow-N<br/>(Minimal Params)"]
   end
- subgraph Configuration["Configuration"]
+ subgraph Configuration["Configuration & Secrets"]
         ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
-        EndpointSrc["Endpoint (Source)"]
-        EndpointDst["Endpoint (Destination)"]
-        Secret["Secret (Credentials)"]
+        EndpointSrc["Endpoint (Source)<br/>+ Generation Tracking"]
+        EndpointDst["Endpoint (Destination)<br/>+ Generation Tracking"]
+        EndpointSecret["Secret (Credentials)<br/>+ Generation Tracking"]
+        RenderedSecret1["Rendered Config Secret-1<br/>(Managed by Controller)"]
+        RenderedSecret2["Rendered Config Secret-2<br/>(Managed by Controller)"]
   end
  subgraph Execution["Execution"]
         WorkflowTemplate["WorkflowTemplate (Argo)"]
@@ -125,31 +127,47 @@ flowchart LR
   end
     Order -- contains --> Spec
     Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflow2 & ArtifactWorkflowN
+    Spec -- tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
     ArtifactWorkflow1 -- type --> ArtifactTypeDef
     ArtifactWorkflow2 -- type --> ArtifactTypeDef
     ArtifactWorkflow1 -- srcRef --> EndpointSrc
     ArtifactWorkflow2 -- srcRef --> EndpointSrc
     ArtifactWorkflow1 -- dstRef --> EndpointDst
     ArtifactWorkflow2 -- dstRef --> EndpointDst
-    ArtifactWorkflow1 -- references --> EndpointSrc & EndpointDst
-    ArtifactWorkflow2 -- references --> EndpointSrc & EndpointDst
-    EndpointSrc -- credentialRef --> Secret
-    EndpointDst -- credentialRef --> Secret
+    EndpointSrc -- credentialRef --> EndpointSecret
+    EndpointDst -- credentialRef --> EndpointSecret
     ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
+    ArtifactWorkflow1 -- references --> RenderedSecret1
+    ArtifactWorkflow2 -- references --> RenderedSecret2
+    RenderedSecret1 -- contains hydrated config --> RenderedSecret1
+    RenderedSecret2 -- contains hydrated config --> RenderedSecret2
     ArtifactWorkflow1 -- triggers --> WorkflowTemplate
     ArtifactWorkflow2 -- triggers --> WorkflowTemplate
     WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
+    WorkflowInstance1 -- mounts --> RenderedSecret1
+    WorkflowInstance2 -- mounts --> RenderedSecret2
     ArtifactTypeDef@{ shape: rect}
 
 ```
 
 The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
 `etcd` is used as storage solution.
-`Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and `Endpoints`.
-An `Order` contains the information what artifacts should be processed.
+`Order Controller` is a classic Kubernetes controller implementation which reconciles `Orders` and monitors `Endpoints` and `Secrets`.
+An `Order` contains the information what artifacts should be processed and tracks generation numbers of referenced `Endpoints` and `Secrets` to detect changes.
 An `Endpoint` contains the information about a source or destination for artifacts.
-The `Order Controller` creates `ArtifactWorkflow` resources which are single artifacts decomposed from an `Order`.
+The `Order Controller` creates `ArtifactWorkflow` resources which are minimal, idempotent representations of artifacts to be processed.
+For each `ArtifactWorkflow`, the controller manages a rendered configuration `Secret` containing the hydrated configuration (resolved endpoints, credentials, artifact specifications) needed to instantiate the `Workflow`.
+When an `Endpoint` or referenced `Secret` changes (detected via generation tracking), the controller automatically recreates the rendered configuration and triggers `Workflow` recreation.
 An `ArtifactType` specifies the processing rules and workflow templates for artifact types (e.g. `oci`, `helm`).
+
+#### Idempotency and Generation Tracking
+
+To ensure robust and idempotent handling of artifact processing:
+
+- **Generation Tracking**: The `Order` status maintains generation numbers (`metadata.generation`) of all referenced `Endpoints` and `Secrets`. This allows detection of configuration changes.
+- **Change Detection**: When an `Endpoint` or `Secret` generation changes, the `Order Controller` detects this and automatically triggers reconciliation of affected `ArtifactWorkflows`.
+- **Rendered Secrets**: The `Order Controller` manages rendered configuration `Secrets` (one per `ArtifactWorkflow`) containing the complete hydrated configuration needed for the workflow. These secrets are recreated whenever their dependencies change, ensuring consistency.
+- **Minimal ArtifactWorkflow**: `ArtifactWorkflow` resources are kept minimal, containing only the artifact type reference and source/destination endpoint references. The actual configuration is stored in the managed rendered secret, reducing reconciliation complexity and enabling efficient change detection.
 
 #### Pros
 
@@ -158,11 +176,14 @@ An `ArtifactType` specifies the processing rules and workflow templates for arti
 - Keep the declarative style of Kubernetes while having complete freedom on the API implementation
 - Argo Workflows allows us to focus on the domain of the product without reinventing the wheel
 - Qotas and Fairness easy without writing code via Kueue
+- **Idempotency**: Generation tracking ensures configuration changes are reliably detected and handled without race conditions
+- **Minimal Resource Overhead**: Small `ArtifactWorkflow` resources with externalized configuration reduce API load and enable efficient scaling
 
 #### Cons
 
 - Building addon apiservers directly on the raw api-machinery libraries requires non-trivial code that must be maintained and rebased as the raw libraries change.
 - Steep learning curve when starting the project and steeper learning curve when joining the project.
+- Generation tracking adds complexity to the reconciliation logic that must be carefully maintained
 
 ## Decision Outcome
 
