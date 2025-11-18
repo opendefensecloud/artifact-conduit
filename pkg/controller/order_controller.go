@@ -31,7 +31,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
-const orderFinalizer = "arc.bwi.de/order-finalizer"
+const (
+	orderFinalizer          = "arc.bwi.de/order-finalizer"
+	workflowConfigSecretKey = "config.json"
+)
 
 var (
 	secretLabels = map[string]string{
@@ -56,11 +59,11 @@ type desiredAW struct {
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=fragments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/finalizers,verbs=update
-//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -128,11 +131,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	// Before we compare to our status, let's fetch all necessary information
+	// to compute desired state:
 	desiredAWs := map[string]desiredAW{}
 	for i, artifact := range order.Spec.Artifacts {
 		log := log.WithValues("artifactIndex", i)
 
-		// Let's get the endpoint names
+		// We need the referenced src- and dst-endpoints for the artifact
 		srcRefName := artifact.SrcRef.Name
 		if srcRefName == "" {
 			srcRefName = order.Spec.Defaults.SrcRef.Name
@@ -141,35 +146,36 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if dstRefName == "" {
 			dstRefName = order.Spec.Defaults.DstRef.Name
 		}
-
-		// Let's fetch the endpoints
 		srcEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
 			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Endpoint (srcRef) for Order")
+			log.Error(err, "Failed to fetch Endpoint (srcRef)")
 			return ctrl.Result{}, err
 		}
-
 		dstEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
 			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Endpoint (dstRef) for Order")
+			log.Error(err, "Failed to fetch Endpoint (dstRef)")
 			return ctrl.Result{}, err
 		}
 
 		// Next, we need the secret contents
+		// TODO: When a secret fetch fails, we stop the reconciliation of the whole order.
+		//       Should we instead not fail but skip invalid artifacts?
 		srcSecret := &corev1.Secret{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Secret for source of Order")
-			return ctrl.Result{}, err
+		if srcEndpoint.Spec.SecretRef.Name != "" {
+			if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
+				log.Error(err, "Failed to fetch secret for source")
+				return ctrl.Result{}, err
+			}
 		}
 
 		dstSecret := &corev1.Secret{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Secret for source of Order")
-			return ctrl.Result{}, err
+		if srcEndpoint.Spec.SecretRef.Name != "" {
+			if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
+				log.Error(err, "Failed to fetch secret for destination")
+				return ctrl.Result{}, err
+			}
 		}
 
 		// Create a hash based on all related data for idempotency and compute the workflow name
@@ -243,7 +249,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, err
 		}
 
-		// Create objects
+		// Create secret and artifact workflow
 		if err := r.Create(ctx, secret); err != nil {
 			if apierrors.IsAlreadyExists(err) {
 				// Already created by a previous reconcile — that's fine
@@ -313,12 +319,12 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 	secret := &corev1.Secret{
 		ObjectMeta: daw.objectMeta,
 		StringData: map[string]string{
-			"config.json": string(json),
+			workflowConfigSecretKey: string(json),
 		},
 	}
 	secret.Labels = secretLabels
 
-	params, err := toParameters(daw)
+	params, err := dawToParameters(daw)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -368,12 +374,13 @@ func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
-		Watches(
+		Watches( // TODO: same for order?
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
+		Owns(&corev1.Secret{}).
 		Complete(r)
 }
 
@@ -395,14 +402,15 @@ func namespacedName(namespace, name string) types.NamespacedName {
 	}
 }
 
-func toParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
+// TODO: add unit tests
+func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
 	params := []arcv1alpha1.ArtifactWorkflowParameter{
 		{
 			Name:  paramName("src", "type"),
 			Value: string(daw.srcEndpoint.Spec.Type),
 		},
 		{
-			Name:  paramName("src", "remoteUrl"),
+			Name:  paramName("src", "remoteURL"),
 			Value: daw.srcEndpoint.Spec.RemoteURL,
 		},
 		{
@@ -410,7 +418,7 @@ func toParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, erro
 			Value: string(daw.dstEndpoint.Spec.Type),
 		},
 		{
-			Name:  paramName("dst", "remoteUrl"),
+			Name:  paramName("dst", "remoteURL"),
 			Value: daw.dstEndpoint.Spec.RemoteURL,
 		},
 	}
@@ -435,10 +443,12 @@ func toParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, erro
 	return params, nil
 }
 
+// TODO: add unit tests
 func paramName(prefix, suffix string) string {
 	return prefix + strings.ToUpper(suffix[:1]) + suffix[1:]
 }
 
+// TODO: add unit tests
 func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 	for k, v := range src {
 		kt := strings.ToUpper(k[:1]) + k[1:]
@@ -455,6 +465,7 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 	}
 }
 
+// TODO: add tests
 func tryStringifyMap(d map[string][]byte) map[string]any {
 	o := map[string]any{}
 	for k, v := range d {

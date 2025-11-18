@@ -65,13 +65,13 @@ var _ = Describe("OrderController", func() {
 							Type:   "art-1",
 							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
-							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value1"}`)},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
 						},
 						{
 							Type:   "art-2",
 							SrcRef: corev1.LocalObjectReference{Name: "src-2"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-2"},
-							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value2"}`)},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-2"}`)},
 						},
 					},
 				},
@@ -95,18 +95,28 @@ var _ = Describe("OrderController", func() {
 				if aw.Spec.Type == "art-1" {
 					suffix = "1"
 				}
-				for _, param := range aw.Spec.Parameters {
-					switch param.Name {
-					case "srcType":
-						Expect(param.Value).To(Equal("src-" + suffix))
-					case "srcRemoteURL":
-						Expect(param.Value).To(Equal("src-" + suffix))
-					case "dstType":
-						Expect(param.Value).To(Equal("dst-" + suffix))
-					case "dstRemoteURL":
-						Expect(param.Value).To(Equal("dst-" + suffix))
-					}
-				}
+				Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
+					{
+						Name:  "srcType",
+						Value: "src-" + suffix,
+					},
+					{
+						Name:  "srcRemoteURL",
+						Value: "src-" + suffix,
+					},
+					{
+						Name:  "dstType",
+						Value: "dst-" + suffix,
+					},
+					{
+						Name:  "dstRemoteURL",
+						Value: "dst-" + suffix,
+					},
+					{
+						Name:  "specKey",
+						Value: "value-" + suffix,
+					},
+				}))
 			}
 
 			// Verify contents of secrets created by the controller
@@ -119,14 +129,14 @@ var _ = Describe("OrderController", func() {
 				return len(secrets.Items)
 			}).Should(Equal(2))
 
-			data1 := `{"type":"art-1","src":{"type":"src-1","remoteURL":"src-1","auth":{"testkey":"src-1"}},"dst":{"type":"dst-1","remoteURL":"dst-1","auth":{"testkey":"dst-1"}},"spec":{"key":"value1"}}`
-			data2 := `{"type":"art-2","src":{"type":"src-2","remoteURL":"src-2","auth":{"testkey":"src-2"}},"dst":{"type":"dst-2","remoteURL":"dst-2","auth":{"testkey":"dst-2"}},"spec":{"key":"value2"}}`
+			data1 := `{"type":"art-1","src":{"type":"src-1","remoteURL":"src-1","auth":{"testkey":"src-1"}},"dst":{"type":"dst-1","remoteURL":"dst-1","auth":{"testkey":"dst-1"}},"spec":{"key":"value-1"}}`
+			data2 := `{"type":"art-2","src":{"type":"src-2","remoteURL":"src-2","auth":{"testkey":"src-2"}},"dst":{"type":"dst-2","remoteURL":"dst-2","auth":{"testkey":"dst-2"}},"spec":{"key":"value-2"}}`
 			for _, secret := range secrets.Items {
 				Expect(string(secret.Data["config.json"])).To(Or(Equal(data1), Equal(data2)))
 			}
 		})
 
-		It("should create fragments for an order with multiple artifacts using defaults", func() {
+		It("should create artifact workflows for an order with multiple artifacts using defaults", func() {
 			createEndpoints("default-src", "default-dst")
 			// Create test Order with defaults
 			order := &arcv1alpha1.Order{
@@ -141,12 +151,12 @@ var _ = Describe("OrderController", func() {
 					},
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type: "test-type-3",
-							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value1"}`)},
+							Type: "art-3",
+							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "test-type-4",
-							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value2"}`)},
+							Type: "art-4",
+							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 					},
 				},
@@ -163,17 +173,36 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(2))
 
-			// TODO: verify secret and list
-			// // Verify fragment contents - should use default refs
-			// for _, fragment := range awList.Items {
-			// 	Expect(fragment.Spec.Type).To(Or(Equal("test-type-3"), Equal("test-type-4")))
-			// 	Expect(fragment.Spec.SrcRef.Name).To(Equal("default-src"))
-			// 	Expect(fragment.Spec.DstRef.Name).To(Equal("default-dst"))
-			// }
+			// Verify artifact workflow parameters - should use default refs
+			for _, aw := range awList.Items {
+				Expect(aw.Spec.Type).To(Or(Equal("art-3"), Equal("art-4")))
+				Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
+					{
+						Name:  "srcType",
+						Value: "default-src",
+					},
+					{
+						Name:  "srcRemoteURL",
+						Value: "default-src",
+					},
+					{
+						Name:  "dstType",
+						Value: "default-dst",
+					},
+					{
+						Name:  "dstRemoteURL",
+						Value: "default-dst",
+					},
+					{
+						Name:  "specKey",
+						Value: "value",
+					},
+				}))
+			}
 		})
 
-		It("should create fragments for an order with mixed default usage", func() {
-			createEndpoints("default-src", "default-dst", "custom-src", "custom-src-2", "custom-dst-2", "custom-dst-3")
+		It("should create artifact workflows for an order with mixed default usage", func() {
+			createEndpoints("default-src", "default-dst", "src-1", "dst-1")
 			// Create test Order with some artifacts using defaults, others specifying refs
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
@@ -187,22 +216,22 @@ var _ = Describe("OrderController", func() {
 					},
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type: "test-type-5",
+							Type: "art-only-defaults",
 							// Uses defaults for both refs
-							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value1"}`)},
+							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "test-type-6",
+							Type: "art-mixed",
 							// Specifies src, uses default dst
-							SrcRef: corev1.LocalObjectReference{Name: "custom-src"},
-							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value2"}`)},
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "test-type-7",
+							Type: "art-specified",
 							// Specifies both refs
-							SrcRef: corev1.LocalObjectReference{Name: "custom-src-2"},
-							DstRef: corev1.LocalObjectReference{Name: "custom-dst-2"},
-							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value3"}`)},
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 					},
 				},
@@ -219,26 +248,49 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(3))
 
-			// TODO: verify AWs
-			// // Verify fragment contents
-			// for _, fragment := range awList.Items {
-			// 	switch fragment.Spec.Type {
-			// 	case "test-type-5":
-			// 		// Should use defaults for both
-			// 		Expect(fragment.Spec.SrcRef.Name).To(Equal("default-src"))
-			// 		Expect(fragment.Spec.DstRef.Name).To(Equal("default-dst"))
-			// 	case "test-type-6":
-			// 		// Should use custom src, default dst
-			// 		Expect(fragment.Spec.SrcRef.Name).To(Equal("custom-src"))
-			// 		Expect(fragment.Spec.DstRef.Name).To(Equal("default-dst"))
-			// 	case "test-type-7":
-			// 		// Should use custom refs for both
-			// 		Expect(fragment.Spec.SrcRef.Name).To(Equal("custom-src-2"))
-			// 		Expect(fragment.Spec.DstRef.Name).To(Equal("custom-dst-2"))
-			// 	}
-			// }
+			// Verify artifact workflow contents
+			for _, aw := range awList.Items {
+				switch aw.Spec.Type {
+				case "art-only-defaults":
+					// Should use defaults for both
+					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
+						{
+							Name:  "srcType",
+							Value: "default-src",
+						},
+						{
+							Name:  "dstType",
+							Value: "default-dst",
+						},
+					}))
+				case "art-mixed":
+					// Should use custom src, default dst
+					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
+						{
+							Name:  "srcType",
+							Value: "src-1",
+						},
+						{
+							Name:  "dstType",
+							Value: "default-dst",
+						},
+					}))
+				case "art-specified":
+					// Should use custom refs for both
+					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
+						{
+							Name:  "srcType",
+							Value: "src-1",
+						},
+						{
+							Name:  "dstType",
+							Value: "dst-1",
+						},
+					}))
+				}
+			}
 
-			// Verify status contains all fragments
+			// Verify status contains all artifact workflows
 			Eventually(func() int {
 				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
 					return 0
@@ -247,8 +299,8 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(3))
 		})
 
-		It("should delete fragments when order is deleted", func() {
-			createEndpoints("src-a", "dst-a", "src-b", "dst-b")
+		It("should delete artifact workflows and secrets when order is deleted", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-delete",
@@ -256,8 +308,8 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "type-a", SrcRef: corev1.LocalObjectReference{Name: "src-a"}, DstRef: corev1.LocalObjectReference{Name: "dst-a"}},
-						{Type: "type-b", SrcRef: corev1.LocalObjectReference{Name: "src-b"}, DstRef: corev1.LocalObjectReference{Name: "dst-b"}},
+						{Type: "art-1", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						{Type: "art-2", SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
 					},
 				},
 			}
@@ -276,8 +328,8 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(0))
 		})
 
-		It("should create a new fragment and update status when an artifact is added", func() {
-			createEndpoints("src-c", "dst-c", "src-d", "dst-d")
+		It("should create a new artifact workflow and update status when an artifact is added", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-add-artifact",
@@ -285,7 +337,7 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "type-c", SrcRef: corev1.LocalObjectReference{Name: "src-c"}, DstRef: corev1.LocalObjectReference{Name: "dst-c"}},
+						{Type: "art-1", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
 					},
 				},
 			}
@@ -301,9 +353,9 @@ var _ = Describe("OrderController", func() {
 					return err
 				}
 				order.Spec.Artifacts = append(order.Spec.Artifacts, arcv1alpha1.OrderArtifact{
-					Type:   "type-d",
-					SrcRef: corev1.LocalObjectReference{Name: "src-d"},
-					DstRef: corev1.LocalObjectReference{Name: "dst-d"},
+					Type:   "art-2",
+					SrcRef: corev1.LocalObjectReference{Name: "src-2"},
+					DstRef: corev1.LocalObjectReference{Name: "dst-2"},
 				})
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
@@ -319,8 +371,8 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(2))
 		})
 
-		It("should delete a fragment and update status when an artifact is removed", func() {
-			createEndpoints("src-e", "dst-e", "src-f", "dst-f")
+		It("should delete an artifact workflow and update status when an artifact is removed", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-order-remove-artifact",
@@ -328,8 +380,8 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "type-e", SrcRef: corev1.LocalObjectReference{Name: "src-e"}, DstRef: corev1.LocalObjectReference{Name: "dst-e"}},
-						{Type: "type-f", SrcRef: corev1.LocalObjectReference{Name: "src-f"}, DstRef: corev1.LocalObjectReference{Name: "dst-f"}},
+						{Type: "type-e", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						{Type: "type-f", SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
 					},
 				},
 			}

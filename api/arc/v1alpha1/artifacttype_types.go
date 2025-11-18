@@ -20,9 +20,6 @@ type ArtifactTypeRules struct {
 type ArtifactTypeSpec struct {
 	// Rules defines a set of rules for this type.
 	Rules ArtifactTypeRules `json:"rules"`
-	// Defaults optionally sets defaults for this type of artifact.
-	// +optional
-	Defaults OrderDefaults `json:"defaults,omitempty"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef corev1.LocalObjectReference `json:"workflowTemplateRef"`
 }

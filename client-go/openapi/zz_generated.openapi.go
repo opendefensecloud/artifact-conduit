@@ -486,13 +486,6 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 							Ref:         ref(v1alpha1.ArtifactTypeRules{}.OpenAPIModelName()),
 						},
 					},
-					"defaults": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Defaults optionally sets defaults for this type of artifact.",
-							Default:     map[string]interface{}{},
-							Ref:         ref(v1alpha1.OrderDefaults{}.OpenAPIModelName()),
-						},
-					},
 					"workflowTemplateRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.",
@@ -505,7 +498,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
