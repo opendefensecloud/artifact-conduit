@@ -12,9 +12,10 @@ import (
 // ArtifactWorkflowSpecApplyConfiguration represents a declarative configuration of the ArtifactWorkflowSpec type for use
 // with apply.
 type ArtifactWorkflowSpecApplyConfiguration struct {
-	Type       *string                                       `json:"type,omitempty"`
-	Parameters []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
-	SecretRef  *v1.LocalObjectReference                      `json:"secretRef,omitempty"`
+	Type         *string                                       `json:"type,omitempty"`
+	Parameters   []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
+	SrcSecretRef *v1.LocalObjectReference                      `json:"srcSecretRef,omitempty"`
+	DstSecretRef *v1.LocalObjectReference                      `json:"dstSecretRef,omitempty"`
 }
 
 // ArtifactWorkflowSpecApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowSpec type for use with
@@ -44,10 +45,18 @@ func (b *ArtifactWorkflowSpecApplyConfiguration) WithParameters(values ...*Artif
 	return b
 }
 
-// WithSecretRef sets the SecretRef field in the declarative configuration to the given value
+// WithSrcSecretRef sets the SrcSecretRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the SecretRef field is set to the value of the last call.
-func (b *ArtifactWorkflowSpecApplyConfiguration) WithSecretRef(value v1.LocalObjectReference) *ArtifactWorkflowSpecApplyConfiguration {
-	b.SecretRef = &value
+// If called multiple times, the SrcSecretRef field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithSrcSecretRef(value v1.LocalObjectReference) *ArtifactWorkflowSpecApplyConfiguration {
+	b.SrcSecretRef = &value
+	return b
+}
+
+// WithDstSecretRef sets the DstSecretRef field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the DstSecretRef field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithDstSecretRef(value v1.LocalObjectReference) *ArtifactWorkflowSpecApplyConfiguration {
+	b.DstSecretRef = &value
 	return b
 }

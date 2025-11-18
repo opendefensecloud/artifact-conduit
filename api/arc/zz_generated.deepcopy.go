@@ -218,7 +218,8 @@ func (in *ArtifactWorkflowSpec) DeepCopyInto(out *ArtifactWorkflowSpec) {
 		*out = make([]ArtifactWorkflowParameter, len(*in))
 		copy(*out, *in)
 	}
-	out.SecretRef = in.SecretRef
+	out.SrcSecretRef = in.SrcSecretRef
+	out.DstSecretRef = in.DstSecretRef
 	return
 }
 

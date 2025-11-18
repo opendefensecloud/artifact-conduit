@@ -12,10 +12,8 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/workflow/config"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,12 +32,6 @@ import (
 const (
 	orderFinalizer          = "arc.bwi.de/order-finalizer"
 	workflowConfigSecretKey = "config.json"
-)
-
-var (
-	secretLabels = map[string]string{
-		"arc.bwi.de/managed-by-controller": "true",
-	}
 )
 
 // OrderReconciler reconciles a Order object
@@ -89,10 +81,6 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					ObjectMeta: awObjectMeta(order, sha),
 				}
 				_ = r.Delete(ctx, aw) // ignore errors
-				s := &corev1.Secret{
-					ObjectMeta: awObjectMeta(order, sha),
-				}
-				_ = r.Delete(ctx, s) // ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
@@ -236,7 +224,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Create missing fragments
 	for _, sha := range createAWs {
 		daw := desiredAWs[sha]
-		aw, secret, err := r.createArtifactWorkflowSecretPair(&daw)
+		aw, err := r.createArtifactWorkflow(&daw)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -245,18 +233,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err := controllerutil.SetControllerReference(order, aw, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
-		if err := controllerutil.SetControllerReference(order, secret, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
 
-		// Create secret and artifact workflow
-		if err := r.Create(ctx, secret); err != nil {
-			if apierrors.IsAlreadyExists(err) {
-				// Already created by a previous reconcile — that's fine
-				continue
-			}
-			return ctrl.Result{}, err
-		}
+		// Create artifact workflow
 		if err := r.Create(ctx, aw); err != nil {
 			if apierrors.IsAlreadyExists(err) {
 				// Already created by a previous reconcile — that's fine
@@ -296,52 +274,24 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
-func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, *corev1.Secret, error) {
-	// Let's create the secret object first
-	wc := &config.ArcctlConfig{
-		Type: config.ArtifactType(daw.artifact.Type),
-		Spec: daw.artifact.Spec,
-		Src: config.Endpoint{
-			Type:      config.EndpointType(daw.srcEndpoint.Spec.Type),
-			RemoteURL: daw.srcEndpoint.Spec.RemoteURL,
-			Auth:      tryStringifyMap(daw.srcSecret.Data),
-		},
-		Dst: config.Endpoint{
-			Type:      config.EndpointType(daw.dstEndpoint.Spec.Type),
-			RemoteURL: daw.dstEndpoint.Spec.RemoteURL,
-			Auth:      tryStringifyMap(daw.dstSecret.Data),
-		},
-	}
-	json, err := wc.ToJson()
-	if err != nil {
-		return nil, nil, err
-	}
-	secret := &corev1.Secret{
-		ObjectMeta: daw.objectMeta,
-		StringData: map[string]string{
-			workflowConfigSecretKey: string(json),
-		},
-	}
-	secret.Labels = secretLabels
-
+func (r *OrderReconciler) createArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, error) {
 	params, err := dawToParameters(daw)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	// Next we create the ArtifactWorkflow instance
 	aw := &arcv1alpha1.ArtifactWorkflow{
 		ObjectMeta: daw.objectMeta,
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
-			Type:       daw.artifact.Type,
-			Parameters: params,
-			SecretRef: corev1.LocalObjectReference{
-				Name: daw.objectMeta.Name,
-			},
+			Type:         daw.artifact.Type,
+			Parameters:   params,
+			SrcSecretRef: daw.srcEndpoint.Spec.SecretRef,
+			DstSecretRef: daw.dstEndpoint.Spec.SecretRef,
 		},
 	}
 
-	return aw, secret, nil
+	return aw, nil
 }
 
 // generateReconcileRequestsForSecret generates reconcile requests for all secrets referenced by an Order
@@ -374,14 +324,20 @@ func (r *OrderReconciler) generateReconcileRequestsForSecret(ctx context.Context
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
-		Watches( // TODO: same for order?
+		Watches( // TODO: same for endpoints?
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForSecret),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
-		Owns(&corev1.Secret{}).
 		Complete(r)
+}
+
+func namespacedName(namespace, name string) types.NamespacedName {
+	return types.NamespacedName{
+		Namespace: namespace,
+		Name:      name,
+	}
 }
 
 func awName(order *arcv1alpha1.Order, sha string) string {
@@ -392,13 +348,6 @@ func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Namespace: order.Namespace,
 		Name:      awName(order, sha),
-	}
-}
-
-func namespacedName(namespace, name string) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: namespace,
-		Name:      name,
 	}
 }
 
@@ -463,17 +412,4 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 			dst[prefix+kt] = v
 		}
 	}
-}
-
-// TODO: add tests
-func tryStringifyMap(d map[string][]byte) map[string]any {
-	o := map[string]any{}
-	for k, v := range d {
-		if utf8.Valid(v) {
-			o[k] = string(v)
-		} else {
-			o[k] = v
-		}
-	}
-	return o
 }
