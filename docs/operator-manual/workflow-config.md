@@ -17,13 +17,13 @@ graph TB
     DstSecret["🔐 Secret<br/>(Destination Credentials)"]
     WorkflowTemplate["⚙️ WorkflowTemplate"]
     Workflow["🚀 Workflow"]
-    Config["⚙️ config.json<br/>(Runtime Config)"]
 
     Order -->|creates| ArtifactWorkflow
+    Order -->|references| SrcEndpoint
+    Order -->|references| DstEndpoint
     ArtifactWorkflow -->|specifies type| ArtifactTypeDef
-    ArtifactWorkflow -->|references| SrcEndpoint
-    ArtifactWorkflow -->|references| DstEndpoint
-    ArtifactWorkflow -->|contains spec params| Workflow
+    ArtifactWorkflow -->|references| SrcSecret
+    ArtifactWorkflow -->|references| DstSecret
 
     ArtifactTypeDef -->|validates src/dst types| ArtifactWorkflow
     ArtifactTypeDef -->|references| WorkflowTemplate
@@ -31,11 +31,10 @@ graph TB
     SrcEndpoint -->|references| SrcSecret
     DstEndpoint -->|references| DstSecret
 
-    WorkflowTemplate -->|instantiates| Workflow
-    SrcEndpoint -->|provides src config| Config
-    DstEndpoint -->|provides dst config| Config
-    ArtifactWorkflow -->|provides spec params| Config
-    Config -->|mounts to| Workflow
+    WorkflowTemplate -->|blueprint for| Workflow
+    ArtifactWorkflow -->|provides params & instantiates| Workflow
+    SrcSecret -->|mounts to| Workflow
+    DstSecret -->|mounts to| Workflow
 
     style Order stroke:#e1f5ff,stroke-width:2px
     style ArtifactWorkflow stroke:#f3e5f5,stroke-width:2px
@@ -46,7 +45,6 @@ graph TB
     style DstSecret stroke:#fce4ec,stroke-width:2px
     style WorkflowTemplate stroke:#f1f8e9,stroke-width:2px
     style Workflow stroke:#ffe0b2,stroke-width:2px
-    style Config stroke:#e0f2f1,stroke-width:2px
 ```
 
 ## Walkthrough
@@ -55,7 +53,7 @@ A workflow created by ARC is composed out of three parts:
 
 1. A `workflowTemplateRef` which references a `WorkflowTemplate`-Object
 2. Parameters passed to the entrypoint of the workflow
-3. An ephemeral configuration (`config.json`) which is mounted by the workflow (stored as Kubernetes-Secret as it may contain credentials)
+3. A mount for the source and destination secrets respectively
 
 When a `ArtifactWorkflow` is created (usually by an `Order` from a user) it might look as follows:
 
@@ -126,52 +124,24 @@ The controller will verify the endpoints and retrieve the associated secrets.
 
 ## Resulting parameters and runtime-configuration
 
-!!! note
-
-    The `config.json` is ephemeral and only exists for the duration of the running workflow!
-
 The above resources will instantiate the workflow with the following parameters:
 
-* `srcType`: TODO
-* `srcRemoteURL`: TODO
-* `dstType`: TODO
-* `dstRemoteURL`: TODO
-* `specImage`: TODO
-* `specOverride`: TODO
+* `srcType`: `oci`
+* `srcRemoteURL`: `https://...`
+* `srcSecret`: `true` (special variable for conditional steps, `true` or `false` depending if secret was provided)
+* `dstType`: `oci`
+* `dstRemoteURL`: `https://...`
+* `dstSecret`: `true` (see above)
+* `specImage`: `library/alpine:3.18`
+* `specOverride`: `myteam/alpine:3.18-dev`
 
-The `config.json`-file looks as follows:
-
-```json
-{
-  "type": "oci",
-  "src": {
-    "type": "oci",
-    "remoteURL": "registry-1.docker.io",
-    "auth": { // optional, from secret key/values
-      "username": "user",
-      "password": "pass"
-    }
-  },
-  "dst": {
-    "type": "oci",
-    "remoteURL": "gcr.io",
-    "auth": { // optional, from secret key/values
-      "username": "user",
-      "password": "pass"
-    }
-  },
-  "spec": {
-    "image": "library/alpine:3.18",
-    "override": "opendefensecloud/alpine:3.18-dev"
-  }
-}
-```
+Parameter names are derived from the API spec, but translated to camelCase. The values are always strings!
 
 The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.
 
-`arcctl` providers commands to extract values from the config, e.g.:
+However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
 
+Using `oras` in a workflow might therefore look as follows:
 ```bash
-source <(arcctl env --from="dst.auth" --prefix="DOCKER")
-docker login -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+oras pull -u "$(cat /secret/src/username)" -p "$(cat /secret/src/password)" {{ workflow.parameters.srcRemoteURL }}/{{ workflow.parameters.spec.image }}
 ```
