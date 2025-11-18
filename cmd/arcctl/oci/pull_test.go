@@ -71,7 +71,7 @@ var _ = Describe("Pull Command", func() {
 	Context("when configuration is invalid", func() {
 		It("should fail to pull the OCI artifact", func() {
 			// setup config
-			conf := &config.ArcctlConfig{}
+			conf := &config.WorkflowConfig{}
 
 			confJson, err := conf.ToJson()
 			Expect(err).ToNot(HaveOccurred())
@@ -92,7 +92,7 @@ var _ = Describe("Pull Command", func() {
 
 		It("should pull the OCI artifact successfully with auth set", func() {
 			// setup config
-			conf := &config.ArcctlConfig{}
+			conf := &config.WorkflowConfig{}
 			conf.Type = config.AT_OCI
 			conf.Src.Type = config.AT_OCI
 			conf.Src.RemoteURL = mockRegistry.Listener.Addr().String()
@@ -118,7 +118,7 @@ var _ = Describe("Pull Command", func() {
 
 		It("should fail to pull the OCI artifact successfully with auth missing", func() {
 			// setup config
-			conf := &config.ArcctlConfig{}
+			conf := &config.WorkflowConfig{}
 			conf.Type = config.AT_OCI
 			conf.Src.Type = config.AT_OCI
 			conf.Src.RemoteURL = mockRegistry.Listener.Addr().String()

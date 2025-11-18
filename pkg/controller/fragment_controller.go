@@ -141,8 +141,8 @@ func (r *FragmentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 }
 
 // createWorkflowConfig creates a new workflow config for the given fragment.
-func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1alpha1.Fragment) (*config.ArcctlConfig, error) {
-	c := &config.ArcctlConfig{}
+func (r *FragmentReconciler) createWorkflowConfig(ctx context.Context, f *arcv1alpha1.Fragment) (*config.WorkflowConfig, error) {
+	c := &config.WorkflowConfig{}
 	c.Type = config.ArtifactType(f.Spec.Type)
 	c.Spec = f.Spec.Spec
 

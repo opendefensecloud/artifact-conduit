@@ -17,8 +17,8 @@ const (
 	AT_HELM ArtifactType = "helm"
 )
 
-// ArcctlConfig represents the configuration for arcctl
-type ArcctlConfig struct {
+// WorkflowConfig represents the configuration for arcctl
+type WorkflowConfig struct {
 	Type ArtifactType `mapstructure:"type"`
 	Src  Endpoint     `mapstructure:"src"`
 	Dst  Endpoint     `mapstructure:"dst"`
@@ -26,7 +26,7 @@ type ArcctlConfig struct {
 }
 
 // GetOCISpec returns the OCI spec from the config
-func (c *ArcctlConfig) GetOCISpec() *OCISpec {
+func (c *WorkflowConfig) GetOCISpec() *OCISpec {
 	if s, ok := c.Spec.(*OCISpec); ok {
 		return s
 	}
@@ -76,7 +76,7 @@ func parseOCIAuth(e *Endpoint) error {
 }
 
 // parseOCISpec parses the OCI spec
-func (c *ArcctlConfig) parseOCISpec() error {
+func (c *WorkflowConfig) parseOCISpec() error {
 	if c.Spec == nil {
 		return fmt.Errorf("spec must not be empty")
 	}
@@ -93,7 +93,7 @@ func (c *ArcctlConfig) parseOCISpec() error {
 }
 
 // parseEndpointAuth parses the typed auth information
-func (c *ArcctlConfig) parseEndpointAuth() error {
+func (c *WorkflowConfig) parseEndpointAuth() error {
 	switch c.Src.Type {
 	case AT_OCI:
 		if err := parseOCIAuth(&c.Src); err != nil {
@@ -110,7 +110,7 @@ func (c *ArcctlConfig) parseEndpointAuth() error {
 }
 
 // parseOCI parses OCI authentication information
-func (c *ArcctlConfig) parseOCI() error {
+func (c *WorkflowConfig) parseOCI() error {
 	if err := c.parseOCISpec(); err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func (c *ArcctlConfig) parseOCI() error {
 }
 
 // parseTypedSpec parses the typed spec from the configuration based on the given type
-func (c *ArcctlConfig) parseTypedSpec() error {
+func (c *WorkflowConfig) parseTypedSpec() error {
 	if c.Spec == nil {
 		return nil
 	}
@@ -130,13 +130,13 @@ func (c *ArcctlConfig) parseTypedSpec() error {
 }
 
 // ToJSON serializes the configuration to JSON
-func (c *ArcctlConfig) ToJson() ([]byte, error) {
+func (c *WorkflowConfig) ToJson() ([]byte, error) {
 	return json.Marshal(c)
 }
 
 // LoadFromViper loads the arcctl configuration from viper
-func LoadFromViper() (*ArcctlConfig, error) {
-	var config ArcctlConfig
+func LoadFromViper() (*WorkflowConfig, error) {
+	var config WorkflowConfig
 	if err := viper.Unmarshal(&config); err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func LoadFromViper() (*ArcctlConfig, error) {
 	return &config, nil
 }
 
-func (c *ArcctlConfig) Validate(t ArtifactType) error {
+func (c *WorkflowConfig) Validate(t ArtifactType) error {
 	if c.Type != t {
 		return fmt.Errorf("config is of type %s and expected type is %s", c.Type, t)
 	}
