@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/workflow/config"
@@ -297,12 +298,12 @@ func (r *OrderReconciler) createArtifactWorkflowSecretPair(daw *desiredAW) (*arc
 		Src: config.Endpoint{
 			Type:      config.EndpointType(daw.srcEndpoint.Spec.Type),
 			RemoteURL: daw.srcEndpoint.Spec.RemoteURL,
-			Auth:      stringifyMap(daw.srcSecret.Data),
+			Auth:      tryStringifyMap(daw.srcSecret.Data),
 		},
 		Dst: config.Endpoint{
 			Type:      config.EndpointType(daw.dstEndpoint.Spec.Type),
 			RemoteURL: daw.dstEndpoint.Spec.RemoteURL,
-			Auth:      stringifyMap(daw.dstSecret.Data),
+			Auth:      tryStringifyMap(daw.dstSecret.Data),
 		},
 	}
 	json, err := wc.ToJson()
@@ -454,10 +455,14 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 	}
 }
 
-func stringifyMap(d map[string][]byte) map[string]string {
-	o := map[string]string{}
+func tryStringifyMap(d map[string][]byte) map[string]any {
+	o := map[string]any{}
 	for k, v := range d {
-		o[k] = string(v)
+		if utf8.Valid(v) {
+			o[k] = string(v)
+		} else {
+			o[k] = v
+		}
 	}
 	return o
 }
