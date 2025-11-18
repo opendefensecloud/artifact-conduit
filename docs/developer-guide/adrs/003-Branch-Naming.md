@@ -1,6 +1,6 @@
 ---
 status: in decision
-date: 2025-11-14
+date: 2025-11-18
 ---
 
 # Name Branches Following a Common Standard
@@ -65,18 +65,18 @@ Similar to the detailed ones, but using abbreviations. Those could be `feat/`, `
 
 ## Decision Outcome
 
-As a compromise, proposal 3 was initially introduced without compulsion. Its use is based on the conventions in the still manageable team and the limited number of developers who can perform reviews. If the prefixes are not used, an initial note is sufficient.
+A comparison between versions two and three shows how much the use of prefixes helps in classifying branches. Although proposal 3 is more compact, proposal 2 is easier to recognise and is likely to lead to fewer errors in use.
 
-In a second step, local hooks could be made available and documented for the project's supporters, and a GitHub Action could be defined that prohibits the merging of such branches. These steps are optional for the future.
+Initially, use of this standard will not be enforced technically, but will be treated as a convention. Later, local hooks will be offered that prevent developers from committing without a correctly named branch. We can offer this hook in a documented form, but it can be bypassed. Therefore, a GitHub Action can be used to prevent the merging of an incorrectly named branch.
 
 The branch prefixes and their meanings are:
 
-- `hot/` for hotfixes with very high priority
-- `bug/` for regular bug fixes
-- `feat/` for the introduction of new features
-- `imp/` for refactorings and improvements to the code without introducing new features or API changes
-- `eval/` for the evaluation of new approaches and technologies
-- `doc/` for changes in the documentation and not in the code
-- `rel/` for releases to be released
+- `hotfix/` for hotfixe branches with very high priority
+- `bugfix/` for regular bug fixe branches
+- `feature/` for branches the which introduce new features
+- `improvement/` for branches doing refactorings and improvements to the code without introducing new features or API changes
+- `documentation/` for branches containing changes in the documentation and not in the code
+- `release/` for the final branches to be released
+- `evalaluation/` for the evaluation of new approaches and technologies; those typically will be dropped later and the results move into own issues and branches
 
 For all designations, the issue must be mentioned, for example `feat/176-etcd-garbage-cleanup`. Additional verbs like `176-add-etcd-garbage-cleanup` are not needed. For a release, however, the identifier for example is `rel/2.0.7`.
