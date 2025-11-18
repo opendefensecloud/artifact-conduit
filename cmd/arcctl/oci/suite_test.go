@@ -10,10 +10,16 @@ import (
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.opendefense.cloud/arc/test/oci"
+)
+
+var (
+	testEnv *oci.TestEnv
 )
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
+	testEnv = oci.NewTestEnv()
 	RunSpecs(t, "OCI Suite")
 }
 
