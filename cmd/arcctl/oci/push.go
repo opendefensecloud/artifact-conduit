@@ -4,7 +4,9 @@
 package oci
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -38,11 +40,26 @@ func runPush(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("tmp-dir is not set")
 	}
 	tmpDir := viper.GetString("tmp-dir")
+	plainHTTP := viper.GetBool("plain-http")
+	insecure := viper.GetBool("insecure")
 
 	// Create destination (remote OCI repository)
 	repo, err := remote.NewRepository(dstReference)
 	if err != nil {
 		return fmt.Errorf("failed to get destination repository: %w", err)
+	}
+	repo.PlainHTTP = plainHTTP
+
+	httpClient := retry.DefaultClient
+	repo.Client = httpClient
+
+	// allow insecure connection
+	if insecure {
+		httpClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
 	}
 
 	// Set up authentication if provided
@@ -51,7 +68,7 @@ func runPush(cmd *cobra.Command, args []string) error {
 		srcPassword := viper.GetString("destination.auth.password")
 
 		repo.Client = &auth.Client{
-			Client: retry.DefaultClient,
+			Client: httpClient,
 			Cache:  auth.NewCache(),
 			Credential: auth.StaticCredential(repo.Reference.Registry, auth.Credential{
 				Username: srcUser,
