@@ -30,18 +30,13 @@ func NewPushCommand() *cobra.Command {
 func runPush(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	// Retrieve configuration values
-	if !viper.IsSet("destination.reference") {
-		return fmt.Errorf("destination.reference is not set")
+	// Load configuration
+	if err := loadViperConfig(); err != nil {
+		return err
 	}
-	dstReference := viper.GetString("destination.reference")
 
-	if !viper.IsSet("tmp-dir") {
-		return fmt.Errorf("tmp-dir is not set")
-	}
-	tmpDir := viper.GetString("tmp-dir")
-	plainHTTP := viper.GetBool("plain-http")
-	insecure := viper.GetBool("insecure")
+	// Get typed spec
+	dstReference := conf.GetOCIReference(conf.Dst.RemoteURL)
 
 	// Create destination (remote OCI repository)
 	repo, err := remote.NewRepository(dstReference)

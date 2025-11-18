@@ -9,8 +9,6 @@ import (
 	"net/http"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"go.opendefense.cloud/arc/pkg/workflow/config"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content/oci"
 	"oras.land/oras-go/v2/registry/remote"
@@ -31,27 +29,13 @@ func NewPullCommand() *cobra.Command {
 func runPull(cmd *cobra.Command, args []string) error {
 	ctx := cmd.Context()
 
-	if !viper.IsSet("tmp-dir") {
-		return fmt.Errorf("tmp-dir is not set")
-	}
-	tmpDir := viper.GetString("tmp-dir")
-	plainHTTP := viper.GetBool("plain-http")
-	insecure := viper.GetBool("insecure")
-
 	// Load configuration
-	conf, err := config.LoadFromViper()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
-	// Only oci is supported for this command
-	if err := conf.Validate(config.AT_OCI); err != nil {
+	if err := loadViperConfig(); err != nil {
 		return err
 	}
 
 	// Get typed spec
-	ociSpec := conf.GetOCISpec()
-	srcReference := fmt.Sprintf("%s/%s", conf.Src.RemoteURL, ociSpec.Image)
+	srcReference := conf.GetOCIReference(conf.Src.RemoteURL)
 
 	// Create source (remote OCI repository)
 	repo, err := remote.NewRepository(srcReference)

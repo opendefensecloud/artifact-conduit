@@ -17,7 +17,7 @@ const (
 	AT_HELM ArtifactType = "helm"
 )
 
-// WorkflowConfig represents the configuration for arcctl
+// WorkflowConfig represents the configuration for workflows
 type WorkflowConfig struct {
 	Type ArtifactType `mapstructure:"type"`
 	Src  Endpoint     `mapstructure:"src"`
@@ -31,6 +31,15 @@ func (c *WorkflowConfig) GetOCISpec() *OCISpec {
 		return s
 	}
 	return nil
+}
+
+// GetOCIReference returns the OCI reference for a given remote URL
+func (c *WorkflowConfig) GetOCIReference(remoteURL string) string {
+	ociSpec := c.GetOCISpec()
+	if ociSpec == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s/%s", remoteURL, ociSpec.Image)
 }
 
 // Endpoint represents a source or destination endpoint configuration
@@ -134,7 +143,7 @@ func (c *WorkflowConfig) ToJson() ([]byte, error) {
 	return json.Marshal(c)
 }
 
-// LoadFromViper loads the arcctl configuration from viper
+// LoadFromViper loads the configuration from viper
 func LoadFromViper() (*WorkflowConfig, error) {
 	var config WorkflowConfig
 	if err := viper.Unmarshal(&config); err != nil {

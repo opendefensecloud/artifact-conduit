@@ -4,7 +4,18 @@
 package oci
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.opendefense.cloud/arc/pkg/workflow/config"
+)
+
+var (
+	tmpDir    string
+	plainHTTP bool
+	insecure  bool
+	conf      *config.WorkflowConfig
 )
 
 func NewOCICommand() *cobra.Command {
@@ -22,4 +33,28 @@ func NewOCICommand() *cobra.Command {
 	cmd.AddCommand(NewPushCommand())
 
 	return cmd
+}
+
+func loadViperConfig() error {
+	// Validate flags/config/env
+	if !viper.IsSet("tmp-dir") {
+		return fmt.Errorf("tmp-dir is not set")
+	}
+	tmpDir = viper.GetString("tmp-dir")
+	plainHTTP = viper.GetBool("plain-http")
+	insecure = viper.GetBool("insecure")
+
+	// Load workflow config
+	wc, err := config.LoadFromViper()
+	if err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
+	}
+
+	// Only oci is supported for this subcommand
+	if err := wc.Validate(config.AT_OCI); err != nil {
+		return err
+	}
+	conf = wc
+
+	return nil
 }

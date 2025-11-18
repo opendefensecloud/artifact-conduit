@@ -33,10 +33,10 @@ var _ = Describe("Push Command", func() {
 	})
 
 	Context("when required configuration is missing", func() {
-		It("should return an error if destination.reference is missing", func() {
+		It("should return an error if tmp-dir is missing", func() {
 			err := runPush(cmd, []string{})
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("destination.reference is not set"))
+			Expect(err.Error()).To(ContainSubstring("tmp-dir is not set"))
 		})
 	})
 
