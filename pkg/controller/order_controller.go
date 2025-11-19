@@ -151,7 +151,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 
 		dstSecret := &corev1.Secret{}
-		if srcEndpoint.Spec.SecretRef.Name != "" {
+		if dstEndpoint.Spec.SecretRef.Name != "" {
 			if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
 				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
 			}
@@ -363,11 +363,11 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 		},
 		{
 			Name:  "srcSecret",
-			Value: fmt.Sprintf("%v", daw.srcSecret.Name != ""),
+			Value: fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != ""),
 		},
 		{
 			Name:  "dstSecret",
-			Value: fmt.Sprintf("%v", daw.dstSecret.Name != ""),
+			Value: fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != ""),
 		},
 	}
 

@@ -170,11 +170,20 @@ func main() {
 	}
 
 	// Register controllers
+
 	if err := (&controller.OrderReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Order")
+		os.Exit(1)
+	}
+
+	if err := (&controller.ArtifactWorkflowReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
 		os.Exit(1)
 	}
 
