@@ -12,8 +12,9 @@ import (
 // ArtifactTypeSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeSpec type for use
 // with apply.
 type ArtifactTypeSpecApplyConfiguration struct {
-	Rules               *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
-	WorkflowTemplateRef *v1.LocalObjectReference             `json:"workflowTemplateRef,omitempty"`
+	Rules               *ArtifactTypeRulesApplyConfiguration          `json:"rules,omitempty"`
+	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
+	WorkflowTemplateRef *v1.LocalObjectReference                      `json:"workflowTemplateRef,omitempty"`
 }
 
 // ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with
@@ -27,6 +28,19 @@ func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
 // If called multiple times, the Rules field is set to the value of the last call.
 func (b *ArtifactTypeSpecApplyConfiguration) WithRules(value *ArtifactTypeRulesApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.Rules = value
+	return b
+}
+
+// WithParameters adds the given value to the Parameters field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Parameters field.
+func (b *ArtifactTypeSpecApplyConfiguration) WithParameters(values ...*ArtifactWorkflowParameterApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithParameters")
+		}
+		b.Parameters = append(b.Parameters, *values[i])
+	}
 	return b
 }
 

@@ -20,6 +20,9 @@ type ArtifactTypeRules struct {
 type ArtifactTypeSpec struct {
 	// Rules defines a set of rules for this type.
 	Rules ArtifactTypeRules `json:"rules"`
+	// Parameters defines extra parameters for the Workflow to use.
+	// These parameters will override parameters coming from ArtifactWorkflows.
+	Parameters []ArtifactWorkflowParameter `json:"parameters"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef corev1.LocalObjectReference `json:"workflowTemplateRef"`
 }

@@ -1,5 +1,6 @@
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeRules,DstTypes
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeRules,SrcTypes
+API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeSpec,Parameters
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactWorkflowSpec,Parameters
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,OrderSpec,Artifacts
 API rule violation: names_match,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeRules,DstTypes
