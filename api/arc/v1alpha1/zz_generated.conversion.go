@@ -316,6 +316,7 @@ func autoConvert_v1alpha1_ArtifactTypeSpec_To_arc_ArtifactTypeSpec(in *ArtifactT
 	if err := Convert_v1alpha1_ArtifactTypeRules_To_arc_ArtifactTypeRules(&in.Rules, &out.Rules, s); err != nil {
 		return err
 	}
+	out.Parameters = *(*[]arc.ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.WorkflowTemplateRef = in.WorkflowTemplateRef
 	return nil
 }
@@ -329,6 +330,7 @@ func autoConvert_arc_ArtifactTypeSpec_To_v1alpha1_ArtifactTypeSpec(in *arc.Artif
 	if err := Convert_arc_ArtifactTypeRules_To_v1alpha1_ArtifactTypeRules(&in.Rules, &out.Rules, s); err != nil {
 		return err
 	}
+	out.Parameters = *(*[]ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.WorkflowTemplateRef = in.WorkflowTemplateRef
 	return nil
 }

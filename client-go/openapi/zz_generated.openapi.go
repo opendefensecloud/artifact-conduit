@@ -486,6 +486,20 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 							Ref:         ref(v1alpha1.ArtifactTypeRules{}.OpenAPIModelName()),
 						},
 					},
+					"parameters": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Parameters defines extra parameters for the Workflow to use. These parameters will override parameters coming from ArtifactWorkflows.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
 					"workflowTemplateRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.",
@@ -494,11 +508,11 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 						},
 					},
 				},
-				Required: []string{"rules", "workflowTemplateRef"},
+				Required: []string{"rules", "parameters", "workflowTemplateRef"},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
@@ -613,20 +627,23 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowParameter(ref common.ReferenceC
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Type: []string{"object"},
+				Description: "ArtifactWorkflowParameter represents a single key-value parameter pair.",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
 						SchemaProps: spec.SchemaProps{
-							Default: "",
-							Type:    []string{"string"},
-							Format:  "",
+							Description: "Name is the key of the parameter.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"value": {
 						SchemaProps: spec.SchemaProps{
-							Default: "",
-							Type:    []string{"string"},
-							Format:  "",
+							Description: "Value is the string value of the parameter.",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -653,7 +670,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 					},
 					"parameters": {
 						SchemaProps: spec.SchemaProps{
-							Description: "The following doesn't work due to openapi-gen :/",
+							Description: "Parameters defines the key-value pairs, that are passed to the underlying Workflow.",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -667,14 +684,16 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 					},
 					"srcSecretRef": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Description: "SrcSecretRef references the secret containing credentials for the source.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
 					"dstSecretRef": {
 						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("k8s.io/api/core/v1.LocalObjectReference"),
+							Description: "DstSecretRef references the secret containing credentials for the destination.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
 				},
@@ -951,14 +970,15 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 				Properties: map[string]spec.Schema{
 					"artifactIndex": {
 						SchemaProps: spec.SchemaProps{
-							Default: 0,
-							Type:    []string{"integer"},
-							Format:  "int32",
+							Description: "ArtifactIndex references back the index the corresponding artifact has in the .Spec",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int32",
 						},
 					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Possible enum values:\n - `\"Init\"` TODO",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"Init\"` represents the initialization phase of a workflow.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
@@ -1095,7 +1115,8 @@ func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) commo
 				Properties: map[string]spec.Schema{
 					"artifactWorkflows": {
 						SchemaProps: spec.SchemaProps{
-							Type: []string{"object"},
+							Description: "ArtifactWorkflows tracks the created workflows",
+							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
 								Allows: true,
 								Schema: &spec.Schema{

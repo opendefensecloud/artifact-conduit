@@ -103,6 +103,11 @@ func (in *ArtifactTypeRules) DeepCopy() *ArtifactTypeRules {
 func (in *ArtifactTypeSpec) DeepCopyInto(out *ArtifactTypeSpec) {
 	*out = *in
 	in.Rules.DeepCopyInto(&out.Rules)
+	if in.Parameters != nil {
+		in, out := &in.Parameters, &out.Parameters
+		*out = make([]ArtifactWorkflowParameter, len(*in))
+		copy(*out, *in)
+	}
 	out.WorkflowTemplateRef = in.WorkflowTemplateRef
 	return
 }
