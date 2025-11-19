@@ -13,7 +13,7 @@ type ArtifactTypeRules struct {
 	// SrcTypes is a list of Endpoint types, that are supported as source.
 	SrcTypes []string `json:"srcTypes,omitempty"`
 	// DstTypes is a list of Endpoint types, that are supported as destination.
-	DstTypes []string `json:"dstType,omitempty"`
+	DstTypes []string `json:"dstTypes,omitempty"`
 }
 
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.

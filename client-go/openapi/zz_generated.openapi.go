@@ -451,7 +451,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeRules(ref common.ReferenceCallback)
 							},
 						},
 					},
-					"dstType": {
+					"dstTypes": {
 						SchemaProps: spec.SchemaProps{
 							Description: "DstTypes is a list of Endpoint types, that are supported as destination.",
 							Type:        []string{"array"},
