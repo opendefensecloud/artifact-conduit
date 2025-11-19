@@ -174,7 +174,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
 
-		// We gave all the information to furhter process this artifact workflow.
+		// We gave all the information to further process this artifact workflow.
 		// Let's store it to compare it to the current status!
 		desiredAWs[sha] = desiredAW{
 			index:       i,
