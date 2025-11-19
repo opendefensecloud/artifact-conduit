@@ -142,6 +142,13 @@ The parameters do not contain secrets, but can be used to interact with third-pa
 However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
 
 Using `oras` in a workflow might therefore look as follows:
+
 ```bash
 oras pull -u "$(cat /secret/src/username)" -p "$(cat /secret/src/password)" {{ workflow.parameters.srcRemoteURL }}/{{ workflow.parameters.spec.image }}
+```
+
+## Full example with WorkflowTemplate for OCI
+
+```yaml
+{% include "../../examples/workflow-oci.yaml" %}
 ```
