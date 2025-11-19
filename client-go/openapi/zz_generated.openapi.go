@@ -852,14 +852,14 @@ func schema_arc_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) comm
 							Format:      "",
 						},
 					},
-					"credentialRef": {
+					"secretRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "SecretRef specifies the secret containing the relevant credentials for the endpoint.",
 							Default:     map[string]interface{}{},
 							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
-					"Usage": {
+					"usage": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Usage defines how the endpoint is allowed to be used.\n\nPossible enum values:\n - `\"All\"` means the endpoint can be used with all kinds of usage patterns.\n - `\"PullOnly\"` means the endpoint can only be used to pull data.\n - `\"PushOnly\"` means the endpoint can only be used to push data.",
 							Default:     "",
@@ -869,7 +869,7 @@ func schema_arc_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) comm
 						},
 					},
 				},
-				Required: []string{"type", "remoteURL", "Usage"},
+				Required: []string{"type", "remoteURL", "usage"},
 			},
 		},
 		Dependencies: []string{
