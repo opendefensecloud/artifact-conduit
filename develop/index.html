@@ -1476,7 +1476,7 @@
 <p>ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.</p>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="developer-guide/adrs/img/0-arc-architecture.drawio.svg" data-desc-position="bottom"><img alt="ARC Architecture Diagram" src="developer-guide/adrs/img/0-arc-architecture.drawio.svg" title="ARC Architecture"></a></p>
 <p><strong>Architecture: ARC System Components and Data Flow</strong></p>
-<p>The system follows a layered architecture where users interact through the <code>arcctl</code> CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.</p>
+<p>The system follows a layered architecture where users interact through the Kubernetes API, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.</p>
 <h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">¶</a></h2>
 <p>ARC introduces four primary custom resource types under the <code>arc.bwi.de/v1alpha1</code> API group:</p>
 <table>
@@ -1639,7 +1639,6 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
     </nav>
     <pre class="mermaid"><code>sequenceDiagram
     participant User
-    participant arcctl
     participant K8sAPI as "Kubernetes API"
     participant ARCAPI as "ARC API Server&lt;br/&gt;pkg/apiserver/"
     participant etcd as "Dedicated etcd"
@@ -1648,8 +1647,6 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
     participant Workflow as "Workflow Pod"
     participant Registry as "External Registry"
 
-    User-&gt;&gt;arcctl: "arcctl oci pull alpine:3.18"
-    arcctl-&gt;&gt;K8sAPI: "Create Order CR"
     K8sAPI-&gt;&gt;ARCAPI: "Forward to arc.bwi.de"
     ARCAPI-&gt;&gt;etcd: "Store Order"
 

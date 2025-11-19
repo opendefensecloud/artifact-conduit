@@ -1782,7 +1782,6 @@
 <p>This ADR is about finding the right architecture for the ARC suite of services based on the knowledge gained during the internal predecessors of this project.</p>
 <h3 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">¶</a></h3>
 <ul>
-<li><code>arcctl</code>: Command line utility to interact with the ARC API.</li>
 <li><code>Order</code>: Represents an order of one or more artifacts. Tracks generation numbers of referenced <code>Endpoints</code> and <code>Secrets</code> to detect changes and trigger <code>ArtifactWorkflow</code> reconciliation for idempotency.</li>
 <li><code>ArtifactWorkflow</code>: Represents a single artifact to be processed as part of an <code>Order</code>. Minimal resource containing artifact type reference and source/destination endpoint references. Replaces legacy <code>OrderArtifactWorkflow</code>.</li>
 <li><code>ArtifactType</code>: Defines rules, defaults, and the <code>WorkflowTemplate</code> reference for a specific artifact type like 'OCI'. Replaces legacy <code>OrderTypeDefinition</code>.</li>
