@@ -53,6 +53,8 @@ type OrderArtifactWorkflowStatus struct {
 	ArtifactIndex int `json:"artifactIndex"`
 	// Phase tracks which phase the corresponding Workflow is in
 	Phase WorkflowPhase `json:"phase"`
+	// A human readable message describing the current condition of the artifact workflow.
+	Message string `json:"message,omitempty"`
 }
 
 // +genclient

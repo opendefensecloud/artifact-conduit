@@ -711,6 +711,23 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 			SchemaProps: spec.SchemaProps{
 				Description: "ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow",
 				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A human readable message describing the current condition of the artifact workflow.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
 			},
 		},
 	}
@@ -978,11 +995,18 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"Init\"` represents the initialization phase of a workflow.",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"Init"},
+							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A human readable message describing the current condition of the artifact workflow.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},

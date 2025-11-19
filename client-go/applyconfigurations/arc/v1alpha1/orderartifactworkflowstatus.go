@@ -14,6 +14,7 @@ import (
 type OrderArtifactWorkflowStatusApplyConfiguration struct {
 	ArtifactIndex *int                       `json:"artifactIndex,omitempty"`
 	Phase         *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
+	Message       *string                    `json:"message,omitempty"`
 }
 
 // OrderArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the OrderArtifactWorkflowStatus type for use with
@@ -35,5 +36,13 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithArtifactIndex(value 
 // If called multiple times, the Phase field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alpha1.WorkflowPhase) *OrderArtifactWorkflowStatusApplyConfiguration {
 	b.Phase = &value
+	return b
+}
+
+// WithMessage sets the Message field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Message field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithMessage(value string) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.Message = &value
 	return b
 }

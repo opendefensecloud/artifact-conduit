@@ -31,6 +31,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.ArtifactWorkflowParameterApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowSpec"):
 		return &arcv1alpha1.ArtifactWorkflowSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowStatus"):
+		return &arcv1alpha1.ArtifactWorkflowStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Endpoint"):
 		return &arcv1alpha1.EndpointApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EndpointSpec"):
