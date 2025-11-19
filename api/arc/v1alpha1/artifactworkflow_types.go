@@ -30,6 +30,15 @@ func (p WorkflowPhase) Completed() bool {
 	}
 }
 
+func (p WorkflowPhase) InProgress() bool {
+	switch p {
+	case WorkflowPending, WorkflowRunning:
+		return true
+	default:
+		return false
+	}
+}
+
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.
