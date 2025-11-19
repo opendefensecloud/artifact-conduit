@@ -78,6 +78,11 @@ spec:
     # --- 2. Scan Image (Trivy) ---
     - name: scan-image
 
+      outputs:
+        artifacts:
+          - name: scan-result # name of output parameter
+            path: /data/scan-results.json
+
       script:
         image: aquasec/trivy:latest
         command: [sh, -c]
