@@ -68,7 +68,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// Object not found, return. Created objects are automatically garbage collected.
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
 	// Handle deletion: cleanup fragments, then remove finalizer
@@ -80,12 +80,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				aw := &arcv1alpha1.ArtifactWorkflow{
 					ObjectMeta: awObjectMeta(order, sha),
 				}
-				_ = r.Delete(ctx, aw) // ignore errors
+				_ = r.Delete(ctx, aw) // Ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
-				log.Error(err, "Failed to update artifact workflows in Order.Status")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 			// Requeue until all fragments are gone
@@ -98,8 +97,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
-				log.Error(err, "Failed to remove finalizer from Order")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
 		return ctrl.Result{}, nil
@@ -111,8 +109,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.V(1).Info("Adding finalizer to Order")
 			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
-				log.Error(err, "Failed to add finalizer to Order")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
 			return ctrl.Result{}, nil
@@ -137,14 +134,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		srcEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
 			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Endpoint (srcRef)")
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for source")
 		}
 		dstEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
 			// TODO: should we set status to something and not error here?
-			log.Error(err, "Failed to fetch Endpoint (dstRef)")
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 		}
 
 		// Next, we need the secret contents
@@ -153,16 +148,14 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		srcSecret := &corev1.Secret{}
 		if srcEndpoint.Spec.SecretRef.Name != "" {
 			if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-				log.Error(err, "Failed to fetch secret for source")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for source")
 			}
 		}
 
 		dstSecret := &corev1.Secret{}
 		if srcEndpoint.Spec.SecretRef.Name != "" {
 			if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-				log.Error(err, "Failed to fetch secret for destination")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
 			}
 		}
 
@@ -178,7 +171,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		jsonData, err := json.Marshal(data)
 		if err != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to marshal fragment data: %w", err)
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal fragment data")
 		}
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
@@ -224,14 +217,14 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Create missing fragments
 	for _, sha := range createAWs {
 		daw := desiredAWs[sha]
-		aw, err := r.createArtifactWorkflow(&daw)
+		aw, err := r.hydrateArtifactWorkflow(&daw)
 		if err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
 		}
 
 		// Set owner references
 		if err := controllerutil.SetControllerReference(order, aw, r.Scheme); err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
 		}
 
 		// Create artifact workflow
@@ -240,7 +233,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				// Already created by a previous reconcile — that's fine
 				continue
 			}
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to create artifact workflow")
 		}
 
 		// Update status
@@ -255,8 +248,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Does not exist anymore, let's clean up!
 		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
 			ObjectMeta: awObjectMeta(order, sha),
-		}); err != nil {
-			return ctrl.Result{}, err
+		}); client.IgnoreNotFound(err) != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		// Update status
@@ -267,14 +260,14 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	if len(createAWs) > 0 || len(deleteAWs) > 0 {
 		log.V(1).Info("Updating Order.Status")
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrl.Result{}, err
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func (r *OrderReconciler) createArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, error) {
+func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, error) {
 	params, err := dawToParameters(daw)
 	if err != nil {
 		return nil, err
