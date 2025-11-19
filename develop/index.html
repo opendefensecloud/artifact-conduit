@@ -65,7 +65,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1474,88 +1474,7 @@
 <p><strong>Out of Scope:</strong> ARC does not replace existing registry solutions or artifact repositories. It functions as an orchestration layer that coordinates artifact transfer and validation between existing infrastructure components.</p>
 <h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">¶</a></h2>
 <p>ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.</p>
-<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
-    
-    <nav class="panzoom-nav">
-    <button class="panzoom-info panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
-    </svg>
-</button><button class="panzoom-reset panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
-    </svg>
-</button><button class="panzoom-max panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
-    </svg>
-</button><button class="panzoom-min panzoom-button panzoom-hidden">
-    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
-    </svg>
-</button>
-    </nav>
-    <pre class="mermaid"><code>graph TB
-    subgraph "User Layer"
-        Users["Users/Operators"]
-        arcctl["arcctl CLI&lt;br/&gt;cmd/arcctl/main.go"]
-    end
-
-    subgraph "Kubernetes Control Plane"
-        K8sAPI["Kubernetes API Server&lt;br/&gt;API Aggregation Layer"]
-    end
-
-    subgraph "ARC Control Plane"
-        ARCAPI["ARC API Server&lt;br/&gt;pkg/apiserver/&lt;br/&gt;Extension API Server"]
-        etcdStore["Dedicated etcd&lt;br/&gt;Isolated Storage"]
-        OrderCtrl["Order Controller&lt;br/&gt;pkg/controller/&lt;br/&gt;Reconciliation Logic"]
-    end
-
-    subgraph "API Resources (api/arc.bwi.de/v1alpha1)"
-        Order["Order&lt;br/&gt;High-level request"]
-        ArtifactWorkflow["ArtifactWorkflow&lt;br/&gt;Single artifact op"]
-        Endpoint["Endpoint&lt;br/&gt;Source/Destination"]
-        ATD["ArtifactType&lt;br/&gt;Type rules"]
-    end
-
-    subgraph "Execution Layer"
-        ArgoWorkflows["Argo Workflows&lt;br/&gt;Workflow Execution"]
-        WorkflowTemplates["WorkflowTemplate&lt;br/&gt;Processing Logic"]
-    end
-
-    subgraph "External Systems"
-        OCIReg["OCI Registries"]
-        HelmRepo["Helm Repositories"]
-        S3Storage["S3 Compatible Storage"]
-        Scanners["Security Scanners&lt;br/&gt;Trivy, ClamAV"]
-    end
-
-    Users --&gt;|"CLI commands"| arcctl
-    arcctl --&gt;|"API requests"| K8sAPI
-
-    K8sAPI --&gt;|"forwards arc.bwi.de/*"| ARCAPI
-    ARCAPI --&gt;|"stores/retrieves"| etcdStore
-
-    OrderCtrl --&gt;|"watches"| etcdStore
-    OrderCtrl --&gt;|"creates"| ArtifactWorkflow
-    OrderCtrl --&gt;|"creates"| ArgoWorkflows
-
-    Order --&gt;|"references"| Endpoint
-    Order --&gt;|"uses"| ATD
-    ArtifactWorkflow --&gt;|"references"| Endpoint
-
-    ATD --&gt;|"specifies"| WorkflowTemplates
-    ArgoWorkflows --&gt;|"instantiates"| WorkflowTemplates
-
-    ArgoWorkflows --&gt;|"pulls from"| OCIReg
-    ArgoWorkflows --&gt;|"pulls from"| HelmRepo
-    ArgoWorkflows --&gt;|"pulls from"| S3Storage
-    ArgoWorkflows --&gt;|"scans with"| Scanners
-    ArgoWorkflows --&gt;|"pushes to"| OCIReg</code></pre> 
-    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
-Hold "Alt" / "Option" to enable pan &amp; zoom
-</div>
-</div>
+<p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="developer-guide/adrs/img/0-arc-architecture.drawio.svg" data-desc-position="bottom"><img alt="ARC Architecture Diagram" src="developer-guide/adrs/img/0-arc-architecture.drawio.svg" title="ARC Architecture"></a></p>
 <p><strong>Architecture: ARC System Components and Data Flow</strong></p>
 <p>The system follows a layered architecture where users interact through the <code>arcctl</code> CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.</p>
 <h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">¶</a></h2>
@@ -1612,50 +1531,52 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
     </svg>
 </button>
     </nav>
-    <pre class="mermaid"><code>graph LR
-    subgraph "Declarative Layer"
-        Order["Order&lt;br/&gt;(User Input)"]
-        OrderSpec["spec:&lt;br/&gt;- defaults&lt;br/&gt;- artifacts[]"]
-    end
+    <pre class="mermaid"><code>---
+config:
+  layout: elk
+---
+flowchart LR
+ subgraph subGraph0["Declarative Layer"]
+        Order["Order (User Input)"]
+        Spec["spec:&lt;br&gt;- defaults&lt;br&gt;- artifacts[]&lt;br&gt;--- &lt;br&gt;status:&lt;br&gt;- endpointGenerations&lt;br&gt;- secretGenerations"]
+  end
+ subgraph subGraph1["Generated Layer"]
+        ArtifactWorkflow1["ArtifactWorkflow-1&lt;br&gt;(Minimal Params)"]
+        ArtifactWorkflow2["ArtifactWorkflow-2&lt;br&gt;(Minimal Params)"]
+        ArtifactWorkflowN["ArtifactWorkflow-N&lt;br&gt;(Minimal Params)"]
+  end
+ subgraph Configuration["Configuration &amp; Secrets"]
+        ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
+        EndpointSrc["Endpoint (Source)"]
+        EndpointDst["Endpoint (Destination)"]
+        EndpointSecret@{ shape: procs, label: "Secrets (e.g. Credentials)"}
+  end
+ subgraph Execution["Execution"]
+        WorkflowTemplate["WorkflowTemplate (Argo)"]
+        WorkflowInstance1["Workflow Instance"]
+        WorkflowInstance2["Workflow Instance"]
+  end
+    Order -- contains --&gt; Spec
+    Spec -- generates --&gt; ArtifactWorkflow1 &amp; ArtifactWorkflow2 &amp; ArtifactWorkflowN
+    Spec -- reads &amp; tracks generations of --&gt; EndpointSrc &amp; EndpointDst &amp; EndpointSecret
+    ArtifactWorkflow1 -- type --&gt; ArtifactTypeDef
+    ArtifactWorkflow2 -- type --&gt; ArtifactTypeDef
+    ArtifactWorkflow1 -- srcRef --&gt; EndpointSrc
+    ArtifactWorkflow2 -- srcRef --&gt; EndpointSrc
+    ArtifactWorkflow1 -- dstRef --&gt; EndpointDst
+    ArtifactWorkflow2 -- dstRef --&gt; EndpointDst
+    EndpointSrc -- secretRef --&gt; EndpointSecret
+    EndpointDst -- secretRef --&gt; EndpointSecret
+    ArtifactTypeDef -- workflowTemplateRef --&gt; WorkflowTemplate
+    ArtifactWorkflow1 -- references --&gt; EndpointSecret
+    ArtifactWorkflow2 -- references --&gt; EndpointSecret
+    ArtifactWorkflow1 -- instantiates --&gt; WorkflowTemplate
+    ArtifactWorkflow2 -- instantiates --&gt; WorkflowTemplate
+    WorkflowTemplate -- instantiates --&gt; WorkflowInstance1 &amp; WorkflowInstance2
+    WorkflowInstance1 -- mounts --&gt; EndpointSecret
+    WorkflowInstance2 -- mounts --&gt; EndpointSecret
 
-    subgraph "Generated Layer"
-        ArtifactWorkflow1["ArtifactWorkflow-1"]
-        ArtifactWorkflow2["ArtifactWorkflow-2"]
-        ArtifactWorkflowN["ArtifactWorkflow-N"]
-    end
-
-    subgraph "Configuration"
-        SrcEndpoint["Endpoint&lt;br/&gt;(Source)"]
-        DstEndpoint["Endpoint&lt;br/&gt;(Destination)"]
-        ATD["ArtifactType&lt;br/&gt;(e.g., 'oci')"]
-        Secret["Secret&lt;br/&gt;(Credentials)"]
-    end
-
-    subgraph "Execution"
-        WorkflowTemplate["WorkflowTemplate&lt;br/&gt;(Argo)"]
-        Workflow1["Workflow Instance"]
-        Workflow2["Workflow Instance"]
-    end
-
-    Order --&gt;|"contains"| OrderSpec
-    OrderSpec --&gt;|"generates"| ArtifactWorkflow1
-    OrderSpec --&gt;|"generates"| ArtifactWorkflow2
-    OrderSpec --&gt;|"generates"| ArtifactWorkflowN
-
-    ArtifactWorkflow1 --&gt;|"srcRef"| SrcEndpoint
-    ArtifactWorkflow1 --&gt;|"dstRef"| DstEndpoint
-    ArtifactWorkflow1 --&gt;|"type"| ATD
-    ArtifactWorkflow2 --&gt;|"references"| SrcEndpoint
-    ArtifactWorkflow2 --&gt;|"references"| DstEndpoint
-
-    SrcEndpoint --&gt;|"credentialRef"| Secret
-    DstEndpoint --&gt;|"credentialRef"| Secret
-
-    ATD --&gt;|"workflowTemplateRef"| WorkflowTemplate
-    ArtifactWorkflow1 -.-&gt;|"triggers"| Workflow1
-    ArtifactWorkflow2 -.-&gt;|"triggers"| Workflow2
-    WorkflowTemplate -.-&gt;|"instantiates"| Workflow1
-    WorkflowTemplate -.-&gt;|"instantiates"| Workflow2</code></pre> 
+    ArtifactTypeDef@{ shape: rect}</code></pre> 
     <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
 Hold "Alt" / "Option" to enable pan &amp; zoom
 </div>
