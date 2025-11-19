@@ -44,6 +44,7 @@ type ArtifactType struct {
 	Status ArtifactTypeStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactTypeList is a list of ArtifactType objects.
