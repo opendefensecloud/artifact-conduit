@@ -1,99 +1,260 @@
+# Example Source Secret (src-reg-secret)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: src-reg-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <BASE64_ENCODED_AUTH_DATA_FOR_DOCKER.IO>
+---
+# Example Destination Secret (dst-reg-secret)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dst-reg-secret
+type: kubernetes.io/dockerconfigjson
+data:
+  .dockerconfigjson: <BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO>
+---
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: oci-workflow-template
+  name: oci-image-pipeline-flexible
 spec:
-  entrypoint: oci-workflow
-  templates:
-    - name: oci-workflow
-      steps:
-        - - name: pull
-            template: oci-pull
-        # - - name: scan
-        #     template: oci-scan
-        - - name: push
-            template: oci-push
-    - name: oci-pull
-      container:
-        image: ghcr.io/opendefensecloud/arcctl:latest
-        command: [arcctl]
-        args:
-          [
-            "oci",
-            "pull",
-            "-c",
-            "/etc/oci-workflow-config/config.yaml",
-            "--tmp-dir",
-            "/tmp/artifact",
-          ]
-        volumeMounts:
-          - name: workflow-config
-            mountPath: /etc/oci-workflow-config
-          - name: workdir
-            mountPath: /tmp/artifact
-    # - name: oci-scan
-    #   container:
-    #     image: aquasec/trivy:latest
-    #     command: [trivy]
-    #     args: ["--input", "/tmp/artifact/oci.tar"]
-    #     volumeMounts:
-    #       - name: workflow-config
-    #         mountPath: /etc/oci-workflow-config
-    #       - name: workdir
-    #         mountPath: /tmp/artifact
-    - name: oci-push
-      container:
-        image: ghcr.io/opendefensecloud/arcctl:latest
-        command: [arcctl]
-        args:
-          [
-            "oci",
-            "push",
-            "-c",
-            "/etc/workflow-config/config.yaml",
-            "--tmp-dir",
-            "/tmp/artifact",
-          ]
-        volumeMounts:
-          - name: workflow-config
-            mountPath: /etc/oci-workflow-config
-          - name: workdir
-            mountPath: /tmp/artifact
----
-apiVersion: argoproj.io/v1alpha1
-kind: Workflow
-metadata:
-  name: oci-workflow-alpine-123123
-spec:
+  # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
     - metadata:
-        name: workdir
+        name: work-volume
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
-  volumes:
-    - name: workflow-config
-      secret:
-        secretName: oci-workflow-config
-    - name: oci-workflow-tmp
-      emptyDir: {}
-  entrypoint: oci-workflow
-  workflowTemplateRef:
-    name: oci-workflow-template
-    clusterScope: true
+            storage: 5Gi
+  # --- Input Parameters ---
   arguments:
     parameters:
       - name: srcType
-        value: "oci"
+        value: oci # e.g., oci, docker
       - name: srcRemoteURL
-        value: "https://registry-1.docker.io"
+        value: docker.io
+      - name: srcSecret
+        value: "false" # Use string "true" or "false" for conditional logic
+      - name: srcSecretName
+        value: src-reg-secret # The name of the Kubernetes Secret for source
+
+      - name: dstType
+        value: oci # e.g., oci, docker
+      - name: dstRemoteURL
+        value: ghcr.io
+      - name: dstSecret
+        value: "false"
+      - name: dstSecretName
+        value: dst-reg-secret # The name of the Kubernetes Secret for destination
+
+      - name: specImage # The source image path (e.g., library/alpine:3.18)
+      - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
+
+      - name: scanSeverity
+        value: HIGH,CRITICAL
+
+  entrypoint: oci-pipeline
+
+  # --- Shared Volumes (PVC and Secrets) ---
+  volumes:
+    # This volume will contain the actual authentication file from the secret
+    - name: src-secret-vol
+      secret:
+        secretName: "{{workflow.parameters.srcSecretName}}"
+    - name: dst-secret-vol
+      secret:
+        secretName: "{{workflow.parameters.dstSecretName}}"
+
+  templates:
+    # --- Main Pipeline Entrypoint ---
+    - name: oci-pipeline
+      steps:
+        - - name: pull-image
+            template: pull-image
+            arguments:
+              parameters:
+                - name: srcRemoteURL
+                  value: "{{workflow.parameters.srcRemoteURL}}"
+                - name: specImage
+                  value: "{{workflow.parameters.specImage}}"
+                - name: srcSecret
+                  value: "{{workflow.parameters.srcSecret}}"
+
+        - - name: scan-image
+            template: scan-image
+            arguments:
+              parameters:
+                - name: scanSeverity
+                  value: "{{workflow.parameters.scanSeverity}}"
+
+        - - name: push-image
+            template: push-image
+            arguments:
+              parameters:
+                - name: dstRemoteURL
+                  value: "{{workflow.parameters.dstRemoteURL}}"
+                - name: specOverride
+                  value: "{{workflow.parameters.specOverride}}"
+                - name: dstSecret
+                  value: "{{workflow.parameters.dstSecret}}"
+
+    # --- 1. Pull Image (Skopeo) ---
+    - name: pull-image
+      inputs:
+        parameters:
+          - name: srcRemoteURL
+          - name: specImage
+          - name: srcSecret
+
+      # PVC volume for image data
+      volumes:
+        - name: work-volume
+          mountPath: /data
+
+      # Conditional volume mount for source registry secret
+      # This mount is only added if 'srcSecret' is "true"
+      when: "{{inputs.parameters.srcSecret}} == true"
+      container:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        # Mount the secret volume to a temporary directory
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /tmp/src-creds
+        args:
+          - |
+            echo "Pulling image from {{inputs.parameters.srcRemoteURL}}/{{inputs.parameters.specImage}}"
+            mkdir -p /data/image-storage
+
+            # Conditionally set credentials flag for Skopeo
+            CREDS_FLAG=""
+            if [ "{{inputs.parameters.srcSecret}}" = "true" ]; then
+                # Skopeo uses the docker config JSON file (mounted from the secret)
+                CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"
+            fi
+
+            # Construct the full source image path
+            SOURCE_IMAGE="docker://{{inputs.parameters.srcRemoteURL}}/{{inputs.parameters.specImage}}"
+
+            # Skopeo copy command
+            skopeo copy $CREDS_FLAG $SOURCE_IMAGE "dir:/data/image-storage/scanned-image"
+
+    # --- 2. Scan Image (Trivy) ---
+    - name: scan-image
+      inputs:
+        parameters:
+          - name: scanSeverity
+      # PVC volume for image data
+      volumes:
+        - name: work-volume
+          mountPath: /data
+      container:
+        image: aquasec/trivy:latest
+        command: [sh, -c]
+        args:
+          - |
+            echo "Scanning image for severities: {{inputs.parameters.scanSeverity}}"
+            # Trivy scan in a directory mode
+            trivy image \
+              --exit-code 1 \
+              --severity "{{inputs.parameters.scanSeverity}}" \
+              --format json \
+              --output /data/scan-results.json \
+              --input /data/image-storage/scanned-image
+
+            if [ $? -eq 0 ]; then
+                echo "✅ Scan successful and no vulnerabilities found above severity: {{inputs.parameters.scanSeverity}}"
+            else
+                echo "❌ Scan failed! Vulnerabilities found above severity: {{inputs.parameters.scanSeverity}}"
+                exit 1
+            fi
+        env:
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+
+    # --- 3. Push Image (Skopeo) ---
+    - name: push-image
+      inputs:
+        parameters:
+          - name: dstRemoteURL
+          - name: specOverride
+          - name: dstSecret
+
+      # PVC volume for image data
+      volumes:
+        - name: work-volume
+          mountPath: /data
+
+      # Conditional volume mount for destination registry secret
+      # This mount is only added if 'dstSecret' is "true"
+      when: "{{inputs.parameters.dstSecret}} == true"
+      container:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        # Mount the secret volume to a temporary directory
+        volumeMounts:
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /tmp/dst-creds
+        args:
+          - |
+            echo "Pushing image to {{inputs.parameters.dstRemoteURL}}/{{inputs.parameters.specOverride}}"
+
+            # Conditionally set credentials flag for Skopeo
+            CREDS_FLAG=""
+            if [ "{{inputs.parameters.dstSecret}}" = "true" ]; then
+                CREDS_FLAG="--dest-authfile /tmp/dst-creds/.dockerconfigjson"
+            fi
+
+            # Construct the full destination image path
+            DEST_IMAGE="docker://{{inputs.parameters.dstRemoteURL}}/{{inputs.parameters.specOverride}}"
+
+            # Skopeo copy command
+            skopeo copy $CREDS_FLAG "dir:/data/image-storage/scanned-image" $DEST_IMAGE
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: oci-scan-flexible-
+spec:
+  # Reference the template defined above
+  workflowTemplateRef:
+    name: oci-image-pipeline-flexible
+
+  # Pass the specific image paths and scan settings
+  arguments:
+    parameters:
+      # --- Source Parameters ---
+      - name: srcType
+        value: oci
+      - name: srcRemoteURL
+        value: docker.io
+      - name: srcSecret
+        value: "false"
+      - name: srcSecretName
+        value: src-reg-secret
+
+      # --- Destination Parameters ---
+      - name: dstType
+        value: oci
+      - name: dstRemoteURL
+        value: ghcr.io
+      - name: dstSecret
+        value: "true"
+      - name: dstSecretName
+        value: dst-reg-secret
+
+      # --- Image Specs ---
       - name: specImage
-        value: "library/alpine:3.12"
+        value: library/alpine:3.18
       - name: specOverride
-        value: "opendefensecloud/alpine:3.18-dev"
-      - name: destType
-        value: "oci"
-      - name: destRemoteURL
-        value: "ghcr.io"
+        value: myteam/alpine:3.18-dev
+
+      # --- Scanning ---
+      - name: scanSeverity
+        value: HIGH,CRITICAL
