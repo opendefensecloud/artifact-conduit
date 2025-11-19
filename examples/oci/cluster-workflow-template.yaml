@@ -1,0 +1,135 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: oci-image-pipeline
+spec:
+  # Define the PVC template for inter-step data sharing
+  volumeClaimTemplates:
+    - metadata:
+        name: work-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+  # --- Input Parameters ---
+  arguments:
+    parameters:
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      - name: specImage # The source image path (e.g., library/alpine:3.18)
+      - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
+      - name: scanSeverity # Additional coming from ArtifactType
+
+  entrypoint: oci-pipeline
+
+  templates:
+    # --- Main Pipeline Entrypoint ---
+    - name: oci-pipeline
+      steps:
+        - - name: pull-image
+            when: "{{workflow.parameters.srcType}} == oci"
+            template: pull-image
+
+        - - name: scan-image
+            when: "{{workflow.parameters.srcType}} == oci"
+            template: scan-image
+
+        - - name: push-image
+            when: "{{workflow.parameters.srcType}} == oci"
+            template: push-image
+
+    # --- 1. Pull Image (Skopeo) ---
+    - name: pull-image
+
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        # Mount the secret volume to a temporary directory
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /tmp/src-creds
+          - name: work-volume
+            mountPath: /data
+        source: |
+          echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
+          mkdir -p /data/image-storage
+
+          # Conditionally set credentials flag for Skopeo
+          CREDS_FLAG=""
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              # Skopeo uses the docker config JSON file (mounted from the secret)
+              CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"
+          fi
+
+          # Construct the full source image path
+          SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
+
+          # Skopeo copy command
+          skopeo copy --multi-arch all $CREDS_FLAG $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
+
+    # --- 2. Scan Image (Trivy) ---
+    - name: scan-image
+      script:
+        image: aquasec/trivy:latest
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"
+
+          # Trivy scan in a directory mode
+          trivy image \
+            --exit-code 1 \
+            --severity "{{workflow.parameters.scanSeverity}}" \
+            --format json \
+            --output /data/scan-results.json \
+            --input /data/image-storage/scanned-image
+
+          if [ $? -eq 0 ]; then
+              echo "✅ Scan successful and no vulnerabilities found above severity: {{workflow.parameters.scanSeverity}}"
+          else
+              echo "❌ Scan failed!"
+              exit 1
+          fi
+        env:
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+
+    # --- 3. Push Image (Skopeo) ---
+    - name: push-image
+
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+
+        # Mount the secret volume to a temporary directory
+        volumeMounts:
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /tmp/dst-creds
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+
+          # Conditionally set credentials flag for Skopeo
+          CREDS_FLAG=""
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              CREDS_FLAG="--dest-authfile /tmp/dst-creds/.dockerconfigjson"
+          fi
+
+          # Construct the full destination image path
+          DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+
+          # Skopeo copy command
+          skopeo copy --dest-tls-verify=false $CREDS_FLAG "oci:/data/image-storage/scanned-image" $DEST_IMAGE
