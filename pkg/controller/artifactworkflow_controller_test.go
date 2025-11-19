@@ -3,87 +3,147 @@
 
 package controller
 
-// import (
-// 	. "github.com/onsi/ginkgo/v2"
-// 	. "github.com/onsi/gomega"
-// 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-// 	"go.opendefense.cloud/arc/pkg/envtest"
-// 	corev1 "k8s.io/api/core/v1"
-// 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-// 	"k8s.io/apimachinery/pkg/runtime"
-// 	"k8s.io/apimachinery/pkg/types"
-// )
+import (
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/envtest"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
-// var _ = Describe("ArtifactWorkflowController", func() {
-// 	var (
-// 		ctx = envtest.Context()
-// 		ns  = SetupTest(ctx)
-// 	)
+var _ = Describe("ArtifactWorkflowController", func() {
+	var (
+		ctx = envtest.Context()
+		ns  = SetupTest(ctx)
 
-// 	Context("when reconciling ArtifactWorkflows", func() {
-// 		It("should create workflowConfig secret for a fragment and a workflow", func() {
-// 			srcEndpointAuth := &corev1.Secret{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Name:      "test-endpoint-auth-a",
-// 					Namespace: ns.Name,
-// 				},
-// 			}
-// 			Expect(k8sClient.Create(ctx, srcEndpointAuth)).To(Succeed())
+		createArtifactType = func(name string) {
+			at := &arcv1alpha1.ArtifactType{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: name,
+				},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{
+							Name:  name,
+							Value: name,
+						},
+					},
+					WorkflowTemplateRef: corev1.LocalObjectReference{
+						Name: name,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, at)).To(Succeed())
+			DeferCleanup(k8sClient.Delete, ctx, at)
+		}
+		createSecrets = func(names ...string) {
+			for _, name := range names {
+				secret := corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: ns.Name,
+					},
+					StringData: map[string]string{
+						"testkey": name,
+					},
+				}
+				Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+			}
+		}
+	)
 
-// 			srcEndpoint := &arcv1alpha1.Endpoint{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Name:      "test-endpoint-a",
-// 					Namespace: ns.Name,
-// 				},
-// 				Spec: arcv1alpha1.EndpointSpec{
-// 					Type:      "test-type-1",
-// 					RemoteURL: "example.com",
-// 					Usage:     arcv1alpha1.EndpointUsageAll,
-// 					SecretRef: corev1.LocalObjectReference{
-// 						Name: srcEndpointAuth.Name,
-// 					},
-// 				},
-// 			}
-// 			Expect(k8sClient.Create(ctx, srcEndpoint)).To(Succeed())
+	Context("when reconciling ArtifactWorkflows", func() {
+		It("should create Workflow for ArtifactWorkflow without secrets", func() {
+			atName := "art"
+			awName := "no-secrets"
+			createArtifactType(atName)
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: atName,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
 
-// 			dstEndpoint := &arcv1alpha1.Endpoint{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Name:      "test-endpoint-ab",
-// 					Namespace: ns.Name,
-// 				},
-// 				Spec: arcv1alpha1.EndpointSpec{
-// 					Type:      "test-type-1",
-// 					RemoteURL: "example.com",
-// 					Usage:     arcv1alpha1.EndpointUsageAll,
-// 				},
-// 			}
-// 			Expect(k8sClient.Create(ctx, dstEndpoint)).To(Succeed())
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
+			}).Should(Succeed())
 
-// 			// Create test Order with multiple artifacts, no defaults
-// 			fragment := &arcv1alpha1.ArtifactWorkflow{
-// 				ObjectMeta: metav1.ObjectMeta{
-// 					Name:      "test-fragment",
-// 					Namespace: ns.Name,
-// 				},
-// 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-// 					Type:   "test-type-1",
-// 					SrcRef: corev1.LocalObjectReference{Name: srcEndpoint.Name},
-// 					DstRef: corev1.LocalObjectReference{Name: dstEndpoint.Name},
-// 					Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value1"}`)},
-// 				},
-// 			}
-// 			Expect(k8sClient.Create(ctx, fragment)).To(Succeed())
+			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
+			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
+				{Name: atName, Value: (*wfv1alpha1.AnyString)(&atName)},
+				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
+			}))
+			Expect(wf.Spec.Volumes).To(HaveLen(2))
+			Expect(wf.Spec.Volumes[0].EmptyDir).ToNot(BeNil())
+			Expect(wf.Spec.Volumes[1].EmptyDir).ToNot(BeNil())
+		})
 
-// 			// Verify workflowConfig secret was created
-// 			workflowConfig := &corev1.Secret{}
-// 			Eventually(func() error {
-// 				return k8sClient.Get(ctx, types.NamespacedName{Namespace: fragment.Namespace, Name: fragment.Name}, workflowConfig)
-// 			}).Should(Succeed())
+		It("should create Workflow for ArtifactWorkflow with secrets", func() {
+			atName := "art"
+			awName := "with-secrets"
+			srcSecret := "src"
+			dstSecret := "dst"
+			createArtifactType(atName)
+			createSecrets(srcSecret, dstSecret)
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: atName,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+					SrcSecretRef: corev1.LocalObjectReference{Name: srcSecret},
+					DstSecretRef: corev1.LocalObjectReference{Name: dstSecret},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
 
-// 			// Verify workflowConfig contents
-// 			s, ok := workflowConfig.Data[workflowConfigSecretKey]
-// 			Expect(ok).To(BeTrue())
-// 			GinkgoWriter.Println(string(s))
-// 		})
-// 	})
-// })
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
+			}).Should(Succeed())
+
+			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
+			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
+				{Name: atName, Value: (*wfv1alpha1.AnyString)(&atName)},
+				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
+			}))
+			Expect(wf.Spec.Volumes).To(HaveLen(2))
+			Expect(wf.Spec.Volumes).To(ConsistOf([]corev1.Volume{
+				{
+					Name: "dst-secret-vol",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: dstSecret,
+						},
+					},
+				},
+				{
+					Name: "src-secret-vol",
+					VolumeSource: corev1.VolumeSource{
+						Secret: &corev1.SecretVolumeSource{
+							SecretName: srcSecret,
+						},
+					},
+				},
+			}))
+		})
+
+		It("should track Workflow status changes of created ArtifactWorkflows", func() {
+			// TODO
+		})
+	})
+})

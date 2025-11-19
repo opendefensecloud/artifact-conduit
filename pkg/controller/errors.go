@@ -16,7 +16,6 @@ import (
 // The function currently capitalizes the first letter as well.
 // message is expected to be NOT empty.
 func errLogAndWrap(log logr.Logger, err error, message string) error {
-	parts := strings.SplitN(message, "", 1)
-	log.Error(err, strings.ToUpper(parts[0])+parts[1])
+	log.Error(err, strings.ToUpper(message[0:1])+message[1:])
 	return fmt.Errorf(message+": %w", err)
 }
