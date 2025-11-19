@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"context"
+
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -13,31 +15,44 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+var (
+	atValue = "art"
+)
+
+func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
+	var (
+		at = &arcv1alpha1.ArtifactType{}
+	)
+
+	BeforeEach(func() {
+		*at = arcv1alpha1.ArtifactType{
+			ObjectMeta: metav1.ObjectMeta{
+				GenerateName: "at-",
+			},
+			Spec: arcv1alpha1.ArtifactTypeSpec{
+				Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+					{
+						Name:  atValue,
+						Value: atValue,
+					},
+				},
+				WorkflowTemplateRef: corev1.LocalObjectReference{
+					Name: atValue,
+				},
+			},
+		}
+		Expect(k8sClient.Create(ctx, at)).To(Succeed(), "failed to create test artifact type")
+		DeferCleanup(k8sClient.Delete, ctx, at)
+	})
+
+	return at
+}
+
 var _ = Describe("ArtifactWorkflowController", func() {
 	var (
-		ctx = envtest.Context()
-		ns  = SetupTest(ctx)
-
-		createArtifactType = func(name string) {
-			at := &arcv1alpha1.ArtifactType{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: name,
-				},
-				Spec: arcv1alpha1.ArtifactTypeSpec{
-					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
-						{
-							Name:  name,
-							Value: name,
-						},
-					},
-					WorkflowTemplateRef: corev1.LocalObjectReference{
-						Name: name,
-					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, at)).To(Succeed())
-			DeferCleanup(k8sClient.Delete, ctx, at)
-		}
+		ctx           = envtest.Context()
+		ns            = SetupTest(ctx)
+		at            = setupArtifactType(ctx)
 		createSecrets = func(names ...string) {
 			for _, name := range names {
 				secret := corev1.Secret{
@@ -56,16 +71,14 @@ var _ = Describe("ArtifactWorkflowController", func() {
 
 	Context("when reconciling ArtifactWorkflows", func() {
 		It("should create Workflow for ArtifactWorkflow without secrets", func() {
-			atName := "art"
 			awName := "no-secrets"
-			createArtifactType(atName)
 			aw := &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: ns.Name,
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: atName,
+					Type: at.Name,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
@@ -80,7 +93,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 
 			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
 			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
-				{Name: atName, Value: (*wfv1alpha1.AnyString)(&atName)},
+				{Name: atValue, Value: (*wfv1alpha1.AnyString)(&atValue)},
 				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
 			}))
 			Expect(wf.Spec.Volumes).To(HaveLen(2))
@@ -89,11 +102,9 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		})
 
 		It("should create Workflow for ArtifactWorkflow with secrets", func() {
-			atName := "art"
 			awName := "with-secrets"
 			srcSecret := "src"
 			dstSecret := "dst"
-			createArtifactType(atName)
 			createSecrets(srcSecret, dstSecret)
 			aw := &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
@@ -101,7 +112,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: atName,
+					Type: at.Name,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
@@ -118,7 +129,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 
 			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
 			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
-				{Name: atName, Value: (*wfv1alpha1.AnyString)(&atName)},
+				{Name: atValue, Value: (*wfv1alpha1.AnyString)(&atValue)},
 				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
 			}))
 			Expect(wf.Spec.Volumes).To(HaveLen(2))
@@ -143,7 +154,41 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		})
 
 		It("should track Workflow status changes of created ArtifactWorkflows", func() {
-			// TODO
+			awName := "track-status"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: at.Name,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			// wf.Status.Phase = wfv1alpha1.WorkflowRunning
+			// Expect(k8sClient.Status().Update(ctx, wf)).To(Succeed())
+
+			// Eventually(func() arcv1alpha1.WorkflowPhase {
+			// 	Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+			// 	return aw.Status.Phase
+			// }).To(Equal(arcv1alpha1.WorkflowRunning))
+
+			// wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			// Expect(k8sClient.Status().Update(ctx, wf)).To(Succeed())
+
+			// Eventually(func() arcv1alpha1.WorkflowPhase {
+			// 	Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+			// 	return aw.Status.Phase
+			// }).To(Equal(arcv1alpha1.WorkflowSucceeded))
 		})
 	})
 })
