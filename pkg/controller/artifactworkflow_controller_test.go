@@ -174,21 +174,23 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
 			}).Should(Succeed())
 
-			// wf.Status.Phase = wfv1alpha1.WorkflowRunning
-			// Expect(k8sClient.Status().Update(ctx, wf)).To(Succeed())
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowRunning
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
 
-			// Eventually(func() arcv1alpha1.WorkflowPhase {
-			// 	Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
-			// 	return aw.Status.Phase
-			// }).To(Equal(arcv1alpha1.WorkflowRunning))
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowRunning))
 
-			// wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
-			// Expect(k8sClient.Status().Update(ctx, wf)).To(Succeed())
+			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
 
-			// Eventually(func() arcv1alpha1.WorkflowPhase {
-			// 	Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
-			// 	return aw.Status.Phase
-			// }).To(Equal(arcv1alpha1.WorkflowSucceeded))
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowSucceeded))
 		})
 	})
 })
