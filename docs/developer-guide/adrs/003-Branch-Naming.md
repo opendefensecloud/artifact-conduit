@@ -1,6 +1,6 @@
 ---
-status: in decision
-date: 2025-11-18
+status: accepted
+date: 2025-11-19
 ---
 
 # Name Branches Following a Common Standard
