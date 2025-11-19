@@ -1,0 +1,12 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: ArtifactType
+metadata:
+  name: oci
+spec:
+  rules:
+    srcTypes: # Endpoint Types
+      - oci
+    dstTypes:
+      - oci
+  workflowTemplateRef: # argo.Workflow
+    name: oci-workflow-template
