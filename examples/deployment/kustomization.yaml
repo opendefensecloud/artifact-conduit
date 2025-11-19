@@ -1,6 +1,9 @@
 resources:
   - ../../config/default # using remote : https://github.com/opendefensecloud/artifact-conduit/config/default?ref=main
 
+patches:
+- path: ./manager-resources.yaml
+
 images:
   - name: apiserver
     newName: ghcr.io/opendefensecloud/arc-apiserver
