@@ -168,13 +168,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 		// Create a hash based on all related data for idempotency and compute the workflow name
 		h := sha256.New()
-		data := map[string]any{
-			"type":        artifact.Type,
-			"spec":        artifact.Spec.Raw,
-			"srcEndpoint": srcEndpoint.Generation,
-			"dstEndpoint": dstEndpoint.Generation,
-			"srcSecret":   srcSecret.Generation,
-			"dstSecret":   dstSecret.Generation,
+		data := []any{
+			order.Namespace,
+			artifact.Type, artifact.Spec.Raw,
+			srcEndpoint.Name, srcEndpoint.Generation,
+			dstEndpoint.Name, dstEndpoint.Generation,
+			srcSecret.Name, srcSecret.Generation,
+			dstSecret.Name, dstSecret.Generation,
 		}
 		jsonData, err := json.Marshal(data)
 		if err != nil {
