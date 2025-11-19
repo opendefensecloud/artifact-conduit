@@ -43,7 +43,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			// Object not found, return.
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
 	// Handle deletion: cleanup fragments, then remove finalizer
@@ -57,8 +57,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 				return f == fragmentFinalizer
 			})
 			if err := r.Update(ctx, frag); err != nil {
-				log.Error(err, "Failed to remove finalizer from ArtifactWorkflow")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
 		return ctrl.Result{}, nil
@@ -70,8 +69,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			log.V(1).Info("Adding finalizer to ArtifactWorkflow")
 			frag.Finalizers = append(frag.Finalizers, fragmentFinalizer)
 			if err := r.Update(ctx, frag); err != nil {
-				log.Error(err, "Failed to add finalizer to ArtifactWorkflow")
-				return ctrl.Result{}, err
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
 			return ctrl.Result{}, nil
