@@ -73,11 +73,6 @@ spec:
           - name: specImage
           - name: srcSecret
 
-      # PVC volume for image data
-      volumes:
-        - name: work-volume
-          mountPath: /data
-
       container:
         image: quay.io/skopeo/stable:latest
         command: [sh, -c]
@@ -86,6 +81,8 @@ spec:
           - name: src-secret-vol
             readOnly: true
             mountPath: /tmp/src-creds
+          - name: work-volume
+            mountPath: /data
         args:
           - |
             echo "Pulling image from {{inputs.parameters.srcRemoteURL}}/{{inputs.parameters.specImage}}"
@@ -102,23 +99,25 @@ spec:
             SOURCE_IMAGE="docker://{{inputs.parameters.srcRemoteURL}}/{{inputs.parameters.specImage}}"
 
             # Skopeo copy command
-            skopeo copy $CREDS_FLAG $SOURCE_IMAGE "dir:/data/image-storage/scanned-image"
+            skopeo copy --multi-arch all $CREDS_FLAG $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
 
     # --- 2. Scan Image (Trivy) ---
     - name: scan-image
       inputs:
         parameters:
           - name: scanSeverity
-      # PVC volume for image data
-      volumes:
-        - name: work-volume
-          mountPath: /data
+
       container:
         image: aquasec/trivy:latest
         command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+
         args:
           - |
             echo "Scanning image for severities: {{inputs.parameters.scanSeverity}}"
+
             # Trivy scan in a directory mode
             trivy image \
               --exit-code 1 \
@@ -130,7 +129,7 @@ spec:
             if [ $? -eq 0 ]; then
                 echo "✅ Scan successful and no vulnerabilities found above severity: {{inputs.parameters.scanSeverity}}"
             else
-                echo "❌ Scan failed! Vulnerabilities found above severity: {{inputs.parameters.scanSeverity}}"
+                echo "❌ Scan failed!"
                 exit 1
             fi
         env:
@@ -145,19 +144,18 @@ spec:
           - name: specOverride
           - name: dstSecret
 
-      # PVC volume for image data
-      volumes:
-        - name: work-volume
-          mountPath: /data
-
       container:
         image: quay.io/skopeo/stable:latest
         command: [sh, -c]
+
         # Mount the secret volume to a temporary directory
         volumeMounts:
           - name: dst-secret-vol
             readOnly: true
             mountPath: /tmp/dst-creds
+          - name: work-volume
+            mountPath: /data
+
         args:
           - |
             echo "Pushing image to {{inputs.parameters.dstRemoteURL}}/{{inputs.parameters.specOverride}}"
@@ -172,4 +170,4 @@ spec:
             DEST_IMAGE="docker://{{inputs.parameters.dstRemoteURL}}/{{inputs.parameters.specOverride}}"
 
             # Skopeo copy command
-            skopeo copy $CREDS_FLAG "dir:/data/image-storage/scanned-image" $DEST_IMAGE
+            skopeo copy --dest-tls-verify=false $CREDS_FLAG "oci:/data/image-storage/scanned-image" $DEST_IMAGE

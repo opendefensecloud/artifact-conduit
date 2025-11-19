@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: oci-scan-flexible-
+spec:
+  # Reference the template defined above
+  workflowTemplateRef:
+    name: oci-image-pipeline-flexible
+
+  # --- Shared Volumes ---
+  volumes:
+    # This volume will contain the actual authentication file from the secret
+    - name: src-secret-vol
+      emptyDir: {}
+    - name: dst-secret-vol
+      secret:
+        secretName: "dst-reg-secret"
+
+  # Pass the specific image paths and scan settings
+  arguments:
+    parameters:
+      # --- Source Parameters ---
+      - name: srcType
+        value: oci
+      - name: srcRemoteURL
+        value: docker.io
+      - name: srcSecret
+        value: "false"
+
+      # --- Destination Parameters ---
+      - name: dstType
+        value: oci
+      - name: dstRemoteURL
+        value: dst.zot.svc.cluster.local
+      - name: dstSecret
+        value: "true"
+
+      # --- Image Specs ---
+      - name: specImage
+        value: library/alpine:3.18
+      - name: specOverride
+        value: myteam/alpine:3.18-dev
+
+      # --- Scanning ---
+      - name: scanSeverity
+        value: HIGH,CRITICAL
