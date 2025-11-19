@@ -64,13 +64,14 @@ metadata:
   name: example-frag
 spec:
   type: oci # Artifact Type!
-  srcRef:
-    name: mysrc
-  dstRef:
-    name: mydst
-  spec:
-    image: library/alpine:3.18
-    override: myteam/alpine:3.18-dev # default alpine:3.18; support CEL?
+  srcSecretRef:
+    name: mysrc-creds
+  dstSecretRef:
+    name: mydst-creds
+  parameters:
+  - name: srcType
+    value: oci
+    # ...
 ```
 
 The two referenced `Endpoints` by `srcRef` and `dstRef` might look as follows respectively:

@@ -13,6 +13,7 @@ This ADR is about finding the right API for ARC.
 
 Options were discussed and documented here: <https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn>
 
+### `Order`
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: Order
@@ -47,6 +48,7 @@ spec:
         override: helm-charts/cert-manager:47.11
 ```
 
+### `ArtifactWorkflow`
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: ArtifactWorkflow
@@ -54,16 +56,16 @@ metadata:
   name: example-order-1 # sha256 for procedural
 spec:
   type: oci # artifactType, correcesponds to workflow
-  srcRef: # required
+  srcSecretRef:
     name: lala
-  dstRef: #required
+  dstSecretRef:
     name: other-internal-registry
-    namespace: default # optional
-  spec:
-    image: library/alpine:3.18
-    override: myteam/alpine:3.18-dev # default alpine:3.18; support CEL?
+  parameters: # input from order used to hydrate parameters for workflow
+    - name: srcType
+      value: oci
 ```
 
+### `Endpoint`
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: Endpoint
@@ -77,6 +79,7 @@ spec:
   usage: PullOnly | PushOnly | All # enum
 ```
 
+### `ArtifactType`
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
 kind: ArtifactType
@@ -90,7 +93,5 @@ spec:
       - helm
     dstTypes:
       - oci
-  defaults:
-    dstRef: internal-registry
   workflowTemplateRef: # argo.Workflow
 ```
