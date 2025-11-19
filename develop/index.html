@@ -46,6 +46,8 @@
       
     
     
+      <link rel="stylesheet" href="assets/stylesheets/panzoom.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -62,7 +64,8 @@
             body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
-        </style></head>
+        </style><meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1471,7 +1474,28 @@
 <p><strong>Out of Scope:</strong> ARC does not replace existing registry solutions or artifact repositories. It functions as an orchestration layer that coordinates artifact transfer and validation between existing infrastructure components.</p>
 <h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">¶</a></h2>
 <p>ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.</p>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     subgraph "User Layer"
         Users["Users/Operators"]
         arcctl["arcctl CLI&lt;br/&gt;cmd/arcctl/main.go"]
@@ -1489,9 +1513,9 @@
 
     subgraph "API Resources (api/arc.bwi.de/v1alpha1)"
         Order["Order&lt;br/&gt;High-level request"]
-        Fragment["Fragment&lt;br/&gt;Single artifact op"]
+        ArtifactWorkflow["ArtifactWorkflow&lt;br/&gt;Single artifact op"]
         Endpoint["Endpoint&lt;br/&gt;Source/Destination"]
-        ATD["ArtifactTypeDefinition&lt;br/&gt;Type rules"]
+        ATD["ArtifactType&lt;br/&gt;Type rules"]
     end
 
     subgraph "Execution Layer"
@@ -1513,12 +1537,12 @@
     ARCAPI --&gt;|"stores/retrieves"| etcdStore
 
     OrderCtrl --&gt;|"watches"| etcdStore
-    OrderCtrl --&gt;|"creates"| Fragment
+    OrderCtrl --&gt;|"creates"| ArtifactWorkflow
     OrderCtrl --&gt;|"creates"| ArgoWorkflows
 
     Order --&gt;|"references"| Endpoint
     Order --&gt;|"uses"| ATD
-    Fragment --&gt;|"references"| Endpoint
+    ArtifactWorkflow --&gt;|"references"| Endpoint
 
     ATD --&gt;|"specifies"| WorkflowTemplates
     ArgoWorkflows --&gt;|"instantiates"| WorkflowTemplates
@@ -1527,9 +1551,13 @@
     ArgoWorkflows --&gt;|"pulls from"| HelmRepo
     ArgoWorkflows --&gt;|"pulls from"| S3Storage
     ArgoWorkflows --&gt;|"scans with"| Scanners
-    ArgoWorkflows --&gt;|"pushes to"| OCIReg</code></pre>
+    ArgoWorkflows --&gt;|"pushes to"| OCIReg</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p><strong>Architecture: ARC System Components and Data Flow</strong></p>
-<p>The system follows a layered architecture where users interact through the <code>arcctl</code> CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable Fragments.</p>
+<p>The system follows a layered architecture where users interact through the <code>arcctl</code> CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.</p>
 <h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">¶</a></h2>
 <p>ARC introduces four primary custom resource types under the <code>arc.bwi.de/v1alpha1</code> API group:</p>
 <table>
@@ -1547,7 +1575,7 @@
 <td>User-facing, high-level</td>
 </tr>
 <tr>
-<td><strong>Fragment</strong></td>
+<td><strong>ArtifactWorkflow</strong></td>
 <td>Represents a single artifact operation decomposed from an Order</td>
 <td>System-generated, execution unit</td>
 </tr>
@@ -1557,28 +1585,49 @@
 <td>Configuration, reusable</td>
 </tr>
 <tr>
-<td><strong>ArtifactTypeDefinition</strong></td>
+<td><strong>ArtifactType</strong></td>
 <td>Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm")</td>
 <td>Configuration, system-wide</td>
 </tr>
 </tbody>
 </table>
-<pre class="mermaid"><code>graph LR
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph LR
     subgraph "Declarative Layer"
         Order["Order&lt;br/&gt;(User Input)"]
         OrderSpec["spec:&lt;br/&gt;- defaults&lt;br/&gt;- artifacts[]"]
     end
 
     subgraph "Generated Layer"
-        Fragment1["Fragment-1"]
-        Fragment2["Fragment-2"]
-        FragmentN["Fragment-N"]
+        ArtifactWorkflow1["ArtifactWorkflow-1"]
+        ArtifactWorkflow2["ArtifactWorkflow-2"]
+        ArtifactWorkflowN["ArtifactWorkflow-N"]
     end
 
     subgraph "Configuration"
         SrcEndpoint["Endpoint&lt;br/&gt;(Source)"]
         DstEndpoint["Endpoint&lt;br/&gt;(Destination)"]
-        ATD["ArtifactTypeDefinition&lt;br/&gt;(e.g., 'oci')"]
+        ATD["ArtifactType&lt;br/&gt;(e.g., 'oci')"]
         Secret["Secret&lt;br/&gt;(Credentials)"]
     end
 
@@ -1589,24 +1638,28 @@
     end
 
     Order --&gt;|"contains"| OrderSpec
-    OrderSpec --&gt;|"generates"| Fragment1
-    OrderSpec --&gt;|"generates"| Fragment2
-    OrderSpec --&gt;|"generates"| FragmentN
+    OrderSpec --&gt;|"generates"| ArtifactWorkflow1
+    OrderSpec --&gt;|"generates"| ArtifactWorkflow2
+    OrderSpec --&gt;|"generates"| ArtifactWorkflowN
 
-    Fragment1 --&gt;|"srcRef"| SrcEndpoint
-    Fragment1 --&gt;|"dstRef"| DstEndpoint
-    Fragment1 --&gt;|"type"| ATD
-    Fragment2 --&gt;|"references"| SrcEndpoint
-    Fragment2 --&gt;|"references"| DstEndpoint
+    ArtifactWorkflow1 --&gt;|"srcRef"| SrcEndpoint
+    ArtifactWorkflow1 --&gt;|"dstRef"| DstEndpoint
+    ArtifactWorkflow1 --&gt;|"type"| ATD
+    ArtifactWorkflow2 --&gt;|"references"| SrcEndpoint
+    ArtifactWorkflow2 --&gt;|"references"| DstEndpoint
 
     SrcEndpoint --&gt;|"credentialRef"| Secret
     DstEndpoint --&gt;|"credentialRef"| Secret
 
     ATD --&gt;|"workflowTemplateRef"| WorkflowTemplate
-    Fragment1 -.-&gt;|"triggers"| Workflow1
-    Fragment2 -.-&gt;|"triggers"| Workflow2
+    ArtifactWorkflow1 -.-&gt;|"triggers"| Workflow1
+    ArtifactWorkflow2 -.-&gt;|"triggers"| Workflow2
     WorkflowTemplate -.-&gt;|"instantiates"| Workflow1
-    WorkflowTemplate -.-&gt;|"instantiates"| Workflow2</code></pre>
+    WorkflowTemplate -.-&gt;|"instantiates"| Workflow2</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <h2 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">¶</a></h2>
 <h3 id="arc-api-server">ARC API Server<a class="headerlink" href="#arc-api-server" title="Permanent link">¶</a></h3>
 <p>The ARC API Server is a Kubernetes Extension API Server implemented using the <code>k8s.io/apiserver</code> library. Key characteristics:</p>
@@ -1634,15 +1687,36 @@
 <li>Watch for Order create/update/delete events</li>
 <li>Validate endpoint references exist</li>
 <li>Apply defaults from Order.spec.defaults</li>
-<li>Generate Fragment resources (one per artifact entry)</li>
-<li>Lookup ArtifactTypeDefinition for each fragment's type</li>
+<li>Generate ArtifactWorkflow resources (one per artifact entry)</li>
+<li>Lookup ArtifactType for each fragment's type</li>
 <li>Create Argo Workflow instances with appropriate WorkflowTemplate references</li>
-<li>Update Order status based on Fragment and Workflow statuses</li>
+<li>Update Order status based on ArtifactWorkflow and Workflow statuses</li>
 <li>Handle finalizers for cleanup operations</li>
 </ol>
 </li>
 </ul>
-<pre class="mermaid"><code>sequenceDiagram
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>sequenceDiagram
     participant User
     participant arcctl
     participant K8sAPI as "Kubernetes API"
@@ -1660,10 +1734,10 @@
 
     etcd--&gt;&gt;OrderCtrl: "Watch notification"
     OrderCtrl-&gt;&gt;OrderCtrl: "Reconcile()"
-    OrderCtrl-&gt;&gt;ARCAPI: "Create Fragment CRs"
-    ARCAPI-&gt;&gt;etcd: "Store Fragments"
+    OrderCtrl-&gt;&gt;ARCAPI: "Create ArtifactWorkflow CRs"
+    ARCAPI-&gt;&gt;etcd: "Store ArtifactWorkflows"
 
-    OrderCtrl-&gt;&gt;ARCAPI: "Get ArtifactTypeDefinition"
+    OrderCtrl-&gt;&gt;ARCAPI: "Get ArtifactType"
     ARCAPI--&gt;&gt;OrderCtrl: "ATD with workflowTemplateRef"
 
     OrderCtrl-&gt;&gt;K8sAPI: "Create Workflow CR"
@@ -1683,7 +1757,11 @@
     ArgoCtrl-&gt;&gt;K8sAPI: "Update Workflow status"
 
     OrderCtrl-&gt;&gt;ARCAPI: "Update Order status"
-    ARCAPI-&gt;&gt;etcd: "Store status update"</code></pre>
+    ARCAPI-&gt;&gt;etcd: "Store status update"</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 
 
 
@@ -1742,6 +1820,10 @@
     
     
       <script src="assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="assets/javascripts/zoompan.js"></script>
       
     
   

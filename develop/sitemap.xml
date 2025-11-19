@@ -2,70 +2,70 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://arc.opendefense.cloud/develop/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/CODE_OF_CONDUCT/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/CONTRIBUTING/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/getting-started/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/dod/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/working-with-docs/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/001-ARC-Architecture/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/002-ARC-API/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/installation/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/new-features/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/releases/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/security/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/upgrading/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/workflow-config/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/user-guide/core-concepts/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/user-guide/custom-resources/order/</loc>
-         <lastmod>2025-11-17</lastmod>
+         <lastmod>2025-11-19</lastmod>
     </url>
 </urlset>

@@ -46,6 +46,8 @@
       
     
     
+      <link rel="stylesheet" href="../../../assets/stylesheets/panzoom.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -62,7 +64,8 @@
             body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
-        </style></head>
+        </style><meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1287,6 +1290,56 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Proposed Solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifactworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacttype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactType
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1359,6 +1412,56 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Proposed Solution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifactworkflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacttype" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactType
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1399,6 +1502,7 @@
 <p>This ADR is about finding the right API for ARC.</p>
 <h2 id="proposed-solution">Proposed Solution<a class="headerlink" href="#proposed-solution" title="Permanent link">¶</a></h2>
 <p>Options were discussed and documented here: <a href="https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn">https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn</a></p>
+<h3 id="order"><code>Order</code><a class="headerlink" href="#order" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -1431,21 +1535,22 @@
 <span class="w">        </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"47.11"</span>
 <span class="w">        </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm-charts/cert-manager:47.11</span>
 </code></pre></div>
+<h3 id="artifactworkflow"><code>ArtifactWorkflow</code><a class="headerlink" href="#artifactworkflow" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fragment</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactWorkflow</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-order-1</span><span class="w"> </span><span class="c1"># sha256 for procedural</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># artifactType, correcesponds to workflow</span>
-<span class="w">  </span><span class="nt">srcRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># required</span>
+<span class="w">  </span><span class="nt">srcSecretRef</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lala</span>
-<span class="w">  </span><span class="nt">dstRef</span><span class="p">:</span><span class="w"> </span><span class="c1">#required</span>
+<span class="w">  </span><span class="nt">dstSecretRef</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">other-internal-registry</span>
-<span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"> </span><span class="c1"># optional</span>
-<span class="w">  </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
-<span class="w">    </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span><span class="w"> </span><span class="c1"># default alpine:3.18; support CEL?</span>
+<span class="w">  </span><span class="nt">parameters</span><span class="p">:</span><span class="w"> </span><span class="c1"># input from order used to hydrate parameters for workflow</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 </code></pre></div>
+<h3 id="endpoint"><code>Endpoint</code><a class="headerlink" href="#endpoint" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -1457,8 +1562,9 @@
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry-credentials</span>
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PullOnly | PushOnly | All</span><span class="w"> </span><span class="c1"># enum</span>
 </code></pre></div>
+<h3 id="artifacttype"><code>ArtifactType</code><a class="headerlink" href="#artifacttype" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactTypeDefinition</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="nt">spec</span><span class="p">:</span>
@@ -1469,8 +1575,6 @@
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm</span>
 <span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
 <span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
 </code></pre></div>
 
@@ -1534,6 +1638,10 @@
     
     
       <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../../assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="../../../assets/javascripts/zoompan.js"></script>
       
     
   

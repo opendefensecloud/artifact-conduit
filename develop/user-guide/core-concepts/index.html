@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/stylesheets/panzoom.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -64,7 +66,8 @@
             body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
-        </style></head>
+        </style><meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -706,10 +709,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fragment" class="md-nav__link">
+  <a href="#artifactworkflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fragment
+        ArtifactWorkflow
       
     </span>
   </a>
@@ -728,10 +731,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#artifacttypedefinition" class="md-nav__link">
+  <a href="#artifacttype" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArtifactTypeDefinition
+        ArtifactType
       
     </span>
   </a>
@@ -1791,10 +1794,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fragment" class="md-nav__link">
+  <a href="#artifactworkflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fragment
+        ArtifactWorkflow
       
     </span>
   </a>
@@ -1813,10 +1816,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#artifacttypedefinition" class="md-nav__link">
+  <a href="#artifacttype" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArtifactTypeDefinition
+        ArtifactType
       
     </span>
   </a>
@@ -2107,7 +2110,28 @@
 <p>The Extension API Server pattern allows ARC to present a Kubernetes-native API surface while maintaining complete control over storage implementation and API behavior.</p>
 <h2 id="system-components">System Components<a class="headerlink" href="#system-components" title="Permanent link">¶</a></h2>
 <h3 id="component-overview">Component Overview<a class="headerlink" href="#component-overview" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     subgraph "Control Plane"
         K8sAPI["Kubernetes API Server"]
         APIAgg["API Aggregation Layer"]
@@ -2122,9 +2146,9 @@
 
     subgraph "Custom Resources"
         Order["Order CR"]
-        Fragment["Fragment CR"]
+        ArtifactWorkflow["ArtifactWorkflow CR"]
         Endpoint["Endpoint CR"]
-        ATD["ArtifactTypeDefinition CR"]
+        ATD["ArtifactType CR"]
     end
 
     subgraph "Execution Layer"
@@ -2148,17 +2172,21 @@
     OrderCtrl --&gt; APIServer
 
     Order --&gt; OrderCtrl
-    OrderCtrl --&gt; Fragment
+    OrderCtrl --&gt; ArtifactWorkflow
     OrderCtrl --&gt; Argo
 
-    Fragment --&gt; Endpoint
-    Fragment --&gt; ATD
+    ArtifactWorkflow --&gt; Endpoint
+    ArtifactWorkflow --&gt; ATD
     ATD --&gt; WorkflowTemplate
     Argo --&gt; Workflow
 
     Workflow --&gt; Registry
     Workflow --&gt; S3
-    Workflow --&gt; Scanners</code></pre>
+    Workflow --&gt; Scanners</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <h3 id="arc-api-server">ARC API Server<a class="headerlink" href="#arc-api-server" title="Permanent link">¶</a></h3>
 <p>The API Server implements the Kubernetes Extension API Server pattern, registering with the Kubernetes API Aggregation Layer to handle requests for the <code>arc.bwi.de</code> API group.</p>
 <p><strong>Key Characteristics:</strong></p>
@@ -2196,7 +2224,28 @@
 <li>Server-side apply functionality</li>
 </ul>
 <p>The test environment bootstraps the API Server programmatically for integration testing:</p>
-<pre class="mermaid"><code>graph LR
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph LR
     TestEnv["envtest.Environment"]
     K8sControlPlane["envtest Control Plane"]
     APIServerProc["arc-apiserver Process"]
@@ -2205,7 +2254,11 @@
     TestEnv --&gt; K8sControlPlane
     TestEnv --&gt; APIServerProc
     APIServerProc --&gt; K8sControlPlane
-    K8sControlPlane --&gt; APIService</code></pre>
+    K8sControlPlane --&gt; APIService</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <h3 id="controller-manager">Controller Manager<a class="headerlink" href="#controller-manager" title="Permanent link">¶</a></h3>
 <p>The controller manager binary (<code>arc-controller-manager</code>) hosts the Order controller and other reconciliation loops.</p>
 <p><strong>Binary Location:</strong> <a href="">cmd/arc-controller-manager/main.go:1-196</a></p>
@@ -2250,7 +2303,28 @@
 </ul>
 <h2 id="resource-model">Resource Model<a class="headerlink" href="#resource-model" title="Permanent link">¶</a></h2>
 <h3 id="resource-hierarchy">Resource Hierarchy<a class="headerlink" href="#resource-hierarchy" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     User["User/Operator"]
 
     subgraph "Declarative Layer"
@@ -2261,9 +2335,9 @@
     end
 
     subgraph "Execution Layer"
-        Fragment1["Fragment&lt;br/&gt;apiVersion: arc.bwi.de/v1alpha1&lt;br/&gt;kind: Fragment"]
-        Fragment2["Fragment"]
-        FragmentSpec["spec:&lt;br/&gt;- type&lt;br/&gt;- srcRef&lt;br/&gt;- dstRef&lt;br/&gt;- spec (type-specific)"]
+        ArtifactWorkflow1["ArtifactWorkflow&lt;br/&gt;apiVersion: arc.bwi.de/v1alpha1&lt;br/&gt;kind: ArtifactWorkflow"]
+        ArtifactWorkflow2["ArtifactWorkflow"]
+        ArtifactWorkflowSpec["spec:&lt;br/&gt;- type&lt;br/&gt;- srcRef&lt;br/&gt;- dstRef&lt;br/&gt;- spec (type-specific)"]
     end
 
     subgraph "Configuration Layer"
@@ -2271,7 +2345,7 @@
         Endpoint2["Endpoint"]
         EndpointSpec["spec:&lt;br/&gt;- type&lt;br/&gt;- remoteURL&lt;br/&gt;- secretRef&lt;br/&gt;- usage"]
 
-        ATD["ArtifactTypeDefinition&lt;br/&gt;kind: ArtifactTypeDefinition"]
+        ATD["ArtifactType&lt;br/&gt;kind: ArtifactType"]
         ATDSpec["spec:&lt;br/&gt;- rules&lt;br/&gt;- workflowTemplateRef"]
 
         Secret["Secret&lt;br/&gt;(credentials)"]
@@ -2282,17 +2356,21 @@
     OrderSpec --&gt; OrderDefaults
     OrderSpec --&gt; OrderArtifacts
 
-    OrderArtifacts -.generates.-&gt; Fragment1
-    OrderArtifacts -.generates.-&gt; Fragment2
+    OrderArtifacts -.generates.-&gt; ArtifactWorkflow1
+    OrderArtifacts -.generates.-&gt; ArtifactWorkflow2
 
-    Fragment1 --&gt; FragmentSpec
-    FragmentSpec --&gt; Endpoint1
-    FragmentSpec --&gt; Endpoint2
-    FragmentSpec --&gt; ATD
+    ArtifactWorkflow1 --&gt; ArtifactWorkflowSpec
+    ArtifactWorkflowSpec --&gt; Endpoint1
+    ArtifactWorkflowSpec --&gt; Endpoint2
+    ArtifactWorkflowSpec --&gt; ATD
 
     Endpoint1 --&gt; EndpointSpec
     EndpointSpec --&gt; Secret
-    ATD --&gt; ATDSpec</code></pre>
+    ATD --&gt; ATDSpec</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <h3 id="resource-definitions">Resource Definitions<a class="headerlink" href="#resource-definitions" title="Permanent link">¶</a></h3>
 <h4 id="order">Order<a class="headerlink" href="#order" title="Permanent link">¶</a></h4>
 <p>High-level declarative resource specifying one or more artifacts to process.</p>
@@ -2305,10 +2383,10 @@
 <li><code>defaults</code>: Default source and destination endpoints</li>
 <li><code>artifacts</code>: Array of artifact specifications</li>
 </ul>
-<h4 id="fragment">Fragment<a class="headerlink" href="#fragment" title="Permanent link">¶</a></h4>
+<h4 id="artifactworkflow">ArtifactWorkflow<a class="headerlink" href="#artifactworkflow" title="Permanent link">¶</a></h4>
 <p>Represents a single artifact operation, generated from Order resources by the Order controller.</p>
 <p><strong>Generation Logic:</strong>
-The OrderReconciler decomposes an Order into individual Fragments, applying defaults from the Order spec to each Fragment that doesn't specify its own <code>srcRef</code> or <code>dstRef</code>.</p>
+The OrderReconciler decomposes an Order into individual ArtifactWorkflows, applying defaults from the Order spec to each ArtifactWorkflow that doesn't specify its own <code>srcRef</code> or <code>dstRef</code>.</p>
 <h4 id="endpoint">Endpoint<a class="headerlink" href="#endpoint" title="Permanent link">¶</a></h4>
 <p>Defines connection details for artifact sources and destinations.</p>
 <p><strong>Spec Fields:</strong></p>
@@ -2318,7 +2396,7 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
 <li><code>secretRef</code>: Reference to Secret containing credentials</li>
 <li><code>usage</code>: Enum (<code>PullOnly</code>, <code>PushOnly</code>, <code>All</code>)</li>
 </ul>
-<h4 id="artifacttypedefinition">ArtifactTypeDefinition<a class="headerlink" href="#artifacttypedefinition" title="Permanent link">¶</a></h4>
+<h4 id="artifacttype">ArtifactType<a class="headerlink" href="#artifacttype" title="Permanent link">¶</a></h4>
 <p>Defines processing rules and workflow templates for specific artifact types.</p>
 <p><strong>Spec Fields:</strong></p>
 <ul>
@@ -2328,7 +2406,28 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
 </ul>
 <h2 id="controller-architecture">Controller Architecture<a class="headerlink" href="#controller-architecture" title="Permanent link">¶</a></h2>
 <h3 id="order-reconciliation-flow">Order Reconciliation Flow<a class="headerlink" href="#order-reconciliation-flow" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>sequenceDiagram
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>sequenceDiagram
     participant User
     participant K8sAPI as "Kubernetes API"
     participant ARCAPI as "ARC API Server"
@@ -2345,15 +2444,15 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
     etcd--&gt;&gt;OrderReconciler: Order event
     OrderReconciler-&gt;&gt;OrderReconciler: Reconcile()
 
-    OrderReconciler-&gt;&gt;ARCAPI: List existing Fragments for Order
-    ARCAPI--&gt;&gt;OrderReconciler: Fragment list
+    OrderReconciler-&gt;&gt;ARCAPI: List existing ArtifactWorkflows for Order
+    ARCAPI--&gt;&gt;OrderReconciler: ArtifactWorkflow list
 
-    OrderReconciler-&gt;&gt;OrderReconciler: Calculate desired Fragments&lt;br/&gt;from Order.spec.artifacts
+    OrderReconciler-&gt;&gt;OrderReconciler: Calculate desired ArtifactWorkflows&lt;br/&gt;from Order.spec.artifacts
 
-    OrderReconciler-&gt;&gt;ARCAPI: Create/Update Fragments
-    ARCAPI-&gt;&gt;etcd: Store Fragments
+    OrderReconciler-&gt;&gt;ARCAPI: Create/Update ArtifactWorkflows
+    ARCAPI-&gt;&gt;etcd: Store ArtifactWorkflows
 
-    OrderReconciler-&gt;&gt;ARCAPI: Get ArtifactTypeDefinition
+    OrderReconciler-&gt;&gt;ARCAPI: Get ArtifactType
     ARCAPI--&gt;&gt;OrderReconciler: ATD with workflowTemplateRef
 
     OrderReconciler-&gt;&gt;K8sAPI: Create Workflow (via Argo API)
@@ -2365,17 +2464,21 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
     K8sAPI--&gt;&gt;OrderReconciler: Status change event
 
     OrderReconciler-&gt;&gt;ARCAPI: Update Order status
-    ARCAPI-&gt;&gt;etcd: Store updated status</code></pre>
+    ARCAPI-&gt;&gt;etcd: Store updated status</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p>The OrderReconciler implements the controller-runtime <code>Reconciler</code> interface and is registered in the controller manager.</p>
 <p><strong>Reconciliation Logic:</strong></p>
 <ol>
 <li>Fetch Order resource</li>
-<li>Generate Fragment specifications from <code>Order.spec.artifacts</code></li>
-<li>Apply defaults from <code>Order.spec.defaults</code> to Fragments</li>
-<li>Create/update Fragment resources via ARC API Server</li>
-<li>Lookup ArtifactTypeDefinition for each Fragment type</li>
+<li>Generate ArtifactWorkflow specifications from <code>Order.spec.artifacts</code></li>
+<li>Apply defaults from <code>Order.spec.defaults</code> to ArtifactWorkflows</li>
+<li>Create/update ArtifactWorkflow resources via ARC API Server</li>
+<li>Lookup ArtifactType for each ArtifactWorkflow type</li>
 <li>Create Argo Workflow instances using WorkflowTemplate from ATD</li>
-<li>Update Order status based on Fragment and Workflow states</li>
+<li>Update Order status based on ArtifactWorkflow and Workflow states</li>
 </ol>
 <h2 id="storage-architecture">Storage Architecture<a class="headerlink" href="#storage-architecture" title="Permanent link">¶</a></h2>
 <h3 id="dedicated-etcd-instance">Dedicated etcd Instance<a class="headerlink" href="#dedicated-etcd-instance" title="Permanent link">¶</a></h3>
@@ -2417,10 +2520,31 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
 <li>Retry and failure handling</li>
 <li>Status reporting</li>
 </ul>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     subgraph "ARC Resources"
-        Fragment["Fragment"]
-        ATD["ArtifactTypeDefinition"]
+        ArtifactWorkflow["ArtifactWorkflow"]
+        ATD["ArtifactType"]
         Endpoint1["Endpoint (source)"]
         Endpoint2["Endpoint (destination)"]
     end
@@ -2437,13 +2561,13 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
         PushStep["Push Artifact&lt;br/&gt;(to dstRef)"]
     end
 
-    Fragment --&gt; ATD
+    ArtifactWorkflow --&gt; ATD
     ATD --&gt; WorkflowTemplate
-    Fragment --&gt; Workflow
+    ArtifactWorkflow --&gt; Workflow
     WorkflowTemplate --&gt; Workflow
 
-    Fragment --&gt; Endpoint1
-    Fragment --&gt; Endpoint2
+    ArtifactWorkflow --&gt; Endpoint1
+    ArtifactWorkflow --&gt; Endpoint2
 
     Workflow --&gt; PullStep
     PullStep --&gt; ScanStep
@@ -2451,20 +2575,45 @@ The OrderReconciler decomposes an Order into individual Fragments, applying defa
     ValidateStep --&gt; PushStep
 
     Endpoint1 -.credentials.-&gt; PullStep
-    Endpoint2 -.credentials.-&gt; PushStep</code></pre>
+    Endpoint2 -.credentials.-&gt; PushStep</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p><strong>Workflow Creation:</strong>
 The OrderReconciler creates Workflow instances by:</p>
 <ol>
-<li>Reading the <code>workflowTemplateRef</code> from the ArtifactTypeDefinition</li>
+<li>Reading the <code>workflowTemplateRef</code> from the ArtifactType</li>
 <li>Instantiating a Workflow from the template</li>
-<li>Passing Fragment metadata and Endpoint references as workflow parameters</li>
+<li>Passing ArtifactWorkflow metadata and Endpoint references as workflow parameters</li>
 <li>Submitting the Workflow to Argo via Kubernetes API</li>
 </ol>
 <p><strong>Status Propagation:</strong>
-Workflow status changes are watched by the OrderReconciler and propagated to Fragment and Order status fields.</p>
+Workflow status changes are watched by the OrderReconciler and propagated to ArtifactWorkflow and Order status fields.</p>
 <h2 id="testing-infrastructure">Testing Infrastructure<a class="headerlink" href="#testing-infrastructure" title="Permanent link">¶</a></h2>
 <h3 id="test-environment-architecture">Test Environment Architecture<a class="headerlink" href="#test-environment-architecture" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     subgraph "Test Suite"
         TestCode["Integration Tests&lt;br/&gt;(Ginkgo)"]
     end
@@ -2481,7 +2630,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     subgraph "Test Resources"
         TestNS["Test Namespace"]
         TestOrder["Test Order"]
-        TestFragment["Test Fragment"]
+        TestArtifactWorkflow["Test ArtifactWorkflow"]
     end
 
     TestCode --&gt; EnvtestCtrl
@@ -2495,10 +2644,14 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
 
     TestCode --&gt; TestNS
     TestCode --&gt; TestOrder
-    TestCode --&gt; TestFragment
+    TestCode --&gt; TestArtifactWorkflow
 
     TestOrder -.stored in.-&gt; EnvtestEtcd
-    TestFragment -.stored in.-&gt; EnvtestEtcd</code></pre>
+    TestArtifactWorkflow -.stored in.-&gt; EnvtestEtcd</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p>The test environment (<code>pkg/envtest/environment.go</code>) provides a complete ARC deployment for integration testing:</p>
 <p><strong>Initialization:</strong> <a href="">pkg/envtest/environment.go:30-40</a></p>
 <ul>
@@ -2516,7 +2669,28 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
 <p><strong>Sources:</strong> <a href="">pkg/envtest/environment.go:1-93</a>, <a href="">pkg/apiserver/suite_test.go:1-84</a></p>
 <h2 id="component-interactions">Component Interactions<a class="headerlink" href="#component-interactions" title="Permanent link">¶</a></h2>
 <h3 id="request-flow-for-artifact-processing">Request Flow for Artifact Processing<a class="headerlink" href="#request-flow-for-artifact-processing" title="Permanent link">¶</a></h3>
-<pre class="mermaid"><code>sequenceDiagram
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>sequenceDiagram
     participant CLI as "arcctl CLI"
     participant K8sAPI as "Kubernetes API"
     participant APIAgg as "API Aggregation"
@@ -2541,12 +2715,12 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     etcd--&gt;&gt;ARCAPI: Order data
     ARCAPI--&gt;&gt;Ctrl: Order object
 
-    Ctrl-&gt;&gt;Ctrl: Generate Fragments
+    Ctrl-&gt;&gt;Ctrl: Generate ArtifactWorkflows
 
-    Ctrl-&gt;&gt;ARCAPI: POST Fragments
-    ARCAPI-&gt;&gt;etcd: Write Fragments
+    Ctrl-&gt;&gt;ARCAPI: POST ArtifactWorkflows
+    ARCAPI-&gt;&gt;etcd: Write ArtifactWorkflows
 
-    Ctrl-&gt;&gt;ARCAPI: GET ArtifactTypeDefinition
+    Ctrl-&gt;&gt;ARCAPI: GET ArtifactType
     ARCAPI-&gt;&gt;etcd: Read ATD
     etcd--&gt;&gt;ARCAPI: ATD with workflowTemplateRef
     ARCAPI--&gt;&gt;Ctrl: ATD object
@@ -2574,7 +2748,11 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     K8sAPI--&gt;&gt;Ctrl: Status event
 
     Ctrl-&gt;&gt;ARCAPI: PATCH Order status
-    ARCAPI-&gt;&gt;etcd: Update Order status</code></pre>
+    ARCAPI-&gt;&gt;etcd: Update Order status</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p>This sequence shows the complete lifecycle from user command to artifact delivery, highlighting the separation between declarative resource management (ARC API Server) and execution (Argo Workflows).</p>
 <h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">¶</a></h2>
 <h3 id="separation-of-concerns">Separation of Concerns<a class="headerlink" href="#separation-of-concerns" title="Permanent link">¶</a></h3>
@@ -2594,7 +2772,7 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
 </tr>
 <tr>
 <td><strong>Control Layer</strong></td>
-<td>Reconciliation, Fragment generation</td>
+<td>Reconciliation, ArtifactWorkflow generation</td>
 <td>OrderReconciler</td>
 </tr>
 <tr>
@@ -2634,10 +2812,10 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
 <p>ARC's architecture achieves Kubernetes-native artifact management through:</p>
 <ol>
 <li><strong>Extension API Server:</strong> Provides declarative resource model with flexible storage backend</li>
-<li><strong>Controller Pattern:</strong> OrderReconciler decomposes high-level Orders into executable Fragments</li>
+<li><strong>Controller Pattern:</strong> OrderReconciler decomposes high-level Orders into executable ArtifactWorkflows</li>
 <li><strong>Argo Integration:</strong> Leverages proven workflow engine for artifact processing</li>
 <li><strong>Dedicated Storage:</strong> Isolated etcd prevents impact on cluster control plane</li>
-<li><strong>Resource Model:</strong> Clean separation between configuration (Endpoint, ATD) and operations (Order, Fragment)</li>
+<li><strong>Resource Model:</strong> Clean separation between configuration (Endpoint, ATD) and operations (Order, ArtifactWorkflow)</li>
 </ol>
 
 
@@ -2697,6 +2875,10 @@ Workflow status changes are watched by the OrderReconciler and propagated to Fra
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="../../assets/javascripts/zoompan.js"></script>
       
     
   

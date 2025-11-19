@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../../../assets/stylesheets/panzoom.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -64,7 +66,8 @@
             body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
-        </style></head>
+        </style><meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1780,15 +1783,14 @@
 <h3 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">¶</a></h3>
 <ul>
 <li><code>arcctl</code>: Command line utility to interact with the ARC API.</li>
-<li><code>Order</code>: Represents an order of one or more artifacts. Even ordering artifacts that may exist in the future can be reference here using semver expressions for example.</li>
-<li><code>OrderFragment</code>: Represents a single artifact order which is part of an <code>Order</code>.</li>
-<li><code>OrderTypeDefinition</code>: Defines rules and defaults for a specific order type like 'OCI'. References a certain workflow to use for that type.</li>
-<li><code>Endpoint</code>: General term for source or destination. Can be a source or destination for artifacts. Includes optional credentials to access it.</li>
+<li><code>Order</code>: Represents an order of one or more artifacts. Tracks generation numbers of referenced <code>Endpoints</code> and <code>Secrets</code> to detect changes and trigger <code>ArtifactWorkflow</code> reconciliation for idempotency.</li>
+<li><code>ArtifactWorkflow</code>: Represents a single artifact to be processed as part of an <code>Order</code>. Minimal resource containing artifact type reference and source/destination endpoint references. Replaces legacy <code>OrderArtifactWorkflow</code>.</li>
+<li><code>ArtifactType</code>: Defines rules, defaults, and the <code>WorkflowTemplate</code> reference for a specific artifact type like 'OCI'. Replaces legacy <code>OrderTypeDefinition</code>.</li>
+<li><code>Endpoint</code>: General term for source or destination. Can be a source or destination for artifacts. Includes optional credentials to access it. Changes to <code>Endpoint</code> or its referenced <code>Secret</code> trigger <code>Order</code> reconciliation.</li>
 <li><code>WorkflowTemplate</code>: Argo Workflows, see <a href="https://argo-workflows.readthedocs.io/en/latest/fields/#workflowtemplate">https://argo-workflows.readthedocs.io/en/latest/fields/#workflowtemplate</a></li>
 <li><code>Workflow</code>: Argo Workflows, see <a href="https://argo-workflows.readthedocs.io/en/latest/fields/#workflow">https://argo-workflows.readthedocs.io/en/latest/fields/#workflow</a></li>
 <li><code>ARC API Server</code>: A Kubernetes Extension API Server which handles storage of ARC API</li>
-<li><code>Order Controller</code>: A Kubernetes Controller which reconciles <code>Orders</code>, splits up <code>Order</code> resources into <code>OrderFragment</code> Resources, creates <code>Workflow</code> resources for necessary workload</li>
-<li><code>ArtifactTypeDefinition</code>: Specifies the processing rules and workflow templates for artifact types (e.g. <code>oci</code>, <code>helm</code>).</li>
+<li><code>ARC Controller Manager</code>: A set of Kubernetes Controller which reconciles <code>Orders</code>, creates/updates <code>ArtifactWorkflow</code> resources from <code>Order</code> artifacts and instantiates <code>Workflow</code> resources for each <code>ArtifactWorkflow</code>. Tracks <code>Endpoint</code> and <code>Secret</code> generations to ensure idempotency.</li>
 </ul>
 <h2 id="considered-options">Considered Options<a class="headerlink" href="#considered-options" title="Permanent link">¶</a></h2>
 <h3 id="classic-kubernetes-operators">Classic Kubernetes Operators<a class="headerlink" href="#classic-kubernetes-operators" title="Permanent link">¶</a></h3>
@@ -1836,6 +1838,7 @@ The order controller creates "jobs" which are actually Argo Workflows.</p>
 <li>Instead of <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/">CRDs</a>, <code>ARC</code> uses an <a href="https://kubernetes.io/docs/tasks/extend-kubernetes/setup-extension-api-server/">Extension API Server</a> via the <a href="https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/">Kubernetes API Aggregation Layer</a> to handle API requests.</li>
 <li>This gives it the possibility to use a dedicated <code>etcd</code> or a even more suitable storage backend for the high amount of resources and status information in case this is necessary.</li>
 <li>While <code>etcd</code> still can be used as storage backend, it is one separated from the <code>etcd</code> used by the Kubernetes control plane and reduces the risk of bringing the whole cluster into trouble.</li>
+<li>As the storage implementation is under our control, we can implement a custom storage interface or use <code>kind</code> down the line.</li>
 <li>Additional links</li>
 <li><a href="https://github.com/kubernetes-sigs/apiserver-runtime">https://github.com/kubernetes-sigs/apiserver-runtime</a></li>
 <li><a href="https://github.com/kubernetes/sample-apiserver/tree/master">https://github.com/kubernetes/sample-apiserver/tree/master</a></li>
@@ -1847,25 +1850,46 @@ The order controller creates "jobs" which are actually Argo Workflows.</p>
 <p><strong>Overview Diagram</strong></p>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="../img/0-arc-architecture.drawio.svg" data-desc-position="bottom"><img alt="ARC Architecture Diagram" src="../img/0-arc-architecture.drawio.svg" title="ARC Architecture"></a></p>
 <p><strong>API Concept Diagram</strong></p>
-<pre class="mermaid"><code>---
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>---
 config:
   layout: elk
 ---
 flowchart LR
  subgraph subGraph0["Declarative Layer"]
         Order["Order (User Input)"]
-        Spec["spec:&lt;br&gt;- defaults&lt;br&gt;- artifacts[]"]
+        Spec["spec:&lt;br&gt;- defaults&lt;br&gt;- artifacts[]&lt;br&gt;--- &lt;br&gt;status:&lt;br&gt;- endpointGenerations&lt;br&gt;- secretGenerations"]
   end
  subgraph subGraph1["Generated Layer"]
-        Fragment1["Fragment-1"]
-        Fragment2["Fragment-2"]
-        FragmentN["Fragment-N"]
+        ArtifactWorkflow1["ArtifactWorkflow-1&lt;br&gt;(Minimal Params)"]
+        ArtifactWorkflow2["ArtifactWorkflow-2&lt;br&gt;(Minimal Params)"]
+        ArtifactWorkflowN["ArtifactWorkflow-N&lt;br&gt;(Minimal Params)"]
   end
- subgraph Configuration["Configuration"]
-        ArtifactTypeDef@{ label: "ArtifactTypeDefinition (e.g., 'oci')" }
+ subgraph Configuration["Configuration &amp; Secrets"]
+        ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
         EndpointSrc["Endpoint (Source)"]
         EndpointDst["Endpoint (Destination)"]
-        Secret["Secret (Credentials)"]
+        EndpointSecret@{ shape: procs, label: "Secrets (e.g. Credentials)"}
   end
  subgraph Execution["Execution"]
         WorkflowTemplate["WorkflowTemplate (Argo)"]
@@ -1873,30 +1897,38 @@ flowchart LR
         WorkflowInstance2["Workflow Instance"]
   end
     Order -- contains --&gt; Spec
-    Spec -- generates --&gt; Fragment1 &amp; Fragment2 &amp; FragmentN
-    Fragment1 -- type --&gt; ArtifactTypeDef
-    Fragment2 -- type --&gt; ArtifactTypeDef
-    Fragment1 -- srcRef --&gt; EndpointSrc
-    Fragment2 -- srcRef --&gt; EndpointSrc
-    Fragment1 -- dstRef --&gt; EndpointDst
-    Fragment2 -- dstRef --&gt; EndpointDst
-    Fragment1 -- references --&gt; EndpointSrc &amp; EndpointDst
-    Fragment2 -- references --&gt; EndpointSrc &amp; EndpointDst
-    EndpointSrc -- credentialRef --&gt; Secret
-    EndpointDst -- credentialRef --&gt; Secret
+    Spec -- generates --&gt; ArtifactWorkflow1 &amp; ArtifactWorkflow2 &amp; ArtifactWorkflowN
+    Spec -- reads &amp; tracks generations of --&gt; EndpointSrc &amp; EndpointDst &amp; EndpointSecret
+    ArtifactWorkflow1 -- type --&gt; ArtifactTypeDef
+    ArtifactWorkflow2 -- type --&gt; ArtifactTypeDef
+    ArtifactWorkflow1 -- srcRef --&gt; EndpointSrc
+    ArtifactWorkflow2 -- srcRef --&gt; EndpointSrc
+    ArtifactWorkflow1 -- dstRef --&gt; EndpointDst
+    ArtifactWorkflow2 -- dstRef --&gt; EndpointDst
+    EndpointSrc -- secretRef --&gt; EndpointSecret
+    EndpointDst -- secretRef --&gt; EndpointSecret
     ArtifactTypeDef -- workflowTemplateRef --&gt; WorkflowTemplate
-    Fragment1 -- triggers --&gt; WorkflowTemplate
-    Fragment2 -- triggers --&gt; WorkflowTemplate
+    ArtifactWorkflow1 -- references --&gt; EndpointSecret
+    ArtifactWorkflow2 -- references --&gt; EndpointSecret
+    ArtifactWorkflow1 -- instantiates --&gt; WorkflowTemplate
+    ArtifactWorkflow2 -- instantiates --&gt; WorkflowTemplate
     WorkflowTemplate -- instantiates --&gt; WorkflowInstance1 &amp; WorkflowInstance2
-    ArtifactTypeDef@{ shape: rect}
-</code></pre>
+    WorkflowInstance1 -- mounts --&gt; EndpointSecret
+    WorkflowInstance2 -- mounts --&gt; EndpointSecret
+
+    ArtifactTypeDef@{ shape: rect}</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <p>The solution shows the ARC API Server which handles storage for the custom resources / API of ARC.
 <code>etcd</code> is used as storage solution.
-<code>Order Controller</code> is a classic Kubernetes controller implementation which reconciles <code>Orders</code> and <code>Endpoints</code>.
-An <code>Order</code> contains the information what artifacts should be processed.
+<code>Order Controller</code> is classic Kubernetes controller implementation which reconciles <code>Orders</code> and monitors <code>Endpoints</code> and <code>Secrets</code>. In a similar fashion the <code>ArtifactWorkflow Controller</code> reconciles <code>ArtifactWorkflows</code> and instantiates and tracks Argo Workflows based on the <code>ArtifactType</code>. Both controllers are contained in the <code>ARC Controller Manager</code>.</p>
+<p>An <code>Order</code> contains the information what artifacts should be processed and tracks generation numbers of referenced <code>Endpoints</code> and <code>Secrets</code> to detect changes.
 An <code>Endpoint</code> contains the information about a source or destination for artifacts.
-The <code>Order Controller</code> creates <code>Fragment</code> resources which are single artifacts decomposed from an <code>Order</code>.
-An <code>ArtifactTypeDefinition</code> specifies the processing rules and workflow templates for artifact types (e.g. <code>oci</code>, <code>helm</code>).</p>
+The <code>Order Controller</code> creates <code>ArtifactWorkflow</code> resources which are minimal, idempotent representations of artifacts to be processed.
+When an <code>Endpoint</code> or referenced <code>Secret</code> changes (detected via generation tracking), the controller automatically recreates the rendered configuration and triggers <code>ArtifactWorkflow</code> recreation.
+An <code>ArtifactType</code> specifies the processing rules and workflow templates for artifact types (e.g. <code>oci</code>, <code>helm</code>).</p>
 <h4 id="pros_1">Pros<a class="headerlink" href="#pros_1" title="Permanent link">¶</a></h4>
 <ul>
 <li>Using dedicated <code>etcd</code> does not clutter the infra etcd</li>
@@ -1904,14 +1936,17 @@ An <code>ArtifactTypeDefinition</code> specifies the processing rules and workfl
 <li>Keep the declarative style of Kubernetes while having complete freedom on the API implementation</li>
 <li>Argo Workflows allows us to focus on the domain of the product without reinventing the wheel</li>
 <li>Qotas and Fairness easy without writing code via Kueue</li>
+<li><strong>Idempotency</strong>: Generation tracking ensures configuration changes are reliably detected and handled without race conditions</li>
+<li><strong>Minimal Resource Overhead</strong>: Small <code>ArtifactWorkflow</code> resources with externalized configuration reduce API load and enable efficient scaling</li>
 </ul>
 <h4 id="cons_1">Cons<a class="headerlink" href="#cons_1" title="Permanent link">¶</a></h4>
 <ul>
 <li>Building addon apiservers directly on the raw api-machinery libraries requires non-trivial code that must be maintained and rebased as the raw libraries change.</li>
 <li>Steep learning curve when starting the project and steeper learning curve when joining the project.</li>
+<li>Generation tracking adds complexity to the reconciliation logic that must be carefully maintained</li>
 </ul>
 <h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">¶</a></h2>
-<p>Chosen Option: Solution A.</p>
+<p>Chosen Option: Solution E.</p>
 <p>Because the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
 The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
 The project itself can focus on the order process and the handling of endpoints.</p>
@@ -1976,6 +2011,10 @@ The project itself can focus on the order process and the handling of endpoints.
     
     
       <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../../assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="../../../assets/javascripts/zoompan.js"></script>
       
     
   

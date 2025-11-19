@@ -48,6 +48,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/stylesheets/panzoom.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -64,7 +66,8 @@
             body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color); }
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
-        </style></head>
+        </style><meta name="panzoom-theme" content="material">
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -949,6 +952,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-for-an-oci-usecase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example for an OCI usecase
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example for an OCI usecase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowtemplate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowTemplate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1376,6 +1429,56 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#example-for-an-oci-usecase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example for an OCI usecase
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example for an OCI usecase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflowtemplate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowTemplate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Example
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1413,67 +1516,91 @@
 <p>ARC does not orchestrate the workflows, but relies on <a href="https://github.com/argoproj/argo-workflows">Argo Workflows</a> as workflow engine.</p>
 <h2 id="resource-relationships">Resource Relationships<a class="headerlink" href="#resource-relationships" title="Permanent link">¶</a></h2>
 <p>The following diagram illustrates how ARC resources work together to instantiate and configure Argo Workflows:</p>
-<pre class="mermaid"><code>graph TB
+<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
+    
+    <nav class="panzoom-nav">
+    <button class="panzoom-info panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
+    </svg>
+</button><button class="panzoom-reset panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
+    </svg>
+</button><button class="panzoom-max panzoom-button">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
+    </svg>
+</button><button class="panzoom-min panzoom-button panzoom-hidden">
+    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
+    </svg>
+</button>
+    </nav>
+    <pre class="mermaid"><code>graph TB
     Order["📋 Order&lt;br/&gt;(User Request)"]
-    Fragment["📦 Fragment"]
-    ArtifactTypeDef["🏷️ ArtifactTypeDefinition"]
+    ArtifactWorkflow["📦 ArtifactWorkflow"]
+    ArtifactTypeDef["🏷️ ArtifactType"]
     SrcEndpoint["🔌 Endpoint (Source)"]
     DstEndpoint["🔌 Endpoint (Destination)"]
     SrcSecret["🔐 Secret&lt;br/&gt;(Source Credentials)"]
     DstSecret["🔐 Secret&lt;br/&gt;(Destination Credentials)"]
     WorkflowTemplate["⚙️ WorkflowTemplate"]
     Workflow["🚀 Workflow"]
-    Config["⚙️ config.json&lt;br/&gt;(Runtime Config)"]
 
-    Order --&gt;|creates| Fragment
-    Fragment --&gt;|specifies type| ArtifactTypeDef
-    Fragment --&gt;|references| SrcEndpoint
-    Fragment --&gt;|references| DstEndpoint
-    Fragment --&gt;|contains spec params| Workflow
+    Order --&gt;|creates| ArtifactWorkflow
+    Order --&gt;|references| SrcEndpoint
+    Order --&gt;|references| DstEndpoint
+    ArtifactWorkflow --&gt;|specifies type| ArtifactTypeDef
+    ArtifactWorkflow --&gt;|references| SrcSecret
+    ArtifactWorkflow --&gt;|references| DstSecret
 
-    ArtifactTypeDef --&gt;|validates src/dst types| Fragment
+    ArtifactTypeDef --&gt;|validates src/dst types| ArtifactWorkflow
     ArtifactTypeDef --&gt;|references| WorkflowTemplate
 
     SrcEndpoint --&gt;|references| SrcSecret
     DstEndpoint --&gt;|references| DstSecret
 
-    WorkflowTemplate --&gt;|instantiates| Workflow
-    SrcEndpoint --&gt;|provides src config| Config
-    DstEndpoint --&gt;|provides dst config| Config
-    Fragment --&gt;|provides spec params| Config
-    Config --&gt;|mounts to| Workflow
+    WorkflowTemplate --&gt;|blueprint for| Workflow
+    ArtifactWorkflow --&gt;|provides params &amp; instantiates| Workflow
+    SrcSecret --&gt;|mounts to| Workflow
+    DstSecret --&gt;|mounts to| Workflow
 
     style Order stroke:#e1f5ff,stroke-width:2px
-    style Fragment stroke:#f3e5f5,stroke-width:2px
+    style ArtifactWorkflow stroke:#f3e5f5,stroke-width:2px
     style ArtifactTypeDef stroke:#e8f5e9,stroke-width:2px
     style SrcEndpoint stroke:#fff3e0,stroke-width:2px
     style DstEndpoint stroke:#fff3e0,stroke-width:2px
     style SrcSecret stroke:#fce4ec,stroke-width:2px
     style DstSecret stroke:#fce4ec,stroke-width:2px
     style WorkflowTemplate stroke:#f1f8e9,stroke-width:2px
-    style Workflow stroke:#ffe0b2,stroke-width:2px
-    style Config stroke:#e0f2f1,stroke-width:2px</code></pre>
+    style Workflow stroke:#ffe0b2,stroke-width:2px</code></pre> 
+    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
+Hold "Alt" / "Option" to enable pan &amp; zoom
+</div>
+</div>
 <h2 id="walkthrough">Walkthrough<a class="headerlink" href="#walkthrough" title="Permanent link">¶</a></h2>
 <p>A workflow created by ARC is composed out of three parts:</p>
 <ol>
 <li>A <code>workflowTemplateRef</code> which references a <code>WorkflowTemplate</code>-Object</li>
 <li>Parameters passed to the entrypoint of the workflow</li>
-<li>An ephemeral configuration (<code>config.json</code>) which is mounted by the workflow (stored as Kubernetes-Secret as it may contain credentials)</li>
+<li>A mount for the source and destination secrets respectively</li>
 </ol>
-<p>When a <code>Fragment</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
+<p>When a <code>ArtifactWorkflow</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Fragment</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactWorkflow</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-frag</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Artifact Type!</span>
-<span class="w">  </span><span class="nt">srcRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc</span>
-<span class="w">  </span><span class="nt">dstRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst</span>
-<span class="w">  </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
-<span class="w">    </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span><span class="w"> </span><span class="c1"># default alpine:3.18; support CEL?</span>
+<span class="w">  </span><span class="nt">srcSecretRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc-creds</span>
+<span class="w">  </span><span class="nt">dstSecretRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst-creds</span>
+<span class="w">  </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="c1"># ...</span>
 </code></pre></div>
 <p>The two referenced <code>Endpoints</code> by <code>srcRef</code> and <code>dstRef</code> might look as follows respectively:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
@@ -1498,66 +1625,256 @@
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst-creds</span>
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PushOnly</span>
 </code></pre></div>
-<p>How these objects are tied into a workflow is described by the <code>ArtifactTypeDefinition</code>:</p>
+<p>How these objects are tied into a workflow is described by the <code>ArtifactType</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactTypeDefinition</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">srcTypes</span><span class="p">:</span><span class="w"> </span><span class="c1"># Endpoint Types</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-workflow-template</span>
 </code></pre></div>
-<p>The <code>Fragment</code> defines which <code>ArtifactTypeDefinition</code> is used. In our case <code>oci</code> and therefore the controller will instantiate the <code>oci-workflow-template</code>.</p>
-<p>The two endpoints specified by the <code>Fragment</code> are compliant as the workflow does only support endpoints of the type <code>oci</code>. It is important to understand that there are both endpoint types and artifact types.</p>
+<p>The <code>ArtifactWorkflow</code> defines which <code>ArtifactType</code> is used. In our case <code>oci</code> and therefore the controller will instantiate the <code>oci-workflow-template</code>.</p>
+<p>The two endpoints specified by the <code>ArtifactWorkflow</code> are compliant as the workflow does only support endpoints of the type <code>oci</code>. It is important to understand that there are both endpoint types and artifact types.</p>
 <p>The controller will verify the endpoints and retrieve the associated secrets.</p>
 <h2 id="resulting-parameters-and-runtime-configuration">Resulting parameters and runtime-configuration<a class="headerlink" href="#resulting-parameters-and-runtime-configuration" title="Permanent link">¶</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The <code>config.json</code> is ephemeral and only exists for the duration of the running workflow!</p>
-</div>
 <p>The above resources will instantiate the workflow with the following parameters:</p>
 <ul>
-<li><code>srcType</code>: TODO</li>
-<li><code>srcRemoteURL</code>: TODO</li>
-<li><code>dstType</code>: TODO</li>
-<li><code>dstRemoteURL</code>: TODO</li>
-<li><code>specImage</code>: TODO</li>
-<li><code>specOverride</code>: TODO</li>
+<li><code>srcType</code>: <code>oci</code></li>
+<li><code>srcRemoteURL</code>: <code>https://...</code></li>
+<li><code>srcSecret</code>: <code>true</code> (special variable for conditional steps, <code>true</code> or <code>false</code> depending if secret was provided)</li>
+<li><code>dstType</code>: <code>oci</code></li>
+<li><code>dstRemoteURL</code>: <code>https://...</code></li>
+<li><code>dstSecret</code>: <code>true</code> (see above)</li>
+<li><code>specImage</code>: <code>library/alpine:3.18</code></li>
+<li><code>specOverride</code>: <code>myteam/alpine:3.18-dev</code></li>
 </ul>
-<p>The <code>config.json</code>-file looks as follows:</p>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"src"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"remoteURL"</span><span class="p">:</span><span class="w"> </span><span class="s2">"registry-1.docker.io"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"auth"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// optional, from secret key/values</span>
-<span class="w">      </span><span class="nt">"username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"password"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pass"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"dst"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oci"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"remoteURL"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gcr.io"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"auth"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// optional, from secret key/values</span>
-<span class="w">      </span><span class="nt">"username"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"password"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pass"</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"spec"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"image"</span><span class="p">:</span><span class="w"> </span><span class="s2">"library/alpine:3.18"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"override"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opendefensecloud/alpine:3.18-dev"</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
+<p>Parameter names are derived from the API spec, but translated to camelCase. The values are always strings!</p>
 <p>The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.</p>
-<p><code>arcctl</code> providers commands to extract values from the config, e.g.:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">source</span><span class="w"> </span>&lt;<span class="o">(</span>arcctl<span class="w"> </span>env<span class="w"> </span>--from<span class="o">=</span><span class="s2">"dst.auth"</span><span class="w"> </span>--prefix<span class="o">=</span><span class="s2">"DOCKER"</span><span class="o">)</span>
-docker<span class="w"> </span>login<span class="w"> </span>-u<span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">DOCKER_USERNAME</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-p<span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">DOCKER_PASSWORD</span><span class="si">}</span><span class="s2">"</span>
+<p>However the source and destination secrets are mounted at <code>/secret/src/</code> and <code>/secret/dst/</code> respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.</p>
+<p>Using <code>oras</code> in a workflow might therefore look as follows:</p>
+<div class="highlight"><pre><span></span><code>oras<span class="w"> </span>pull<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/username<span class="k">)</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/password<span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="o">{{</span><span class="w"> </span>workflow.parameters.srcRemoteURL<span class="w"> </span><span class="o">}}</span>/<span class="o">{{</span><span class="w"> </span>workflow.parameters.spec.image<span class="w"> </span><span class="o">}}</span>
+</code></pre></div>
+<h2 id="example-for-an-oci-usecase">Example for an OCI usecase<a class="headerlink" href="#example-for-an-oci-usecase" title="Permanent link">¶</a></h2>
+<h3 id="workflowtemplate">WorkflowTemplate<a class="headerlink" href="#workflowtemplate" title="Permanent link">¶</a></h3>
+<p>The following template is an example for a workflow that uses the <code>oci</code> source and destination. It can be used as a starting point to create your own workflows.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WorkflowTemplate</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline-flexible</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Define the PVC template for inter-step data sharing</span>
+<span class="w">  </span><span class="nt">volumeClaimTemplates</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
+<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">accessModes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"ReadWriteOnce"</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">requests</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10Gi</span>
+
+<span class="w">  </span><span class="c1"># --- Input Parameters ---</span>
+<span class="w">  </span><span class="nt">arguments</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcRemoteURL</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcSecret</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstType</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstRemoteURL</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstSecret</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specImage</span><span class="w"> </span><span class="c1"># The source image path (e.g., library/alpine:3.18)</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span><span class="w"> </span><span class="c1"># The target image path (e.g., myteam/alpine:3.18-dev)</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HIGH,CRITICAL</span>
+
+<span class="w">  </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-pipeline</span>
+
+<span class="w">  </span><span class="nt">templates</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># --- Main Pipeline Entrypoint ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-pipeline</span>
+<span class="w">      </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
+
+<span class="w">    </span><span class="c1"># --- 1. Pull Image (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="c1"># Mount the secret volume to a temporary directory</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-secret-vol</span>
+<span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/src-creds</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"</span>
+<span class="w">          </span><span class="no">mkdir -p /data/image-storage</span>
+
+<span class="w">          </span><span class="no"># Conditionally set credentials flag for Skopeo</span>
+<span class="w">          </span><span class="no">CREDS_FLAG=""</span>
+<span class="w">          </span><span class="no">if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then</span>
+<span class="w">              </span><span class="no"># Skopeo uses the docker config JSON file (mounted from the secret)</span>
+<span class="w">              </span><span class="no">CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"</span>
+<span class="w">          </span><span class="no">fi</span>
+
+<span class="w">          </span><span class="no"># Construct the full source image path</span>
+<span class="w">          </span><span class="no">SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"</span>
+
+<span class="w">          </span><span class="no"># Skopeo copy command</span>
+<span class="w">          </span><span class="no">skopeo copy --multi-arch all $CREDS_FLAG $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"</span>
+
+<span class="w">    </span><span class="c1"># --- 2. Scan Image (Trivy) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
+
+<span class="w">      </span><span class="nt">outputs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-result</span><span class="w"> </span><span class="c1"># name of output parameter</span>
+<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/scan-results.json</span>
+
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aquasec/trivy:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"</span>
+
+<span class="w">          </span><span class="no"># Trivy scan in a directory mode</span>
+<span class="w">          </span><span class="no">trivy image \</span>
+<span class="w">            </span><span class="no">--exit-code 1 \</span>
+<span class="w">            </span><span class="no">--severity "{{workflow.parameters.scanSeverity}}" \</span>
+<span class="w">            </span><span class="no">--format json \</span>
+<span class="w">            </span><span class="no">--output /data/scan-results.json \</span>
+<span class="w">            </span><span class="no">--input /data/image-storage/scanned-image</span>
+
+<span class="w">          </span><span class="no">if [ $? -eq 0 ]; then</span>
+<span class="w">              </span><span class="no">echo "✅ Scan successful and no vulnerabilities found above severity: {{workflow.parameters.scanSeverity}}"</span>
+<span class="w">          </span><span class="no">else</span>
+<span class="w">              </span><span class="no">echo "❌ Scan failed!"</span>
+<span class="w">              </span><span class="no">exit 1</span>
+<span class="w">          </span><span class="no">fi</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATH</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin</span>
+
+<span class="w">    </span><span class="c1"># --- 3. Push Image (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
+
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+
+<span class="w">        </span><span class="c1"># Mount the secret volume to a temporary directory</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-secret-vol</span>
+<span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/dst-creds</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"</span>
+
+<span class="w">          </span><span class="no"># Conditionally set credentials flag for Skopeo</span>
+<span class="w">          </span><span class="no">CREDS_FLAG=""</span>
+<span class="w">          </span><span class="no">if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then</span>
+<span class="w">              </span><span class="no">CREDS_FLAG="--dest-authfile /tmp/dst-creds/.dockerconfigjson"</span>
+<span class="w">          </span><span class="no">fi</span>
+
+<span class="w">          </span><span class="no"># Construct the full destination image path</span>
+<span class="w">          </span><span class="no">DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"</span>
+
+<span class="w">          </span><span class="no"># Skopeo copy command</span>
+<span class="w">          </span><span class="no">skopeo copy --dest-tls-verify=false $CREDS_FLAG "oci:/data/image-storage/scanned-image" $DEST_IMAGE</span>
+</code></pre></div>
+<h3 id="secrets">Secrets<a class="headerlink" href="#secrets" title="Permanent link">¶</a></h3>
+<p>These are the example secrets for pulling and pushing.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Example Source Secret (src-reg-secret)</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-reg-secret</span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/dockerconfigjson</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">.dockerconfigjson</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;BASE64_ENCODED_AUTH_DATA_FOR_DOCKER.IO&gt;</span>
+<span class="nn">---</span>
+<span class="c1"># Example Destination Secret (dst-reg-secret)</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-reg-secret</span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/dockerconfigjson</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">.dockerconfigjson</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO&gt;</span>
+</code></pre></div>
+<h3 id="workflow-example">Workflow Example<a class="headerlink" href="#workflow-example" title="Permanent link">¶</a></h3>
+<p>To create a <code>Workflow</code> based on the template the following <code>yaml</code> can be used.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Workflow</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">generateName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-scan-flexible-</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># Reference the template defined above</span>
+<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline-flexible</span>
+
+<span class="w">  </span><span class="c1"># --- Shared Volumes ---</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="c1"># This volume will contain the actual authentication file from the secret</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-secret-vol</span>
+<span class="w">      </span><span class="nt">secret</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="s">"src-reg-secret"</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-secret-vol</span>
+<span class="w">      </span><span class="nt">secret</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="s">"dst-reg-secret"</span>
+
+<span class="w">  </span><span class="c1"># Pass the specific image paths and scan settings</span>
+<span class="w">  </span><span class="nt">arguments</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># --- Source Parameters ---</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcRemoteURL</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcSecret</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"false"</span>
+
+<span class="w">      </span><span class="c1"># --- Destination Parameters ---</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstType</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstRemoteURL</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstSecret</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span>
+
+<span class="w">      </span><span class="c1"># --- Image Specs ---</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specImage</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span>
+
+<span class="w">      </span><span class="c1"># --- Scanning ---</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HIGH,CRITICAL</span>
 </code></pre></div>
 
 
@@ -1617,6 +1934,10 @@ docker<span class="w"> </span>login<span class="w"> </span>-u<span class="o">=</
     
     
       <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+        <script src="../../assets/javascripts/panzoom.min.js"></script>
+      
+        <script src="../../assets/javascripts/zoompan.js"></script>
       
     
   
