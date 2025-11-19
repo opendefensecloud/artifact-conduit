@@ -461,6 +461,8 @@ func Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.A
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *ArtifactWorkflowStatus, out *arc.ArtifactWorkflowStatus, s conversion.Scope) error {
+	out.Phase = arc.WorkflowPhase(in.Phase)
+	out.Message = in.Message
 	return nil
 }
 
@@ -470,6 +472,8 @@ func Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *A
 }
 
 func autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *arc.ArtifactWorkflowStatus, out *ArtifactWorkflowStatus, s conversion.Scope) error {
+	out.Phase = WorkflowPhase(in.Phase)
+	out.Message = in.Message
 	return nil
 }
 
@@ -637,6 +641,7 @@ func Convert_arc_OrderArtifact_To_v1alpha1_OrderArtifact(in *arc.OrderArtifact, 
 func autoConvert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowStatus(in *OrderArtifactWorkflowStatus, out *arc.OrderArtifactWorkflowStatus, s conversion.Scope) error {
 	out.ArtifactIndex = in.ArtifactIndex
 	out.Phase = arc.WorkflowPhase(in.Phase)
+	out.Message = in.Message
 	return nil
 }
 
@@ -648,6 +653,7 @@ func Convert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowSt
 func autoConvert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkflowStatus(in *arc.OrderArtifactWorkflowStatus, out *OrderArtifactWorkflowStatus, s conversion.Scope) error {
 	out.ArtifactIndex = in.ArtifactIndex
 	out.Phase = WorkflowPhase(in.Phase)
+	out.Message = in.Message
 	return nil
 }
 

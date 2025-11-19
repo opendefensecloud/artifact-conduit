@@ -12,10 +12,23 @@ import (
 // +enum
 type WorkflowPhase string
 
-const (
-	// WorkflowPhaseInit represents the initialization phase of a workflow.
-	WorkflowPhaseInit WorkflowPhase = "Init"
+const ( // analog to Argo Workflows
+	WorkflowUnknown   WorkflowPhase = ""
+	WorkflowPending   WorkflowPhase = "Pending"
+	WorkflowRunning   WorkflowPhase = "Running"
+	WorkflowSucceeded WorkflowPhase = "Succeeded"
+	WorkflowFailed    WorkflowPhase = "Failed"
+	WorkflowError     WorkflowPhase = "Error"
 )
+
+func (p WorkflowPhase) Completed() bool {
+	switch p {
+	case WorkflowSucceeded, WorkflowFailed, WorkflowError:
+		return true
+	default:
+		return false
+	}
+}
 
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpec struct {
@@ -39,6 +52,10 @@ type ArtifactWorkflowParameter struct {
 
 // ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
 type ArtifactWorkflowStatus struct {
+	// Phase tracks which phase the corresponding Workflow is in
+	Phase WorkflowPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=WorkflowPhase"`
+	// A human readable message describing the current condition of the artifact workflow.
+	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
 }
 
 // +genclient
