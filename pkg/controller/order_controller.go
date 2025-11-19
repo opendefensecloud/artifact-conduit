@@ -120,6 +120,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// to compute desired state:
 	desiredAWs := map[string]desiredAW{}
 	for i, artifact := range order.Spec.Artifacts {
+		// TODO: When a endpoint or secret fetch fails, we stop the reconciliation of the whole order.
+		//       Should we instead not fail but skip invalid artifacts?
 		log := log.WithValues("artifactIndex", i)
 
 		// We need the referenced src- and dst-endpoints for the artifact
@@ -133,18 +135,14 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		srcEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
-			// TODO: should we set status to something and not error here?
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for source")
 		}
 		dstEndpoint := &arcv1alpha1.Endpoint{}
 		if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
-			// TODO: should we set status to something and not error here?
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 		}
 
 		// Next, we need the secret contents
-		// TODO: When a secret fetch fails, we stop the reconciliation of the whole order.
-		//       Should we instead not fail but skip invalid artifacts?
 		srcSecret := &corev1.Secret{}
 		if srcEndpoint.Spec.SecretRef.Name != "" {
 			if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
