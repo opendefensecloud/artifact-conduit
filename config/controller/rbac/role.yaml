@@ -19,15 +19,7 @@ rules:
 - apiGroups:
   - arc.bwi.de
   resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - arc.bwi.de
-  resources:
-  - fragments
+  - artifactworkflows
   - orders
   verbs:
   - create
@@ -40,19 +32,27 @@ rules:
 - apiGroups:
   - arc.bwi.de
   resources:
-  - fragments/finalizers
+  - artifactworkflows/finalizers
   - orders/finalizers
   verbs:
   - update
 - apiGroups:
   - arc.bwi.de
   resources:
-  - fragments/status
+  - artifactworkflows/status
   - orders/status
   verbs:
   - get
   - patch
   - update
+- apiGroups:
+  - arc.bwi.de
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - argoproj.io
   resources:
