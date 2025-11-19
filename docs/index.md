@@ -20,7 +20,7 @@ ARC is implemented as a Kubernetes Extension API Server integrated with the Kube
 
 **Architecture: ARC System Components and Data Flow**
 
-The system follows a layered architecture where users interact through the `arcctl` CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.
+The system follows a layered architecture where users interact through the Kubernetes API, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.
 
 ## Core Concepts
 
@@ -120,7 +120,6 @@ The Order Controller implements the reconciliation loop for Order resources:
 ```mermaid
 sequenceDiagram
     participant User
-    participant arcctl
     participant K8sAPI as "Kubernetes API"
     participant ARCAPI as "ARC API Server<br/>pkg/apiserver/"
     participant etcd as "Dedicated etcd"
@@ -129,8 +128,6 @@ sequenceDiagram
     participant Workflow as "Workflow Pod"
     participant Registry as "External Registry"
     
-    User->>arcctl: "arcctl oci pull alpine:3.18"
-    arcctl->>K8sAPI: "Create Order CR"
     K8sAPI->>ARCAPI: "Forward to arc.bwi.de"
     ARCAPI->>etcd: "Store Order"
     

@@ -427,7 +427,6 @@ The test environment (`pkg/envtest/environment.go`) provides a complete ARC depl
 
 ```mermaid
 sequenceDiagram
-    participant CLI as "arcctl CLI"
     participant K8sAPI as "Kubernetes API"
     participant APIAgg as "API Aggregation"
     participant ARCAPI as "arc-apiserver"
@@ -493,12 +492,12 @@ This sequence shows the complete lifecycle from user command to artifact deliver
 
 ### Separation of Concerns
 
-| Layer                   | Responsibility                      | Implementation          |
-| ----------------------- | ----------------------------------- | ----------------------- |
-| **API Layer**           | Resource CRUD, validation, storage  | arc-apiserver + etcd    |
+| Layer                   | Responsibility                              | Implementation          |
+| ----------------------- | ------------------------------------------- | ----------------------- |
+| **API Layer**           | Resource CRUD, validation, storage          | arc-apiserver + etcd    |
 | **Control Layer**       | Reconciliation, ArtifactWorkflow generation | OrderReconciler         |
-| **Execution Layer**     | Artifact processing, scanning       | Argo Workflows          |
-| **Configuration Layer** | Endpoint definitions, type rules    | Endpoint, ATD resources |
+| **Execution Layer**     | Artifact processing, scanning               | Argo Workflows          |
+| **Configuration Layer** | Endpoint definitions, type rules            | Endpoint, ATD resources |
 
 ### Declarative vs. Imperative
 

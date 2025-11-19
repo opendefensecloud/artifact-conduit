@@ -46,7 +46,6 @@ ARC codebase follows standard Kubernetes project conventions:
 | `pkg/apiserver/`    | Extension API server implementation     | Manual           |
 | `pkg/controller/`   | Controller reconciliation logic         | Manual           |
 | `pkg/registry/`     | Storage strategies for custom resources | Manual           |
-| `cmd/arcctl/`       | CLI tool implementation                 | Manual           |
 | `config/`           | Kubernetes manifests (CRDs, RBAC)       | Generated        |
 | `hack/`             | Build and code generation scripts       | Manual           |
 

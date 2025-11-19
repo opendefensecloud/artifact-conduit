@@ -11,7 +11,6 @@ This ADR is about finding the right architecture for the ARC suite of services b
 
 ### Glossary
 
-- `arcctl`: Command line utility to interact with the ARC API.
 - `Order`: Represents an order of one or more artifacts. Tracks generation numbers of referenced `Endpoints` and `Secrets` to detect changes and trigger `ArtifactWorkflow` reconciliation for idempotency.
 - `ArtifactWorkflow`: Represents a single artifact to be processed as part of an `Order`. Minimal resource containing artifact type reference and source/destination endpoint references. Replaces legacy `OrderArtifactWorkflow`.
 - `ArtifactType`: Defines rules, defaults, and the `WorkflowTemplate` reference for a specific artifact type like 'OCI'. Replaces legacy `OrderTypeDefinition`.
