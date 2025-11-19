@@ -19,6 +19,15 @@ rules:
 - apiGroups:
   - arc.bwi.de
   resources:
+  - artifacttypes
+  - endpoints
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - arc.bwi.de
+  resources:
   - artifactworkflows
   - orders
   verbs:
@@ -45,14 +54,6 @@ rules:
   - get
   - patch
   - update
-- apiGroups:
-  - arc.bwi.de
-  resources:
-  - endpoints
-  verbs:
-  - get
-  - list
-  - watch
 - apiGroups:
   - argoproj.io
   resources:
