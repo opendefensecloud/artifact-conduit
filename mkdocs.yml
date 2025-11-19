@@ -83,7 +83,8 @@ plugins:
   - search # re-include the default: https://www.mkdocs.org/user-guide/configuration/#plugins,
   - glightbox
   - include-markdown
-
+  - panzoom:
+      full_screen: True # default False
 validation:
   omitted_files: warn
   absolute_links: relative_to_docs
