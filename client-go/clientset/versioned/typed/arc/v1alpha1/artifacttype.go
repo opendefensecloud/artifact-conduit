@@ -20,7 +20,7 @@ import (
 // ArtifactTypesGetter has a method to return a ArtifactTypeInterface.
 // A group's client should implement this interface.
 type ArtifactTypesGetter interface {
-	ArtifactTypes(namespace string) ArtifactTypeInterface
+	ArtifactTypes() ArtifactTypeInterface
 }
 
 // ArtifactTypeInterface has methods to work with ArtifactType resources.
@@ -47,13 +47,13 @@ type artifactTypes struct {
 }
 
 // newArtifactTypes returns a ArtifactTypes
-func newArtifactTypes(c *ArcV1alpha1Client, namespace string) *artifactTypes {
+func newArtifactTypes(c *ArcV1alpha1Client) *artifactTypes {
 	return &artifactTypes{
 		gentype.NewClientWithListAndApply[*arcv1alpha1.ArtifactType, *arcv1alpha1.ArtifactTypeList, *applyconfigurationsarcv1alpha1.ArtifactTypeApplyConfiguration](
 			"artifacttypes",
 			c.RESTClient(),
 			scheme.ParameterCodec,
-			namespace,
+			"",
 			func() *arcv1alpha1.ArtifactType { return &arcv1alpha1.ArtifactType{} },
 			func() *arcv1alpha1.ArtifactTypeList { return &arcv1alpha1.ArtifactTypeList{} },
 		),

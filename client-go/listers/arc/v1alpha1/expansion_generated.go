@@ -9,10 +9,6 @@ package v1alpha1
 // ArtifactTypeLister.
 type ArtifactTypeListerExpansion interface{}
 
-// ArtifactTypeNamespaceListerExpansion allows custom methods to be added to
-// ArtifactTypeNamespaceLister.
-type ArtifactTypeNamespaceListerExpansion interface{}
-
 // ArtifactWorkflowListerExpansion allows custom methods to be added to
 // ArtifactWorkflowLister.
 type ArtifactWorkflowListerExpansion interface{}

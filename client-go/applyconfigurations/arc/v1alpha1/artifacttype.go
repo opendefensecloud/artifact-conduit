@@ -23,10 +23,9 @@ type ArtifactTypeApplyConfiguration struct {
 
 // ArtifactType constructs a declarative configuration of the ArtifactType type for use with
 // apply.
-func ArtifactType(name, namespace string) *ArtifactTypeApplyConfiguration {
+func ArtifactType(name string) *ArtifactTypeApplyConfiguration {
 	b := &ArtifactTypeApplyConfiguration{}
 	b.WithName(name)
-	b.WithNamespace(namespace)
 	b.WithKind("ArtifactType")
 	b.WithAPIVersion("arc.bwi.de/v1alpha1")
 	return b

@@ -18,8 +18,9 @@ type ArtifactTypeLister interface {
 	// List lists all ArtifactTypes in the indexer.
 	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactType, err error)
-	// ArtifactTypes returns an object that can list and get ArtifactTypes.
-	ArtifactTypes(namespace string) ArtifactTypeNamespaceLister
+	// Get retrieves the ArtifactType from the index for a given name.
+	// Objects returned here must be treated as read-only.
+	Get(name string) (*arcv1alpha1.ArtifactType, error)
 	ArtifactTypeListerExpansion
 }
 
@@ -31,27 +32,4 @@ type artifactTypeLister struct {
 // NewArtifactTypeLister returns a new ArtifactTypeLister.
 func NewArtifactTypeLister(indexer cache.Indexer) ArtifactTypeLister {
 	return &artifactTypeLister{listers.New[*arcv1alpha1.ArtifactType](indexer, arcv1alpha1.Resource("artifacttype"))}
-}
-
-// ArtifactTypes returns an object that can list and get ArtifactTypes.
-func (s *artifactTypeLister) ArtifactTypes(namespace string) ArtifactTypeNamespaceLister {
-	return artifactTypeNamespaceLister{listers.NewNamespaced[*arcv1alpha1.ArtifactType](s.ResourceIndexer, namespace)}
-}
-
-// ArtifactTypeNamespaceLister helps list and get ArtifactTypes.
-// All objects returned here must be treated as read-only.
-type ArtifactTypeNamespaceLister interface {
-	// List lists all ArtifactTypes in the indexer for a given namespace.
-	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*arcv1alpha1.ArtifactType, err error)
-	// Get retrieves the ArtifactType from the indexer for a given namespace and name.
-	// Objects returned here must be treated as read-only.
-	Get(name string) (*arcv1alpha1.ArtifactType, error)
-	ArtifactTypeNamespaceListerExpansion
-}
-
-// artifactTypeNamespaceLister implements the ArtifactTypeNamespaceLister
-// interface.
-type artifactTypeNamespaceLister struct {
-	listers.ResourceIndexer[*arcv1alpha1.ArtifactType]
 }

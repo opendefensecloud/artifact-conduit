@@ -32,6 +32,7 @@ type ArtifactTypeStatus struct {
 }
 
 // +genclient
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactType is the Schema for the endpoints API

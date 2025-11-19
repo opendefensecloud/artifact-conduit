@@ -26,8 +26,8 @@ type ArcV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *ArcV1alpha1Client) ArtifactTypes(namespace string) ArtifactTypeInterface {
-	return newArtifactTypes(c, namespace)
+func (c *ArcV1alpha1Client) ArtifactTypes() ArtifactTypeInterface {
+	return newArtifactTypes(c)
 }
 
 func (c *ArcV1alpha1Client) ArtifactWorkflows(namespace string) ArtifactWorkflowInterface {

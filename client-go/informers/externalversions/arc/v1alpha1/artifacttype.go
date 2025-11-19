@@ -29,45 +29,44 @@ type ArtifactTypeInformer interface {
 type artifactTypeInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
-	namespace        string
 }
 
 // NewArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredArtifactTypeInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredArtifactTypeInformer(client, resyncPeriod, indexers, nil)
 }
 
 // NewFilteredArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).List(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactTypes().List(context.Background(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(context.Background(), options)
+				return client.ArcV1alpha1().ArtifactTypes().Watch(context.Background(), options)
 			},
 			ListWithContextFunc: func(ctx context.Context, options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).List(ctx, options)
+				return client.ArcV1alpha1().ArtifactTypes().List(ctx, options)
 			},
 			WatchFuncWithContext: func(ctx context.Context, options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ArcV1alpha1().ArtifactTypes(namespace).Watch(ctx, options)
+				return client.ArcV1alpha1().ArtifactTypes().Watch(ctx, options)
 			},
 		},
 		&apiarcv1alpha1.ArtifactType{},
@@ -77,7 +76,7 @@ func NewFilteredArtifactTypeInformer(client versioned.Interface, namespace strin
 }
 
 func (f *artifactTypeInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredArtifactTypeInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+	return NewFilteredArtifactTypeInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
 func (f *artifactTypeInformer) Informer() cache.SharedIndexInformer {
