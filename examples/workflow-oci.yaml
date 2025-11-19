@@ -29,45 +29,23 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 5Gi
+            storage: 10Gi
+
   # --- Input Parameters ---
   arguments:
     parameters:
       - name: srcType
-        value: oci # e.g., oci, docker
       - name: srcRemoteURL
-        value: docker.io
       - name: srcSecret
-        value: "false" # Use string "true" or "false" for conditional logic
-      - name: srcSecretName
-        value: src-reg-secret # The name of the Kubernetes Secret for source
-
       - name: dstType
-        value: oci # e.g., oci, docker
       - name: dstRemoteURL
-        value: ghcr.io
       - name: dstSecret
-        value: "false"
-      - name: dstSecretName
-        value: dst-reg-secret # The name of the Kubernetes Secret for destination
-
       - name: specImage # The source image path (e.g., library/alpine:3.18)
       - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
-
       - name: scanSeverity
         value: HIGH,CRITICAL
 
   entrypoint: oci-pipeline
-
-  # --- Shared Volumes (PVC and Secrets) ---
-  volumes:
-    # This volume will contain the actual authentication file from the secret
-    - name: src-secret-vol
-      secret:
-        secretName: "{{workflow.parameters.srcSecretName}}"
-    - name: dst-secret-vol
-      secret:
-        secretName: "{{workflow.parameters.dstSecretName}}"
 
   templates:
     # --- Main Pipeline Entrypoint ---
@@ -220,6 +198,16 @@ spec:
   workflowTemplateRef:
     name: oci-image-pipeline-flexible
 
+  # --- Shared Volumes ---
+  volumes:
+    # This volume will contain the actual authentication file from the secret
+    - name: src-secret-vol
+      secret:
+        secretName: "src-reg-secret"
+    - name: dst-secret-vol
+      secret:
+        secretName: "dst-reg-secret"
+
   # Pass the specific image paths and scan settings
   arguments:
     parameters:
@@ -230,8 +218,6 @@ spec:
         value: docker.io
       - name: srcSecret
         value: "false"
-      - name: srcSecretName
-        value: src-reg-secret
 
       # --- Destination Parameters ---
       - name: dstType
@@ -240,8 +226,6 @@ spec:
         value: ghcr.io
       - name: dstSecret
         value: "true"
-      - name: dstSecretName
-        value: dst-reg-secret
 
       # --- Image Specs ---
       - name: specImage
