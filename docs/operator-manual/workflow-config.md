@@ -148,7 +148,15 @@ Using `oras` in a workflow might therefore look as follows:
 oras pull -u "$(cat /secret/src/username)" -p "$(cat /secret/src/password)" {{ workflow.parameters.srcRemoteURL }}/{{ workflow.parameters.spec.image }}
 ```
 
-## Full example with WorkflowTemplate for OCI
+## Example OCI WorkflowTemplate
+
+The following template is an example for a workflow that uses the `oci` source and destination. It can be used as a starting point to create your own workflows.
+
+```yaml
+{% include "../../examples/workflow-template-oci.yaml" %}
+```
+
+To create a `Workflow` based on the template the following `yaml` can be used.
 
 ```yaml
 {% include "../../examples/workflow-oci.yaml" %}
