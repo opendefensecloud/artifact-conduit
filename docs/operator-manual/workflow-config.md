@@ -58,63 +58,19 @@ A workflow created by ARC is composed out of three parts:
 When a `ArtifactWorkflow` is created (usually by an `Order` from a user) it might look as follows:
 
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactWorkflow
-metadata:
-  name: example-frag
-spec:
-  type: oci # Artifact Type!
-  srcSecretRef:
-    name: mysrc-creds
-  dstSecretRef:
-    name: mydst-creds
-  parameters:
-  - name: srcType
-    value: oci
-    # ...
+{% include "../../examples/artifact-workflow.yaml" %}
 ```
 
 The two referenced `Endpoints` by `srcRef` and `dstRef` might look as follows respectively:
 
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
-kind: Endpoint
-metadata:
-  name: mysrc
-spec:
-  type: oci # Endpoint Type!
-  remoteURL: https://...
-  secretRef:
-    name: mysrc-creds
-  usage: PullOnly
----
-apiVersion: arc.bwi.de/v1alpha1
-kind: Endpoint
-metadata:
-  name: mydst
-spec:
-  type: oci # Endpoint Type!
-  remoteURL: https://...
-  secretRef:
-    name: mydst-creds
-  usage: PushOnly
+{% include "../../examples/endpoint.yaml" %}
 ```
 
 How these objects are tied into a workflow is described by the `ArtifactType`:
 
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactType
-metadata:
-  name: oci
-spec:
-  rules:
-    srcTypes: # Endpoint Types
-    - oci
-    dstTypes:
-    - oci
-  workflowTemplateRef: # argo.Workflow
-    name: oci-workflow-template
+{% include "../../examples/artifact-type.yaml" %}
 ```
 
 The `ArtifactWorkflow` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
@@ -148,13 +104,25 @@ Using `oras` in a workflow might therefore look as follows:
 oras pull -u "$(cat /secret/src/username)" -p "$(cat /secret/src/password)" {{ workflow.parameters.srcRemoteURL }}/{{ workflow.parameters.spec.image }}
 ```
 
-## Example OCI WorkflowTemplate
+## Example for an OCI usecase
+
+### WorkflowTemplate
 
 The following template is an example for a workflow that uses the `oci` source and destination. It can be used as a starting point to create your own workflows.
 
 ```yaml
 {% include "../../examples/workflow-template-oci.yaml" %}
 ```
+
+### Secrets
+
+These are the example secrets for pulling and pushing.
+
+```yaml
+{% include "../../examples/workflow-secrets.yaml" %}
+```
+
+### Workflow Example
 
 To create a `Workflow` based on the template the following `yaml` can be used.
 

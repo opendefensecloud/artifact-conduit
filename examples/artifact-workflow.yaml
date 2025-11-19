@@ -1,0 +1,14 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: ArtifactWorkflow
+metadata:
+  name: example-frag
+spec:
+  type: oci # Artifact Type!
+  srcSecretRef:
+    name: mysrc-creds
+  dstSecretRef:
+    name: mydst-creds
+  parameters:
+    - name: srcType
+      value: oci
+      # ...

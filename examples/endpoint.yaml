@@ -1,0 +1,21 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: mysrc
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: https://...
+  secretRef:
+    name: mysrc-creds
+  usage: PullOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: mydst
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: https://...
+  secretRef:
+    name: mydst-creds
+  usage: PushOnly

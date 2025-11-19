@@ -1,30 +1,3 @@
-# Example Source Secret (src-reg-secret)
-apiVersion: v1
-kind: Secret
-metadata:
-  name: src-reg-secret
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: <BASE64_ENCODED_AUTH_DATA_FOR_DOCKER.IO>
----
-# Example Destination Secret (dst-reg-secret)
-apiVersion: v1
-kind: Secret
-metadata:
-  name: dst-reg-secret
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: <BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO>
----
-# Example Destination Secret (dst-reg-secret)
-apiVersion: v1
-kind: Secret
-metadata:
-  name: dst-reg-secret
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: <BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO>
----
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
