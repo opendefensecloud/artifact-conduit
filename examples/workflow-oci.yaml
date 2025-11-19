@@ -115,9 +115,6 @@ spec:
         - name: work-volume
           mountPath: /data
 
-      # Conditional volume mount for source registry secret
-      # This mount is only added if 'srcSecret' is "true"
-      when: "{{inputs.parameters.srcSecret}} == true"
       container:
         image: quay.io/skopeo/stable:latest
         command: [sh, -c]
@@ -190,9 +187,6 @@ spec:
         - name: work-volume
           mountPath: /data
 
-      # Conditional volume mount for destination registry secret
-      # This mount is only added if 'dstSecret' is "true"
-      when: "{{inputs.parameters.dstSecret}} == true"
       container:
         image: quay.io/skopeo/stable:latest
         command: [sh, -c]
