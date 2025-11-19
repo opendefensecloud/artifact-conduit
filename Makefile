@@ -97,13 +97,9 @@ docker-build-manager:
 	docker build --target manager -t ${MANAGER_IMG} .
 
 .PHONY: docs
-docs: ## Generate and serve the documentation site.
-	$(MKDOCS) serve
-
-.PHONY: docs-patch-config
-docs-patch-config: ## Patch mkdocs.yml with mkdocs_patch.yml for docs building.
-	@yq eval-all '. as $$item ireduce ({}; . * $$item)' mkdocs.yml mkdocs_patch.yml > mkdocs_temp.yml
-	@mv mkdocs_temp.yml mkdocs.yml
+docs: ## Serve the documentation using Docker.
+	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
+	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)

@@ -1,3 +1,0 @@
-plugins:
-  - search # re-include the default: https://www.mkdocs.org/user-guide/configuration/#plugins,
-  - glightbox

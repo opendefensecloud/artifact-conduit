@@ -33,5 +33,4 @@ jobs:
           git config --global user.email "docs.deploy@opendefense.cloud"
       - name: Build Docs Website
         run: |
-          make docs-patch-config
           mike deploy --push develop

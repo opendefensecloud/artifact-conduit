@@ -84,12 +84,12 @@ The system follows a layered architecture where users interact through the `arcc
 
 ARC introduces four primary custom resource types under the `arc.bwi.de/v1alpha1` API group:
 
-| Resource                   | Purpose                                                                                    | Scope                            |
-| -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------- |
-| **Order**                  | Declares intent to procure one or more artifacts with shared configuration defaults        | User-facing, high-level          |
-| **ArtifactWorkflow**               | Represents a single artifact operation decomposed from an Order                            | System-generated, execution unit |
-| **Endpoint**               | Defines a source or destination location with credentials                                  | Configuration, reusable          |
-| **ArtifactType** | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
+| Resource             | Purpose                                                                                    | Scope                            |
+| -------------------- | ------------------------------------------------------------------------------------------ | -------------------------------- |
+| **Order**            | Declares intent to procure one or more artifacts with shared configuration defaults        | User-facing, high-level          |
+| **ArtifactWorkflow** | Represents a single artifact operation decomposed from an Order                            | System-generated, execution unit |
+| **Endpoint**         | Defines a source or destination location with credentials                                  | Configuration, reusable          |
+| **ArtifactType**     | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
 
 ```mermaid
 graph LR

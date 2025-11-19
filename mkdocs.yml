@@ -81,6 +81,9 @@ markdown_extensions:
       permalink: true
 plugins:
   - search # re-include the default: https://www.mkdocs.org/user-guide/configuration/#plugins,
+  - glightbox
+  - include-markdown
+
 validation:
   omitted_files: warn
   absolute_links: relative_to_docs
