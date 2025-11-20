@@ -274,7 +274,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 	// Update status
 	if len(createAWs) > 0 || len(deleteAWs) > 0 || anyPhaseChanged {
-		log.V(1).Info("Updating Order.Status")
+		log.V(1).Info("Updating order status")
+		// Make sure ArtifactIndex is up to date
+		for sha, daw := range desiredAWs {
+			aws := order.Status.ArtifactWorkflows[sha]
+			aws.ArtifactIndex = daw.index
+			order.Status.ArtifactWorkflows[sha] = aws
+		}
 		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
