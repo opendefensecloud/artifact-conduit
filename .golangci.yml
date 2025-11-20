@@ -1,9 +1,10 @@
 version: "2"
 run:
-  concurrency: 4
+  timeout: 5m
 linters:
   enable:
     - errcheck
+    - errorlint
     - ginkgolinter
     - importas
     - misspell
@@ -11,9 +12,43 @@ linters:
     - unused
     - unparam
     - goconst
+    - staticcheck
+    - ginkgolinter
+    - gocritic
+    - govet
+    - iface
+    - importas
+    - ineffassign
+    - nilerr
+    - reassign
+    - unconvert
+  settings:
+    unused:
+      # Mark all exported fields as used.
+      # default: true
+      exported-fields-are-used: false
+      # Mark all local variables as used.
+      # default: true
+      local-variables-are-used: false
+  # exclusions:
+  #   generated:
+  #     lax
+  #     # Exclude some linters from running on tests files.
+  #   rules:
+  #     - path: api/arc/
+  #       linters:
+  #         - unused
+  #     - path: pkg/admission
+  #       linters:
+  #         - unused
+  #     - path: pkg/registry
+  #       linters:
+  #         - unused
 severity:
   default: error
 formatters:
   enable:
-    - goimports
     - gofmt
+    - goimports
+issues:
+  fix: true
