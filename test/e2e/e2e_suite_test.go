@@ -24,8 +24,8 @@ const (
 	argoWorkflowsVersion = "v3.7.4"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
-	apiserverImage = "apiserver:latest"
-	managerImage   = "manager:latest"
+	apiserverImage = "apiserver:e2e"
+	managerImage   = "manager:e2e"
 )
 
 var (
@@ -239,7 +239,7 @@ func installArgoWorkflows() error {
 	}
 
 	// Wait for argo-server deployment to be ready
-	cmd = exec.Command("kubectl", "wait", "deployment.apps/argo-workflows-server",
+	cmd = exec.Command("kubectl", "wait", "deployment.apps/workflow-controller",
 		"--for", "condition=Available",
 		"--namespace", "argo",
 		"--timeout", "5m",

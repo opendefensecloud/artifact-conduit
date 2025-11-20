@@ -18,6 +18,10 @@ spec:
       labels:
         control-plane: etcd
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - command:
             - etcd
@@ -27,6 +31,11 @@ spec:
             - -data-dir=/etcd-data-dir/default.etcd
           image: quay.io/coreos/etcd:v3.6.6
           name: etcd
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
           livenessProbe:
             httpGet:
               path: /health

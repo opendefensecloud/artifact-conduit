@@ -1,0 +1,14 @@
+resources:
+  - ../../config/default
+
+patches:
+- path: manager-resources.yaml
+
+images:
+  - name: apiserver
+    newName: apiserver
+    newTag: e2e
+  - name: controller
+    newName: manager
+    newTag: e2e
+
