@@ -111,3 +111,4 @@ nav:
           - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md
           - developer-guide/adrs/001-ARC-Architecture.md
           - developer-guide/adrs/002-ARC-API.md
+          - developer-guide/adrs/003-Branch-Naming.md
