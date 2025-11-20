@@ -253,9 +253,33 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		delete(order.Status.ArtifactWorkflows, sha)
 	}
 
+	anyPhaseChanged := false
+	for sha, daw := range desiredAWs {
+		if slices.Contains(createAWs, sha) {
+			// If it was just created we skip the update
+			continue
+		}
+		aw := arcv1alpha1.ArtifactWorkflow{}
+		if err := r.Get(ctx, namespacedName(daw.objectMeta.Namespace, daw.objectMeta.Name), &aw); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to get artifact workflow")
+		}
+		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
+			awStatus := order.Status.ArtifactWorkflows[sha]
+			awStatus.Phase = aw.Status.Phase
+			order.Status.ArtifactWorkflows[sha] = awStatus
+			anyPhaseChanged = true
+		}
+	}
+
 	// Update status
-	if len(createAWs) > 0 || len(deleteAWs) > 0 {
-		log.V(1).Info("Updating Order.Status")
+	if len(createAWs) > 0 || len(deleteAWs) > 0 || anyPhaseChanged {
+		log.V(1).Info("Updating order status")
+		// Make sure ArtifactIndex is up to date
+		for sha, daw := range desiredAWs {
+			aws := order.Status.ArtifactWorkflows[sha]
+			aws.ArtifactIndex = daw.index
+			order.Status.ArtifactWorkflows[sha] = aws
+		}
 		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}

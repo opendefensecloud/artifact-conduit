@@ -28,15 +28,16 @@ import (
 )
 
 const (
-	pollingInterval      = 300 * time.Millisecond
-	eventuallyTimeout    = 3 * time.Second
-	consistentlyDuration = 1 * time.Second
+	pollingInterval      = 400 * time.Millisecond
+	eventuallyTimeout    = 5 * time.Second
+	consistentlyDuration = 2 * time.Second
 	apiServiceTimeout    = 5 * time.Minute
 )
 
 var (
 	k8sClient client.Client
 	testEnv   *envtest.Environment
+	atValue   = "art"
 )
 
 func TestController(t *testing.T) {
@@ -98,7 +99,7 @@ var _ = BeforeSuite(func() {
 	}()
 })
 
-func SetupTest(ctx context.Context) *corev1.Namespace {
+func setupTest(ctx context.Context) *corev1.Namespace {
 	var (
 		ns = &corev1.Namespace{}
 	)
@@ -117,4 +118,33 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 	})
 
 	return ns
+}
+
+func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
+	var (
+		at = &arcv1alpha1.ArtifactType{}
+	)
+
+	BeforeEach(func() {
+		*at = arcv1alpha1.ArtifactType{
+			ObjectMeta: metav1.ObjectMeta{
+				GenerateName: "at-",
+			},
+			Spec: arcv1alpha1.ArtifactTypeSpec{
+				Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+					{
+						Name:  atValue,
+						Value: atValue,
+					},
+				},
+				WorkflowTemplateRef: corev1.LocalObjectReference{
+					Name: atValue,
+				},
+			},
+		}
+		Expect(k8sClient.Create(ctx, at)).To(Succeed(), "failed to create test artifact type")
+		DeferCleanup(k8sClient.Delete, ctx, at)
+	})
+
+	return at
 }

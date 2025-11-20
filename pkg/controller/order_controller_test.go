@@ -4,6 +4,10 @@
 package controller
 
 import (
+	"maps"
+	"slices"
+
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -16,39 +20,41 @@ import (
 
 var _ = Describe("OrderController", func() {
 	var (
-		ctx = envtest.Context()
-		ns  = SetupTest(ctx)
-	)
-
-	createEndpoints := func(names ...string) {
-		for _, name := range names {
-			secret := corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: ns.Name,
-				},
-				StringData: map[string]string{
-					"testkey": name,
-				},
-			}
-			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
-			endpoint := arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: ns.Name,
-				},
-				Spec: arcv1alpha1.EndpointSpec{
-					Type:      name,
-					RemoteURL: name,
-					SecretRef: corev1.LocalObjectReference{
-						Name: name,
+		ctx             = envtest.Context()
+		ns              = setupTest(ctx)
+		at1             = setupArtifactType(ctx)
+		at2             = setupArtifactType(ctx)
+		at3             = setupArtifactType(ctx)
+		createEndpoints = func(names ...string) {
+			for _, name := range names {
+				secret := corev1.Secret{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: ns.Name,
 					},
-					Usage: arcv1alpha1.EndpointUsageAll,
-				},
+					StringData: map[string]string{
+						"testkey": name,
+					},
+				}
+				Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+				endpoint := arcv1alpha1.Endpoint{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: ns.Name,
+					},
+					Spec: arcv1alpha1.EndpointSpec{
+						Type:      name,
+						RemoteURL: name,
+						SecretRef: corev1.LocalObjectReference{
+							Name: name,
+						},
+						Usage: arcv1alpha1.EndpointUsageAll,
+					},
+				}
+				Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
 			}
-			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
 		}
-	}
+	)
 
 	Context("when reconciling Orders", func() {
 		It("should create ArtifactWorkflows for an order with multiple artifacts and no defaults", func() {
@@ -62,13 +68,13 @@ var _ = Describe("OrderController", func() {
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type:   "art-1",
+							Type:   at1.Name,
 							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
 						},
 						{
-							Type:   "art-2",
+							Type:   at2.Name,
 							SrcRef: corev1.LocalObjectReference{Name: "src-2"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-2"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-2"}`)},
@@ -90,9 +96,9 @@ var _ = Describe("OrderController", func() {
 
 			// Verify artifact workflows contents
 			for _, aw := range awList.Items {
-				Expect(aw.Spec.Type).To(Or(Equal("art-1"), Equal("art-2")))
+				Expect(aw.Spec.Type).To(Or(Equal(at1.Name), Equal(at2.Name)))
 				suffix := "1"
-				if aw.Spec.Type == "art-2" {
+				if aw.Spec.Type == at2.Name {
 					suffix = "2"
 				}
 				Expect(aw.Spec.SrcSecretRef.Name).To(Equal("src-" + suffix))
@@ -145,11 +151,11 @@ var _ = Describe("OrderController", func() {
 					},
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type: "art-3",
+							Type: at1.Name,
 							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "art-4",
+							Type: at2.Name,
 							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 					},
@@ -169,7 +175,7 @@ var _ = Describe("OrderController", func() {
 
 			// Verify artifact workflow parameters - should use default refs
 			for _, aw := range awList.Items {
-				Expect(aw.Spec.Type).To(Or(Equal("art-3"), Equal("art-4")))
+				Expect(aw.Spec.Type).To(Or(Equal(at1.Name), Equal(at2.Name)))
 				Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 					{
 						Name:  "srcType",
@@ -210,18 +216,18 @@ var _ = Describe("OrderController", func() {
 					},
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type: "art-only-defaults",
+							Type: at1.Name,
 							// Uses defaults for both refs
 							Spec: runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "art-mixed",
+							Type: at2.Name,
 							// Specifies src, uses default dst
 							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
 						},
 						{
-							Type: "art-specified",
+							Type: at3.Name,
 							// Specifies both refs
 							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
 							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
@@ -245,7 +251,7 @@ var _ = Describe("OrderController", func() {
 			// Verify artifact workflow contents
 			for _, aw := range awList.Items {
 				switch aw.Spec.Type {
-				case "art-only-defaults":
+				case at1.Name:
 					// Should use defaults for both
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -257,7 +263,7 @@ var _ = Describe("OrderController", func() {
 							Value: "default-dst",
 						},
 					}))
-				case "art-mixed":
+				case at2.Name:
 					// Should use custom src, default dst
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -269,7 +275,7 @@ var _ = Describe("OrderController", func() {
 							Value: "default-dst",
 						},
 					}))
-				case "art-specified":
+				case at3.Name:
 					// Should use custom refs for both
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -302,8 +308,8 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "art-1", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
-						{Type: "art-2", SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						{Type: at2.Name, SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
 					},
 				},
 			}
@@ -331,7 +337,7 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "art-1", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
 					},
 				},
 			}
@@ -347,7 +353,7 @@ var _ = Describe("OrderController", func() {
 					return err
 				}
 				order.Spec.Artifacts = append(order.Spec.Artifacts, arcv1alpha1.OrderArtifact{
-					Type:   "art-2",
+					Type:   at2.Name,
 					SrcRef: corev1.LocalObjectReference{Name: "src-2"},
 					DstRef: corev1.LocalObjectReference{Name: "dst-2"},
 				})
@@ -481,6 +487,63 @@ var _ = Describe("OrderController", func() {
 					Value: "value",
 				},
 			}))
+		})
+
+		It("should update the artifact status if the workflow is updated", func() {
+			createEndpoints("src-1", "dst-1")
+			// Create test Order with multiple artifacts, no defaults
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-status-updates",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflows were created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			aw := &awList.Items[0]
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowRunning
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowRunning))
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(order.Namespace, order.Name), order)).To(Succeed())
+				shas := slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))
+				Expect(shas).To(HaveLen(1))
+				return order.Status.ArtifactWorkflows[shas[0]].Phase
+			}).To(Equal(arcv1alpha1.WorkflowRunning))
+
 		})
 	})
 })
