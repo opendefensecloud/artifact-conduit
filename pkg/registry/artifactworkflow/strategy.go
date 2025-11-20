@@ -120,6 +120,6 @@ func (fragmentStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runti
 	return field.ErrorList{}
 }
 
-func (fragmentStatusStrategy) WarningsOnUpdate(cxt context.Context, obj, old runtime.Object) []string {
+func (fragmentStatusStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }

@@ -19,7 +19,7 @@ type REST struct {
 // a wrapper for wardle registries.
 func RESTInPeace(storage *REST, err error) *REST {
 	if err != nil {
-		err = fmt.Errorf("unable to create REST storage for a resource due to %v, will die", err)
+		err = fmt.Errorf("unable to create REST storage for a resource due to %w, will die", err)
 		panic(err)
 	}
 	return storage

@@ -30,8 +30,7 @@ import (
 )
 
 const (
-	orderFinalizer          = "arc.bwi.de/order-finalizer"
-	workflowConfigSecretKey = "config.json"
+	orderFinalizer = "arc.bwi.de/order-finalizer"
 )
 
 // OrderReconciler reconciles a Order object
@@ -347,7 +346,7 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 	params := []arcv1alpha1.ArtifactWorkflowParameter{
 		{
 			Name:  paramName("src", "type"),
-			Value: string(daw.srcEndpoint.Spec.Type),
+			Value: daw.srcEndpoint.Spec.Type,
 		},
 		{
 			Name:  paramName("src", "remoteURL"),
@@ -355,7 +354,7 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 		},
 		{
 			Name:  paramName("dst", "type"),
-			Value: string(daw.dstEndpoint.Spec.Type),
+			Value: daw.dstEndpoint.Spec.Type,
 		},
 		{
 			Name:  paramName("dst", "remoteURL"),

@@ -117,6 +117,6 @@ func (orderStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.
 	return field.ErrorList{}
 }
 
-func (orderStatusStrategy) WarningsOnUpdate(cxt context.Context, obj, old runtime.Object) []string {
+func (orderStatusStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }
