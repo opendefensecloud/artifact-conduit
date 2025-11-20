@@ -16,69 +16,11 @@ ARC (Artifact Conduit) is an open-source system that acts as a gateway for procu
 
 ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.
 
-```mermaid
-graph TB
-    subgraph "User Layer"
-        Users["Users/Operators"]
-        arcctl["arcctl CLI<br/>cmd/arcctl/main.go"]
-    end
-    
-    subgraph "Kubernetes Control Plane"
-        K8sAPI["Kubernetes API Server<br/>API Aggregation Layer"]
-    end
-    
-    subgraph "ARC Control Plane"
-        ARCAPI["ARC API Server<br/>pkg/apiserver/<br/>Extension API Server"]
-        etcdStore["Dedicated etcd<br/>Isolated Storage"]
-        OrderCtrl["Order Controller<br/>pkg/controller/<br/>Reconciliation Logic"]
-    end
-    
-    subgraph "API Resources (api/arc.bwi.de/v1alpha1)"
-        Order["Order<br/>High-level request"]
-        ArtifactWorkflow["ArtifactWorkflow<br/>Single artifact op"]
-        Endpoint["Endpoint<br/>Source/Destination"]
-        ATD["ArtifactType<br/>Type rules"]
-    end
-    
-    subgraph "Execution Layer"
-        ArgoWorkflows["Argo Workflows<br/>Workflow Execution"]
-        WorkflowTemplates["WorkflowTemplate<br/>Processing Logic"]
-    end
-    
-    subgraph "External Systems"
-        OCIReg["OCI Registries"]
-        HelmRepo["Helm Repositories"]
-        S3Storage["S3 Compatible Storage"]
-        Scanners["Security Scanners<br/>Trivy, ClamAV"]
-    end
-    
-    Users -->|"CLI commands"| arcctl
-    arcctl -->|"API requests"| K8sAPI
-    
-    K8sAPI -->|"forwards arc.bwi.de/*"| ARCAPI
-    ARCAPI -->|"stores/retrieves"| etcdStore
-    
-    OrderCtrl -->|"watches"| etcdStore
-    OrderCtrl -->|"creates"| ArtifactWorkflow
-    OrderCtrl -->|"creates"| ArgoWorkflows
-    
-    Order -->|"references"| Endpoint
-    Order -->|"uses"| ATD
-    ArtifactWorkflow -->|"references"| Endpoint
-    
-    ATD -->|"specifies"| WorkflowTemplates
-    ArgoWorkflows -->|"instantiates"| WorkflowTemplates
-    
-    ArgoWorkflows -->|"pulls from"| OCIReg
-    ArgoWorkflows -->|"pulls from"| HelmRepo
-    ArgoWorkflows -->|"pulls from"| S3Storage
-    ArgoWorkflows -->|"scans with"| Scanners
-    ArgoWorkflows -->|"pushes to"| OCIReg
-```
+![ARC Architecture Diagram](developer-guide/adrs/img/0-arc-architecture.drawio.svg "ARC Architecture")
 
 **Architecture: ARC System Components and Data Flow**
 
-The system follows a layered architecture where users interact through the `arcctl` CLI tool, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.
+The system follows a layered architecture where users interact through the Kubernetes API, requests flow through the Kubernetes API aggregation layer to the ARC API Server, and the Order Controller orchestrates workflow execution by decomposing high-level Orders into executable ArtifactWorkflows.
 
 ## Core Concepts
 
@@ -92,50 +34,52 @@ ARC introduces four primary custom resource types under the `arc.bwi.de/v1alpha1
 | **ArtifactType**     | Specifies processing rules and workflow templates for artifact types (e.g., "oci", "helm") | Configuration, system-wide       |
 
 ```mermaid
-graph LR
-    subgraph "Declarative Layer"
-        Order["Order<br/>(User Input)"]
-        OrderSpec["spec:<br/>- defaults<br/>- artifacts[]"]
-    end
-    
-    subgraph "Generated Layer"
-        ArtifactWorkflow1["ArtifactWorkflow-1"]
-        ArtifactWorkflow2["ArtifactWorkflow-2"]
-        ArtifactWorkflowN["ArtifactWorkflow-N"]
-    end
-    
-    subgraph "Configuration"
-        SrcEndpoint["Endpoint<br/>(Source)"]
-        DstEndpoint["Endpoint<br/>(Destination)"]
-        ATD["ArtifactType<br/>(e.g., 'oci')"]
-        Secret["Secret<br/>(Credentials)"]
-    end
-    
-    subgraph "Execution"
-        WorkflowTemplate["WorkflowTemplate<br/>(Argo)"]
-        Workflow1["Workflow Instance"]
-        Workflow2["Workflow Instance"]
-    end
-    
-    Order -->|"contains"| OrderSpec
-    OrderSpec -->|"generates"| ArtifactWorkflow1
-    OrderSpec -->|"generates"| ArtifactWorkflow2
-    OrderSpec -->|"generates"| ArtifactWorkflowN
-    
-    ArtifactWorkflow1 -->|"srcRef"| SrcEndpoint
-    ArtifactWorkflow1 -->|"dstRef"| DstEndpoint
-    ArtifactWorkflow1 -->|"type"| ATD
-    ArtifactWorkflow2 -->|"references"| SrcEndpoint
-    ArtifactWorkflow2 -->|"references"| DstEndpoint
-    
-    SrcEndpoint -->|"credentialRef"| Secret
-    DstEndpoint -->|"credentialRef"| Secret
-    
-    ATD -->|"workflowTemplateRef"| WorkflowTemplate
-    ArtifactWorkflow1 -.->|"triggers"| Workflow1
-    ArtifactWorkflow2 -.->|"triggers"| Workflow2
-    WorkflowTemplate -.->|"instantiates"| Workflow1
-    WorkflowTemplate -.->|"instantiates"| Workflow2
+---
+config:
+  layout: elk
+---
+flowchart LR
+ subgraph subGraph0["Declarative Layer"]
+        Order["Order (User Input)"]
+        Spec["spec:<br>- defaults<br>- artifacts[]<br>--- <br>status:<br>- endpointGenerations<br>- secretGenerations"]
+  end
+ subgraph subGraph1["Generated Layer"]
+        ArtifactWorkflow1["ArtifactWorkflow-1<br>(Minimal Params)"]
+        ArtifactWorkflow2["ArtifactWorkflow-2<br>(Minimal Params)"]
+        ArtifactWorkflowN["ArtifactWorkflow-N<br>(Minimal Params)"]
+  end
+ subgraph Configuration["Configuration & Secrets"]
+        ArtifactTypeDef@{ label: "ArtifactType (e.g., 'oci')" }
+        EndpointSrc["Endpoint (Source)"]
+        EndpointDst["Endpoint (Destination)"]
+        EndpointSecret@{ shape: procs, label: "Secrets (e.g. Credentials)"}
+  end
+ subgraph Execution["Execution"]
+        WorkflowTemplate["WorkflowTemplate (Argo)"]
+        WorkflowInstance1["Workflow Instance"]
+        WorkflowInstance2["Workflow Instance"]
+  end
+    Order -- contains --> Spec
+    Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflow2 & ArtifactWorkflowN
+    Spec -- reads & tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
+    ArtifactWorkflow1 -- type --> ArtifactTypeDef
+    ArtifactWorkflow2 -- type --> ArtifactTypeDef
+    ArtifactWorkflow1 -- srcRef --> EndpointSrc
+    ArtifactWorkflow2 -- srcRef --> EndpointSrc
+    ArtifactWorkflow1 -- dstRef --> EndpointDst
+    ArtifactWorkflow2 -- dstRef --> EndpointDst
+    EndpointSrc -- secretRef --> EndpointSecret
+    EndpointDst -- secretRef --> EndpointSecret
+    ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
+    ArtifactWorkflow1 -- references --> EndpointSecret
+    ArtifactWorkflow2 -- references --> EndpointSecret
+    ArtifactWorkflow1 -- instantiates --> WorkflowTemplate
+    ArtifactWorkflow2 -- instantiates --> WorkflowTemplate
+    WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
+    WorkflowInstance1 -- mounts --> EndpointSecret
+    WorkflowInstance2 -- mounts --> EndpointSecret
+
+    ArtifactTypeDef@{ shape: rect}
 ```
 
 ## Key Components
@@ -176,7 +120,6 @@ The Order Controller implements the reconciliation loop for Order resources:
 ```mermaid
 sequenceDiagram
     participant User
-    participant arcctl
     participant K8sAPI as "Kubernetes API"
     participant ARCAPI as "ARC API Server<br/>pkg/apiserver/"
     participant etcd as "Dedicated etcd"
@@ -185,8 +128,6 @@ sequenceDiagram
     participant Workflow as "Workflow Pod"
     participant Registry as "External Registry"
     
-    User->>arcctl: "arcctl oci pull alpine:3.18"
-    arcctl->>K8sAPI: "Create Order CR"
     K8sAPI->>ARCAPI: "Forward to arc.bwi.de"
     ARCAPI->>etcd: "Store Order"
     

@@ -11,11 +11,20 @@ import (
 )
 
 // errLogAndWrap is a small utility function to reduce code and be able to directly
-// return errors, but wrap them and log them at the same time.
-//
-// The function currently capitalizes the first letter as well.
-// message is expected to be NOT empty.
-func errLogAndWrap(log logr.Logger, err error, message string) error {
-	log.Error(err, strings.ToUpper(message[0:1])+message[1:])
-	return fmt.Errorf(message+": %w", err)
+// return errors, but wrap them and log them at the same time. It also capitalizes the
+// first letter as well. Short texts will be handled.
+func errLogAndWrap(log logr.Logger, err error, text string) error {
+	textLen := len(text)
+	switch textLen {
+	case 0:
+		return err
+	case 1:
+		logText := strings.ToUpper(text)
+		log.Error(err, logText)
+		return fmt.Errorf(text+": %w", err)
+	default:
+		logText := strings.ToUpper(text[:1]) + text[1:]
+		log.Error(err, logText)
+		return fmt.Errorf(text+": %w", err)
+	}
 }
