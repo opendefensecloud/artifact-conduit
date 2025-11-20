@@ -5,31 +5,29 @@
       
       
       
-        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/new-features/">
+        <link rel="canonical" href="https://arc.opendefense.cloud/develop/developer-guide/adrs/003-Branch-Naming/">
       
       
-        <link rel="prev" href="../upgrading/">
+        <link rel="prev" href="../002-ARC-API/">
       
-      
-        <link rel="next" href="../security/">
       
       
         
       
       
-      <link rel="icon" href="../../arc_logo.png">
+      <link rel="icon" href="../../../arc_logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
       
-        <title>New Features - Artifact Conduit</title>
+        <title>Name Branches Following a Common Standard - Artifact Conduit</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.618322db.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -48,15 +46,15 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/panzoom.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/panzoom.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+  <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
             .gslide-title { margin-top: 0px; user-select: text; }
             .gslide-desc { color: #666; user-select: text; }
@@ -86,7 +84,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#new-features" class="md-skip">
+        <a href="#name-branches-following-a-common-standard" class="md-skip">
           Skip to content
         </a>
       
@@ -101,12 +99,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest version.
-  <a href="../../..">
+  <a href="../../../..">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -118,9 +116,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../arc_logo.png" alt="logo">
+  <img src="../../../arc_logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -137,7 +135,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              New Features
+              Name Branches Following a Common Standard
             
           </span>
         </div>
@@ -259,7 +257,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -278,7 +276,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../getting-started/" class="md-tabs__link">
+      <a href="../../../getting-started/" class="md-tabs__link">
         
   
   
@@ -299,7 +297,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../user-guide/core-concepts/" class="md-tabs__link">
+        <a href="../../../user-guide/core-concepts/" class="md-tabs__link">
           
   
   
@@ -317,13 +315,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../installation/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../operator-manual/installation/" class="md-tabs__link">
           
   
   
@@ -341,11 +337,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../CODE_OF_CONDUCT/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
   
@@ -387,9 +385,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../arc_logo.png" alt="logo">
+  <img src="../../../arc_logo.png" alt="logo">
 
     </a>
     Artifact Conduit
@@ -416,7 +414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -443,7 +441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/" class="md-nav__link">
+      <a href="../../../getting-started/" class="md-nav__link">
         
   
   
@@ -526,7 +524,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/core-concepts/" class="md-nav__link">
+      <a href="../../../user-guide/core-concepts/" class="md-nav__link">
         
   
   
@@ -608,7 +606,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../user-guide/custom-resources/order/" class="md-nav__link">
+      <a href="../../../user-guide/custom-resources/order/" class="md-nav__link">
         
   
   
@@ -648,10 +646,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -671,20 +667,17 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -702,7 +695,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -720,7 +713,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../installation/" class="md-nav__link">
+      <a href="../../../operator-manual/installation/" class="md-nav__link">
         
   
   
@@ -748,7 +741,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../releases/" class="md-nav__link">
+      <a href="../../../operator-manual/releases/" class="md-nav__link">
         
   
   
@@ -776,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../upgrading/" class="md-nav__link">
+      <a href="../../../operator-manual/upgrading/" class="md-nav__link">
         
   
   
@@ -801,19 +794,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../operator-manual/new-features/" class="md-nav__link">
         
   
   
@@ -829,7 +813,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -842,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../security/" class="md-nav__link">
+      <a href="../../../operator-manual/security/" class="md-nav__link">
         
   
   
@@ -870,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow-config/" class="md-nav__link">
+      <a href="../../../operator-manual/workflow-config/" class="md-nav__link">
         
   
   
@@ -902,8 +885,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -921,17 +906,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -949,7 +937,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -967,7 +955,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../../../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
   
@@ -995,7 +983,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../CONTRIBUTING/" class="md-nav__link">
+      <a href="../../../CONTRIBUTING/" class="md-nav__link">
         
   
   
@@ -1023,7 +1011,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer-guide/dod/" class="md-nav__link">
+      <a href="../../dod/" class="md-nav__link">
         
   
   
@@ -1051,7 +1039,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer-guide/working-with-docs/" class="md-nav__link">
+      <a href="../../working-with-docs/" class="md-nav__link">
         
   
   
@@ -1076,8 +1064,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1096,11 +1086,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" checked>
         
           
           <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
@@ -1121,7 +1111,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_5_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1139,7 +1129,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/" class="md-nav__link">
+      <a href="../000-Use-Markdown-Architectural-Decision-Records/" class="md-nav__link">
         
   
   
@@ -1174,7 +1164,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer-guide/adrs/001-ARC-Architecture/" class="md-nav__link">
+      <a href="../001-ARC-Architecture/" class="md-nav__link">
         
   
   
@@ -1209,7 +1199,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../developer-guide/adrs/002-ARC-API/" class="md-nav__link">
+      <a href="../002-ARC-API/" class="md-nav__link">
         
   
   
@@ -1241,10 +1231,44 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../developer-guide/adrs/003-Branch-Naming/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Name Branches Following a Common Standard
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1267,6 +1291,182 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context-and-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context and Problem Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#considered-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Considered Solutions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Considered Solutions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#free-branch-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free Branch Naming
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Free Branch Naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detailed-prefixed-branch-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Prefixed Branch Names
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Prefixed Branch Names">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-prefixed-branch-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short Prefixed Branch Names
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Short Prefixed Branch Names">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-outcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Outcome
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1307,6 +1507,170 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context-and-problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context and Problem Statement
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#considered-solutions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Considered Solutions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Considered Solutions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#free-branch-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Free Branch Naming
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Free Branch Naming">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detailed-prefixed-branch-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Prefixed Branch Names
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Prefixed Branch Names">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-prefixed-branch-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Short Prefixed Branch Names
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Short Prefixed Branch Names">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pros_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pros
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cons_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-outcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Outcome
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1322,7 +1686,7 @@
 
 
   
-    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/new-features.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/developer-guide/adrs/003-Branch-Naming.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1331,21 +1695,88 @@
     
       
     
-    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/new-features.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/developer-guide/adrs/003-Branch-Naming.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
     </a>
   
 
 
-<h1 id="new-features">New Features<a class="headerlink" href="#new-features" title="Permanent link">¶</a></h1>
-<p>TODO</p>
+<h1 id="name-branches-following-a-common-standard">Name Branches Following a Common Standard<a class="headerlink" href="#name-branches-following-a-common-standard" title="Permanent link">¶</a></h1>
+<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">¶</a></h2>
+<p>In our development using git as a versioned source control system, we're implementing our features, improvements, bugfixes, etc. in parallel branches before they get merged into the main branch. The names of these branches can lead to a misinterpretation of their intention. A naming scheme could help.</p>
+<h2 id="considered-solutions">Considered Solutions<a class="headerlink" href="#considered-solutions" title="Permanent link">¶</a></h2>
+<h3 id="free-branch-naming">Free Branch Naming<a class="headerlink" href="#free-branch-naming" title="Permanent link">¶</a></h3>
+<p>Branches can be named without any classification. The naming does not need any intention while a helpful name surely is allowed. Examples are:</p>
+<ul>
+<li><code>comment-adding</code></li>
+<li><code>readme</code></li>
+<li><code>evaluate-artifact-workflow</code></li>
+</ul>
+<h4 id="pros">Pros<a class="headerlink" href="#pros" title="Permanent link">¶</a></h4>
+<ul>
+<li>Quite simple, fast, and free</li>
+</ul>
+<h4 id="cons">Cons<a class="headerlink" href="#cons" title="Permanent link">¶</a></h4>
+<ul>
+<li>Not always helpful (see <code>readme</code>)</li>
+<li>Verbs describing the branch in different positions</li>
+<li>No grouping possible</li>
+</ul>
+<h3 id="detailed-prefixed-branch-names">Detailed Prefixed Branch Names<a class="headerlink" href="#detailed-prefixed-branch-names" title="Permanent link">¶</a></h3>
+<p>Prefixes in fully written standard terms separated by a slash follow a well-known standard. These prefixes describe why a branch exists. Behind the slash, a small detail is used. Well-known prefixes as examples are:</p>
+<ul>
+<li><code>feature/short-description</code></li>
+<li><code>bugfix/issue-42</code></li>
+<li><code>hotfix/memory-overflow</code></li>
+<li><code>improvement/branch-naming</code></li>
+<li><code>experiment/iter-usage-in-looping</code></li>
+<li><code>release/2.1.0</code></li>
+</ul>
+<h4 id="pros_1">Pros<a class="headerlink" href="#pros_1" title="Permanent link">¶</a></h4>
+<ul>
+<li>Intention of a branch is clearer</li>
+<li>Grouping makes it easier to recognize parallel work</li>
+<li>Prefixes help to identify urgent tasks as opposed to regular tasks (<code>hotfix</code> opposite <code>experiment</code>)</li>
+</ul>
+<h4 id="cons_1">Cons<a class="headerlink" href="#cons_1" title="Permanent link">¶</a></h4>
+<ul>
+<li>Long branch names</li>
+<li>Intention has to be clear when branch is created</li>
+</ul>
+<h3 id="short-prefixed-branch-names">Short Prefixed Branch Names<a class="headerlink" href="#short-prefixed-branch-names" title="Permanent link">¶</a></h3>
+<p>Similar to the detailed ones, but using abbreviations. Those could be <code>feat/</code>, <code>fix/</code>, <code>hot/</code>, <code>imp/</code>, <code>exp/</code>, or <code>rel/</code>.</p>
+<h4 id="pros_2">Pros<a class="headerlink" href="#pros_2" title="Permanent link">¶</a></h4>
+<ul>
+<li>Shorter names without losing the benefits of the detailed names</li>
+</ul>
+<h4 id="cons_2">Cons<a class="headerlink" href="#cons_2" title="Permanent link">¶</a></h4>
+<ul>
+<li>Same attention must be paid to the grouping</li>
+</ul>
+<h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">¶</a></h2>
+<p>A comparison between versions two and three shows how much the use of prefixes helps in classifying branches. Although proposal 3 is more compact, proposal 2 is easier to recognise and is likely to lead to fewer errors in use.</p>
+<p>Initially, use of this standard will not be enforced technically, but will be treated as a convention. Later, local hooks will be offered that prevent developers from committing without a correctly named branch. We can offer this hook in a documented form, but it can be bypassed. Therefore, a GitHub Action can be used to prevent the merging of an incorrectly named branch.</p>
+<p>The branch prefixes and their meanings are:</p>
+<ul>
+<li><code>hotfix/</code> for hotfixe branches with very high priority</li>
+<li><code>bugfix/</code> for regular bug fixe branches</li>
+<li><code>feature/</code> for branches the which introduce new features</li>
+<li><code>improvement/</code> for branches doing refactorings and improvements to the code without introducing new features or API changes</li>
+<li><code>documentation/</code> for branches containing changes in the documentation and not in the code</li>
+<li><code>release/</code> for the final branches to be released</li>
+<li><code>evalaluation/</code> for the evaluation of new approaches and technologies; those typically will be dropped later and the results move into own issues and branches</li>
+</ul>
+<p>For all designations, the issue must be mentioned, for example <code>feat/176-etcd-garbage-cleanup</code>. Additional verbs like <code>176-add-etcd-garbage-cleanup</code> are not needed. For a release, however, the identifier for example is <code>rel/2.0.7</code>.</p>
 
 
 
 
 
 
+
+  
+  
 
 
 
@@ -1394,14 +1825,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
-        <script src="../../assets/javascripts/panzoom.min.js"></script>
+        <script src="../../../assets/javascripts/panzoom.min.js"></script>
       
-        <script src="../../assets/javascripts/zoompan.js"></script>
+        <script src="../../../assets/javascripts/zoompan.js"></script>
       
     
   
