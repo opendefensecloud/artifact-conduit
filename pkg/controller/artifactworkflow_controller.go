@@ -5,6 +5,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
@@ -46,6 +47,11 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			return ctrl.Result{}, nil
 		}
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
+	}
+
+	// Validate no duplicate parameter names
+	if err := r.validateNoDuplicateParameters(aw.Spec.Parameters); err != nil {
+		return ctrl.Result{}, errLogAndWrap(log, err, "validation failed")
 	}
 
 	if !aw.DeletionTimestamp.IsZero() {
@@ -169,18 +175,32 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		}
 	}
 
-	parameters := []wfv1alpha1.Parameter{}
+	// Build parameters map to prevent duplicates
+	// ArtifactWorkflow parameters take precedence over ArtifactType parameters
+	paramMap := make(map[string]wfv1alpha1.Parameter)
+
+	// First add parameters from ArtifactWorkflow (these take precedence)
 	for _, p := range aw.Spec.Parameters {
-		parameters = append(parameters, wfv1alpha1.Parameter{
+		paramMap[p.Name] = wfv1alpha1.Parameter{
 			Name:  p.Name,
 			Value: (*wfv1alpha1.AnyString)(&p.Value),
-		})
+		}
 	}
+
+	// Then add parameters from ArtifactType (only if not already present)
 	for _, p := range artifactType.Spec.Parameters {
-		parameters = append(parameters, wfv1alpha1.Parameter{
-			Name:  p.Name,
-			Value: (*wfv1alpha1.AnyString)(&p.Value),
-		})
+		if _, exists := paramMap[p.Name]; !exists {
+			paramMap[p.Name] = wfv1alpha1.Parameter{
+				Name:  p.Name,
+				Value: (*wfv1alpha1.AnyString)(&p.Value),
+			}
+		}
+	}
+
+	// Convert map to slice
+	parameters := make([]wfv1alpha1.Parameter, 0, len(paramMap))
+	for _, param := range paramMap {
+		parameters = append(parameters, param)
 	}
 
 	wf := &wfv1alpha1.Workflow{
@@ -225,4 +245,16 @@ func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&arcv1alpha1.ArtifactWorkflow{}).
 		Owns(&wfv1alpha1.Workflow{}).
 		Complete(r)
+}
+
+// validateNoDuplicateParameters checks if there are duplicate parameter names
+func (r *ArtifactWorkflowReconciler) validateNoDuplicateParameters(params []arcv1alpha1.ArtifactWorkflowParameter) error {
+	seen := make(map[string]bool)
+	for _, param := range params {
+		if seen[param.Name] {
+			return fmt.Errorf("duplicate parameter name found: %s", param.Name)
+		}
+		seen[param.Name] = true
+	}
+	return nil
 }

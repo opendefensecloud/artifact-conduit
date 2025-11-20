@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright 2025 BWI GmbH and Artefact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package controller
@@ -157,5 +157,77 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowSucceeded))
 		})
+
+		It("should fail reconciliation when duplicate parameter names are found", func() {
+			awName := "duplicate-params"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: at.Name,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: "param1", Value: "value1"},
+						{Name: "param2", Value: "value2"},
+						{Name: "param1", Value: "value3"}, // duplicate name
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			// Workflow should not be created due to validation error
+			wf := &wfv1alpha1.Workflow{}
+			Consistently(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
+			}, "2s").ShouldNot(Succeed())
+		})
+	})
+})
+
+var _ = Describe("validateNoDuplicateParameters", func() {
+	var reconciler *ArtifactWorkflowReconciler
+
+	BeforeEach(func() {
+		reconciler = &ArtifactWorkflowReconciler{}
+	})
+
+	It("should return nil when no duplicate parameters exist", func() {
+		params := []arcv1alpha1.ArtifactWorkflowParameter{
+			{Name: "param1", Value: "value1"},
+			{Name: "param2", Value: "value2"},
+			{Name: "param3", Value: "value3"},
+		}
+		err := reconciler.validateNoDuplicateParameters(params)
+		Expect(err).To(BeNil())
+	})
+
+	It("should return error when duplicate parameter names exist", func() {
+		params := []arcv1alpha1.ArtifactWorkflowParameter{
+			{Name: "param1", Value: "value1"},
+			{Name: "param2", Value: "value2"},
+			{Name: "param1", Value: "value3"},
+		}
+		err := reconciler.validateNoDuplicateParameters(params)
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("duplicate parameter name found: param1"))
+	})
+
+	It("should detect first duplicate encountered", func() {
+		params := []arcv1alpha1.ArtifactWorkflowParameter{
+			{Name: "param1", Value: "value1"},
+			{Name: "param2", Value: "value2"},
+			{Name: "param2", Value: "value3"},
+			{Name: "param1", Value: "value4"},
+		}
+		err := reconciler.validateNoDuplicateParameters(params)
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring("duplicate parameter name found: param2"))
+	})
+
+	It("should handle empty parameter list", func() {
+		params := []arcv1alpha1.ArtifactWorkflowParameter{}
+		err := reconciler.validateNoDuplicateParameters(params)
+		Expect(err).To(BeNil())
 	})
 })
