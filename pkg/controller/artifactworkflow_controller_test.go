@@ -157,5 +157,62 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowSucceeded))
 		})
+
+		It("should track failed Workflow information of created ArtifactWorkflows", func() {
+			awName := "track-failed-status"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: at.Name,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowFailed
+			wf.Status.Nodes = map[string]wfv1alpha1.NodeStatus{
+				"workflow-name-v66mf-1111": {
+					ID:          "workflow-name-v66mf-1111",
+					BoundaryID:  "workflow-name-v66mf",
+					DisplayName: "step1",
+					Phase:       wfv1alpha1.NodeFailed,
+					Type:        wfv1alpha1.NodeTypePod,
+				},
+				"workflow-name-v66mf-2222": {
+					ID:          "workflow-name-v66mf-2222",
+					BoundaryID:  "workflow-name-v66mf",
+					DisplayName: "step2",
+					Message:     "Error (exit code 1): Scan failed",
+					Phase:       wfv1alpha1.NodeFailed,
+					Type:        wfv1alpha1.NodeTypePod,
+				},
+				"workflow-name-v66mf-3333": {
+					ID:          "workflow-name-v66mf-3333",
+					BoundaryID:  "workflow-name-v66mf",
+					DisplayName: "step3",
+					Phase:       wfv1alpha1.NodeSucceeded,
+					Type:        wfv1alpha1.NodeTypePod,
+				},
+			}
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowFailed))
+			Expect(aw.Status.Message).To(Equal(""))
+		})
 	})
 })

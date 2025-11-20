@@ -4,16 +4,22 @@
 package controller
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"slices"
+	"strings"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
+	"github.com/jastBytes/sprint"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -26,7 +32,8 @@ const (
 // ArtifactWorkflowReconciler reconciles a ArtifactWorkflow object
 type ArtifactWorkflowReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	ClientSet *kubernetes.Clientset
+	Scheme    *runtime.Scheme
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
@@ -86,19 +93,13 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
-	if aw.Status.Phase.Completed() {
-		// TODO: check if message has to be compiled from logs of workflow etc...
-		return ctrl.Result{}, nil
-	}
-
 	if aw.Status.Phase == arcv1alpha1.WorkflowUnknown {
 		return r.createArgoWorkflow(ctx, log, aw)
 	}
 
-	if aw.Status.Phase.InProgress() {
-		return r.checkArgoWorkflow(ctx, log, aw)
+	if res, err := r.checkArgoWorkflow(ctx, log, aw); err != nil {
+		return res, err
 	}
-
 	return ctrl.Result{}, nil
 }
 
@@ -212,11 +213,81 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get workflow")
 	}
 
+	if aw.Status.Message == "" {
+		switch wf.Status.Phase {
+		case wfv1alpha1.WorkflowFailed:
+			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
+		case wfv1alpha1.WorkflowError:
+			// TODO: Properly show why the workflow errored
+			aw.Status.Message = wf.Status.Message
+		}
+	}
+
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 	if err := r.Status().Update(ctx, aw); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 	}
 	return ctrl.Result{}, nil
+}
+
+func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
+	reports := []struct {
+		Name    string
+		Pod     string
+		Message string
+		Logs    string
+	}{}
+	for _, node := range wf.Status.Nodes {
+		if node.Phase == wfv1alpha1.NodeFailed && node.Type == wfv1alpha1.NodeTypePod {
+			nr := struct {
+				Name    string
+				Pod     string
+				Message string
+				Logs    string
+			}{
+				Name:    node.DisplayName,
+				Pod:     generatePodNameFromNodeStatus(node),
+				Message: node.Message,
+			}
+			reports = append(reports, nr)
+		}
+	}
+
+	for _, nr := range reports {
+		logs, err := r.fetchPodLogs(ctx, aw.Namespace, nr.Pod)
+		if err != nil {
+			log.V(1).Info("failed to fetch pod logs", "pod", nr.Pod, "error", err)
+		} else {
+			nr.Logs = logs
+		}
+		aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\nLogs:\n%s\n\n", nr.Name, nr.Message, nr.Logs)
+	}
+}
+
+func generatePodNameFromNodeStatus(node wfv1alpha1.NodeStatus) string {
+	podId := node.ID[strings.LastIndex(node.ID, "-")+1:]
+	return fmt.Sprintf("%s-%s-%s", node.BoundaryID, node.DisplayName, podId)
+}
+
+func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace, podName string) (string, error) {
+	podLogOptions := corev1.PodLogOptions{
+		Container: "main", // Assuming the main container
+		Follow:    false,
+		TailLines: sprint.ToPointer(int64(30)), // Fetch last 30 lines
+	}
+	req := r.ClientSet.CoreV1().Pods(namespace).GetLogs(podName, &podLogOptions)
+	podLogs, err := req.Stream(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer sprint.PanicOnErrorFunc(podLogs.Close) // Close the stream when done
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
