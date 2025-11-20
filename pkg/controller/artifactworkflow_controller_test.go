@@ -4,8 +4,6 @@
 package controller
 
 import (
-	"context"
-
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -15,43 +13,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	atValue = "art"
-)
-
-func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
-	var (
-		at = &arcv1alpha1.ArtifactType{}
-	)
-
-	BeforeEach(func() {
-		*at = arcv1alpha1.ArtifactType{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "at-",
-			},
-			Spec: arcv1alpha1.ArtifactTypeSpec{
-				Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
-					{
-						Name:  atValue,
-						Value: atValue,
-					},
-				},
-				WorkflowTemplateRef: corev1.LocalObjectReference{
-					Name: atValue,
-				},
-			},
-		}
-		Expect(k8sClient.Create(ctx, at)).To(Succeed(), "failed to create test artifact type")
-		DeferCleanup(k8sClient.Delete, ctx, at)
-	})
-
-	return at
-}
-
 var _ = Describe("ArtifactWorkflowController", func() {
 	var (
 		ctx           = envtest.Context()
-		ns            = SetupTest(ctx)
+		ns            = setupTest(ctx)
 		at            = setupArtifactType(ctx)
 		createSecrets = func(names ...string) {
 			for _, name := range names {
