@@ -21,12 +21,15 @@ const (
 	certmanagerVersion = "v1.19.1"
 	certmanagerURLTmpl = "https://github.com/cert-manager/cert-manager/releases/download/%s/cert-manager.yaml"
 
+	argoWorkflowsVersion = "v3.7.4"
+	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
+
 	apiserverImage = "apiserver:latest"
 	managerImage   = "manager:latest"
 )
 
 var (
-	kindBindary = func() string {
+	kindBinary = func() string {
 		if v, ok := os.LookupEnv("KIND"); ok {
 			return v
 		} else {
@@ -40,6 +43,11 @@ var (
 			return "kind"
 		}
 	}()
+
+	kubeConfigPath = ""
+
+	isCertManagerAlreadyInstalled   = false
+	isArgoWorkflowsAlreadyInstalled = false
 )
 
 // TestE2E runs the end-to-end (e2e) test suite for the project. These tests execute in an isolated,
@@ -53,15 +61,28 @@ func TestE2E(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	// Let's retrieve the kubeconfig of the kind cluster
+	By("fetching the kubeconfig from kind")
+	f, err := os.CreateTemp("", "e2e-kubeconfig")
+	Expect(err).NotTo(HaveOccurred())
+	defer f.Close()
+	cmd := exec.Command(kindBinary, "get", "kubeconfig", fmt.Sprintf("--name=%s", kindCluster))
+	kc, err := run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+	_, err = f.WriteString(kc)
+	Expect(err).NotTo(HaveOccurred())
+	f.Sync()
+	kubeConfigPath = f.Name()
+
 	// Build images
 	By("building the apiserver image")
-	cmd := exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
-	_, err := run(cmd)
+	cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
+	_, err = run(cmd)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
 
 	By("building the manager image")
-	cmd := exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
-	_, err := run(cmd)
+	cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
+	_, err = run(cmd)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
 
 	// Load images
@@ -73,35 +94,60 @@ var _ = BeforeSuite(func() {
 	err = loadImageToKindClusterWithName(managerImage)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
 
-	if !skipCertManagerInstall {
-		By("checking if cert manager is installed already")
-		isCertManagerAlreadyInstalled := isCertManagerCRDsInstalled()
-		if !isCertManagerAlreadyInstalled {
-			logf("Installing CertManager...\n")
-			Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
-		} else {
-			logf("WARNING: CertManager is already installed. Skipping installation...\n")
-		}
+	By("checking if cert manager is installed already")
+	isCertManagerAlreadyInstalled = areCRDsInstalled(
+		"certificates.cert-manager.io",
+		"issuers.cert-manager.io",
+		"clusterissuers.cert-manager.io",
+		"certificaterequests.cert-manager.io",
+		"orders.acme.cert-manager.io",
+		"challenges.acme.cert-manager.io",
+	)
+	if !isCertManagerAlreadyInstalled {
+		logf("Installing CertManager...\n")
+		Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
+	} else {
+		logf("WARNING: CertManager is already installed. Skipping installation...\n")
+	}
+
+	isArgoWorkflowsAlreadyInstalled = areCRDsInstalled(
+		"workflows.argoproj.io",
+		"workflowtemplates.argoproj.io",
+		"clusterworkflowtemplates.argoproj.io",
+	)
+	if !isArgoWorkflowsAlreadyInstalled {
+		logf("Installing Argo Workflows...\n")
+		Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
+	} else {
+		logf("WARNING: Argo Workflows is already installed. Skipping installation...\n")
 	}
 })
 
 var _ = AfterSuite(func() {
 	logf("Uninstalling CertManager...\n")
-	uninstallCertManager()
+	if !isCertManagerAlreadyInstalled {
+		uninstallCertManager()
+	}
+	if !isArgoWorkflowsAlreadyInstalled {
+		uninstallArgoWorkflows()
+	}
+	if kubeConfigPath != "" {
+		os.Remove(kubeConfigPath)
+	}
 })
 
 // ------------------------------- HELPER -------------------------------------
 
 // run executes the provided command within this context
 func run(cmd *exec.Cmd) (string, error) {
-	dir, _ := GetProjectDir()
+	dir, _ := getProjectDir()
 	cmd.Dir = dir
 
 	if err := os.Chdir(cmd.Dir); err != nil {
 		logf("chdir dir: %q\n", err)
 	}
 
-	cmd.Env = append(os.Environ(), "GO111MODULE=on")
+	cmd.Env = append(os.Environ(), "GO111MODULE=on", fmt.Sprintf("KUBECONFIG=%s", kubeConfigPath))
 	command := strings.Join(cmd.Args, " ")
 	logf("running: %q\n", command)
 	output, err := cmd.CombinedOutput()
@@ -120,29 +166,15 @@ func loadImageToKindClusterWithName(name string) error {
 	return err
 }
 
-// isCertManagerCRDsInstalled checks if any Cert Manager CRDs are installed
-// by verifying the existence of key CRDs related to Cert Manager.
-func isCertManagerCRDsInstalled() bool {
-	// List of common Cert Manager CRDs
-	certManagerCRDs := []string{
-		"certificates.cert-manager.io",
-		"issuers.cert-manager.io",
-		"clusterissuers.cert-manager.io",
-		"certificaterequests.cert-manager.io",
-		"orders.acme.cert-manager.io",
-		"challenges.acme.cert-manager.io",
-	}
-
-	// Execute the kubectl command to get all CRDs
+func areCRDsInstalled(crds ...string) bool {
 	cmd := exec.Command("kubectl", "get", "crds")
 	output, err := run(cmd)
 	if err != nil {
 		return false
 	}
 
-	// Check if any of the Cert Manager CRDs are present
-	crdList := GetNonEmptyLines(output)
-	for _, crd := range certManagerCRDs {
+	crdList := getNonEmptyLines(output)
+	for _, crd := range crds {
 		for _, line := range crdList {
 			if strings.Contains(line, crd) {
 				return true
@@ -151,6 +183,25 @@ func isCertManagerCRDsInstalled() bool {
 	}
 
 	return false
+}
+
+// installCertManager installs the cert manager bundle.
+func installCertManager() error {
+	url := fmt.Sprintf(certmanagerURLTmpl, certmanagerVersion)
+	cmd := exec.Command("kubectl", "apply", "-f", url)
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+	// Wait for cert-manager-webhook to be ready, which can take time if cert-manager
+	// was re-installed after uninstalling on a cluster.
+	cmd = exec.Command("kubectl", "wait", "deployment.apps/cert-manager-webhook",
+		"--for", "condition=Available",
+		"--namespace", "cert-manager",
+		"--timeout", "5m",
+	)
+
+	_, err := run(cmd)
+	return err
 }
 
 func uninstallCertManager() {
@@ -174,23 +225,42 @@ func uninstallCertManager() {
 	}
 }
 
-// installCertManager installs the cert manager bundle.
-func installCertManager() error {
-	url := fmt.Sprintf(certmanagerURLTmpl, certmanagerVersion)
-	cmd := exec.Command("kubectl", "apply", "-f", url)
+func installArgoWorkflows() error {
+	url := fmt.Sprintf(argoWorkflowsURLTmpl, argoWorkflowsVersion)
+	cmd := exec.Command("kubectl", "create", "namespace", "argo")
+	if _, err := run(cmd); err != nil {
+		// Namespace might already exist, ignore the error
+		logf("Note: namespace creation returned: %v (may already exist)\n", err)
+	}
+
+	cmd = exec.Command("kubectl", "apply", "-n", "argo", "-f", url)
 	if _, err := run(cmd); err != nil {
 		return err
 	}
-	// Wait for cert-manager-webhook to be ready, which can take time if cert-manager
-	// was re-installed after uninstalling on a cluster.
-	cmd = exec.Command("kubectl", "wait", "deployment.apps/cert-manager-webhook",
+
+	// Wait for argo-server deployment to be ready
+	cmd = exec.Command("kubectl", "wait", "deployment.apps/argo-workflows-server",
 		"--for", "condition=Available",
-		"--namespace", "cert-manager",
+		"--namespace", "argo",
 		"--timeout", "5m",
 	)
 
 	_, err := run(cmd)
 	return err
+}
+
+func uninstallArgoWorkflows() {
+	url := fmt.Sprintf(argoWorkflowsURLTmpl, argoWorkflowsVersion)
+	cmd := exec.Command("kubectl", "delete", "-n", "argo", "-f", url)
+	if _, err := run(cmd); err != nil {
+		warnError(err)
+	}
+
+	// Delete the argo namespace
+	cmd = exec.Command("kubectl", "delete", "namespace", "argo", "--ignore-not-found", "--force", "--grace-period=0")
+	if _, err := run(cmd); err != nil {
+		warnError(err)
+	}
 }
 
 // getNonEmptyLines converts given command output string into individual objects
