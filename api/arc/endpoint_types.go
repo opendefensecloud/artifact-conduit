@@ -29,9 +29,9 @@ type EndpointSpec struct {
 	RemoteURL string `json:"remoteURL"`
 	// SecretRef specifies the secret containing the relevant credentials for the endpoint.
 	// +optional
-	SecretRef corev1.LocalObjectReference `json:"credentialRef"`
+	SecretRef corev1.LocalObjectReference `json:"secretRef"`
 	// Usage defines how the endpoint is allowed to be used.
-	Usage EndpointUsage
+	Usage EndpointUsage `json:"usage"`
 }
 
 // EndpointStatus defines the observed state of Endpoint

@@ -34,7 +34,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // ArtifactTypes returns a ArtifactTypeInformer.
 func (v *version) ArtifactTypes() ArtifactTypeInformer {
-	return &artifactTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+	return &artifactTypeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // ArtifactWorkflows returns a ArtifactWorkflowInformer.

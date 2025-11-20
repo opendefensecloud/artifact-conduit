@@ -20,6 +20,7 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -169,12 +170,26 @@ func main() {
 		}
 	}
 
+	if err := wfv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+		setupLog.Error(err, "failed to add Argo Workflows types to scheme")
+		os.Exit(1)
+	}
+
 	// Register controllers
+
 	if err := (&controller.OrderReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Order")
+		os.Exit(1)
+	}
+
+	if err := (&controller.ArtifactWorkflowReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
 		os.Exit(1)
 	}
 

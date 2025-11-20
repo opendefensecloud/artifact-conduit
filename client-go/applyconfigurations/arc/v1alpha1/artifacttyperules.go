@@ -9,7 +9,7 @@ package v1alpha1
 // with apply.
 type ArtifactTypeRulesApplyConfiguration struct {
 	SrcTypes []string `json:"srcTypes,omitempty"`
-	DstTypes []string `json:"dstType,omitempty"`
+	DstTypes []string `json:"dstTypes,omitempty"`
 }
 
 // ArtifactTypeRulesApplyConfiguration constructs a declarative configuration of the ArtifactTypeRules type for use with

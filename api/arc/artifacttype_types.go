@@ -13,7 +13,7 @@ type ArtifactTypeRules struct {
 	// SrcTypes is a list of Endpoint types, that are supported as source.
 	SrcTypes []string `json:"srcTypes,omitempty"`
 	// DstTypes is a list of Endpoint types, that are supported as destination.
-	DstTypes []string `json:"dstType,omitempty"`
+	DstTypes []string `json:"dstTypes,omitempty"`
 }
 
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
@@ -32,6 +32,7 @@ type ArtifactTypeStatus struct {
 }
 
 // +genclient
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactType is the Schema for the endpoints API
@@ -43,6 +44,7 @@ type ArtifactType struct {
 	Status ArtifactTypeStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactTypeList is a list of ArtifactType objects.

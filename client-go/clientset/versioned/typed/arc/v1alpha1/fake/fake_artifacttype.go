@@ -18,11 +18,11 @@ type fakeArtifactTypes struct {
 	Fake *FakeArcV1alpha1
 }
 
-func newFakeArtifactTypes(fake *FakeArcV1alpha1, namespace string) typedarcv1alpha1.ArtifactTypeInterface {
+func newFakeArtifactTypes(fake *FakeArcV1alpha1) typedarcv1alpha1.ArtifactTypeInterface {
 	return &fakeArtifactTypes{
 		gentype.NewFakeClientWithListAndApply[*v1alpha1.ArtifactType, *v1alpha1.ArtifactTypeList, *arcv1alpha1.ArtifactTypeApplyConfiguration](
 			fake.Fake,
-			namespace,
+			"",
 			v1alpha1.SchemeGroupVersion.WithResource("artifacttypes"),
 			v1alpha1.SchemeGroupVersion.WithKind("ArtifactType"),
 			func() *v1alpha1.ArtifactType { return &v1alpha1.ArtifactType{} },

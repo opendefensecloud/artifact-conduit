@@ -1,0 +1,35 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: dockerhub
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: docker.io
+  usage: PullOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: dst.zot
+  secretRef:
+    name: dst-reg-secret
+  usage: PushOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Order
+metadata:
+  name: example-order
+spec:
+  defaults:
+    srcRef:
+      name: dockerhub
+    dstRef:
+      name: internal
+  artifacts:
+    - type: oci # Artifact Type!
+      spec:
+        image: library/alpine:3.18
+        override: myteam/alpine:3.18-dev # default alpine:3.18

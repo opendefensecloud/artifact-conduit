@@ -6,15 +6,17 @@
 package v1alpha1
 
 import (
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 
 // EndpointSpecApplyConfiguration represents a declarative configuration of the EndpointSpec type for use
 // with apply.
 type EndpointSpecApplyConfiguration struct {
-	Type      *string                  `json:"type,omitempty"`
-	RemoteURL *string                  `json:"remoteURL,omitempty"`
-	SecretRef *v1.LocalObjectReference `json:"credentialRef,omitempty"`
+	Type      *string                    `json:"type,omitempty"`
+	RemoteURL *string                    `json:"remoteURL,omitempty"`
+	SecretRef *v1.LocalObjectReference   `json:"secretRef,omitempty"`
+	Usage     *arcv1alpha1.EndpointUsage `json:"usage,omitempty"`
 }
 
 // EndpointSpecApplyConfiguration constructs a declarative configuration of the EndpointSpec type for use with
@@ -44,5 +46,13 @@ func (b *EndpointSpecApplyConfiguration) WithRemoteURL(value string) *EndpointSp
 // If called multiple times, the SecretRef field is set to the value of the last call.
 func (b *EndpointSpecApplyConfiguration) WithSecretRef(value v1.LocalObjectReference) *EndpointSpecApplyConfiguration {
 	b.SecretRef = &value
+	return b
+}
+
+// WithUsage sets the Usage field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Usage field is set to the value of the last call.
+func (b *EndpointSpecApplyConfiguration) WithUsage(value arcv1alpha1.EndpointUsage) *EndpointSpecApplyConfiguration {
+	b.Usage = &value
 	return b
 }
