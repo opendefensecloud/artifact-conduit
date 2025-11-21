@@ -545,5 +545,54 @@ var _ = Describe("OrderController", func() {
 			}).To(Equal(arcv1alpha1.WorkflowRunning))
 
 		})
+
+		It("should handle orders with duplicate parameters in artifact spec", func() {
+			createEndpoints("src", "dst")
+			// Create test Order with duplicate parameters in the spec
+			// The JSON will create duplicate parameters when flattened
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-duplicate-params",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Defaults: arcv1alpha1.OrderDefaults{
+						SrcRef: corev1.LocalObjectReference{Name: "src"},
+						DstRef: corev1.LocalObjectReference{Name: "dst"},
+					},
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type: at1.Name,
+							// Create a spec with potential duplicate parameters
+							// after flattening
+							Spec: runtime.RawExtension{Raw: []byte(`{"srcType":"override"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// The ArtifactWorkflow should not progress due to a validation error,
+			// as srcType has already been added
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				// ArtifactWorkflow should be created
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// But it should not create an Argo Workflow due to validation failure
+			wfList := &wfv1alpha1.WorkflowList{}
+			Consistently(func() int {
+				err := k8sClient.List(ctx, wfList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(wfList.Items)
+			}, "2s").Should(Equal(0))
+		})
 	})
 })

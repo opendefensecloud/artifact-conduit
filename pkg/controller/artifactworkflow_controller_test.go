@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artefact Conduit contributors
+// Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package controller
@@ -7,10 +7,11 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/envtest"
 )
 
 var _ = Describe("ArtifactWorkflowController", func() {
@@ -182,52 +183,5 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
 			}, "2s").ShouldNot(Succeed())
 		})
-	})
-})
-
-var _ = Describe("validateNoDuplicateParameters", func() {
-	var reconciler *ArtifactWorkflowReconciler
-
-	BeforeEach(func() {
-		reconciler = &ArtifactWorkflowReconciler{}
-	})
-
-	It("should return nil when no duplicate parameters exist", func() {
-		params := []arcv1alpha1.ArtifactWorkflowParameter{
-			{Name: "param1", Value: "value1"},
-			{Name: "param2", Value: "value2"},
-			{Name: "param3", Value: "value3"},
-		}
-		err := reconciler.validateNoDuplicateParameters(params)
-		Expect(err).To(BeNil())
-	})
-
-	It("should return error when duplicate parameter names exist", func() {
-		params := []arcv1alpha1.ArtifactWorkflowParameter{
-			{Name: "param1", Value: "value1"},
-			{Name: "param2", Value: "value2"},
-			{Name: "param1", Value: "value3"},
-		}
-		err := reconciler.validateNoDuplicateParameters(params)
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("duplicate parameter name found: param1"))
-	})
-
-	It("should detect first duplicate encountered", func() {
-		params := []arcv1alpha1.ArtifactWorkflowParameter{
-			{Name: "param1", Value: "value1"},
-			{Name: "param2", Value: "value2"},
-			{Name: "param2", Value: "value3"},
-			{Name: "param1", Value: "value4"},
-		}
-		err := reconciler.validateNoDuplicateParameters(params)
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring("duplicate parameter name found: param2"))
-	})
-
-	It("should handle empty parameter list", func() {
-		params := []arcv1alpha1.ArtifactWorkflowParameter{}
-		err := reconciler.validateNoDuplicateParameters(params)
-		Expect(err).To(BeNil())
 	})
 })
