@@ -7,8 +7,8 @@ copyright: Copyright &copy; 2025 Artifact Conduit Contributors
 strict: true
 theme:
   name: material
-  logo: arc_logo.png
-  favicon: arc_logo.png
+  logo: arc_logo.svg
+  favicon: arc_logo.svg
   custom_dir: docs/overrides
   palette:
     - media: "(prefers-color-scheme)"
