@@ -212,7 +212,10 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowFailed))
-			Expect(aw.Status.Message).To(ContainSubstring("Step 'step1' failed"))
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Message
+			}).To(ContainSubstring("Step 'step1' failed"))
 		})
 	})
 })

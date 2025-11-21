@@ -206,12 +206,25 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 }
 
 func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	wf := wfv1alpha1.Workflow{}
-	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
-		return errLogAndWrap(log, err, "failed to get workflow")
+	// If workflow is still in progress, update status phase
+	if aw.Status.Phase.InProgress() {
+		wf := wfv1alpha1.Workflow{}
+		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
+			return errLogAndWrap(log, err, "failed to get workflow")
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
+		if err := r.Status().Update(ctx, aw); err != nil {
+			return errLogAndWrap(log, err, "failed to update status")
+		}
+		return nil
 	}
 
-	if aw.Status.Message == "" {
+	// If workflow has errored or failed, fetch logs and update status message
+	if (aw.Status.Phase == arcv1alpha1.WorkflowError || aw.Status.Phase == arcv1alpha1.WorkflowFailed) && aw.Status.Message == "" {
+		wf := wfv1alpha1.Workflow{}
+		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
+			return errLogAndWrap(log, err, "failed to get workflow")
+		}
 		switch wf.Status.Phase {
 		case wfv1alpha1.WorkflowFailed:
 			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
@@ -219,11 +232,6 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 			// TODO: Properly show why the workflow errored
 			aw.Status.Message = wf.Status.Message
 		}
-	}
-
-	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
-	if err := r.Status().Update(ctx, aw); err != nil {
-		return errLogAndWrap(log, err, "failed to update status")
 	}
 	return nil
 }
