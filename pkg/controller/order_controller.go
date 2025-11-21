@@ -8,10 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"slices"
-	"strconv"
-	"strings"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -87,7 +84,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 			// Requeue until all fragments are gone
-			return ctrl.Result{Requeue: true}, nil
+			return ctrl.Result{}, nil
 		}
 		// All fragments are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
@@ -345,93 +342,4 @@ func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
 		Complete(r)
-}
-
-func namespacedName(namespace, name string) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: namespace,
-		Name:      name,
-	}
-}
-
-func awName(order *arcv1alpha1.Order, sha string) string {
-	return fmt.Sprintf("%s-%s", order.Name, sha)
-}
-
-func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Namespace: order.Namespace,
-		Name:      awName(order, sha),
-	}
-}
-
-// TODO: add unit tests
-func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
-	params := []arcv1alpha1.ArtifactWorkflowParameter{
-		{
-			Name:  paramName("src", "type"),
-			Value: daw.srcEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("src", "remoteURL"),
-			Value: daw.srcEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  paramName("dst", "type"),
-			Value: daw.dstEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("dst", "remoteURL"),
-			Value: daw.dstEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  "srcSecret",
-			Value: fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != ""),
-		},
-		{
-			Name:  "dstSecret",
-			Value: fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != ""),
-		},
-	}
-
-	spec := map[string]any{}
-	raw := daw.artifact.Spec.Raw
-	if len(raw) == 0 {
-		raw = []byte("{}")
-	}
-	if err := json.Unmarshal(raw, &spec); err != nil {
-		return nil, err
-	}
-	flattened := map[string]any{}
-	flattenMap("spec", spec, flattened)
-	for name, value := range flattened {
-		params = append(params, arcv1alpha1.ArtifactWorkflowParameter{
-			Name:  name,
-			Value: fmt.Sprintf("%v", value),
-		})
-	}
-
-	return params, nil
-}
-
-// TODO: add unit tests
-func paramName(prefix, suffix string) string {
-	return prefix + strings.ToUpper(suffix[:1]) + suffix[1:]
-}
-
-// TODO: add unit tests
-func flattenMap(prefix string, src map[string]any, dst map[string]any) {
-	for k, v := range src {
-		kt := strings.ToUpper(k[:1]) + k[1:]
-		switch child := v.(type) {
-		case map[string]any:
-			flattenMap(prefix+k, child, dst)
-		case []any:
-			for i, av := range child {
-				dst[prefix+kt+strconv.Itoa(i)] = av
-			}
-		default:
-			dst[prefix+kt] = v
-		}
-	}
 }
