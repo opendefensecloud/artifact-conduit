@@ -32,7 +32,7 @@ const (
 // ArtifactWorkflowReconciler reconciles a ArtifactWorkflow object
 type ArtifactWorkflowReconciler struct {
 	client.Client
-	ClientSet *kubernetes.Clientset
+	ClientSet kubernetes.Interface
 	Scheme    *runtime.Scheme
 }
 
@@ -97,8 +97,8 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return r.createArgoWorkflow(ctx, log, aw)
 	}
 
-	if res, err := r.checkArgoWorkflow(ctx, log, aw); err != nil {
-		return res, err
+	if err := r.checkArgoWorkflow(ctx, log, aw); err != nil {
+		return ctrl.Result{}, err
 	}
 	return ctrl.Result{}, nil
 }
@@ -207,10 +207,10 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 	return wf
 }
 
-func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
+func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
 	wf := wfv1alpha1.Workflow{}
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get workflow")
+		return errLogAndWrap(log, err, "failed to get workflow")
 	}
 
 	if aw.Status.Message == "" {
@@ -225,9 +225,9 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 	if err := r.Status().Update(ctx, aw); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+		return errLogAndWrap(log, err, "failed to update status")
 	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {

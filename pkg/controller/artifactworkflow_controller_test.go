@@ -212,7 +212,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowFailed))
-			Expect(aw.Status.Message).To(Equal(""))
+			Expect(aw.Status.Message).To(Equal("Step 'step1' failed:\n\nLogs:\nfake logs\n\nStep 'step2' failed:\nError (exit code 1): Scan failed\nLogs:\nfake logs\n\n"))
 		})
 	})
 })
