@@ -7,10 +7,11 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/envtest"
 )
 
 var _ = Describe("ArtifactWorkflowController", func() {
@@ -156,6 +157,31 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowSucceeded))
+		})
+
+		It("should fail reconciliation when duplicate parameter names are found", func() {
+			awName := "duplicate-params"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: at.Name,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: "param1", Value: "value1"},
+						{Name: "param2", Value: "value2"},
+						{Name: "param1", Value: "value3"}, // duplicate name
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			// Workflow should not be created due to validation error
+			wf := &wfv1alpha1.Workflow{}
+			Consistently(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
+			}, "2s").ShouldNot(Succeed())
 		})
 	})
 })
