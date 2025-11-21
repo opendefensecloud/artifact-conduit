@@ -79,12 +79,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				_ = r.Delete(ctx, aw) // Ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
-			if err := r.patchStatus(ctx, order); err != nil {
+			if err := r.Status().Update(ctx, order); err != nil {
 				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 			// Requeue until all fragments are gone
-			return ctrl.Result{Requeue: true}, nil
+			return ctrl.Result{}, nil
 		}
 		// All fragments are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
@@ -277,32 +277,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			aws.ArtifactIndex = daw.index
 			order.Status.ArtifactWorkflows[sha] = aws
 		}
-		if err := r.patchStatus(ctx, order); err != nil {
+		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
 	}
 
 	return ctrl.Result{}, nil
-}
-
-// patchStatus patches the status subresource of the given resource to avoid collision issues.
-func (r *OrderReconciler) patchStatus(ctx context.Context, order *arcv1alpha1.Order) error {
-	log := ctrl.LoggerFrom(ctx)
-
-	log.V(1).Info("Patching status")
-	res := &arcv1alpha1.Order{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: order.GetNamespace(), Name: order.GetName()}, res); err != nil {
-		log.Error(err, "Failed to patch status. Failed to get object from cluster.")
-		return err
-	}
-
-	patch := client.MergeFrom(res.DeepCopy())
-	res.Status = order.Status
-
-	if err := r.Patch(ctx, res, patch); err != nil {
-		return errLogAndWrap(log, err, "failed to patch status")
-	}
-	return nil
 }
 
 func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, error) {
