@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"strings"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
@@ -231,11 +230,10 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
-	reports := []struct {
+	failedNodes := []struct {
 		Name    string
 		Pod     string
 		Message string
-		Logs    string
 	}{}
 	for _, node := range wf.Status.Nodes {
 		if node.Phase == wfv1alpha1.NodeFailed && node.Type == wfv1alpha1.NodeTypePod {
@@ -243,30 +241,23 @@ func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.C
 				Name    string
 				Pod     string
 				Message string
-				Logs    string
 			}{
 				Name:    node.DisplayName,
 				Pod:     generatePodNameFromNodeStatus(node),
 				Message: node.Message,
 			}
-			reports = append(reports, nr)
+			failedNodes = append(failedNodes, nr)
 		}
 	}
 
-	for _, nr := range reports {
+	for _, nr := range failedNodes {
 		logs, err := r.fetchPodLogs(ctx, aw.Namespace, nr.Pod)
 		if err != nil {
 			log.V(1).Info("failed to fetch pod logs", "pod", nr.Pod, "error", err)
-		} else {
-			nr.Logs = logs
+			continue
 		}
-		aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\nLogs:\n%s\n\n", nr.Name, nr.Message, nr.Logs)
+		aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\nLogs:\n%s\n\n", nr.Name, nr.Message, logs)
 	}
-}
-
-func generatePodNameFromNodeStatus(node wfv1alpha1.NodeStatus) string {
-	podId := node.ID[strings.LastIndex(node.ID, "-")+1:]
-	return fmt.Sprintf("%s-%s-%s", node.BoundaryID, node.DisplayName, podId)
 }
 
 func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace, podName string) (string, error) {
