@@ -10,7 +10,7 @@ linters:
     - misspell
     - wastedassign
     - unused
-    # - unparam
+    - unparam
     - goconst
     - staticcheck
     - ginkgolinter
