@@ -18,7 +18,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -134,14 +133,13 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	}
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPending
-	if err := r.patchStatus(ctx, aw); err != nil {
+	if err := r.Status().Update(ctx, aw); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 	}
 	return ctrl.Result{}, nil
 }
 
 func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactType *arcv1alpha1.ArtifactType, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
-
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -224,7 +222,7 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 	}
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
-	if err := r.patchStatus(ctx, aw); err != nil {
+	if err := r.Status().Update(ctx, aw); err != nil {
 		return errLogAndWrap(log, err, "failed to update status")
 	}
 	return nil
@@ -280,26 +278,6 @@ func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace
 		return "", err
 	}
 	return buf.String(), nil
-}
-
-// patchStatus patches the status subresource of the given resource to avoid collision issues.
-func (r *ArtifactWorkflowReconciler) patchStatus(ctx context.Context, af *arcv1alpha1.ArtifactWorkflow) error {
-	log := ctrl.LoggerFrom(ctx)
-
-	log.V(1).Info("Patching status")
-	res := &arcv1alpha1.ArtifactWorkflow{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: af.GetNamespace(), Name: af.GetName()}, res); err != nil {
-		log.Error(err, "Failed to patch status. Failed to get object from cluster.")
-		return err
-	}
-
-	patch := client.MergeFrom(res.DeepCopy())
-	res.Status = af.Status
-
-	if err := r.Patch(ctx, res, patch); err != nil {
-		return errLogAndWrap(log, err, "failed to patch status")
-	}
-	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
