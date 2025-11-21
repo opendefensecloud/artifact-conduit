@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -23,6 +24,9 @@ const (
 
 	argoWorkflowsVersion = "v3.7.4"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
+
+	zotRepoURL = "https://zotregistry.dev/helm-charts"
+	zotVersion = "0.1.x"
 
 	apiserverImage = "apiserver:e2e"
 	managerImage   = "manager:e2e"
@@ -41,6 +45,13 @@ var (
 			return v
 		} else {
 			return "kind"
+		}
+	}()
+	helmBinary = func() string {
+		if v, ok := os.LookupEnv("HELM"); ok {
+			return v
+		} else {
+			return "helm"
 		}
 	}()
 
@@ -121,13 +132,23 @@ var _ = BeforeSuite(func() {
 	} else {
 		logf("WARNING: Argo Workflows is already installed. Skipping installation...\n")
 	}
+
+	dir, err := getProjectDir()
+	Expect(err).NotTo(HaveOccurred())
+	cmd = exec.Command(helmBinary, "install", "--create-namespace", "--namespace=zot", fmt.Sprintf("--repo=%s", zotRepoURL), "-f", filepath.Join(dir, "test", "fixtures", "dst-zot.yaml"), "dst", "zot")
+	_, err = run(cmd)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to install zot")
 })
 
 var _ = AfterSuite(func() {
+	logf("Uninstalling Zot...\n")
+	cmd := exec.Command(helmBinary, "uninstall", "--namespace=zot", "dst")
+	_, _ = run(cmd)
 	logf("Uninstalling CertManager...\n")
 	if !isCertManagerAlreadyInstalled {
 		uninstallCertManager()
 	}
+	logf("Uninstalling Argo Workflows...\n")
 	if !isArgoWorkflowsAlreadyInstalled {
 		uninstallArgoWorkflows()
 	}

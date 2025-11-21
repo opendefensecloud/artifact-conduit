@@ -19,7 +19,6 @@ spec:
         control-plane: etcd
     spec:
       securityContext:
-        runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:

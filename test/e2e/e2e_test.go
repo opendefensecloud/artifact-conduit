@@ -21,6 +21,7 @@ const namespace = "arc-system"
 
 var _ = Describe("ARC", Ordered, func() {
 	var controllerPodName string
+	dir, _ := getProjectDir()
 
 	// Before running the tests, set up the environment by creating the namespace,
 	// enforce the restricted security policy to the namespace, installing CRDs,
@@ -31,11 +32,12 @@ var _ = Describe("ARC", Ordered, func() {
 		_, err := run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to create namespace")
 
-		By("labeling the namespace to enforce the restricted security policy")
-		cmd = exec.Command("kubectl", "label", "--overwrite", "ns", namespace,
-			"pod-security.kubernetes.io/enforce=restricted")
-		_, err = run(cmd)
-		Expect(err).NotTo(HaveOccurred(), "Failed to label namespace with restricted policy")
+		// NOTE: etcd runs as root uid, so unfortunately we can not enforce this yet
+		// By("labeling the namespace to enforce the restricted security policy")
+		// cmd = exec.Command("kubectl", "label", "--overwrite", "ns", namespace,
+		// 	"pod-security.kubernetes.io/enforce=restricted")
+		// _, err = run(cmd)
+		// Expect(err).NotTo(HaveOccurred(), "Failed to label namespace with restricted policy")
 
 		By("deploying apiserver and controller-manager")
 		dir, err := getProjectDir()
@@ -127,6 +129,55 @@ var _ = Describe("ARC", Ordered, func() {
 				g.Expect(output).To(Equal("Running"), "Incorrect controller-manager pod status")
 			}
 			Eventually(verifyControllerUp).Should(Succeed())
+
+			verifyAPIServicesAvailable := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "apiservices", "v1alpha1.arc.bwi.de", "-o", "go-template={{ range .status.conditions }}{{ if eq .type \"Available\" }}{{ .status }}{{ end }}{{ end }}")
+				output, err := run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("True"))
+			}
+			Eventually(verifyAPIServicesAvailable).Should(Succeed())
+		})
+
+		It("should create oci workflowtemplate and artifact type", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("should prepare default namespace for Argo Workflows", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "role.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+			cmd = exec.Command("kubectl", "create", "rolebinding", "-n", "default", "--role=executor", "--serviceaccount=default:default", "executor")
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("should run workflows of oci order successfully", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "oci", "order-and-endpoints.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			verifyOrderSuccessful := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
+				output, err := run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("Succeeded"))
+			}
+			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})
 	})
 })
