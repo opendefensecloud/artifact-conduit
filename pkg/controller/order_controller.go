@@ -70,7 +70,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
-	// Handle deletion: cleanup fragments, then remove finalizer
+	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
 		if len(order.Status.ArtifactWorkflows) > 0 {
@@ -86,10 +86,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
-			// Requeue until all fragments are gone
+			// Requeue until all artifact workflows are gone
 			return ctrl.Result{Requeue: true}, nil
 		}
-		// All fragments are gone, remove finalizer
+		// All artifact workflows are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("No artifact workflows, removing finalizer from Order")
 			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
@@ -168,7 +168,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		jsonData, err := json.Marshal(data)
 		if err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal fragment data")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 		}
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
@@ -186,7 +186,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	// List missing fragments
+	// List missing artifact workflows
 	createAWs := []string{}
 	for sha := range desiredAWs {
 		_, exists := order.Status.ArtifactWorkflows[sha]
@@ -201,7 +201,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		order.Status.ArtifactWorkflows = map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
 	}
 
-	// Find obsolete fragments
+	// Find obsolete artifact workflows
 	deleteAWs := []string{}
 	for sha := range order.Status.ArtifactWorkflows {
 		_, exists := desiredAWs[sha]
@@ -211,7 +211,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		deleteAWs = append(deleteAWs, sha)
 	}
 
-	// Create missing fragments
+	// Create missing artifact workflows
 	for _, sha := range createAWs {
 		daw := desiredAWs[sha]
 		aw, err := r.hydrateArtifactWorkflow(&daw)
@@ -240,7 +240,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	// Delete obsolete fragments
+	// Delete obsolete artifact workflows
 	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
 		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{

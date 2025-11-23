@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package artifacttypedefinition
+package artifacttype
 
 import (
 	"go.opendefense.cloud/arc/api/arc"
@@ -20,15 +20,15 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 		NewFunc:                   func() runtime.Object { return &arc.ArtifactType{} },
 		NewListFunc:               func() runtime.Object { return &arc.ArtifactTypeList{} },
 		PredicateFunc:             MatchArtifactType,
-		DefaultQualifiedResource:  arc.Resource("artifacttypedefinitions"),
-		SingularQualifiedResource: arc.Resource("artifacttypedefinition"),
+		DefaultQualifiedResource:  arc.Resource("artifacttypes"),
+		SingularQualifiedResource: arc.Resource("artifacttype"),
 
 		CreateStrategy: strategy,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
 
 		// TODO: define table converter that exposes more than name/creation timestamp
-		TableConvertor: rest.NewDefaultTableConvertor(arc.Resource("artifacttypedefinitions")),
+		TableConvertor: rest.NewDefaultTableConvertor(arc.Resource("artifacttypes")),
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {
