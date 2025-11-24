@@ -82,5 +82,5 @@ type ClusterArtifactTypeList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Items []ArtifactType `json:"items" protobuf:"bytes,2,rep,name=items"`
+	Items []ClusterArtifactType `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

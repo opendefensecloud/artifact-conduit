@@ -844,7 +844,7 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref common.ReferenceCal
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Default: map[string]interface{}{},
-										Ref:     ref(v1alpha1.ArtifactType{}.OpenAPIModelName()),
+										Ref:     ref(v1alpha1.ClusterArtifactType{}.OpenAPIModelName()),
 									},
 								},
 							},
@@ -855,7 +855,7 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref common.ReferenceCal
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactType{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+			v1alpha1.ClusterArtifactType{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 

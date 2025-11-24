@@ -58,7 +58,7 @@ func SetObjectDefaults_ClusterArtifactType(in *ClusterArtifactType) {
 func SetObjectDefaults_ClusterArtifactTypeList(in *ClusterArtifactTypeList) {
 	for i := range in.Items {
 		a := &in.Items[i]
-		SetObjectDefaults_ArtifactType(a)
+		SetObjectDefaults_ClusterArtifactType(a)
 	}
 }
 

@@ -572,7 +572,7 @@ func Convert_arc_ClusterArtifactType_To_v1alpha1_ClusterArtifactType(in *arc.Clu
 
 func autoConvert_v1alpha1_ClusterArtifactTypeList_To_arc_ClusterArtifactTypeList(in *ClusterArtifactTypeList, out *arc.ClusterArtifactTypeList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]arc.ArtifactType)(unsafe.Pointer(&in.Items))
+	out.Items = *(*[]arc.ClusterArtifactType)(unsafe.Pointer(&in.Items))
 	return nil
 }
 
@@ -583,7 +583,7 @@ func Convert_v1alpha1_ClusterArtifactTypeList_To_arc_ClusterArtifactTypeList(in 
 
 func autoConvert_arc_ClusterArtifactTypeList_To_v1alpha1_ClusterArtifactTypeList(in *arc.ClusterArtifactTypeList, out *ClusterArtifactTypeList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	out.Items = *(*[]ArtifactType)(unsafe.Pointer(&in.Items))
+	out.Items = *(*[]ClusterArtifactType)(unsafe.Pointer(&in.Items))
 	return nil
 }
 
