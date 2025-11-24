@@ -184,6 +184,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		data := []any{
 			order.Namespace,
 			artifact.Type, artifact.Spec.Raw,
+			artifactType.Name, artifactType.Generation,
 			srcEndpoint.Name, srcEndpoint.Generation,
 			dstEndpoint.Name, dstEndpoint.Generation,
 			srcSecret.Name, srcSecret.Generation,

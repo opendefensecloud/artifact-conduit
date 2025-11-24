@@ -577,7 +577,15 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// TODO: Verify that no artifact workflow is created and appropriate error is logged in status
+			// Verify that no artifact workflow is created and appropriate error is logged in status
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(0))
 		})
 	})
 })
