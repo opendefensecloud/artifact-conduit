@@ -549,6 +549,7 @@ var _ = Describe("OrderController", func() {
 				return order.Status.ArtifactWorkflows[shas[0]].Phase
 			}).To(Equal(arcv1alpha1.WorkflowRunning))
 		})
+
 		It("should validate rules of referenced ArtifactType before creating an artifact workflow", func() {
 			srcEp := createEndpoint("src-1", "disallowed-src-type")
 			dstEp := createEndpoint("dst-1", "disallowed-dst-type")
@@ -586,6 +587,52 @@ var _ = Describe("OrderController", func() {
 				}
 				return len(awList.Items)
 			}).Should(Equal(0))
+		})
+
+		It("should work with namespaced artifact type", func() {
+			at := &arcv1alpha1.ArtifactType{
+				ObjectMeta: metav1.ObjectMeta{
+					GenerateName: "at-",
+					Namespace:    ns.Name,
+				},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
+						Name: atValue,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, at)).To(Succeed())
+
+			createEndpoints("src-1", "dst-1")
+			// Create test Order with multiple artifacts, no defaults
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-no-defaults",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflows were created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+
 		})
 	})
 })
