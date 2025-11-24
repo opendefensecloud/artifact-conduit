@@ -17,7 +17,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 	var (
 		ctx           = envtest.Context()
 		ns            = setupTest(ctx)
-		at            = setupArtifactType(ctx)
+		at            = setupClusterArtifactType(ctx)
 		createSecrets = func(names ...string) {
 			for _, name := range names {
 				secret := corev1.Secret{

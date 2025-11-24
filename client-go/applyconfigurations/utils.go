@@ -25,6 +25,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.ArtifactTypeRulesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeSpec"):
 		return &arcv1alpha1.ArtifactTypeSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactTypeTemplateRef"):
+		return &arcv1alpha1.ArtifactTypeTemplateRefApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflow"):
 		return &arcv1alpha1.ArtifactWorkflowApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowParameter"):
@@ -33,6 +35,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.ArtifactWorkflowSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowStatus"):
 		return &arcv1alpha1.ArtifactWorkflowStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ClusterArtifactType"):
+		return &arcv1alpha1.ClusterArtifactTypeApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Endpoint"):
 		return &arcv1alpha1.EndpointApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EndpointSpec"):

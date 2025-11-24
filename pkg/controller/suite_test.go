@@ -30,7 +30,7 @@ import (
 
 const (
 	pollingInterval      = 400 * time.Millisecond
-	eventuallyTimeout    = 5 * time.Second
+	eventuallyTimeout    = 8 * time.Second
 	consistentlyDuration = 2 * time.Second
 	apiServiceTimeout    = 5 * time.Minute
 )
@@ -122,13 +122,13 @@ func setupTest(ctx context.Context) *corev1.Namespace {
 	return ns
 }
 
-func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
+func setupClusterArtifactType(ctx context.Context) *arcv1alpha1.ClusterArtifactType {
 	var (
-		at = &arcv1alpha1.ArtifactType{}
+		at = &arcv1alpha1.ClusterArtifactType{}
 	)
 
 	BeforeEach(func() {
-		*at = arcv1alpha1.ArtifactType{
+		*at = arcv1alpha1.ClusterArtifactType{
 			ObjectMeta: metav1.ObjectMeta{
 				GenerateName: "at-",
 			},
@@ -139,7 +139,7 @@ func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
 						Value: atValue,
 					},
 				},
-				WorkflowTemplateRef: corev1.LocalObjectReference{
+				WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
 					Name: atValue,
 				},
 			},

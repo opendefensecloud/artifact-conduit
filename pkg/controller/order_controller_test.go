@@ -22,10 +22,10 @@ var _ = Describe("OrderController", func() {
 	var (
 		ctx            = envtest.Context()
 		ns             = setupTest(ctx)
-		at1            = setupArtifactType(ctx)
-		at2            = setupArtifactType(ctx)
-		at3            = setupArtifactType(ctx)
-		at4            = setupArtifactType(ctx)
+		at1            = setupClusterArtifactType(ctx)
+		at2            = setupClusterArtifactType(ctx)
+		at3            = setupClusterArtifactType(ctx)
+		at4            = setupClusterArtifactType(ctx)
 		createEndpoint = func(name, t string) *arcv1alpha1.Endpoint {
 			secret := corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{

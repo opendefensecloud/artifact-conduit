@@ -104,9 +104,19 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
-	artifactType := arcv1alpha1.ArtifactType{}
-	if err := r.Get(ctx, namespacedName("", aw.Spec.Type), &artifactType); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to retrieve artifact type")
+	artifactType := &arcv1alpha1.ArtifactType{}
+	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
+	}
+	artifactTypeSpec := (*arcv1alpha1.ArtifactTypeSpec)(nil)
+	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
+		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
+		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
+		}
+		artifactTypeSpec = &clusterArtifactType.Spec
+	} else {
+		artifactTypeSpec = &artifactType.Spec
 	}
 
 	srcSecret := corev1.Secret{}
@@ -123,7 +133,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 		}
 	}
 
-	wf := r.hydrateArgoWorkflow(aw, &artifactType, &srcSecret, &dstSecret)
+	wf := r.hydrateArgoWorkflow(aw, artifactTypeSpec, &srcSecret, &dstSecret)
 
 	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
@@ -140,7 +150,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	return ctrl.Result{}, nil
 }
 
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactType *arcv1alpha1.ArtifactType, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -176,7 +186,7 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 			Value: (*wfv1alpha1.AnyString)(&p.Value),
 		})
 	}
-	for _, p := range artifactType.Spec.Parameters {
+	for _, p := range artifactTypeSpec.Parameters {
 		parameters = append(parameters, wfv1alpha1.Parameter{
 			Name:  p.Name,
 			Value: (*wfv1alpha1.AnyString)(&p.Value),
@@ -190,7 +200,7 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		},
 		Spec: wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
-				Name:         artifactType.Spec.WorkflowTemplateRef.Name,
+				Name:         artifactTypeSpec.WorkflowTemplateRef.Name,
 				ClusterScope: true,
 			},
 			Volumes: []corev1.Volume{
