@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package fragment
+package artifactworkflow
 
 import (
 	"context"
@@ -19,9 +19,9 @@ import (
 	"go.opendefense.cloud/arc/api/arc"
 )
 
-// NewStrategy creates and returns a fragmentStrategy instance
-func NewStrategy(typer runtime.ObjectTyper) fragmentStrategy {
-	return fragmentStrategy{typer, names.SimpleNameGenerator}
+// NewStrategy creates and returns a artifactWorkflowStrategy instance
+func NewStrategy(typer runtime.ObjectTyper) artifactWorkflowStrategy {
+	return artifactWorkflowStrategy{typer, names.SimpleNameGenerator}
 }
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactWorkflow
@@ -48,61 +48,61 @@ func SelectableFields(obj *arc.ArtifactWorkflow) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 
-type fragmentStrategy struct {
+type artifactWorkflowStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
 }
 
-func (fragmentStrategy) NamespaceScoped() bool {
+func (artifactWorkflowStrategy) NamespaceScoped() bool {
 	return true
 }
 
-func (fragmentStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
+func (artifactWorkflowStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (fragmentStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+func (artifactWorkflowStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (fragmentStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
+func (artifactWorkflowStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
-func (fragmentStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
+func (artifactWorkflowStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
 	return nil
 }
 
-func (fragmentStrategy) AllowCreateOnUpdate() bool {
+func (artifactWorkflowStrategy) AllowCreateOnUpdate() bool {
 	return false
 }
 
-func (fragmentStrategy) AllowUnconditionalUpdate() bool {
+func (artifactWorkflowStrategy) AllowUnconditionalUpdate() bool {
 	return false
 }
 
-func (fragmentStrategy) Canonicalize(obj runtime.Object) {
+func (artifactWorkflowStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (fragmentStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	// TODO: fragments should be immutable
+func (artifactWorkflowStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+	// TODO: artifactWorkflows should be immutable
 	return field.ErrorList{}
 }
 
 // WarningsOnUpdate returns warnings for the given update.
-func (fragmentStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+func (artifactWorkflowStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }
 
-// NewStrategy creates and returns a fragmentStatusStrategy instance
-func NewStatusStrategy(typer runtime.ObjectTyper) fragmentStatusStrategy {
-	return fragmentStatusStrategy{fragmentStrategy{typer, names.SimpleNameGenerator}}
+// NewStrategy creates and returns a artifactWorkflowStatusStrategy instance
+func NewStatusStrategy(typer runtime.ObjectTyper) artifactWorkflowStatusStrategy {
+	return artifactWorkflowStatusStrategy{artifactWorkflowStrategy{typer, names.SimpleNameGenerator}}
 }
 
-type fragmentStatusStrategy struct {
-	fragmentStrategy
+type artifactWorkflowStatusStrategy struct {
+	artifactWorkflowStrategy
 }
 
-func (fragmentStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.Set {
+func (artifactWorkflowStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpath.Set {
 	return map[fieldpath.APIVersion]*fieldpath.Set{
 		"arc.bwi.de/v1alpha1": fieldpath.NewSet(
 			fieldpath.MakePathOrDie("spec"),
@@ -110,16 +110,16 @@ func (fragmentStatusStrategy) GetResetFields() map[fieldpath.APIVersion]*fieldpa
 	}
 }
 
-func (fragmentStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+func (artifactWorkflowStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 	newArtifactWorkflow := obj.(*arc.ArtifactWorkflow)
 	oldArtifactWorkflow := old.(*arc.ArtifactWorkflow)
 	newArtifactWorkflow.Spec = oldArtifactWorkflow.Spec
 }
 
-func (fragmentStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+func (artifactWorkflowStatusStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
-func (fragmentStatusStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+func (artifactWorkflowStatusStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }

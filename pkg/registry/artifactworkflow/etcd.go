@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package fragment
+package artifactworkflow
 
 import (
 	"go.opendefense.cloud/arc/api/arc"
@@ -20,15 +20,15 @@ func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*reg
 		NewFunc:                   func() runtime.Object { return &arc.ArtifactWorkflow{} },
 		NewListFunc:               func() runtime.Object { return &arc.ArtifactWorkflowList{} },
 		PredicateFunc:             MatchArtifactWorkflow,
-		DefaultQualifiedResource:  arc.Resource("fragments"),
-		SingularQualifiedResource: arc.Resource("fragment"),
+		DefaultQualifiedResource:  arc.Resource("artifactworkflows"),
+		SingularQualifiedResource: arc.Resource("artifactworkflow"),
 
 		CreateStrategy: strategy,
 		UpdateStrategy: strategy,
 		DeleteStrategy: strategy,
 
 		// TODO: define table converter that exposes more than name/creation timestamp
-		TableConvertor: rest.NewDefaultTableConvertor(arc.Resource("fragments")),
+		TableConvertor: rest.NewDefaultTableConvertor(arc.Resource("artifactworkflows")),
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {

@@ -163,7 +163,7 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify fragments were created
+			// Verify artifact workflows were created
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -238,7 +238,7 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify fragments were created
+			// Verify artifact workflows were created
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -321,7 +321,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(2))
 			// Delete order
 			Expect(k8sClient.Delete(ctx, order)).To(Succeed())
-			// Eventually all fragments should be gone
+			// Eventually all artifact workflows should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -359,7 +359,7 @@ var _ = Describe("OrderController", func() {
 				})
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
-			// Eventually two fragments should exist
+			// Eventually two artifact workflows should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -399,7 +399,7 @@ var _ = Describe("OrderController", func() {
 				order.Spec.Artifacts = order.Spec.Artifacts[:1]
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
-			// Eventually only one fragment should exist
+			// Eventually only one artifact workflow should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)

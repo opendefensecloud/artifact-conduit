@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package artifacttypedefinition
+package artifacttype
 
 import (
 	"context"
@@ -19,8 +19,8 @@ import (
 )
 
 // NewStrategy creates and returns a artifactTypeDefinitionStrategy instance
-func NewStrategy(typer runtime.ObjectTyper) artifactTypeDefinitionStrategy {
-	return artifactTypeDefinitionStrategy{typer, names.SimpleNameGenerator}
+func NewStrategy(typer runtime.ObjectTyper) artifactTypeStrategy {
+	return artifactTypeStrategy{typer, names.SimpleNameGenerator}
 }
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactType
@@ -47,46 +47,46 @@ func SelectableFields(obj *arc.ArtifactType) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 
-type artifactTypeDefinitionStrategy struct {
+type artifactTypeStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
 }
 
-func (artifactTypeDefinitionStrategy) NamespaceScoped() bool {
+func (artifactTypeStrategy) NamespaceScoped() bool {
 	return false
 }
 
-func (artifactTypeDefinitionStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
+func (artifactTypeStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (artifactTypeDefinitionStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+func (artifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (artifactTypeDefinitionStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
+func (artifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
-func (artifactTypeDefinitionStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
+func (artifactTypeStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
 	return nil
 }
 
-func (artifactTypeDefinitionStrategy) AllowCreateOnUpdate() bool {
+func (artifactTypeStrategy) AllowCreateOnUpdate() bool {
 	return false
 }
 
-func (artifactTypeDefinitionStrategy) AllowUnconditionalUpdate() bool {
+func (artifactTypeStrategy) AllowUnconditionalUpdate() bool {
 	return false
 }
 
-func (artifactTypeDefinitionStrategy) Canonicalize(obj runtime.Object) {
+func (artifactTypeStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (artifactTypeDefinitionStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+func (artifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnUpdate returns warnings for the given update.
-func (artifactTypeDefinitionStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+func (artifactTypeStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }
