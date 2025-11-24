@@ -36,6 +36,7 @@ type ArtifactWorkflowReconciler struct {
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
@@ -115,6 +116,8 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
+		// For ClusterArtifactType we only reference ClusterWorkloadTemplates
+		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
 	} else {
 		artifactTypeSpec = &artifactType.Spec
 	}
@@ -201,7 +204,7 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		Spec: wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
 				Name:         artifactTypeSpec.WorkflowTemplateRef.Name,
-				ClusterScope: true,
+				ClusterScope: artifactTypeSpec.WorkflowTemplateRef.ClusterScope,
 			},
 			Volumes: []corev1.Volume{
 				srcVolume,

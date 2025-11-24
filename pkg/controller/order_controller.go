@@ -48,6 +48,8 @@ type desiredAW struct {
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
