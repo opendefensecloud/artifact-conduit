@@ -123,7 +123,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 		}
 	}
 
-	wf := r.hydrateArgoWorkflow(aw, &artifactType, &srcSecret, &dstSecret)
+	wf := r.hydrateArgoWorkflow(ctx, log, aw, &artifactType, &srcSecret, &dstSecret)
 
 	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
@@ -140,7 +140,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	return ctrl.Result{}, nil
 }
 
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactType *arcv1alpha1.ArtifactType, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, artifactType *arcv1alpha1.ArtifactType, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -170,10 +170,22 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 	}
 
 	parameterMap := map[string]string{}
+	// Initially fill map with workflow parameters
 	for _, p := range aw.Spec.Parameters {
 		parameterMap[p.Name] = p.Value
 	}
+	// Spec parameters with higher precedence now may
+	// overwrite some parameters of the workflow
 	for _, p := range artifactType.Spec.Parameters {
+		if _, exists := parameterMap[p.Name]; exists {
+			// Log when an ArtifactType parameter overrides an ArtifactWorkflow parameter
+			log.Info("ArtifactType parameter overriding ArtifactWorkflow parameter",
+				"artifactWorkflow", aw.Name,
+				"artifactType", artifactType.Name,
+				"parameter", p.Name,
+				"workflowValue", parameterMap[p.Name],
+				"typeValue", p.Value)
+		}
 		parameterMap[p.Name] = p.Value
 	}
 	parameters := []wfv1alpha1.Parameter{}

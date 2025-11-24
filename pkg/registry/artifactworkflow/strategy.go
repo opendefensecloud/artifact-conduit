@@ -64,7 +64,30 @@ func (artifactWorkflowStrategy) PrepareForUpdate(ctx context.Context, obj, old r
 }
 
 func (artifactWorkflowStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	artifactWorkflow, ok := obj.(*arc.ArtifactWorkflow)
+	if !ok {
+		// TOT: Check if errors are logged automatically.
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("not an ArtifactWorkflow"))}
+	}
+
+	allErrs := field.ErrorList{}
+	paramPath := field.NewPath("spec", "parameters")
+
+	// Check for duplicate parameter names in ArtifactWorkflow
+	seen := map[string]int{}
+	for i, param := range artifactWorkflow.Spec.Parameters {
+		if idx, exists := seen[param.Name]; exists {
+			// Only add error for the first occurrence once
+			if idx >= 0 {
+				allErrs = append(allErrs, field.Duplicate(paramPath.Index(idx).Child("name"), param.Name))
+				seen[param.Name] = -1 // Mark as already reported
+			}
+			allErrs = append(allErrs, field.Duplicate(paramPath.Index(i).Child("name"), param.Name))
+		} else {
+			seen[param.Name] = i
+		}
+	}
+	return allErrs
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
@@ -93,7 +116,7 @@ func (artifactWorkflowStrategy) WarningsOnUpdate(ctx context.Context, obj, old r
 	return nil
 }
 
-// NewStrategy creates and returns a artifactWorkflowStatusStrategy instance
+// NewStatusStrategy creates and returns a artifactWorkflowStatusStrategy instance
 func NewStatusStrategy(typer runtime.ObjectTyper) artifactWorkflowStatusStrategy {
 	return artifactWorkflowStatusStrategy{artifactWorkflowStrategy{typer, names.SimpleNameGenerator}}
 }
