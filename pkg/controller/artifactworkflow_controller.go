@@ -108,7 +108,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 	}
-	artifactTypeSpec := (*arcv1alpha1.ArtifactTypeSpec)(nil)
+	var artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
 	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {

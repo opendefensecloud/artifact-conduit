@@ -154,8 +154,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 		}
-		artifactTypeGen := int64(0)
-		artifactTypeSpec := &arcv1alpha1.ArtifactTypeSpec{}
+		var (
+			artifactTypeGen  int64
+			artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
+		)
 		if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 			clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 			if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
