@@ -10,8 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
-	"strconv"
-	"strings"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -40,13 +38,14 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index       int
-	objectMeta  metav1.ObjectMeta
-	artifact    *arcv1alpha1.OrderArtifact
-	srcEndpoint *arcv1alpha1.Endpoint
-	dstEndpoint *arcv1alpha1.Endpoint
-	srcSecret   *corev1.Secret
-	dstSecret   *corev1.Secret
+	index        int
+	objectMeta   metav1.ObjectMeta
+	artifact     *arcv1alpha1.OrderArtifact
+	artifactType *arcv1alpha1.ArtifactType
+	srcEndpoint  *arcv1alpha1.Endpoint
+	dstEndpoint  *arcv1alpha1.Endpoint
+	srcSecret    *corev1.Secret
+	dstSecret    *corev1.Secret
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
@@ -70,7 +69,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
-	// Handle deletion: cleanup fragments, then remove finalizer
+	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
 		if len(order.Status.ArtifactWorkflows) > 0 {
@@ -86,10 +85,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
-			// Requeue until all fragments are gone
-			return ctrl.Result{Requeue: true}, nil
+			// Requeue until all artifact workflows are gone
+			return ctrl.Result{}, nil
 		}
-		// All fragments are gone, remove finalizer
+		// All artifact workflows are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
 			log.V(1).Info("No artifact workflows, removing finalizer from Order")
 			order.Finalizers = slices.DeleteFunc(order.Finalizers, func(f string) bool {
@@ -141,6 +140,30 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 		}
 
+		// Validate that the endpoint usage is correct
+		if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
+			err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
+		}
+		if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
+			err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
+		}
+
+		// Validate against ArtifactType rules
+		artifactType := &arcv1alpha1.ArtifactType{}
+		if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
+		}
+		if len(artifactType.Spec.Rules.SrcTypes) > 0 && !slices.Contains(artifactType.Spec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
+			err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
+			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
+		}
+		if len(artifactType.Spec.Rules.DstTypes) > 0 && !slices.Contains(artifactType.Spec.Rules.DstTypes, dstEndpoint.Spec.Type) {
+			err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
+			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
+		}
+
 		// Next, we need the secret contents
 		srcSecret := &corev1.Secret{}
 		if srcEndpoint.Spec.SecretRef.Name != "" {
@@ -161,6 +184,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		data := []any{
 			order.Namespace,
 			artifact.Type, artifact.Spec.Raw,
+			artifactType.Name, artifactType.Generation,
 			srcEndpoint.Name, srcEndpoint.Generation,
 			dstEndpoint.Name, dstEndpoint.Generation,
 			srcSecret.Name, srcSecret.Generation,
@@ -168,7 +192,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		jsonData, err := json.Marshal(data)
 		if err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal fragment data")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 		}
 		h.Write(jsonData)
 		sha := hex.EncodeToString(h.Sum(nil))[:16]
@@ -176,17 +200,18 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// We gave all the information to further process this artifact workflow.
 		// Let's store it to compare it to the current status!
 		desiredAWs[sha] = desiredAW{
-			index:       i,
-			objectMeta:  awObjectMeta(order, sha),
-			artifact:    &artifact,
-			srcEndpoint: srcEndpoint,
-			dstEndpoint: dstEndpoint,
-			srcSecret:   srcSecret,
-			dstSecret:   dstSecret,
+			index:        i,
+			objectMeta:   awObjectMeta(order, sha),
+			artifact:     &artifact,
+			artifactType: artifactType,
+			srcEndpoint:  srcEndpoint,
+			dstEndpoint:  dstEndpoint,
+			srcSecret:    srcSecret,
+			dstSecret:    dstSecret,
 		}
 	}
 
-	// List missing fragments
+	// List missing artifact workflows
 	createAWs := []string{}
 	for sha := range desiredAWs {
 		_, exists := order.Status.ArtifactWorkflows[sha]
@@ -201,7 +226,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		order.Status.ArtifactWorkflows = map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
 	}
 
-	// Find obsolete fragments
+	// Find obsolete artifact workflows
 	deleteAWs := []string{}
 	for sha := range order.Status.ArtifactWorkflows {
 		_, exists := desiredAWs[sha]
@@ -211,7 +236,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		deleteAWs = append(deleteAWs, sha)
 	}
 
-	// Create missing fragments
+	// Create missing artifact workflows
 	for _, sha := range createAWs {
 		daw := desiredAWs[sha]
 		aw, err := r.hydrateArtifactWorkflow(&daw)
@@ -240,7 +265,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
-	// Delete obsolete fragments
+	// Delete obsolete artifact workflows
 	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
 		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
@@ -345,93 +370,4 @@ func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
 		Complete(r)
-}
-
-func namespacedName(namespace, name string) types.NamespacedName {
-	return types.NamespacedName{
-		Namespace: namespace,
-		Name:      name,
-	}
-}
-
-func awName(order *arcv1alpha1.Order, sha string) string {
-	return fmt.Sprintf("%s-%s", order.Name, sha)
-}
-
-func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
-	return metav1.ObjectMeta{
-		Namespace: order.Namespace,
-		Name:      awName(order, sha),
-	}
-}
-
-// TODO: add unit tests
-func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
-	params := []arcv1alpha1.ArtifactWorkflowParameter{
-		{
-			Name:  paramName("src", "type"),
-			Value: daw.srcEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("src", "remoteURL"),
-			Value: daw.srcEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  paramName("dst", "type"),
-			Value: daw.dstEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("dst", "remoteURL"),
-			Value: daw.dstEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  "srcSecret",
-			Value: fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != ""),
-		},
-		{
-			Name:  "dstSecret",
-			Value: fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != ""),
-		},
-	}
-
-	spec := map[string]any{}
-	raw := daw.artifact.Spec.Raw
-	if len(raw) == 0 {
-		raw = []byte("{}")
-	}
-	if err := json.Unmarshal(raw, &spec); err != nil {
-		return nil, err
-	}
-	flattened := map[string]any{}
-	flattenMap("spec", spec, flattened)
-	for name, value := range flattened {
-		params = append(params, arcv1alpha1.ArtifactWorkflowParameter{
-			Name:  name,
-			Value: fmt.Sprintf("%v", value),
-		})
-	}
-
-	return params, nil
-}
-
-// TODO: add unit tests
-func paramName(prefix, suffix string) string {
-	return prefix + strings.ToUpper(suffix[:1]) + suffix[1:]
-}
-
-// TODO: add unit tests
-func flattenMap(prefix string, src map[string]any, dst map[string]any) {
-	for k, v := range src {
-		kt := strings.ToUpper(k[:1]) + k[1:]
-		switch child := v.(type) {
-		case map[string]any:
-			flattenMap(prefix+k, child, dst)
-		case []any:
-			for i, av := range child {
-				dst[prefix+kt+strconv.Itoa(i)] = av
-			}
-		default:
-			dst[prefix+kt] = v
-		}
-	}
 }

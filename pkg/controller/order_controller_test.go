@@ -20,38 +20,43 @@ import (
 
 var _ = Describe("OrderController", func() {
 	var (
-		ctx             = envtest.Context()
-		ns              = setupTest(ctx)
-		at1             = setupArtifactType(ctx)
-		at2             = setupArtifactType(ctx)
-		at3             = setupArtifactType(ctx)
+		ctx            = envtest.Context()
+		ns             = setupTest(ctx)
+		at1            = setupArtifactType(ctx)
+		at2            = setupArtifactType(ctx)
+		at3            = setupArtifactType(ctx)
+		at4            = setupArtifactType(ctx)
+		createEndpoint = func(name, t string) *arcv1alpha1.Endpoint {
+			secret := corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: ns.Name,
+				},
+				StringData: map[string]string{
+					"testkey": name,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+			endpoint := arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      name,
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type:      t,
+					RemoteURL: name,
+					SecretRef: corev1.LocalObjectReference{
+						Name: name,
+					},
+					Usage: arcv1alpha1.EndpointUsageAll,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+			return &endpoint
+		}
 		createEndpoints = func(names ...string) {
 			for _, name := range names {
-				secret := corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: ns.Name,
-					},
-					StringData: map[string]string{
-						"testkey": name,
-					},
-				}
-				Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
-				endpoint := arcv1alpha1.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: ns.Name,
-					},
-					Spec: arcv1alpha1.EndpointSpec{
-						Type:      name,
-						RemoteURL: name,
-						SecretRef: corev1.LocalObjectReference{
-							Name: name,
-						},
-						Usage: arcv1alpha1.EndpointUsageAll,
-					},
-				}
-				Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+				_ = createEndpoint(name, name)
 			}
 		}
 	)
@@ -163,7 +168,7 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify fragments were created
+			// Verify artifact workflows were created
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -238,7 +243,7 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify fragments were created
+			// Verify artifact workflows were created
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -321,7 +326,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(2))
 			// Delete order
 			Expect(k8sClient.Delete(ctx, order)).To(Succeed())
-			// Eventually all fragments should be gone
+			// Eventually all artifact workflows should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -359,7 +364,7 @@ var _ = Describe("OrderController", func() {
 				})
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
-			// Eventually two fragments should exist
+			// Eventually two artifact workflows should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -380,8 +385,8 @@ var _ = Describe("OrderController", func() {
 				},
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: "type-e", SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
-						{Type: "type-f", SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						{Type: at2.Name, SrcRef: corev1.LocalObjectReference{Name: "src-2"}, DstRef: corev1.LocalObjectReference{Name: "dst-2"}},
 					},
 				},
 			}
@@ -399,7 +404,7 @@ var _ = Describe("OrderController", func() {
 				order.Spec.Artifacts = order.Spec.Artifacts[:1]
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
-			// Eventually only one fragment should exist
+			// Eventually only one artifact workflow should exist
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -434,7 +439,7 @@ var _ = Describe("OrderController", func() {
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type:   "art",
+							Type:   at1.Name,
 							SrcRef: corev1.LocalObjectReference{Name: "no-secret"},
 							DstRef: corev1.LocalObjectReference{Name: "no-secret"},
 							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value"}`)},
@@ -454,7 +459,7 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(1))
 			aw := awList.Items[0]
-			Expect(aw.Spec.Type).To(Equal("art"))
+			Expect(aw.Spec.Type).To(Equal(at1.Name))
 			Expect(aw.Spec.SrcSecretRef.Name).To(Equal(""))
 			Expect(aw.Spec.DstSecretRef.Name).To(Equal(""))
 			Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
@@ -543,7 +548,44 @@ var _ = Describe("OrderController", func() {
 				Expect(shas).To(HaveLen(1))
 				return order.Status.ArtifactWorkflows[shas[0]].Phase
 			}).To(Equal(arcv1alpha1.WorkflowRunning))
+		})
+		It("should validate rules of referenced ArtifactType before creating an artifact workflow", func() {
+			srcEp := createEndpoint("src-1", "disallowed-src-type")
+			dstEp := createEndpoint("dst-1", "disallowed-dst-type")
+			at4.Spec.Rules = arcv1alpha1.ArtifactTypeRules{
+				SrcTypes: []string{"allowed-src-type"},
+				DstTypes: []string{"allowed-dst-type"},
+			}
+			Expect(k8sClient.Update(ctx, at4)).To(Succeed())
 
+			// Create test Order with an artifact referencing an ArtifactType with validation rules
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-artifacttype-validation",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at4.Name,
+							SrcRef: corev1.LocalObjectReference{Name: srcEp.Name},                  // src type does not match allowed-src-type
+							DstRef: corev1.LocalObjectReference{Name: dstEp.Name},                  // dst type does not match allowed-dst-type
+							Spec:   runtime.RawExtension{Raw: []byte(`{"validKey":"validValue"}`)}, // valid spec
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that no artifact workflow is created and appropriate error is logged in status
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(0))
 		})
 	})
 })

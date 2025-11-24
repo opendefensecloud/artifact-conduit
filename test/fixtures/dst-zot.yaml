@@ -1,0 +1,50 @@
+fullnameOverride: dst
+service:
+  type: ClusterIP
+  port: 80
+persistence: true
+pvc:
+  storage: 1Gi
+mountSecret: true
+secretFiles:
+  htpasswd: |-
+    admin:$2y$05$vmiurPmJvHylk78HHFWuruFFVePlit9rZWGA/FbZfTEmNRneGJtha
+    user:$2y$05$L86zqQDfH5y445dcMlwu6uHv.oXFgT6AiJCwpv3ehr7idc0rI3S2G
+mountConfig: true
+configFiles:
+  config.json: |-
+    {
+      "extensions": {
+        "search": {
+          "enable": true,
+          "cve": {
+            "updateInterval": "12h"
+          }
+        },
+        "ui": {
+          "enable": true
+        }
+      },
+      "storage": { "rootDirectory": "/var/lib/registry" },
+      "http": {
+        "address": "0.0.0.0",
+        "port": "5000",
+        "auth": { "htpasswd": { "path": "/secret/htpasswd" } },
+        "accessControl": {
+          "repositories": {
+            "**": {
+              "policies": [{
+                "users": ["user"],
+                "actions": ["read"]
+              }],
+              "defaultPolicy": []
+            }
+          },
+          "adminPolicy": {
+            "users": ["admin"],
+            "actions": ["read", "create", "update", "delete"]
+          }
+        }
+      },
+      "log": { "level": "debug" }
+    }

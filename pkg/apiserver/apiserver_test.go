@@ -48,8 +48,8 @@ var _ = Describe("ArtifactWorkflow", func() {
 	)
 
 	Context("ArtifactWorkflow", func() {
-		It("should allow creating a fragment", func() {
-			By("creating a test fragment")
+		It("should allow creating a artifact workflow", func() {
+			By("creating a test artifact workflow")
 			frag = &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace:    ns.Name,
@@ -60,8 +60,8 @@ var _ = Describe("ArtifactWorkflow", func() {
 			Expect(k8sClient.Create(ctx, frag)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(frag), frag)).To(Succeed())
 		})
-		It("should allow deleting a fragment", func() {
-			By("deleting a test fragment")
+		It("should allow deleting a artifact workflow", func() {
+			By("deleting a test artifact workflow")
 			Expect(k8sClient.Delete(ctx, frag)).To(Succeed())
 		})
 	})

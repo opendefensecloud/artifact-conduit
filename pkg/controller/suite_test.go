@@ -16,6 +16,7 @@ import (
 	"go.opendefense.cloud/arc/pkg/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -89,8 +90,9 @@ var _ = BeforeSuite(func() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr)).To(Succeed())
 	Expect((&ArtifactWorkflowReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:    mgr.GetClient(),
+		ClientSet: testclient.NewSimpleClientset(),
+		Scheme:    mgr.GetScheme(),
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	go func() {

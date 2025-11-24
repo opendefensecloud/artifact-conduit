@@ -17,6 +17,7 @@
     pkgs.oras
     pkgs.shellcheck
     pkgs.yq-go
+    pkgs.kind
   ];
 
   # aliases for common git commands

@@ -61,7 +61,7 @@ type ArtifactWorkflowStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactWorkflow is the Schema for the fragments API
+// ArtifactWorkflow is the Schema for the artifact workflows API
 type ArtifactWorkflow struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`

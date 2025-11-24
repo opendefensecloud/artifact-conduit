@@ -4,62 +4,21 @@
 [![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=develop)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=develop)
 
 <img src="docs/arc_logo.svg" width="150" style="float: left; margin-right:20px">
-Project ARC is an open-source system to bring a variety of artifact types into air-gapped environments.
-It acts as a gateway to get artifacts from one zone to another while scans assure that only artifacts that match certain policies are transported.
-These scans include malware, CVE, license scans including validation of signatures and the attestation of that process.
+ARC (Artifact Conduit) is an open-source system that acts as a gateway for procuring various artifact types and transferring them across security zones while ensuring policy compliance through automated scanning and validation. The system addresses the challenge of bringing external artifacts — container images, Helm charts, software packages, and other resources — into restricted environments where direct internet access is prohibited.
 
 <br style="clear: left;"/>
 
-## Features of the ARC suite
+## Primary Goals
 
-### Procurement of artifacts from various sources
+- **Artifact Procurement**: Pull artifacts from diverse sources including OCI registries, Helm repositories, S3-compatible storage, and HTTP endpoints
+- **Security Validation**: Perform malware scanning, CVE analysis, license verification, and signature validation before artifact transfer
+- **Policy Enforcement**: Ensure only artifacts meeting defined security and compliance policies cross security boundaries
+- **Declarative Management**: Leverage Kubernetes-native declarative configuration for artifact lifecycle management
+- **Auditability**: Provide attestation and traceability of all artifact processing operations
 
-#### Sources
+**Out of Scope:** ARC does not replace existing registry solutions or artifact repositories. It functions as an orchestration layer that coordinates artifact transfer and validation between existing infrastructure components.
 
-- OCI Registries
-  - Container Images
-  - Helm Charts
-  - OCM Packages (see [Open Component Model](https://ocm.software/))
-- Helm Repositories
-- S3 compatible (MinIO), Google Cloud Storage, Azure Blob Storage, AWS S3
-- HTTP(S)-GET
-
-### Management of source and destination endpoints
-
-- Define responsible contact for endpoints, be it
-  - the owner of the endpoint itself
-  - the owner of the endpoint configuration in ARC
-- Shared endpoints
-  - Endpoint is available globally within the instance of ARC for any tenant
-- Expiry for endpoints to represent contract term
-- Policies for valid endpoints for administrators (blocklist/allowlist)
-
-### Validation, Malware & CVE scans
-
-- Validate signatures
-- Plugin system to allow to scanning artifacts with external scanners, e.g. Trivy, Sysdig, ClamAV,...
-- Attestation of scan / signing
-- License scanning
-  
-### Transport
-
-- After a successful scan/policy evaluation the artifacts are delivered to one or more destinations.
-- Dry-run functionality skipping the delivery to destinations
-
-### Several ways to order artifacts
-
-- One Shot
-  - Order a specific version of an artifact
-- Watcher
-  - Order using semver definition to order current and future versions matching a given definition
-- Mirror
-  - Mirror a complete registry with all it's contents
-
-### Deduplication and retirement
-
-- Do not transport/scan the same resource twice if not necessary (CVE DB updated)
-- Resources are not forever, so orders should not be forever too
-  - TTL for orders
+For detailed information have a look at [`/docs`](docs) or the live documentation on [ARC Docs](https://arc.opendefense.cloud/develop).
 
 ## To start developing
 
