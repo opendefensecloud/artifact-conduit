@@ -1,0 +1,36 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: ghcr
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: ghcr.io
+  usage: PullOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: dst.zot:80 # port optional, but endpoint can only be used with plain http with helm, if port is specified
+  secretRef:
+    name: dst-reg-secret
+  usage: PushOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Order
+metadata:
+  name: example-ocm-order
+spec:
+  defaults:
+    srcRef:
+      name: ghcr
+    dstRef:
+      name: internal
+  artifacts:
+    - type: ocm # Artifact Type!
+      spec:
+        repo: open-component-model/ocm
+        component: ocm.software/toi/demo/helmdemo
+        version: 0.12.0

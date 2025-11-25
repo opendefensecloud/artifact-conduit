@@ -1,0 +1,168 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: ocm-transfer-pipeline
+spec:
+  # Define the PVC template for inter-step data sharing
+  volumeClaimTemplates:
+    - metadata:
+        name: work-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+  # --- Input Parameters ---
+  arguments:
+    parameters:
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      - name: specRepo
+      - name: specComponent
+      - name: specVersion
+      - name: scanSeverity # Additional parameter coming from ArtifactType
+      - name: scanExitCode # Additional parameter coming from ArtifactType
+      - name: dstScheme    # Additional parameter coming from ArtifactType
+
+  entrypoint: ocm-pipeline
+
+  templates:
+    # --- Main Pipeline Entrypoint ---
+    - name: ocm-pipeline
+      steps:
+        - - name: oci-registry
+            template: oci-registry
+
+        - - name: pull-resources
+            template: pull-resources
+            arguments:
+              parameters:
+              - name: registryIP
+                value: "{{steps.oci-registry.ip}}"
+
+        - - name: scan-all-images
+            template: scan-all-images
+
+        - - name: push-resoures
+            template: push-resources
+
+    # --- 0. Start temporary registry ---
+    - name: oci-registry
+      daemon: true                        # start registry as a daemon
+      retryStrategy:
+        limit: 10                         # retry container if it fails
+      container:
+        image: registry:3
+        readinessProbe:                   # wait for readinessProbe to succeed
+          httpGet:
+            path: /v2/_catalog
+            port: 5000
+
+    # --- 1. Pull all resources & store them both on disk and registry ---
+    - name: pull-resources
+      inputs:
+        parameters:
+        - name: registryIP
+      script:
+        image: trevex/ocm-tools:v0.1.0
+        command: [bash, -c]
+        # Mount the secret volume to a temporary directory
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /secrets/src
+          - name: work-volume
+            mountPath: /data
+        source: |
+          set -euo pipefail
+          export HOME=/tmp
+
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              echo "type: generic.config.ocm.software/v1
+          configurations:
+            - type: credentials.config.ocm.software
+              consumers:
+                - identity:
+                    type: OCIRegistry
+                    hostname: $(echo '{{workflow.parameters.srcRemoteURL}}' | cut -d : -f 1)
+                  credentials:
+                    - type: Credentials
+                      properties:
+                        username: $(cat /secrets/src/username)
+                        password: $(cat /secrets/src/password)" > $HOME/.ocmconfig
+          fi
+
+          echo "Transfering to CTF..."
+          ocm transfer component {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}} -r --copy-resources --copy-sources /data/ctf
+
+          echo "Transfering CTF to temporary registry"
+          ocm transfer ctf /data/ctf http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}
+
+          echo "Compile list of images for trivy"
+          ocm get resources http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}} -r -ojson > /data/resources.json
+          cat /data/resources.json | jq -r '.items[] | select(.element.type == "ociImage") | .element.access.imageReference' > /data/images-tmp.txt
+          cat /data/images-tmp.txt | sed 's/http:\/\///g' > /data/images.txt
+
+          echo "Images for trivy to scan:"
+          cat /data/images.txt
+
+    # --- 2. Scan Image (Trivy) ---
+    - name: scan-all-images
+      script:
+        image: aquasec/trivy:latest
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          set -euo pipefail
+          while IFS="" read -r p || [ -n "$p" ]
+          do
+            echo "Scanning image for severities: $p"
+            trivy image \
+              --exit-code {{workflow.parameters.scanExitCode}} \
+              --severity {{workflow.parameters.scanSeverity}} \
+              --format json \
+              --output /data/scan-results.json \
+              $p
+          done < /data/images.txt
+        env:
+          - name: PATH
+            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+
+    # --- 3. Push all resources ---
+    - name: push-resources
+      script:
+        image: trevex/ocm-tools:v0.1.0
+        command: [bash, -c]
+        volumeMounts:
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /secrets/dst
+          - name: work-volume
+            mountPath: /data
+        source: |
+          set -euo pipefail
+          export HOME=/tmp
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              echo "type: generic.config.ocm.software/v1
+          configurations:
+            - type: credentials.config.ocm.software
+              consumers:
+                - identity:
+                    type: OCIRegistry
+                    hostname: $(echo '{{workflow.parameters.dstRemoteURL}}' | cut -d : -f 1)
+                  credentials:
+                    - type: Credentials
+                      properties:
+                        username: $(cat /secrets/dst/username)
+                        password: $(cat /secrets/dst/password)" > $HOME/.ocmconfig
+          fi
+
+          ocm transfer ctf /data/ctf {{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}
