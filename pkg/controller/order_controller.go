@@ -165,6 +165,15 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		deleteAWs = append(deleteAWs, sha)
 	}
 
+	// Find finished artifact workflows to clean up
+	finishedAWs := []string{}
+	for sha := range order.Status.ArtifactWorkflows {
+		awStatus := order.Status.ArtifactWorkflows[sha]
+		if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
+			finishedAWs = append(finishedAWs, sha)
+		}
+	}
+
 	// Create missing artifact workflows
 	for _, sha := range createAWs {
 		daw := desiredAWs[sha]
@@ -214,6 +223,20 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		delete(order.Status.ArtifactWorkflows, sha)
 		log.V(1).Info("Deleted obsolete artifact workflow", "artifactWorkflow", sha)
 		r.Recorder.Event(order, corev1.EventTypeNormal, "ArtifactWorkflowDeleted", fmt.Sprintf("Deleted obsolete artifact workflow '%s'", sha))
+	}
+
+	// Delete finished artifact workflows
+	for _, sha := range finishedAWs {
+		// Finished, let's clean up!
+		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: awObjectMeta(order, sha),
+		}); client.IgnoreNotFound(err) != nil {
+			r.Recorder.Event(order, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete finished artifact workflow '%s': %v", sha, err))
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
+		}
+
+		log.V(1).Info("Deleted finished artifact workflow", "artifactWorkflow", sha)
+		r.Recorder.Event(order, corev1.EventTypeNormal, "ArtifactWorkflowDeleted", fmt.Sprintf("Deleted finished artifact workflow '%s'", sha))
 	}
 
 	anyPhaseChanged := false
