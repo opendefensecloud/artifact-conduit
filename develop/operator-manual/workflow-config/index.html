@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1488,6 +1488,11 @@
 
 
 <h1 id="workflow-config">Workflow Config<a class="headerlink" href="#workflow-config" title="Permanent link">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Throughout this walkthrough we only cover <code>ArtifactType</code> and <code>WorkflowTemplate</code>.
+However please note, that cluster-wide equivalents exist (<code>ClusterArtifactType</code> and <code>ClusterWorkflowTemplate</code>).</p>
+</div>
 <p>ARC does not orchestrate the workflows, but relies on <a href="https://github.com/argoproj/argo-workflows">Argo Workflows</a> as workflow engine.</p>
 <h2 id="resource-relationships">Resource Relationships<a class="headerlink" href="#resource-relationships" title="Permanent link">¶</a></h2>
 <p>The following diagram illustrates how ARC resources work together to instantiate and configure Argo Workflows:</p>
