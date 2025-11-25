@@ -154,6 +154,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.Name, err))
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to create argo workflow")
 	}
+	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.Name))
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := r.Status().Update(ctx, aw); err != nil {
