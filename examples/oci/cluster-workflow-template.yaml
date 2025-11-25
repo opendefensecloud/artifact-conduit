@@ -65,7 +65,7 @@ spec:
 
           # Conditionally login to registry
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" -p "$(cat /secrets/src/password)" {{workflow.parameters.srcRemoteURL}}
+              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}}
           fi
 
           # Construct the full source image path
@@ -123,7 +123,7 @@ spec:
 
           # Conditionally login to registry
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" -p "$(cat /secrets/dst/password)" {{workflow.parameters.dstRemoteURL}}
+              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
           fi
 
           # Construct the full destination image path
