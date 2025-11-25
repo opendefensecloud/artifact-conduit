@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"time"
 
 	"github.com/go-logr/logr"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -164,7 +165,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for sha := range order.Status.ArtifactWorkflows {
 		awStatus := order.Status.ArtifactWorkflows[sha]
 		if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
-			finishedAWs = append(finishedAWs, sha)
+			if order.Spec.TtlSecondsAfterCompletion != nil && *order.Spec.TtlSecondsAfterCompletion > 0 {
+				if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TtlSecondsAfterCompletion)*time.Second {
+					finishedAWs = append(finishedAWs, sha)
+				}
+			} else {
+				finishedAWs = append(finishedAWs, sha)
+			}
 		}
 	}
 
@@ -246,6 +253,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
 			awStatus := order.Status.ArtifactWorkflows[sha]
 			awStatus.Phase = aw.Status.Phase
+			awStatus.CompletionTime = aw.Status.CompletionTime
 			order.Status.ArtifactWorkflows[sha] = awStatus
 			anyPhaseChanged = true
 		}

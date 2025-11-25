@@ -7,13 +7,15 @@ package v1alpha1
 
 import (
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the ArtifactWorkflowStatus type for use
 // with apply.
 type ArtifactWorkflowStatusApplyConfiguration struct {
-	Phase   *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
-	Message *string                    `json:"message,omitempty"`
+	Phase          *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
+	Message        *string                    `json:"message,omitempty"`
+	CompletionTime *v1.Time                   `json:"completionTime,omitempty"`
 }
 
 // ArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowStatus type for use with
@@ -35,5 +37,13 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alpha1.W
 // If called multiple times, the Message field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithMessage(value string) *ArtifactWorkflowStatusApplyConfiguration {
 	b.Message = &value
+	return b
+}
+
+// WithCompletionTime sets the CompletionTime field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the CompletionTime field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithCompletionTime(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
+	b.CompletionTime = &value
 	return b
 }

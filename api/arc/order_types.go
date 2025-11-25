@@ -40,6 +40,11 @@ type OrderSpec struct {
 	Defaults OrderDefaults `json:"defaults,omitempty"`
 	// Artifacts lists all artifacts, that will be processed by this Order.
 	Artifacts []OrderArtifact `json:"artifacts,omitempty"`
+	// +optional
+	// TtlSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TtlSecondsAfterCompletion *uint64 `json:"ttlSecondsAfterCompletion,omitempty"`
 }
 
 // OrderStatus defines the observed state of Order
@@ -57,6 +62,8 @@ type OrderArtifactWorkflowStatus struct {
 	Phase WorkflowPhase `json:"phase"`
 	// A human readable message describing the current condition of the artifact workflow.
 	Message string `json:"message,omitempty"`
+	// CompletionTime is the time when the workflow finished
+	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 }
 
 // +genclient

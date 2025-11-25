@@ -65,6 +65,8 @@ type ArtifactWorkflowStatus struct {
 	Phase WorkflowPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=WorkflowPhase"`
 	// A human readable message describing the current condition of the artifact workflow.
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
+	// CompletionTime is the time when the workflow finished
+	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 }
 
 // +genclient

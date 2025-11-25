@@ -173,6 +173,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 
 
 #### ClusterArtifactType
@@ -324,6 +325,7 @@ _Appears in:_
 | `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 
 
 #### OrderDefaults
@@ -360,6 +362,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  |  |
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
+| `ttlSecondsAfterCompletion` _integer_ | TtlSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
 
 
 #### OrderStatus

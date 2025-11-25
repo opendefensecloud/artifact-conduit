@@ -239,6 +239,10 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 	}
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
+	if aw.Status.Phase == arcv1alpha1.WorkflowSucceeded {
+		aw.Status.CompletionTime = metav1.Now()
+	}
+
 	// If workflow has errored or failed, fetch logs and update status message
 	if (aw.Status.Phase == arcv1alpha1.WorkflowError || aw.Status.Phase == arcv1alpha1.WorkflowFailed) && aw.Status.Message == "" {
 		switch aw.Status.Phase {

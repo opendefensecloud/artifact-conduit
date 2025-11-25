@@ -519,6 +519,7 @@ func Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.A
 func autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *ArtifactWorkflowStatus, out *arc.ArtifactWorkflowStatus, s conversion.Scope) error {
 	out.Phase = arc.WorkflowPhase(in.Phase)
 	out.Message = in.Message
+	out.CompletionTime = in.CompletionTime
 	return nil
 }
 
@@ -530,6 +531,7 @@ func Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *A
 func autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *arc.ArtifactWorkflowStatus, out *ArtifactWorkflowStatus, s conversion.Scope) error {
 	out.Phase = WorkflowPhase(in.Phase)
 	out.Message = in.Message
+	out.CompletionTime = in.CompletionTime
 	return nil
 }
 
@@ -752,6 +754,7 @@ func autoConvert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkfl
 	out.ArtifactIndex = in.ArtifactIndex
 	out.Phase = arc.WorkflowPhase(in.Phase)
 	out.Message = in.Message
+	out.CompletionTime = in.CompletionTime
 	return nil
 }
 
@@ -764,6 +767,7 @@ func autoConvert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkfl
 	out.ArtifactIndex = in.ArtifactIndex
 	out.Phase = WorkflowPhase(in.Phase)
 	out.Message = in.Message
+	out.CompletionTime = in.CompletionTime
 	return nil
 }
 
@@ -821,6 +825,7 @@ func autoConvert_v1alpha1_OrderSpec_To_arc_OrderSpec(in *OrderSpec, out *arc.Ord
 		return err
 	}
 	out.Artifacts = *(*[]arc.OrderArtifact)(unsafe.Pointer(&in.Artifacts))
+	out.TtlSecondsAfterCompletion = (*uint64)(unsafe.Pointer(in.TtlSecondsAfterCompletion))
 	return nil
 }
 
@@ -834,6 +839,7 @@ func autoConvert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *Ord
 		return err
 	}
 	out.Artifacts = *(*[]OrderArtifact)(unsafe.Pointer(&in.Artifacts))
+	out.TtlSecondsAfterCompletion = (*uint64)(unsafe.Pointer(in.TtlSecondsAfterCompletion))
 	return nil
 }
 

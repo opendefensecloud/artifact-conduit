@@ -371,6 +371,8 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 		})
 
+		// TODO: test ttl-based cleanup
+
 		It("should create a new artifact workflow and update status when an artifact is added", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
