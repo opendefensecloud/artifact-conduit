@@ -133,7 +133,7 @@ docs-docker-build:
 	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
-	$(CRD_REF_DOCS) --source-path=api/arc --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
+	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
 docs: ## Serve the documentation using Docker.
