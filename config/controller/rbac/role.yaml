@@ -20,6 +20,7 @@ rules:
   - arc.bwi.de
   resources:
   - artifacttypes
+  - clusterartifacttypes
   - endpoints
   verbs:
   - get

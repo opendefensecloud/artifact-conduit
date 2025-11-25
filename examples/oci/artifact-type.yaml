@@ -1,5 +1,5 @@
 apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactType
+kind: ClusterArtifactType
 metadata:
   name: oci
 spec:

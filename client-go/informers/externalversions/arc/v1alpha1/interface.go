@@ -15,6 +15,8 @@ type Interface interface {
 	ArtifactTypes() ArtifactTypeInformer
 	// ArtifactWorkflows returns a ArtifactWorkflowInformer.
 	ArtifactWorkflows() ArtifactWorkflowInformer
+	// ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
+	ClusterArtifactTypes() ClusterArtifactTypeInformer
 	// Endpoints returns a EndpointInformer.
 	Endpoints() EndpointInformer
 	// Orders returns a OrderInformer.
@@ -34,12 +36,17 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 
 // ArtifactTypes returns a ArtifactTypeInformer.
 func (v *version) ArtifactTypes() ArtifactTypeInformer {
-	return &artifactTypeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+	return &artifactTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // ArtifactWorkflows returns a ArtifactWorkflowInformer.
 func (v *version) ArtifactWorkflows() ArtifactWorkflowInformer {
 	return &artifactWorkflowInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
+func (v *version) ClusterArtifactTypes() ClusterArtifactTypeInformer {
+	return &clusterArtifactTypeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // Endpoints returns a EndpointInformer.

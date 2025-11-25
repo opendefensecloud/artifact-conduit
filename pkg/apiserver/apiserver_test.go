@@ -123,3 +123,29 @@ var _ = Describe("ArtifactType", func() {
 	})
 
 })
+
+var _ = Describe("ClusterArtifactType", func() {
+	var (
+		ctx = envtest.Context()
+		atd = &arcv1alpha1.ClusterArtifactType{}
+	)
+
+	Context("ArtifactType", func() {
+		It("should allow creating an artifact type definition", func() {
+			By("creating a test artifact type definition")
+			atd = &arcv1alpha1.ClusterArtifactType{
+				ObjectMeta: metav1.ObjectMeta{
+					GenerateName: "test-",
+				},
+				Spec: arcv1alpha1.ArtifactTypeSpec{},
+			}
+			Expect(k8sClient.Create(ctx, atd)).To(Succeed())
+			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(atd), atd)).To(Succeed())
+		})
+		It("should allow deleting an artifact type definition", func() {
+			By("deleting a test artifact type definition")
+			Expect(k8sClient.Delete(ctx, atd)).To(Succeed())
+		})
+	})
+
+})

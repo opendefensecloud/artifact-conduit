@@ -5,16 +5,12 @@
 
 package v1alpha1
 
-import (
-	v1 "k8s.io/api/core/v1"
-)
-
 // ArtifactTypeSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeSpec type for use
 // with apply.
 type ArtifactTypeSpecApplyConfiguration struct {
 	Rules               *ArtifactTypeRulesApplyConfiguration          `json:"rules,omitempty"`
 	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
-	WorkflowTemplateRef *v1.LocalObjectReference                      `json:"workflowTemplateRef,omitempty"`
+	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration    `json:"workflowTemplateRef,omitempty"`
 }
 
 // ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with
@@ -47,7 +43,7 @@ func (b *ArtifactTypeSpecApplyConfiguration) WithParameters(values ...*ArtifactW
 // WithWorkflowTemplateRef sets the WorkflowTemplateRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the WorkflowTemplateRef field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithWorkflowTemplateRef(value v1.LocalObjectReference) *ArtifactTypeSpecApplyConfiguration {
-	b.WorkflowTemplateRef = &value
+func (b *ArtifactTypeSpecApplyConfiguration) WithWorkflowTemplateRef(value *ArtifactTypeTemplateRefApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
+	b.WorkflowTemplateRef = value
 	return b
 }

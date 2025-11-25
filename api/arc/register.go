@@ -42,6 +42,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&EndpointList{},
 		&ArtifactType{},
 		&ArtifactTypeList{},
+		&ClusterArtifactType{},
+		&ClusterArtifactTypeList{},
 	)
 	return nil
 }

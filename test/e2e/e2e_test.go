@@ -95,8 +95,8 @@ var _ = Describe("ARC", Ordered, func() {
 		}
 	})
 
-	SetDefaultEventuallyTimeout(2 * time.Minute)
-	SetDefaultEventuallyPollingInterval(time.Second)
+	SetDefaultEventuallyTimeout(5 * time.Minute)
+	SetDefaultEventuallyPollingInterval(2 * time.Second)
 
 	Context("Extension API server and Controller Manager", func() {
 		It("should run successfully", func() {

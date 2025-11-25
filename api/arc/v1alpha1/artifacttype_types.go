@@ -4,7 +4,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -16,6 +15,15 @@ type ArtifactTypeRules struct {
 	DstTypes []string `json:"dstTypes,omitempty"`
 }
 
+// ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+type ArtifactTypeTemplateRef struct {
+	// Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate.
+	Name string `json:"name,omitempty"`
+	// ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.
+	// For ClusterArtifactType this will always be true and all other values are ignored.
+	ClusterScope bool `json:"clusterScope,omitempty"`
+}
+
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
 type ArtifactTypeSpec struct {
 	// Rules defines a set of rules for this type.
@@ -24,7 +32,7 @@ type ArtifactTypeSpec struct {
 	// These parameters will override parameters coming from ArtifactWorkflows.
 	Parameters []ArtifactWorkflowParameter `json:"parameters"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
-	WorkflowTemplateRef corev1.LocalObjectReference `json:"workflowTemplateRef"`
+	WorkflowTemplateRef ArtifactTypeTemplateRef `json:"workflowTemplateRef"`
 }
 
 // ArtifactTypeStatus defines the observed state of ArtifactType
@@ -32,7 +40,6 @@ type ArtifactTypeStatus struct {
 }
 
 // +genclient
-// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactType is the Schema for the endpoints API
@@ -44,7 +51,6 @@ type ArtifactType struct {
 	Status ArtifactTypeStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
-// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ArtifactTypeList is a list of ArtifactType objects.
@@ -53,4 +59,28 @@ type ArtifactTypeList struct {
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	Items []ArtifactType `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ArtifactType is the Schema for the endpoints API
+type ClusterArtifactType struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	Spec   ArtifactTypeSpec   `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status ArtifactTypeStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ArtifactTypeList is a list of ArtifactType objects.
+type ClusterArtifactTypeList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	Items []ClusterArtifactType `json:"items" protobuf:"bytes,2,rep,name=items"`
 }

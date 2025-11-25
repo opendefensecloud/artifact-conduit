@@ -38,17 +38,18 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index        int
-	objectMeta   metav1.ObjectMeta
-	artifact     *arcv1alpha1.OrderArtifact
-	artifactType *arcv1alpha1.ArtifactType
-	srcEndpoint  *arcv1alpha1.Endpoint
-	dstEndpoint  *arcv1alpha1.Endpoint
-	srcSecret    *corev1.Secret
-	dstSecret    *corev1.Secret
+	index       int
+	objectMeta  metav1.ObjectMeta
+	artifact    *arcv1alpha1.OrderArtifact
+	srcEndpoint *arcv1alpha1.Endpoint
+	dstEndpoint *arcv1alpha1.Endpoint
+	srcSecret   *corev1.Secret
+	dstSecret   *corev1.Secret
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
@@ -152,14 +153,30 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 		// Validate against ArtifactType rules
 		artifactType := &arcv1alpha1.ArtifactType{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); err != nil {
+		if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 		}
-		if len(artifactType.Spec.Rules.SrcTypes) > 0 && !slices.Contains(artifactType.Spec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
+		var (
+			artifactTypeGen  int64
+			artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
+		)
+		if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
+			clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
+			if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
+			}
+			artifactTypeSpec = &clusterArtifactType.Spec
+			artifactTypeGen = clusterArtifactType.Generation
+		} else {
+			artifactTypeSpec = &artifactType.Spec
+			artifactTypeGen = artifactType.Generation
+		}
+
+		if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
 			err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
 			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
 		}
-		if len(artifactType.Spec.Rules.DstTypes) > 0 && !slices.Contains(artifactType.Spec.Rules.DstTypes, dstEndpoint.Spec.Type) {
+		if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
 			err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
 			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
 		}
@@ -183,8 +200,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		h := sha256.New()
 		data := []any{
 			order.Namespace,
-			artifact.Type, artifact.Spec.Raw,
-			artifactType.Name, artifactType.Generation,
+			artifact.Type, artifact.Spec.Raw, artifactTypeGen,
 			srcEndpoint.Name, srcEndpoint.Generation,
 			dstEndpoint.Name, dstEndpoint.Generation,
 			srcSecret.Name, srcSecret.Generation,
@@ -200,14 +216,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// We gave all the information to further process this artifact workflow.
 		// Let's store it to compare it to the current status!
 		desiredAWs[sha] = desiredAW{
-			index:        i,
-			objectMeta:   awObjectMeta(order, sha),
-			artifact:     &artifact,
-			artifactType: artifactType,
-			srcEndpoint:  srcEndpoint,
-			dstEndpoint:  dstEndpoint,
-			srcSecret:    srcSecret,
-			dstSecret:    dstSecret,
+			index:       i,
+			objectMeta:  awObjectMeta(order, sha),
+			artifact:    &artifact,
+			srcEndpoint: srcEndpoint,
+			dstEndpoint: dstEndpoint,
+			srcSecret:   srcSecret,
+			dstSecret:   dstSecret,
 		}
 	}
 

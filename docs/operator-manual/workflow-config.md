@@ -1,5 +1,10 @@
 # Workflow Config
 
+!!! note
+    
+    Throughout this walkthrough we only cover `ArtifactType` and `WorkflowTemplate`.
+    However please note, that cluster-wide equivalents exist (`ClusterArtifactType` and `ClusterWorkflowTemplate`).
+
 ARC does not orchestrate the workflows, but relies on [Argo Workflows](https://github.com/argoproj/argo-workflows) as workflow engine.
 
 ## Resource Relationships

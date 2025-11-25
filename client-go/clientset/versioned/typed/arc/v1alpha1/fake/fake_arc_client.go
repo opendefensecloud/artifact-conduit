@@ -15,12 +15,16 @@ type FakeArcV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeArcV1alpha1) ArtifactTypes() v1alpha1.ArtifactTypeInterface {
-	return newFakeArtifactTypes(c)
+func (c *FakeArcV1alpha1) ArtifactTypes(namespace string) v1alpha1.ArtifactTypeInterface {
+	return newFakeArtifactTypes(c, namespace)
 }
 
 func (c *FakeArcV1alpha1) ArtifactWorkflows(namespace string) v1alpha1.ArtifactWorkflowInterface {
 	return newFakeArtifactWorkflows(c, namespace)
+}
+
+func (c *FakeArcV1alpha1) ClusterArtifactTypes() v1alpha1.ClusterArtifactTypeInterface {
+	return newFakeClusterArtifactTypes(c)
 }
 
 func (c *FakeArcV1alpha1) Endpoints(namespace string) v1alpha1.EndpointInterface {

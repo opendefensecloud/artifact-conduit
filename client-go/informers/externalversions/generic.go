@@ -44,6 +44,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactTypes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("artifactworkflows"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ArtifactWorkflows().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("clusterartifacttypes"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().ClusterArtifactTypes().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("endpoints"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Arc().V1alpha1().Endpoints().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("orders"):
