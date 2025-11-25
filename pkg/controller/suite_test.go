@@ -18,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,9 +37,10 @@ const (
 )
 
 var (
-	k8sClient client.Client
-	testEnv   *envtest.Environment
-	atValue   = "art"
+	k8sClient    client.Client
+	testEnv      *envtest.Environment
+	atValue      = "art"
+	fakeRecorder = &record.FakeRecorder{}
 )
 
 func TestController(t *testing.T) {
@@ -86,13 +88,15 @@ var _ = BeforeSuite(func() {
 
 	// setup reconcilers
 	Expect((&OrderReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: fakeRecorder,
 	}).SetupWithManager(mgr)).To(Succeed())
 	Expect((&ArtifactWorkflowReconciler{
 		Client:    mgr.GetClient(),
 		ClientSet: testclient.NewSimpleClientset(),
 		Scheme:    mgr.GetScheme(),
+		Recorder:  fakeRecorder,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	go func() {

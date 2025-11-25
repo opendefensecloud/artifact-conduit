@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,7 +35,8 @@ const (
 // OrderReconciler reconciles a Order object
 type OrderReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 type desiredAW struct {
@@ -55,6 +57,7 @@ type desiredAW struct {
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -73,6 +76,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
+		r.Recorder.Event(order, corev1.EventTypeWarning, "Deleting", "Order is being deleted, cleaning up artifact workflows")
+
+		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
 			for sha := range order.Status.ArtifactWorkflows {
 				// Remove Secret and ArtifactWorkflow
@@ -86,6 +92,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
+			r.Recorder.Event(order, corev1.EventTypeNormal, "Cleanup", "Cleaned up artifact workflows for order")
+
 			// Requeue until all artifact workflows are gone
 			return ctrl.Result{}, nil
 		}
