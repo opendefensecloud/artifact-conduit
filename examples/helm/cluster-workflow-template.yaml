@@ -60,6 +60,8 @@ spec:
           - name: work-volume
             mountPath: /data
         source: |
+          set -euo pipefail
+
           echo "Pulling OCI chart {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}/{{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}}"
 
           mkdir -p /data/charts
@@ -90,6 +92,8 @@ spec:
             readOnly: true
             mountPath: /secrets/src # For passing basic auth credentials
         source: |
+          set -euo pipefail
+
           echo "Pulling helm chart {{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}} from {{workflow.parameters.srcRemoteURL}}"
 
           mkdir -p /data/charts
@@ -147,6 +151,7 @@ spec:
             mountPath: /data
 
         source: |
+          set -euo pipefail
           cd /data/charts
 
           CHART_PATH="./{{workflow.parameters.specChart}}"
