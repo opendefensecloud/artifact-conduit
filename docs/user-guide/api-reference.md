@@ -39,14 +39,32 @@ ArtifactTypeSpec specifies a type of artifact and describes the corresponding wo
 
 _Appears in:_
 - [ArtifactType](#artifacttype)
+- [ClusterArtifactType](#clusterartifacttype)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `rules` _[ArtifactTypeRules](#artifacttyperules)_ | Rules defines a set of rules for this type. |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines extra parameters for the Workflow to use.<br />These parameters will override parameters coming from ArtifactWorkflows. |  |  |
-| `workflowTemplateRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
+| `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
 
 
+
+
+#### ArtifactTypeTemplateRef
+
+
+
+ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+
+
+
+_Appears in:_
+- [ArtifactTypeSpec](#artifacttypespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate. |  |  |
+| `clusterScope` _boolean_ | ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.<br />For ClusterArtifactType this will always be true and all other values are ignored. |  |  |
 
 
 
@@ -86,6 +104,8 @@ _Appears in:_
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |
+
+
 
 
 
@@ -281,14 +301,32 @@ ArtifactTypeSpec specifies a type of artifact and describes the corresponding wo
 
 _Appears in:_
 - [ArtifactType](#artifacttype)
+- [ClusterArtifactType](#clusterartifacttype)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `rules` _[ArtifactTypeRules](#artifacttyperules)_ | Rules defines a set of rules for this type. |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines extra parameters for the Workflow to use.<br />These parameters will override parameters coming from ArtifactWorkflows. |  |  |
-| `workflowTemplateRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
+| `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
 
 
+
+
+#### ArtifactTypeTemplateRef
+
+
+
+ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+
+
+
+_Appears in:_
+- [ArtifactTypeSpec](#artifacttypespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ | Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate. |  |  |
+| `clusterScope` _boolean_ | ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.<br />For ClusterArtifactType this will always be true and all other values are ignored. |  |  |
 
 
 
@@ -328,6 +366,8 @@ _Appears in:_
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |
+
+
 
 
 
