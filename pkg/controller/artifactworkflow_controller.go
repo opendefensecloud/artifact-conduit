@@ -198,6 +198,10 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		parameterMap[p.Name] = p.Value
 	}
 	for _, p := range artifactTypeSpec.Parameters {
+		parameterMap[p.Name] = p.Value
+	}
+	parameters := []wfv1alpha1.Parameter{}
+	for name, value := range parameterMap {
 		parameters = append(parameters, wfv1alpha1.Parameter{
 			Name:  name,
 			Value: (*wfv1alpha1.AnyString)(&value),
