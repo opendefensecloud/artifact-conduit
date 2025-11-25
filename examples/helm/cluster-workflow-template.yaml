@@ -1,0 +1,183 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: helm-chart-pipeline
+spec:
+  # Define the PVC template for inter-step data sharing
+  volumeClaimTemplates:
+    - metadata:
+        name: work-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+
+  # --- Input Parameters ---
+  arguments:
+    parameters:
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      - name: specChart # Name of the chart
+      - name: specRepo # OCI repo name for pull or push to OCI registry
+      - name: specVersion # Version of the chart
+      - name: scanSeverity # Additional parameter coming from ArtifactType
+      - name: dstPlainHTTP # Additional parameter coming from ArtifactType
+
+  entrypoint: helm-pipeline
+
+  templates:
+    # --- Main Pipeline Entrypoint ---
+    - name: helm-pipeline
+      steps:
+        - - name: pull-chart-oci
+            when: "{{workflow.parameters.srcType}} == oci"
+            template: pull-chart-oci
+
+        - - name: pull-chart-helm
+            when: "{{workflow.parameters.srcType}} == helm"
+            template: pull-chart-helm
+
+        - - name: lint-chart
+            template: lint-chart
+
+        - - name: package-and-push # Always pushes to OCI
+            template: package-and-push
+
+    # --- 1A. Pull Chart from OCI Registry ---
+    - name: pull-chart-oci
+      script:
+        image: alpine/helm:3.19.0
+        command: [sh, -c]
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /secrets/src # For passing OCI login credentials
+          - name: work-volume
+            mountPath: /data
+        source: |
+          echo "Pulling OCI chart {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}/{{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}}"
+
+          mkdir -p /data/charts
+          cd /data/charts
+
+          # Conditionally login to registry
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              helm registry login -u "$(cat /secrets/src/username)" -p "$(cat /secrets/src/password)" {{workflow.parameters.srcRemoteURL}}
+          fi
+
+          # The chart reference for OCI: oci://<repo-url>/<chart-name>
+          CHART_REF="oci://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}/{{workflow.parameters.specChart}}"
+
+          helm pull $CHART_REF \
+            --version "{{workflow.parameters.specVersion}}" \
+            --destination . \
+            --untar
+
+    # --- 1B. Pull Chart from Helm Repository ---
+    - name: pull-chart-helm
+      script:
+        image: alpine/helm:3.19.0
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /secrets/src # For passing basic auth credentials
+        source: |
+          echo "Pulling helm chart {{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}} from {{workflow.parameters.srcRemoteURL}}"
+
+          mkdir -p /data/charts
+          cd /data/charts
+
+          # Add the helm repository
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              cat /secrets/src/password | helm repo add src-repo "{{workflow.parameters.srcRemoteURL}}" --username "$(cat /secrets/src/username)" --password-stdin
+          else
+              helm repo add src-repo "{{workflow.parameters.srcRemoteURL}}"
+          fi
+
+          # Update the index to ensure the chart is found
+          helm repo update
+
+          # Pull the specified chart version and unpack it
+          helm pull src-repo/"{{workflow.parameters.specChart}}" \
+            --version "{{workflow.parameters.specVersion}}" \
+            --destination . \
+            --untar
+
+    # --- 2. Lint/Validate Chart (Helm) ---
+    - name: lint-chart
+      script:
+        image: alpine/helm:3.19.0
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          cd /data/charts/{{workflow.parameters.specChart}}
+
+          helm lint .
+
+          if [ $? -ne 0 ]; then
+              echo "❌ Chart Linting failed!"
+              exit 1
+          fi
+
+          echo "✅ Chart Linting successful!"
+
+    # --- 3. Package and Push Chart to OCI Destination ---
+    - name: package-and-push
+      script:
+        image: alpine/helm:3.19.0
+        command: [sh, -c]
+
+        # Mount the secret volume for destination authentication
+        volumeMounts:
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /secrets/dst
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          cd /data/charts
+
+          CHART_PATH="./{{workflow.parameters.specChart}}"
+          echo "Packaging chart from $CHART_PATH"
+
+          # Package the unpacked chart back into a .tgz file
+          # This step is the same regardless of the source type
+          helm package $CHART_PATH
+
+          TGZ_FILE=$(ls *.tgz | head -n 1)
+
+          # Check if the chart version was updated (e.g., in a previous hypothetical step)
+          # For simplicity, we assume the packaged name is correct.
+
+          echo "Pushing $TGZ_FILE to OCI registry: oci://{{workflow.parameters.dstRemoteURL}}"
+
+          # Conditionally login to registry
+          LOGIN_FLAGS=""
+          if [ "{{workflow.parameters.dstPlainHTTP}}" = "true" ]; then
+              LOGIN_FLAGS="--insecure --plain-http"
+          fi
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              cat /secrets/dst/password | helm registry login ${LOGIN_FLAGS} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
+          fi
+
+          # Push to the OCI registry (Destination)
+          helm push $TGZ_FILE "oci://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}"
+
+          if [ $? -ne 0 ]; then
+              echo "❌ Helm Push failed!"
+              exit 1
+          fi
+
+          echo "✅ Helm Chart pushed successfully to OCI!"

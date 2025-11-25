@@ -1,0 +1,53 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: quay
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: quay.io
+  usage: PullOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: helm-examples
+spec:
+  type: helm # Endpoint Type!
+  remoteURL: https://helm.github.io/examples
+  usage: PullOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: dst.zot:80 # port required for helm workflow to push to plain http
+  secretRef:
+    name: dst-reg-secret
+  usage: PushOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Order
+metadata:
+  name: example-helm-order
+spec:
+  defaults:
+    srcRef:
+      name: quay
+    dstRef:
+      name: internal
+  artifacts:
+    - type: helm # Artifact Type!
+      spec:
+        repo: jetstack/charts
+        chart: cert-manager
+        version: v1.19.1
+    - type: helm
+      srcRef:
+        name: helm-examples
+      spec:
+        repo: myexamples
+        chart: hello-world
+        version: v0.1.0
+
