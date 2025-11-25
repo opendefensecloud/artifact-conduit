@@ -68,6 +68,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			},
 		}
 		if err := r.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "workflow deletion failed")
 		}
 		// Remove finalizer
@@ -110,12 +111,14 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
 	artifactType := &arcv1alpha1.ArtifactType{}
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type '%s': %v", aw.Spec.Type, err))
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 	}
 	var artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
 	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type on cluster scope '%s': %v", aw.Spec.Type, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
@@ -128,6 +131,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
@@ -135,6 +139,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	dstSecret := corev1.Secret{}
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}
@@ -146,6 +151,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	}
 
 	if err := r.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.Name, err))
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to create argo workflow")
 	}
 
