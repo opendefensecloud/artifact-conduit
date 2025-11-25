@@ -5,6 +5,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -40,7 +41,7 @@ var (
 	k8sClient    client.Client
 	testEnv      *envtest.Environment
 	atValue      = "art"
-	fakeRecorder = &record.FakeRecorder{}
+	fakeRecorder *record.FakeRecorder
 )
 
 func TestController(t *testing.T) {
@@ -76,6 +77,14 @@ var _ = BeforeSuite(func() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	DeferCleanup(cancel)
+
+	// log all events to GinkgoWriter
+	fakeRecorder = record.NewFakeRecorder(1)
+	go func() {
+		for event := range fakeRecorder.Events {
+			logf.Log.Info(fmt.Sprintf("Event: %s", event))
+		}
+	}()
 
 	mgr, err := ctrl.NewManager(testEnv.GetRESTConfig(), ctrl.Options{
 		Scheme: scheme.Scheme,
