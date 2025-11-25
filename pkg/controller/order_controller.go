@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/go-logr/logr"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -47,6 +48,7 @@ type desiredAW struct {
 	dstEndpoint *arcv1alpha1.Endpoint
 	srcSecret   *corev1.Secret
 	dstSecret   *corev1.Secret
+	sha         string
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
@@ -122,124 +124,25 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	// Make sure status is initialized
+	if order.Status.ArtifactWorkflows == nil {
+		order.Status.ArtifactWorkflows = map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
+	}
+
 	// Before we compare to our status, let's fetch all necessary information
 	// to compute desired state:
 	desiredAWs := map[string]desiredAW{}
 	for i, artifact := range order.Spec.Artifacts {
-		// TODO: When a endpoint or secret fetch fails, we stop the reconciliation of the whole order.
-		//       Should we instead not fail but skip invalid artifacts?
-		log := log.WithValues("artifactIndex", i)
-
-		// We need the referenced src- and dst-endpoints for the artifact
-		srcRefName := artifact.SrcRef.Name
-		if srcRefName == "" {
-			srcRefName = order.Spec.Defaults.SrcRef.Name
-		}
-		dstRefName := artifact.DstRef.Name
-		if dstRefName == "" {
-			dstRefName = order.Spec.Defaults.DstRef.Name
-		}
-		srcEndpoint := &arcv1alpha1.Endpoint{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Failed to fetch source endpoint '%s': %v", srcRefName, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for source")
-		}
-		dstEndpoint := &arcv1alpha1.Endpoint{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Failed to fetch destination endpoint '%s': %v", dstRefName, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
-		}
-
-		// Validate that the endpoint usage is correct
-		if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
-			err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage))
-			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
-		}
-		if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
-			err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage))
-			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
-		}
-
-		// Validate against ArtifactType rules
-		artifactType := &arcv1alpha1.ArtifactType{}
-		if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch ArtifactType '%s': %v", artifact.Type, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
-		}
-		var (
-			artifactTypeGen  int64
-			artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
-		)
-		if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
-			clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
-			if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
-			}
-			artifactTypeSpec = &clusterArtifactType.Spec
-			artifactTypeGen = clusterArtifactType.Generation
-		} else {
-			artifactTypeSpec = &artifactType.Spec
-			artifactTypeGen = artifactType.Generation
-		}
-
-		if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
-			err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type))
-			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
-		}
-		if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
-			err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
-			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type))
-			return ctrl.Result{}, errLogAndWrap(log, err, "artifact validation failed")
-		}
-
-		// Next, we need the secret contents
-		srcSecret := &corev1.Secret{}
-		if srcEndpoint.Spec.SecretRef.Name != "" {
-			if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-				r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err))
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for source")
-			}
-		}
-
-		dstSecret := &corev1.Secret{}
-		if dstEndpoint.Spec.SecretRef.Name != "" {
-			if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-				r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err))
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
-			}
-		}
-
-		// Create a hash based on all related data for idempotency and compute the workflow name
-		h := sha256.New()
-		data := []any{
-			order.Namespace,
-			artifact.Type, artifact.Spec.Raw, artifactTypeGen,
-			srcEndpoint.Name, srcEndpoint.Generation,
-			dstEndpoint.Name, dstEndpoint.Generation,
-			srcSecret.Name, srcSecret.Generation,
-			dstSecret.Name, dstSecret.Generation,
-		}
-		jsonData, err := json.Marshal(data)
+		daw, err := r.computeDesiredAW(ctx, log, order, &artifact, i)
 		if err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
+			r.Recorder.Event(order, corev1.EventTypeWarning, "ComputationFailed", fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err))
+			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
+			if err := r.Status().Update(ctx, order); err != nil {
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+			}
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
 		}
-		h.Write(jsonData)
-		sha := hex.EncodeToString(h.Sum(nil))[:16]
-
-		// We gave all the information to further process this artifact workflow.
-		// Let's store it to compare it to the current status!
-		desiredAWs[sha] = desiredAW{
-			index:       i,
-			objectMeta:  awObjectMeta(order, sha),
-			artifact:    &artifact,
-			srcEndpoint: srcEndpoint,
-			dstEndpoint: dstEndpoint,
-			srcSecret:   srcSecret,
-			dstSecret:   dstSecret,
-		}
+		desiredAWs[daw.sha] = *daw
 	}
 
 	// List missing artifact workflows
@@ -250,11 +153,6 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			continue
 		}
 		createAWs = append(createAWs, sha)
-	}
-
-	// Make sure status is initialized
-	if order.Status.ArtifactWorkflows == nil {
-		order.Status.ArtifactWorkflows = map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
 	}
 
 	// Find obsolete artifact workflows
@@ -397,6 +295,122 @@ func (r *OrderReconciler) generateReconcileRequestsForEndpoint(ctx context.Conte
 		}
 	}
 	return requests
+}
+
+func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger, order *arcv1alpha1.Order, artifact *arcv1alpha1.OrderArtifact, i int) (*desiredAW, error) {
+	log = log.WithValues("artifactIndex", i)
+
+	// We need the referenced src- and dst-endpoints for the artifact
+	srcRefName := artifact.SrcRef.Name
+	if srcRefName == "" {
+		srcRefName = order.Spec.Defaults.SrcRef.Name
+	}
+	dstRefName := artifact.DstRef.Name
+	if dstRefName == "" {
+		dstRefName = order.Spec.Defaults.DstRef.Name
+	}
+	srcEndpoint := &arcv1alpha1.Endpoint{}
+	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Failed to fetch source endpoint '%s': %v", srcRefName, err))
+		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for source")
+	}
+	dstEndpoint := &arcv1alpha1.Endpoint{}
+	if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Failed to fetch destination endpoint '%s': %v", dstRefName, err))
+		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
+	}
+
+	// Validate that the endpoint usage is correct
+	if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
+		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage))
+		return nil, errLogAndWrap(log, err, "artifact validation failed")
+	}
+	if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
+		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidEndpoint", fmt.Sprintf("Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage))
+		return nil, errLogAndWrap(log, err, "artifact validation failed")
+	}
+
+	// Validate against ArtifactType rules
+	artifactType := &arcv1alpha1.ArtifactType{}
+	if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch ArtifactType '%s': %v", artifact.Type, err))
+		return nil, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
+	}
+	var (
+		artifactTypeGen  int64
+		artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
+	)
+	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
+		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
+		if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
+			return nil, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
+		}
+		artifactTypeSpec = &clusterArtifactType.Spec
+		artifactTypeGen = clusterArtifactType.Generation
+	} else {
+		artifactTypeSpec = &artifactType.Spec
+		artifactTypeGen = artifactType.Generation
+	}
+
+	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
+		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type))
+		return nil, errLogAndWrap(log, err, "artifact validation failed")
+	}
+	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
+		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
+		r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type))
+		return nil, errLogAndWrap(log, err, "artifact validation failed")
+	}
+
+	// Next, we need the secret contents
+	srcSecret := &corev1.Secret{}
+	if srcEndpoint.Spec.SecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
+			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err))
+			return nil, errLogAndWrap(log, err, "failed to fetch secret for source")
+		}
+	}
+
+	dstSecret := &corev1.Secret{}
+	if dstEndpoint.Spec.SecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
+			r.Recorder.Event(order, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err))
+			return nil, errLogAndWrap(log, err, "failed to fetch secret for destination")
+		}
+	}
+
+	// Create a hash based on all related data for idempotency and compute the workflow name
+	h := sha256.New()
+	data := []any{
+		order.Namespace,
+		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
+		srcEndpoint.Name, srcEndpoint.Generation,
+		dstEndpoint.Name, dstEndpoint.Generation,
+		srcSecret.Name, srcSecret.Generation,
+		dstSecret.Name, dstSecret.Generation,
+	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return nil, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
+	}
+	h.Write(jsonData)
+	sha := hex.EncodeToString(h.Sum(nil))[:16]
+
+	// We gave all the information to further process this artifact workflow.
+	// Let's store it to compare it to the current status!
+	return &desiredAW{
+		index:       i,
+		objectMeta:  awObjectMeta(order, sha),
+		artifact:    artifact,
+		srcEndpoint: srcEndpoint,
+		dstEndpoint: dstEndpoint,
+		srcSecret:   srcSecret,
+		dstSecret:   dstSecret,
+		sha:         sha,
+	}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -1278,6 +1278,13 @@ func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) commo
 							},
 						},
 					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A human readable message describing the current condition of the order.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},

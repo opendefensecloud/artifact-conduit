@@ -578,7 +578,13 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify that no artifact workflow is created and appropriate error is logged in status
+			// Verify that the order status contains appropriate error messages
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("Failed to compute desired artifact workflow for artifact index 0: artifact validation failed: source endpoint type 'disallowed-src-type' is not allowed by ArtifactType rules"))
+
+			// Verify that no artifact workflows were created
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
