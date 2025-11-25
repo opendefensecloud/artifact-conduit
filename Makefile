@@ -64,6 +64,7 @@ clean:
 .PHONY: codegen
 codegen: openapi-gen ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
+	$(MAKE) docs-crd-ref
 
 .PHONY: fmt
 fmt: addlicense ## Add license headers and format code
@@ -135,7 +136,7 @@ docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
-docs: docs-crd-ref ## Serve the documentation using Docker.
+docs: ## Serve the documentation using Docker.
 	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 $(LOCALBIN):
