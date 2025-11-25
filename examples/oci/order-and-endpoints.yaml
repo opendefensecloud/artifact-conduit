@@ -13,7 +13,7 @@ metadata:
   name: internal
 spec:
   type: oci # Endpoint Type!
-  remoteURL: dst.zot
+  remoteURL: dst.zot:80 # port optional, but endpoint can only be used with plain http with helm, if port is specified
   secretRef:
     name: dst-reg-secret
   usage: PushOnly
@@ -21,7 +21,7 @@ spec:
 apiVersion: arc.bwi.de/v1alpha1
 kind: Order
 metadata:
-  name: example-order
+  name: example-oci-order
 spec:
   defaults:
     srcRef:
