@@ -24,7 +24,9 @@ spec:
       - name: dstSecret
       - name: specImage # The source image path (e.g., library/alpine:3.18)
       - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
-      - name: scanSeverity # Additional coming from ArtifactType
+      - name: scanSeverity # Additional parameter coming from ArtifactType
+      - name: srcTLSVerify # Additional parameter coming from ArtifactType
+      - name: dstTLSVerify # Additional parameter coming from ArtifactType
 
   entrypoint: oci-pipeline
 
@@ -54,25 +56,23 @@ spec:
         volumeMounts:
           - name: src-secret-vol
             readOnly: true
-            mountPath: /tmp/src-creds
+            mountPath: /secrets/src
           - name: work-volume
             mountPath: /data
         source: |
           echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
           mkdir -p /data/image-storage
 
-          # Conditionally set credentials flag for Skopeo
-          CREDS_FLAG=""
+          # Conditionally login to registry
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              # Skopeo uses the docker config JSON file (mounted from the secret)
-              CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"
+              skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" -p "$(cat /secrets/src/password)" {{workflow.parameters.srcRemoteURL}}
           fi
 
           # Construct the full source image path
           SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
 
           # Skopeo copy command
-          skopeo copy --multi-arch all $CREDS_FLAG $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
+          skopeo copy --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
 
     # --- 2. Scan Image (Trivy) ---
     - name: scan-image
@@ -103,7 +103,6 @@ spec:
         env:
           - name: PATH
             value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
-
     # --- 3. Push Image (Skopeo) ---
     - name: push-image
 
@@ -115,21 +114,20 @@ spec:
         volumeMounts:
           - name: dst-secret-vol
             readOnly: true
-            mountPath: /tmp/dst-creds
+            mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
 
         source: |
           echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
 
-          # Conditionally set credentials flag for Skopeo
-          CREDS_FLAG=""
+          # Conditionally login to registry
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              CREDS_FLAG="--dest-authfile /tmp/dst-creds/.dockerconfigjson"
+              skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" -p "$(cat /secrets/dst/password)" {{workflow.parameters.dstRemoteURL}}
           fi
 
           # Construct the full destination image path
           DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
 
           # Skopeo copy command
-          skopeo copy --dest-tls-verify=false $CREDS_FLAG "oci:/data/image-storage/scanned-image" $DEST_IMAGE
+          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
