@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package artifacttype
+package clusterartifacttype
 
 import (
 	"context"
@@ -19,13 +19,13 @@ import (
 )
 
 // NewStrategy creates and returns a artifactTypeDefinitionStrategy instance
-func NewStrategy(typer runtime.ObjectTyper) artifactTypeStrategy {
-	return artifactTypeStrategy{typer, names.SimpleNameGenerator}
+func NewStrategy(typer runtime.ObjectTyper) clusterArtifactTypeStrategy {
+	return clusterArtifactTypeStrategy{typer, names.SimpleNameGenerator}
 }
 
 // GetAttrs returns labels.Set, fields.Set, and error in case the given runtime.Object is not an ArtifactType
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
-	apiserver, ok := obj.(*arc.ArtifactType)
+	apiserver, ok := obj.(*arc.ClusterArtifactType)
 	if !ok {
 		return nil, nil, fmt.Errorf("given object is not an ArtifactType")
 	}
@@ -43,50 +43,50 @@ func MatchArtifactType(label labels.Selector, field fields.Selector) storage.Sel
 }
 
 // SelectableFields returns a field set that represents the object.
-func SelectableFields(obj *arc.ArtifactType) fields.Set {
+func SelectableFields(obj *arc.ClusterArtifactType) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
 
-type artifactTypeStrategy struct {
+type clusterArtifactTypeStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
 }
 
-func (artifactTypeStrategy) NamespaceScoped() bool {
-	return true
+func (clusterArtifactTypeStrategy) NamespaceScoped() bool {
+	return false
 }
 
-func (artifactTypeStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
+func (clusterArtifactTypeStrategy) PrepareForCreate(ctx context.Context, obj runtime.Object) {
 }
 
-func (artifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
+func (clusterArtifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, old runtime.Object) {
 }
 
-func (artifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
+func (clusterArtifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
-func (artifactTypeStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
+func (clusterArtifactTypeStrategy) WarningsOnCreate(ctx context.Context, obj runtime.Object) []string {
 	return nil
 }
 
-func (artifactTypeStrategy) AllowCreateOnUpdate() bool {
+func (clusterArtifactTypeStrategy) AllowCreateOnUpdate() bool {
 	return false
 }
 
-func (artifactTypeStrategy) AllowUnconditionalUpdate() bool {
+func (clusterArtifactTypeStrategy) AllowUnconditionalUpdate() bool {
 	return false
 }
 
-func (artifactTypeStrategy) Canonicalize(obj runtime.Object) {
+func (clusterArtifactTypeStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (artifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
+func (clusterArtifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 }
 
 // WarningsOnUpdate returns warnings for the given update.
-func (artifactTypeStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
+func (clusterArtifactTypeStrategy) WarningsOnUpdate(ctx context.Context, obj, old runtime.Object) []string {
 	return nil
 }

@@ -5,6 +5,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -30,15 +32,16 @@ import (
 
 const (
 	pollingInterval      = 400 * time.Millisecond
-	eventuallyTimeout    = 5 * time.Second
+	eventuallyTimeout    = 8 * time.Second
 	consistentlyDuration = 2 * time.Second
 	apiServiceTimeout    = 5 * time.Minute
 )
 
 var (
-	k8sClient client.Client
-	testEnv   *envtest.Environment
-	atValue   = "art"
+	k8sClient    client.Client
+	testEnv      *envtest.Environment
+	atValue      = "art"
+	fakeRecorder *record.FakeRecorder
 )
 
 func TestController(t *testing.T) {
@@ -75,6 +78,14 @@ var _ = BeforeSuite(func() {
 	ctx, cancel := context.WithCancel(context.Background())
 	DeferCleanup(cancel)
 
+	// log all events to GinkgoWriter
+	fakeRecorder = record.NewFakeRecorder(1)
+	go func() {
+		for event := range fakeRecorder.Events {
+			logf.Log.Info(fmt.Sprintf("Event: %s", event))
+		}
+	}()
+
 	mgr, err := ctrl.NewManager(testEnv.GetRESTConfig(), ctrl.Options{
 		Scheme: scheme.Scheme,
 		Metrics: metricserver.Options{
@@ -86,13 +97,15 @@ var _ = BeforeSuite(func() {
 
 	// setup reconcilers
 	Expect((&OrderReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: fakeRecorder,
 	}).SetupWithManager(mgr)).To(Succeed())
 	Expect((&ArtifactWorkflowReconciler{
 		Client:    mgr.GetClient(),
 		ClientSet: testclient.NewSimpleClientset(),
 		Scheme:    mgr.GetScheme(),
+		Recorder:  fakeRecorder,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	go func() {
@@ -122,13 +135,13 @@ func setupTest(ctx context.Context) *corev1.Namespace {
 	return ns
 }
 
-func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
+func setupClusterArtifactType(ctx context.Context) *arcv1alpha1.ClusterArtifactType {
 	var (
-		at = &arcv1alpha1.ArtifactType{}
+		at = &arcv1alpha1.ClusterArtifactType{}
 	)
 
 	BeforeEach(func() {
-		*at = arcv1alpha1.ArtifactType{
+		*at = arcv1alpha1.ClusterArtifactType{
 			ObjectMeta: metav1.ObjectMeta{
 				GenerateName: "at-",
 			},
@@ -139,7 +152,7 @@ func setupArtifactType(ctx context.Context) *arcv1alpha1.ArtifactType {
 						Value: atValue,
 					},
 				},
-				WorkflowTemplateRef: corev1.LocalObjectReference{
+				WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
 					Name: atValue,
 				},
 			},

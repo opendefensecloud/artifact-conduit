@@ -24,6 +24,7 @@ SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
 ADDLICENSE ?= $(LOCALBIN)/addlicense
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
+CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
 
 GINKGO_VERSION ?= v2.27.2
 GOLANGCI_LINT_VERSION ?= v2.5.0
@@ -31,6 +32,7 @@ SETUP_ENVTEST_VERSION ?= release-0.22
 ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_K8S_VERSION ?= 1.34.1
+CRD_REF_DOCS_VERSION ?= v0.2.0
 
 export GOPRIVATE=*.go.opendefense.cloud/arc
 export GNOSUMDB=*.go.opendefense.cloud/arc
@@ -62,6 +64,7 @@ clean:
 .PHONY: codegen
 codegen: openapi-gen ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
+	$(MAKE) docs-crd-ref
 
 .PHONY: fmt
 fmt: addlicense ## Add license headers and format code
@@ -125,9 +128,15 @@ docker-build-apiserver:
 docker-build-manager:
 	docker build --target manager -t ${MANAGER_IMG} .
 
+.PHONY: docs-docker-build
+docs-docker-build:
+	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
+
+docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
+	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
+
 .PHONY: docs
 docs: ## Serve the documentation using Docker.
-	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
 	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 $(LOCALBIN):
@@ -166,3 +175,7 @@ $(SETUP_ENVTEST): $(LOCALBIN)
 openapi-gen: $(OPENAPI_GEN) ## Download openapi-gen locally if necessary.
 $(OPENAPI_GEN): $(LOCALBIN)
 	test -s $(LOCALBIN)/openapi-gen || GOBIN=$(LOCALBIN) go install k8s.io/kube-openapi/cmd/openapi-gen
+
+.PHONY: crd-ref-docs
+crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs locally if necessary.
+	test -s $(LOCALBIN)/crd-ref-docs || GOBIN=$(LOCALBIN) go install github.com/elastic/crd-ref-docs@$(CRD_REF_DOCS_VERSION)

@@ -16,6 +16,7 @@ import (
 	arcregistry "go.opendefense.cloud/arc/pkg/registry"
 	artifacttypestorage "go.opendefense.cloud/arc/pkg/registry/artifacttype"
 	artifactworkflowstorage "go.opendefense.cloud/arc/pkg/registry/artifactworkflow"
+	clusterartifacttypestorage "go.opendefense.cloud/arc/pkg/registry/clusterartifacttype"
 	endpointstorage "go.opendefense.cloud/arc/pkg/registry/endpoint"
 	orderstorage "go.opendefense.cloud/arc/pkg/registry/order"
 )
@@ -104,6 +105,7 @@ func (c completedConfig) New() (*ARCServer, error) {
 	v1alpha1storage["artifactworkflows/status"] = arcregistry.RESTInPeace(artifactworkflowstorage.NewStatusREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["endpoints"] = arcregistry.RESTInPeace(endpointstorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	v1alpha1storage["artifacttypes"] = arcregistry.RESTInPeace(artifacttypestorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
+	v1alpha1storage["clusterartifacttypes"] = arcregistry.RESTInPeace(clusterartifacttypestorage.NewREST(Scheme, c.GenericConfig.RESTOptionsGetter))
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha1"] = v1alpha1storage
 
 	// v1beta1storage := map[string]rest.Storage{}

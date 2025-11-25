@@ -19,6 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -33,13 +34,16 @@ type ArtifactWorkflowReconciler struct {
 	client.Client
 	ClientSet kubernetes.Interface
 	Scheme    *runtime.Scheme
+	Recorder  record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=argoproj.io,resources=workflows,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -64,6 +68,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			},
 		}
 		if err := r.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "workflow deletion failed")
 		}
 		// Remove finalizer
@@ -104,14 +109,29 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
-	artifactType := arcv1alpha1.ArtifactType{}
-	if err := r.Get(ctx, namespacedName("", aw.Spec.Type), &artifactType); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to retrieve artifact type")
+	artifactType := &arcv1alpha1.ArtifactType{}
+	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type '%s': %v", aw.Spec.Type, err))
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
+	}
+	var artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
+	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
+		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
+		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type on cluster scope '%s': %v", aw.Spec.Type, err))
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
+		}
+		artifactTypeSpec = &clusterArtifactType.Spec
+		// For ClusterArtifactType we only reference ClusterWorkloadTemplates
+		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
+	} else {
+		artifactTypeSpec = &artifactType.Spec
 	}
 
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
@@ -119,19 +139,22 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	dstSecret := corev1.Secret{}
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}
 
-	wf := r.hydrateArgoWorkflow(ctx, log, aw, &artifactType, &srcSecret, &dstSecret)
+	wf := r.hydrateArgoWorkflow(aw, artifactTypeSpec, &srcSecret, &dstSecret)
 
 	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
 	}
 
 	if err := r.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.Name, err))
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to create argo workflow")
 	}
+	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.Name))
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := r.Status().Update(ctx, aw); err != nil {
@@ -140,7 +163,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	return ctrl.Result{}, nil
 }
 
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, artifactType *arcv1alpha1.ArtifactType, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -174,22 +197,7 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(ctx context.Context, lo
 	for _, p := range aw.Spec.Parameters {
 		parameterMap[p.Name] = p.Value
 	}
-	// Spec parameters with higher precedence now may
-	// overwrite some parameters of the workflow
-	for _, p := range artifactType.Spec.Parameters {
-		if _, exists := parameterMap[p.Name]; exists {
-			// Log when an ArtifactType parameter overrides an ArtifactWorkflow parameter
-			log.Info("ArtifactType parameter overriding ArtifactWorkflow parameter",
-				"artifactWorkflow", aw.Name,
-				"artifactType", artifactType.Name,
-				"parameter", p.Name,
-				"workflowValue", parameterMap[p.Name],
-				"typeValue", p.Value)
-		}
-		parameterMap[p.Name] = p.Value
-	}
-	parameters := []wfv1alpha1.Parameter{}
-	for name, value := range parameterMap {
+	for _, p := range artifactTypeSpec.Parameters {
 		parameters = append(parameters, wfv1alpha1.Parameter{
 			Name:  name,
 			Value: (*wfv1alpha1.AnyString)(&value),
@@ -203,8 +211,8 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(ctx context.Context, lo
 		},
 		Spec: wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
-				Name:         artifactType.Spec.WorkflowTemplateRef.Name,
-				ClusterScope: true,
+				Name:         artifactTypeSpec.WorkflowTemplateRef.Name,
+				ClusterScope: artifactTypeSpec.WorkflowTemplateRef.ClusterScope,
 			},
 			Volumes: []corev1.Volume{
 				srcVolume,

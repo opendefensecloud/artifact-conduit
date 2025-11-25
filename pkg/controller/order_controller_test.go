@@ -22,10 +22,10 @@ var _ = Describe("OrderController", func() {
 	var (
 		ctx            = envtest.Context()
 		ns             = setupTest(ctx)
-		at1            = setupArtifactType(ctx)
-		at2            = setupArtifactType(ctx)
-		at3            = setupArtifactType(ctx)
-		at4            = setupArtifactType(ctx)
+		at1            = setupClusterArtifactType(ctx)
+		at2            = setupClusterArtifactType(ctx)
+		at3            = setupClusterArtifactType(ctx)
+		at4            = setupClusterArtifactType(ctx)
 		createEndpoint = func(name, t string) *arcv1alpha1.Endpoint {
 			secret := corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -549,6 +549,7 @@ var _ = Describe("OrderController", func() {
 				return order.Status.ArtifactWorkflows[shas[0]].Phase
 			}).To(Equal(arcv1alpha1.WorkflowRunning))
 		})
+
 		It("should validate rules of referenced ArtifactType before creating an artifact workflow", func() {
 			srcEp := createEndpoint("src-1", "disallowed-src-type")
 			dstEp := createEndpoint("dst-1", "disallowed-dst-type")
@@ -577,7 +578,13 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Verify that no artifact workflow is created and appropriate error is logged in status
+			// Verify that the order status contains appropriate error messages
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("Failed to compute desired artifact workflow for artifact index 0: artifact validation failed: source endpoint type 'disallowed-src-type' is not allowed by ArtifactType rules"))
+
+			// Verify that no artifact workflows were created
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
@@ -586,6 +593,52 @@ var _ = Describe("OrderController", func() {
 				}
 				return len(awList.Items)
 			}).Should(Equal(0))
+		})
+
+		It("should work with namespaced artifact type", func() {
+			at := &arcv1alpha1.ArtifactType{
+				ObjectMeta: metav1.ObjectMeta{
+					GenerateName: "at-",
+					Namespace:    ns.Name,
+				},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
+						Name: atValue,
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, at)).To(Succeed())
+
+			createEndpoints("src-1", "dst-1")
+			// Create test Order with multiple artifacts, no defaults
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-no-defaults",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflows were created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+
 		})
 	})
 })

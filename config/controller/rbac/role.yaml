@@ -7,6 +7,13 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
   - secrets
   verbs:
   - create
@@ -20,6 +27,7 @@ rules:
   - arc.bwi.de
   resources:
   - artifacttypes
+  - clusterartifacttypes
   - endpoints
   verbs:
   - get

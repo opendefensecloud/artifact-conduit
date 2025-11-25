@@ -185,8 +185,9 @@ func main() {
 
 	// Register controllers
 	if err := (&controller.OrderReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("order-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Order")
 		os.Exit(1)
@@ -196,6 +197,7 @@ func main() {
 		Client:    mgr.GetClient(),
 		ClientSet: clientset,
 		Scheme:    mgr.GetScheme(),
+		Recorder:  mgr.GetEventRecorderFor("artifact-workflow-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
 		os.Exit(1)

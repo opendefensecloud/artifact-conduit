@@ -34,6 +34,11 @@ func (in ArtifactTypeStatus) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactTypeTemplateRef) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ArtifactTypeTemplateRef"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflow) OpenAPIModelName() string {
 	return "de.bwi.arc.v1alpha1.ArtifactWorkflow"
 }
@@ -56,6 +61,16 @@ func (in ArtifactWorkflowSpec) OpenAPIModelName() string {
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowStatus) OpenAPIModelName() string {
 	return "de.bwi.arc.v1alpha1.ArtifactWorkflowStatus"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ClusterArtifactType) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ClusterArtifactType"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ClusterArtifactTypeList) OpenAPIModelName() string {
+	return "de.bwi.arc.v1alpha1.ClusterArtifactTypeList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.

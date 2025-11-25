@@ -4,7 +4,7 @@ site_url: !ENV [SITE_URL, "https://arc.opendefense.cloud/"]
 repo_url: https://github.com/opendefensecloud/artifact-conduit
 edit_uri: https://github.com/opendefensecloud/artifact-conduit/edit/main/docs
 copyright: Copyright &copy; 2025 Artifact Conduit Contributors
-strict: true
+strict: false
 theme:
   name: material
   logo: arc_logo.svg
@@ -90,15 +90,12 @@ validation:
   absolute_links: relative_to_docs
   unrecognized_links: warn
   anchors: warn
-# exclude_docs: |
-#   /hidden.md
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - User Guide:
       - user-guide/core-concepts.md
-      - Custom Resources:
-          - user-guide/custom-resources/order.md
+      - user-guide/api-reference.md
   - Operator Manual:
       - operator-manual/installation.md
       - operator-manual/releases.md

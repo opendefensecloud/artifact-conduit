@@ -1,19 +1,18 @@
 apiVersion: arc.bwi.de/v1alpha1
 kind: ClusterArtifactType
 metadata:
-  name: oci
+  name: helm
 spec:
   rules:
     srcTypes: # Endpoint Types
       - oci
+      - helm
     dstTypes:
       - oci
   parameters:
     - name: scanSeverity
       value: HIGH,CRITICAL
-    - name: srcTLSVerify
+    - name: dstPlainHTTP
       value: "true"
-    - name: dstTLSVerify
-      value: "false"
-  workflowTemplateRef: # argo.ClusterWorkflowTemplate
-    name: oci-image-pipeline
+  workflowTemplateRef: # argo.Workflow
+    name: helm-chart-pipeline
