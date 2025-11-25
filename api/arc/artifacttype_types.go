@@ -65,7 +65,7 @@ type ArtifactTypeList struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactType is the Schema for the endpoints API
+// ClusterArtifactType is the Schema for the endpoints API
 type ClusterArtifactType struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`

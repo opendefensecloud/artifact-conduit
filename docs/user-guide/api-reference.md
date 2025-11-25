@@ -10,6 +10,26 @@ Package v1alpha1 is the v1alpha1 version of the API.
 
 
 
+#### ArtifactType
+
+
+
+ArtifactType is the Schema for the endpoints API
+
+
+
+_Appears in:_
+- [ArtifactTypeList](#artifacttypelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ArtifactTypeSpec](#artifacttypespec)_ |  |  |  |
+| `status` _[ArtifactTypeStatus](#artifacttypestatus)_ |  |  |  |
+
+
 
 
 #### ArtifactTypeRules
@@ -48,6 +68,18 @@ _Appears in:_
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
 
 
+#### ArtifactTypeStatus
+
+
+
+ArtifactTypeStatus defines the observed state of ArtifactType
+
+
+
+_Appears in:_
+- [ArtifactType](#artifacttype)
+- [ClusterArtifactType](#clusterartifacttype)
+
 
 
 #### ArtifactTypeTemplateRef
@@ -65,6 +97,26 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _string_ | Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate. |  |  |
 | `clusterScope` _boolean_ | ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.<br />For ClusterArtifactType this will always be true and all other values are ignored. |  |  |
+
+
+#### ArtifactWorkflow
+
+
+
+ArtifactWorkflow is the Schema for the artifact workflows API
+
+
+
+_Appears in:_
+- [ArtifactWorkflowList](#artifactworkflowlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ArtifactWorkflowSpec](#artifactworkflowspec)_ |  |  |  |
+| `status` _[ArtifactWorkflowStatus](#artifactworkflowstatus)_ |  |  |  |
 
 
 
@@ -106,6 +158,41 @@ _Appears in:_
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |
 
 
+#### ArtifactWorkflowStatus
+
+
+
+ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
+
+
+
+_Appears in:_
+- [ArtifactWorkflow](#artifactworkflow)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
+| `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
+
+
+#### ClusterArtifactType
+
+
+
+ArtifactType is the Schema for the endpoints API
+
+
+
+_Appears in:_
+- [ClusterArtifactTypeList](#clusterartifacttypelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[ArtifactTypeSpec](#artifacttypespec)_ |  |  |  |
+| `status` _[ArtifactTypeStatus](#artifacttypestatus)_ |  |  |  |
 
 
 
@@ -123,8 +210,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[EndpointSpec](#endpointspec)_ |  |  |  |
+| `status` _[EndpointStatus](#endpointstatus)_ |  |  |  |
 
 
 
@@ -148,6 +238,17 @@ _Appears in:_
 | `usage` _[EndpointUsage](#endpointusage)_ | Usage defines how the endpoint is allowed to be used. |  |  |
 
 
+#### EndpointStatus
+
+
+
+EndpointStatus defines the observed state of Endpoint
+
+
+
+_Appears in:_
+- [Endpoint](#endpoint)
+
 
 
 #### EndpointUsage
@@ -168,6 +269,24 @@ _Appears in:_
 | `All` | EndpointUsageAll means the endpoint can be used with all kinds of usage patterns.<br /> |
 
 
+#### Order
+
+
+
+Order is the Schema for the orders API
+
+
+
+_Appears in:_
+- [OrderList](#orderlist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[OrderSpec](#orderspec)_ |  |  |  |
+| `status` _[OrderStatus](#orderstatus)_ |  |  |  |
 
 
 #### OrderArtifact
@@ -224,6 +343,8 @@ _Appears in:_
 | `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as fallback destination by all artifacts. |  |  |
 
 
+
+
 #### OrderSpec
 
 
@@ -241,6 +362,21 @@ _Appears in:_
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
 
 
+#### OrderStatus
+
+
+
+OrderStatus defines the observed state of Order
+
+
+
+_Appears in:_
+- [Order](#order)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `artifactWorkflows` _object (keys:string, values:[OrderArtifactWorkflowStatus](#orderartifactworkflowstatus))_ | ArtifactWorkflows tracks the created workflows |  |  |
+| `message` _string_ | A human readable message describing the current condition of the order. |  |  |
 
 
 #### WorkflowPhase
