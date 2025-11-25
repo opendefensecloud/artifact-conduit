@@ -844,6 +844,7 @@ func Convert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *OrderSp
 
 func autoConvert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.OrderStatus, s conversion.Scope) error {
 	out.ArtifactWorkflows = *(*map[string]arc.OrderArtifactWorkflowStatus)(unsafe.Pointer(&in.ArtifactWorkflows))
+	out.Message = in.Message
 	return nil
 }
 
@@ -854,6 +855,7 @@ func Convert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.O
 
 func autoConvert_arc_OrderStatus_To_v1alpha1_OrderStatus(in *arc.OrderStatus, out *OrderStatus, s conversion.Scope) error {
 	out.ArtifactWorkflows = *(*map[string]OrderArtifactWorkflowStatus)(unsafe.Pointer(&in.ArtifactWorkflows))
+	out.Message = in.Message
 	return nil
 }
 

@@ -9,6 +9,7 @@ package v1alpha1
 // with apply.
 type OrderStatusApplyConfiguration struct {
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatusApplyConfiguration `json:"artifactWorkflows,omitempty"`
+	Message           *string                                                  `json:"message,omitempty"`
 }
 
 // OrderStatusApplyConfiguration constructs a declarative configuration of the OrderStatus type for use with
@@ -28,5 +29,13 @@ func (b *OrderStatusApplyConfiguration) WithArtifactWorkflows(entries map[string
 	for k, v := range entries {
 		b.ArtifactWorkflows[k] = v
 	}
+	return b
+}
+
+// WithMessage sets the Message field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Message field is set to the value of the last call.
+func (b *OrderStatusApplyConfiguration) WithMessage(value string) *OrderStatusApplyConfiguration {
+	b.Message = &value
 	return b
 }

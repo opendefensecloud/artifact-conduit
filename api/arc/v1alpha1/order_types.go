@@ -46,6 +46,8 @@ type OrderSpec struct {
 type OrderStatus struct {
 	// ArtifactWorkflows tracks the created workflows
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatus `json:"artifactWorkflows,omitempty"`
+	// A human readable message describing the current condition of the order.
+	Message string `json:"message,omitempty"`
 }
 
 type OrderArtifactWorkflowStatus struct {
