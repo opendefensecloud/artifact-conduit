@@ -757,9 +757,17 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 							Format:      "",
 						},
 					},
+					"completionTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "CompletionTime is the time when the workflow finished",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
 				},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 
@@ -1135,10 +1143,18 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 							Format:      "",
 						},
 					},
+					"completionTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "CompletionTime is the time when the workflow finished",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
 				},
 				Required: []string{"artifactIndex", "phase"},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 
@@ -1246,6 +1262,13 @@ func schema_arc_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.
 									},
 								},
 							},
+						},
+					},
+					"ttlSecondsAfterCompletion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TtlSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Type:        []string{"integer"},
+							Format:      "int64",
 						},
 					},
 				},
