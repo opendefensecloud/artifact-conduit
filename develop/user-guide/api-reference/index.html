@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -664,6 +664,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#artifacttypetemplateref" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactTypeTemplateRef
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#artifactworkflowparameter" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -806,6 +817,17 @@
     <span class="md-ellipsis">
       
         ArtifactTypeSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacttypetemplateref_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactTypeTemplateRef
       
     </span>
   </a>
@@ -1643,6 +1665,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#artifacttypetemplateref" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactTypeTemplateRef
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#artifactworkflowparameter" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1785,6 +1818,17 @@
     <span class="md-ellipsis">
       
         ArtifactTypeSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifacttypetemplateref_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactTypeTemplateRef
       
     </span>
   </a>
@@ -1977,7 +2021,8 @@
 <h4 id="artifacttypespec">ArtifactTypeSpec<a class="headerlink" href="#artifacttypespec" title="Permanent link">¶</a></h4>
 <p>ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.</p>
 <p><em>Appears in:</em>
-- <a href="#artifacttype">ArtifactType</a></p>
+- <a href="#artifacttype">ArtifactType</a>
+- <a href="#clusterartifacttype">ClusterArtifactType</a></p>
 <table>
 <thead>
 <tr>
@@ -2001,8 +2046,36 @@
 <td></td>
 </tr>
 <tr>
-<td><code>workflowTemplateRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
+<td><code>workflowTemplateRef</code> <em><a href="#artifacttypetemplateref">ArtifactTypeTemplateRef</a></em></td>
 <td>WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="artifacttypetemplateref">ArtifactTypeTemplateRef<a class="headerlink" href="#artifacttypetemplateref" title="Permanent link">¶</a></h4>
+<p>ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.</p>
+<p><em>Appears in:</em>
+- <a href="#artifacttypespec">ArtifactTypeSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code> <em>string</em></td>
+<td>Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>clusterScope</code> <em>boolean</em></td>
+<td>ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.<br>For ClusterArtifactType this will always be true and all other values are ignored.</td>
 <td></td>
 <td></td>
 </tr>
@@ -2374,7 +2447,8 @@
 <h4 id="artifacttypespec_1">ArtifactTypeSpec<a class="headerlink" href="#artifacttypespec_1" title="Permanent link">¶</a></h4>
 <p>ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.</p>
 <p><em>Appears in:</em>
-- <a href="#artifacttype">ArtifactType</a></p>
+- <a href="#artifacttype">ArtifactType</a>
+- <a href="#clusterartifacttype">ClusterArtifactType</a></p>
 <table>
 <thead>
 <tr>
@@ -2398,8 +2472,36 @@
 <td></td>
 </tr>
 <tr>
-<td><code>workflowTemplateRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34.0/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
+<td><code>workflowTemplateRef</code> <em><a href="#artifacttypetemplateref">ArtifactTypeTemplateRef</a></em></td>
 <td>WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="artifacttypetemplateref_1">ArtifactTypeTemplateRef<a class="headerlink" href="#artifacttypetemplateref_1" title="Permanent link">¶</a></h4>
+<p>ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.</p>
+<p><em>Appears in:</em>
+- <a href="#artifacttypespec">ArtifactTypeSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code> <em>string</em></td>
+<td>Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>clusterScope</code> <em>boolean</em></td>
+<td>ClusterScope defines whether the name corresponds to Argo WorkflowTemplate or ClusterWorkflowTemplate.<br>For ClusterArtifactType this will always be true and all other values are ignored.</td>
 <td></td>
 <td></td>
 </tr>
