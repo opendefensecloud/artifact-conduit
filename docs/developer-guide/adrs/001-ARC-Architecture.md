@@ -124,9 +124,10 @@ flowchart LR
   end
     Order -- contains --> Spec
     Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflow2 & ArtifactWorkflowN
+    Spec -- uses type --> ArtifactTypeDef
     Spec -- reads & tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
-    ArtifactWorkflow1 -- type --> ArtifactTypeDef
-    ArtifactWorkflow2 -- type --> ArtifactTypeDef
+    ArtifactWorkflow1 -- workflowTemplateRef --> WorkflowTemplate
+    ArtifactWorkflow2 -- workflowTemplateRef --> WorkflowTemplate
     ArtifactWorkflow1 -- srcRef --> EndpointSrc
     ArtifactWorkflow2 -- srcRef --> EndpointSrc
     ArtifactWorkflow1 -- dstRef --> EndpointDst
@@ -136,9 +137,9 @@ flowchart LR
     ArtifactTypeDef -- workflowTemplateRef --> WorkflowTemplate
     ArtifactWorkflow1 -- references --> EndpointSecret
     ArtifactWorkflow2 -- references --> EndpointSecret
-    ArtifactWorkflow1 -- instantiates --> WorkflowTemplate
-    ArtifactWorkflow2 -- instantiates --> WorkflowTemplate
-    WorkflowTemplate -- instantiates --> WorkflowInstance1 & WorkflowInstance2
+    ArtifactWorkflow1 -- instantiates --> WorkflowInstance1
+    ArtifactWorkflow2 -- instantiates --> WorkflowInstance2
+    WorkflowInstance1 & WorkflowInstance2 -- uses --> WorkflowTemplate
     WorkflowInstance1 -- mounts --> EndpointSecret
     WorkflowInstance2 -- mounts --> EndpointSecret
 

@@ -26,11 +26,12 @@ graph TB
     Order -->|creates| ArtifactWorkflow
     Order -->|references| SrcEndpoint
     Order -->|references| DstEndpoint
-    ArtifactWorkflow -->|specifies type| ArtifactTypeDef
+    Order -->|specifies type| ArtifactTypeDef
+    ArtifactWorkflow -->|references| WorkflowTemplate
     ArtifactWorkflow -->|references| SrcSecret
     ArtifactWorkflow -->|references| DstSecret
 
-    ArtifactTypeDef -->|validates src/dst types| ArtifactWorkflow
+    ArtifactTypeDef -->|validates src/dst types| Order
     ArtifactTypeDef -->|references| WorkflowTemplate
 
     SrcEndpoint -->|references| SrcSecret
@@ -103,7 +104,7 @@ The parameters do not contain secrets, but can be used to interact with third-pa
 
 !!! note
 
-    Parameters can come from `ArtifactWorkflow` and `ArtifactType`. These parameters are merged when creating the Argo Workflow with `ArtifactType` taking precedence over `ArtifactWorkflow`.
+    Parameters can come from the `Order` and `ArtifactType`. These parameters are merged when creating the `ArtifactWorkflow` with `ArtifactType` taking precedence over `Order`.
 
 However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
 

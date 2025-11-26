@@ -3,7 +3,8 @@ kind: ArtifactWorkflow
 metadata:
   name: example-frag
 spec:
-  type: oci # Artifact Type!
+  workflowTemplateRef: # based on Artifact Type used in Order
+    name: oci-workflow-template
   srcSecretRef:
     name: mysrc-creds
   dstSecretRef:
