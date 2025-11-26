@@ -1,0 +1,19 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: ClusterArtifactType
+metadata:
+  name: ocm
+spec:
+  rules:
+    srcTypes: # Endpoint Types
+      - oci
+    dstTypes:
+      - oci
+  parameters:
+    - name: scanSeverity
+      value: HIGH,CRITICAL
+    - name: scanExitCode
+      value: "0"
+    - name: dstScheme
+      value: "http"
+  workflowTemplateRef: # argo.ClusterWorkflowTemplate
+    name: ocm-transfer-pipeline

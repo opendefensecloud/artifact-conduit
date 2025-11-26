@@ -11,6 +11,7 @@
   packages = [
     pkgs.git
     pkgs.gnumake
+    pkgs.jq
     pkgs.cobra-cli
     pkgs.golangci-lint
     pkgs.govulncheck

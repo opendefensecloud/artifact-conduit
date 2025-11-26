@@ -17,17 +17,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const (
@@ -309,32 +303,6 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 	return aw, nil
 }
 
-// generateReconcileRequestsForEndpoint generates reconcile requests for all Endpoints referenced by an Order
-func (r *OrderReconciler) generateReconcileRequestsForEndpoint(ctx context.Context, endpoint client.Object) []reconcile.Request {
-	resourcesReferencingEndpoint := &arcv1alpha1.OrderList{}
-	listOps := &client.ListOptions{
-		FieldSelector: fields.SelectorFromSet(fields.Set{".spec.srcRef.name": endpoint.GetName(), ".spec.dstRef.name": endpoint.GetName()}),
-		Namespace:     endpoint.GetNamespace(),
-	}
-	err := r.List(ctx, resourcesReferencingEndpoint, listOps)
-	if err != nil {
-		return []reconcile.Request{}
-	}
-
-	requests := make([]reconcile.Request, len(resourcesReferencingEndpoint.Items))
-	for i, item := range resourcesReferencingEndpoint.Items {
-		log := ctrl.LoggerFrom(ctx)
-		log.V(1).Info("Generating reconcile request for resource because referenced endpoint has changed...")
-		requests[i] = reconcile.Request{
-			NamespacedName: types.NamespacedName{
-				Name:      item.GetName(),
-				Namespace: item.GetNamespace(),
-			},
-		}
-	}
-	return requests
-}
-
 func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger, order *arcv1alpha1.Order, artifact *arcv1alpha1.OrderArtifact, i int) (*desiredAW, error) {
 	log = log.WithValues("artifactIndex", i)
 
@@ -425,10 +393,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	data := []any{
 		order.Namespace,
 		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
-		srcEndpoint.Name, srcEndpoint.Generation,
-		dstEndpoint.Name, dstEndpoint.Generation,
-		srcSecret.Name, srcSecret.Generation,
-		dstSecret.Name, dstSecret.Generation,
+		srcEndpoint.Name,
+		dstEndpoint.Name,
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -455,11 +421,6 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 func (r *OrderReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Order{}).
-		Watches(
-			&arcv1alpha1.Endpoint{},
-			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForEndpoint),
-			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
-		).
 		Owns(&arcv1alpha1.ArtifactWorkflow{}).
 		Complete(r)
 }
