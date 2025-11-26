@@ -142,7 +142,7 @@ func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log
 	return nil
 }
 
-func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
+func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {

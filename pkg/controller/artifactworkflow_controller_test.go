@@ -226,7 +226,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: at.Name,
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
