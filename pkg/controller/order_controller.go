@@ -81,7 +81,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
 			for sha := range order.Status.ArtifactWorkflows {
-				// Remove Secret and ArtifactWorkflow
+				// Remove ArtifactWorkflow
 				aw := &arcv1alpha1.ArtifactWorkflow{
 					ObjectMeta: awObjectMeta(order, sha),
 				}
