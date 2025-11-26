@@ -39,6 +39,7 @@ type desiredAW struct {
 	index       int
 	objectMeta  metav1.ObjectMeta
 	artifact    *arcv1alpha1.OrderArtifact
+	typeSpec    *arcv1alpha1.ArtifactTypeSpec
 	srcEndpoint *arcv1alpha1.Endpoint
 	dstEndpoint *arcv1alpha1.Endpoint
 	srcSecret   *corev1.Secret
@@ -293,10 +294,10 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 	aw := &arcv1alpha1.ArtifactWorkflow{
 		ObjectMeta: daw.objectMeta,
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
-			Type:         daw.artifact.Type,
-			Parameters:   params,
-			SrcSecretRef: daw.srcEndpoint.Spec.SecretRef,
-			DstSecretRef: daw.dstEndpoint.Spec.SecretRef,
+			WorkflowTemplateRef: daw.typeSpec.WorkflowTemplateRef,
+			Parameters:          params,
+			SrcSecretRef:        daw.srcEndpoint.Spec.SecretRef,
+			DstSecretRef:        daw.dstEndpoint.Spec.SecretRef,
 		},
 	}
 
@@ -355,6 +356,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
 		artifactTypeGen = clusterArtifactType.Generation
+		// NOTE: ClusterArtifactTypes can only referes ClusterWorkflowTemplates, so we enforce this here:
+		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
 	} else {
 		artifactTypeSpec = &artifactType.Spec
 		artifactTypeGen = artifactType.Generation
@@ -409,6 +412,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		index:       i,
 		objectMeta:  awObjectMeta(order, sha),
 		artifact:    artifact,
+		typeSpec:    artifactTypeSpec,
 		srcEndpoint: srcEndpoint,
 		dstEndpoint: dstEndpoint,
 		srcSecret:   srcSecret,

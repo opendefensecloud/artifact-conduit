@@ -37,7 +37,6 @@ type ArtifactWorkflowReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/finalizers,verbs=update
@@ -109,25 +108,6 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
-	artifactType := &arcv1alpha1.ArtifactType{}
-	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
-		r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type '%s': %v", aw.Spec.Type, err))
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
-	}
-	var artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
-	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
-		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
-		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type on cluster scope '%s': %v", aw.Spec.Type, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
-		}
-		artifactTypeSpec = &clusterArtifactType.Spec
-		// For ClusterArtifactType we only reference ClusterWorkloadTemplates
-		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
-	} else {
-		artifactTypeSpec = &artifactType.Spec
-	}
-
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
@@ -144,7 +124,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 		}
 	}
 
-	wf := r.hydrateArgoWorkflow(aw, artifactTypeSpec, &srcSecret, &dstSecret)
+	wf := r.hydrateArgoWorkflow(aw, &srcSecret, &dstSecret)
 
 	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
@@ -163,7 +143,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	return ctrl.Result{}, nil
 }
 
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -192,19 +172,11 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		}
 	}
 
-	parameterMap := map[string]string{}
-	// Initially fill map with workflow parameters
-	for _, p := range aw.Spec.Parameters {
-		parameterMap[p.Name] = p.Value
-	}
-	for _, p := range artifactTypeSpec.Parameters {
-		parameterMap[p.Name] = p.Value
-	}
 	parameters := []wfv1alpha1.Parameter{}
-	for name, value := range parameterMap {
+	for _, p := range aw.Spec.Parameters {
 		parameters = append(parameters, wfv1alpha1.Parameter{
-			Name:  name,
-			Value: (*wfv1alpha1.AnyString)(&value),
+			Name:  p.Name,
+			Value: (*wfv1alpha1.AnyString)(&p.Value),
 		})
 	}
 
@@ -215,8 +187,8 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		},
 		Spec: wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
-				Name:         artifactTypeSpec.WorkflowTemplateRef.Name,
-				ClusterScope: artifactTypeSpec.WorkflowTemplateRef.ClusterScope,
+				Name:         aw.Spec.WorkflowTemplateRef.Name,
+				ClusterScope: aw.Spec.WorkflowTemplateRef.ClusterScope,
 			},
 			Volumes: []corev1.Volume{
 				srcVolume,

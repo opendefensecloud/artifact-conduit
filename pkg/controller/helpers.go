@@ -40,33 +40,16 @@ func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
 
 // TODO: add unit tests
 func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
-	params := []arcv1alpha1.ArtifactWorkflowParameter{
-		{
-			Name:  paramName("src", "type"),
-			Value: daw.srcEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("src", "remoteURL"),
-			Value: daw.srcEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  paramName("dst", "type"),
-			Value: daw.dstEndpoint.Spec.Type,
-		},
-		{
-			Name:  paramName("dst", "remoteURL"),
-			Value: daw.dstEndpoint.Spec.RemoteURL,
-		},
-		{
-			Name:  "srcSecret",
-			Value: fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != ""),
-		},
-		{
-			Name:  "dstSecret",
-			Value: fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != ""),
-		},
-	}
+	// Add permanent parameters
+	params := map[string]string{}
+	params["srcType"] = daw.srcEndpoint.Spec.Type
+	params["srcRemoteURL"] = daw.srcEndpoint.Spec.RemoteURL
+	params["dstType"] = daw.dstEndpoint.Spec.Type
+	params["dstRemoteURL"] = daw.dstEndpoint.Spec.RemoteURL
+	params["srcSecret"] = fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != "")
+	params["dstSecret"] = fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != "")
 
+	// Add parameters coming from artifact spec
 	spec := map[string]any{}
 	raw := daw.artifact.Spec.Raw
 	if len(raw) == 0 {
@@ -77,19 +60,26 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 	}
 	flattened := map[string]any{}
 	flattenMap("spec", spec, flattened)
-	for name, value := range flattened {
-		params = append(params, arcv1alpha1.ArtifactWorkflowParameter{
+
+	for k, v := range flattened {
+		params[k] = fmt.Sprintf("%v", v)
+	}
+
+	// Add parameters coming from type (can override existing)
+	for _, p := range daw.typeSpec.Parameters {
+		params[p.Name] = p.Value
+	}
+
+	// Finally we convert it to a list
+	list := make([]arcv1alpha1.ArtifactWorkflowParameter, 0, len(params))
+	for name, value := range params {
+		list = append(list, arcv1alpha1.ArtifactWorkflowParameter{
 			Name:  name,
-			Value: fmt.Sprintf("%v", value),
+			Value: value,
 		})
 	}
 
-	return params, nil
-}
-
-// TODO: add unit tests
-func paramName(prefix, suffix string) string {
-	return prefix + strings.ToUpper(suffix[:1]) + suffix[1:]
+	return list, nil
 }
 
 // TODO: add unit tests
