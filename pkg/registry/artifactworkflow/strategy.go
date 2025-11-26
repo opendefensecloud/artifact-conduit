@@ -6,6 +6,7 @@ package artifactworkflow
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -107,8 +108,24 @@ func (artifactWorkflowStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (artifactWorkflowStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	// TODO: artifactWorkflows should be immutable
-	return field.ErrorList{}
+	newArtifactWorkflow, ok := obj.(*arc.ArtifactWorkflow)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("not an ArtifactWorkflow"))}
+	}
+
+	oldArtifactWorkflow, ok := old.(*arc.ArtifactWorkflow)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("old object is not an ArtifactWorkflow"))}
+	}
+
+	allErrs := field.ErrorList{}
+
+	// Check if spec has been modified (spec should be immutable)
+	if !reflect.DeepEqual(newArtifactWorkflow.Spec, oldArtifactWorkflow.Spec) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "spec is immutable and cannot be updated"))
+	}
+
+	return allErrs
 }
 
 // WarningsOnUpdate returns warnings for the given update.
