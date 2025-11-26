@@ -254,6 +254,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// If it was just created we skip the update
 			continue
 		}
+		if order.Status.ArtifactWorkflows[sha].Phase.Completed() {
+			// We do not need to check for updates if the workflow is completed
+			continue
+		}
 		aw := arcv1alpha1.ArtifactWorkflow{}
 		if err := r.Get(ctx, namespacedName(daw.objectMeta.Namespace, daw.objectMeta.Name), &aw); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to get artifact workflow")
