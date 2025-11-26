@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"fmt"
+
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -216,6 +218,56 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Message
 			}).To(ContainSubstring("Step 'step1' failed"))
+		})
+
+		It("should handle force reconcile annotation", func() {
+			awName := "force-reconcile"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					Type: at.Name,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			// Verify that the argo workflow is re-created (i.e., a new one with a different UID)
+			var originalUID string
+			Eventually(func() error {
+				wf := &wfv1alpha1.Workflow{}
+				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf); err != nil {
+					return err
+				}
+				originalUID = string(wf.UID)
+				return nil
+			}).Should(Succeed())
+
+			// Update the annotation to trigger a re-reconcile
+			Eventually(func() error {
+				order := &arcv1alpha1.ArtifactWorkflow{}
+				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), order); err != nil {
+					return err
+				}
+				if order.Annotations == nil {
+					order.Annotations = map[string]string{}
+				}
+				order.Annotations[forceAtAnnotation] = fmt.Sprintf("%v", metav1.Now().Unix())
+				return k8sClient.Update(ctx, order)
+			}).Should(Succeed())
+
+			// Verify that a new workflow has been created
+			Eventually(func() (string, error) {
+				wf := &wfv1alpha1.Workflow{}
+				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf); err != nil {
+					return "", err
+				}
+				return string(wf.UID), nil
+			}).ShouldNot(Equal(originalUID))
 		})
 	})
 })
