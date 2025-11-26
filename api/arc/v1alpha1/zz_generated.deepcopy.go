@@ -552,9 +552,9 @@ func (in *OrderSpec) DeepCopyInto(out *OrderSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.TtlSecondsAfterCompletion != nil {
-		in, out := &in.TtlSecondsAfterCompletion, &out.TtlSecondsAfterCompletion
-		*out = new(uint64)
+	if in.TTLSecondsAfterCompletion != nil {
+		in, out := &in.TTLSecondsAfterCompletion, &out.TTLSecondsAfterCompletion
+		*out = new(int64)
 		**out = **in
 	}
 	return

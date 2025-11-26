@@ -825,7 +825,7 @@ func autoConvert_v1alpha1_OrderSpec_To_arc_OrderSpec(in *OrderSpec, out *arc.Ord
 		return err
 	}
 	out.Artifacts = *(*[]arc.OrderArtifact)(unsafe.Pointer(&in.Artifacts))
-	out.TtlSecondsAfterCompletion = (*uint64)(unsafe.Pointer(in.TtlSecondsAfterCompletion))
+	out.TTLSecondsAfterCompletion = (*int64)(unsafe.Pointer(in.TTLSecondsAfterCompletion))
 	return nil
 }
 
@@ -839,7 +839,7 @@ func autoConvert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *Ord
 		return err
 	}
 	out.Artifacts = *(*[]OrderArtifact)(unsafe.Pointer(&in.Artifacts))
-	out.TtlSecondsAfterCompletion = (*uint64)(unsafe.Pointer(in.TtlSecondsAfterCompletion))
+	out.TTLSecondsAfterCompletion = (*int64)(unsafe.Pointer(in.TTLSecondsAfterCompletion))
 	return nil
 }
 

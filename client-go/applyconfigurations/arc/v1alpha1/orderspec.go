@@ -10,7 +10,7 @@ package v1alpha1
 type OrderSpecApplyConfiguration struct {
 	Defaults                  *OrderDefaultsApplyConfiguration  `json:"defaults,omitempty"`
 	Artifacts                 []OrderArtifactApplyConfiguration `json:"artifacts,omitempty"`
-	TtlSecondsAfterCompletion *uint64                           `json:"ttlSecondsAfterCompletion,omitempty"`
+	TTLSecondsAfterCompletion *int64                            `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // OrderSpecApplyConfiguration constructs a declarative configuration of the OrderSpec type for use with
@@ -40,10 +40,10 @@ func (b *OrderSpecApplyConfiguration) WithArtifacts(values ...*OrderArtifactAppl
 	return b
 }
 
-// WithTtlSecondsAfterCompletion sets the TtlSecondsAfterCompletion field in the declarative configuration to the given value
+// WithTTLSecondsAfterCompletion sets the TTLSecondsAfterCompletion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TtlSecondsAfterCompletion field is set to the value of the last call.
-func (b *OrderSpecApplyConfiguration) WithTtlSecondsAfterCompletion(value uint64) *OrderSpecApplyConfiguration {
-	b.TtlSecondsAfterCompletion = &value
+// If called multiple times, the TTLSecondsAfterCompletion field is set to the value of the last call.
+func (b *OrderSpecApplyConfiguration) WithTTLSecondsAfterCompletion(value int64) *OrderSpecApplyConfiguration {
+	b.TTLSecondsAfterCompletion = &value
 	return b
 }

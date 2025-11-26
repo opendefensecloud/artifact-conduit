@@ -41,10 +41,10 @@ type OrderSpec struct {
 	// Artifacts lists all artifacts, that will be processed by this Order.
 	Artifacts []OrderArtifact `json:"artifacts,omitempty"`
 	// +optional
-	// TtlSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TtlSecondsAfterCompletion *uint64 `json:"ttlSecondsAfterCompletion,omitempty"`
+	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // OrderStatus defines the observed state of Order
