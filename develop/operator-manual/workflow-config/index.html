@@ -1636,6 +1636,10 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 </ul>
 <p>Parameter names are derived from the API spec, but translated to camelCase. The values are always strings!</p>
 <p>The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Parameters can come from <code>ArtifactWorkflow</code> and <code>ArtifactType</code>. These parameters are merged when creating the Argo Workflow with <code>ArtifactType</code> taking precedence over <code>ArtifactWorkflow</code>.</p>
+</div>
 <p>However the source and destination secrets are mounted at <code>/secret/src/</code> and <code>/secret/dst/</code> respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.</p>
 <p>Using <code>oras</code> in a workflow might therefore look as follows:</p>
 <div class="highlight"><pre><span></span><code>oras<span class="w"> </span>pull<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/username<span class="k">)</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/password<span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="o">{{</span><span class="w"> </span>workflow.parameters.srcRemoteURL<span class="w"> </span><span class="o">}}</span>/<span class="o">{{</span><span class="w"> </span>workflow.parameters.spec.image<span class="w"> </span><span class="o">}}</span>
