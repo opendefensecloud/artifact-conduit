@@ -53,6 +53,10 @@ type OrderStatus struct {
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatus `json:"artifactWorkflows,omitempty"`
 	// A human readable message describing the current condition of the order.
 	Message string `json:"message,omitempty"`
+	// LastReconcileAt is the last time the Order was reconciled
+	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`
+	// LastForceAt is the last time a force reconciliation was requested
+	LastForceAt metav1.Time `json:"lastForceAt,omitempty"`
 }
 
 type OrderArtifactWorkflowStatus struct {

@@ -60,16 +60,20 @@ type desiredAW struct {
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
+	ctrlResult := ctrl.Result{}
 
 	// Fetch the Order instance
 	order := &arcv1alpha1.Order{}
 	if err := r.Get(ctx, req.NamespacedName, order); err != nil {
 		if apierrors.IsNotFound(err) {
 			// Object not found, return. Created objects are automatically garbage collected.
-			return ctrl.Result{}, nil
+			return ctrlResult, nil
 		}
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
+		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
 	}
+
+	// Update last reconcile time
+	order.Status.LastReconcileAt = metav1.Now()
 
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
@@ -79,7 +83,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
 			for sha := range order.Status.ArtifactWorkflows {
-				// Remove Secret and ArtifactWorkflow
+				// Remove ArtifactWorkflow
 				aw := &arcv1alpha1.ArtifactWorkflow{
 					ObjectMeta: awObjectMeta(order, sha),
 				}
@@ -87,12 +91,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
+				return ctrlResult, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 
 			// Requeue until all artifact workflows are gone
-			return ctrl.Result{}, nil
+			return ctrlResult, nil
 		}
 		// All artifact workflows are gone, remove finalizer
 		if slices.Contains(order.Finalizers, orderFinalizer) {
@@ -101,10 +105,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
+				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
-		return ctrl.Result{}, nil
+		return ctrlResult, nil
 	}
 
 	// Add finalizer if not present and not deleting
@@ -113,11 +117,37 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.V(1).Info("Adding finalizer to Order")
 			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
+				return ctrlResult, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
-			return ctrl.Result{}, nil
+			return ctrlResult, nil
 		}
+	}
+
+	// Handle force reconcile annotation
+	forceAt, err := GetForceAtAnnotationValue(order)
+	if err != nil {
+		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
+	}
+	if !forceAt.IsZero() && (order.Status.LastForceAt.IsZero() || forceAt.After(order.Status.LastForceAt.Time)) {
+		log.V(1).Info("Force reconcile requested")
+		r.Recorder.Event(order, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
+		// Delete existing artifact workflows to force re-creation
+		for sha := range order.Status.ArtifactWorkflows {
+			// Remove Secret and ArtifactWorkflow
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: awObjectMeta(order, sha),
+			}
+			_ = r.Delete(ctx, aw) // Ignore errors
+			delete(order.Status.ArtifactWorkflows, sha)
+		}
+		// Update last force time
+		order.Status.LastForceAt = metav1.Now()
+		if err := r.Status().Update(ctx, order); err != nil {
+			return ctrlResult, errLogAndWrap(log, err, "failed to update last force time")
+		}
+		// Return without requeue; the update event will trigger reconciliation again
+		return ctrlResult, nil
 	}
 
 	// Make sure status is initialized
@@ -134,9 +164,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Event(order, corev1.EventTypeWarning, "ComputationFailed", fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err))
 			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
 			}
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
 		}
 		desiredAWs[daw.sha] = *daw
 	}
@@ -175,6 +205,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if order.Spec.TTLSecondsAfterCompletion != nil && *order.Spec.TTLSecondsAfterCompletion > 0 {
 			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TTLSecondsAfterCompletion)*time.Second {
 				finishedAWs = append(finishedAWs, sha)
+			} else {
+				// Requeue when the next TTL expires
+				ctrlResult.RequeueAfter = time.Duration((*order.Spec.TTLSecondsAfterCompletion)+1)*time.Second - time.Since(awStatus.CompletionTime.Time)
 			}
 			continue
 		}
@@ -189,13 +222,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		aw, err := r.hydrateArtifactWorkflow(&daw)
 		if err != nil {
 			r.Recorder.Event(order, corev1.EventTypeWarning, "HydrationFailed", fmt.Sprintf("Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
 		}
 
 		// Set owner references
 		if err := controllerutil.SetControllerReference(order, aw, r.Scheme); err != nil {
 			r.Recorder.Event(order, corev1.EventTypeWarning, "HydrationFailed", fmt.Sprintf("Failed to set controller reference for artifact workflow: %v", err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
+			return ctrlResult, errLogAndWrap(log, err, "failed to set controller reference")
 		}
 
 		// Create artifact workflow
@@ -205,7 +238,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				continue
 			}
 			r.Recorder.Event(order, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create artifact workflow for artifact index %d: %v", daw.index, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to create artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to create artifact workflow")
 		}
 
 		// Update status
@@ -225,7 +258,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			ObjectMeta: awObjectMeta(order, sha),
 		}); client.IgnoreNotFound(err) != nil {
 			r.Recorder.Event(order, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete obsolete artifact workflow '%s': %v", sha, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		// Update status
@@ -241,7 +274,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			ObjectMeta: awObjectMeta(order, sha),
 		}); client.IgnoreNotFound(err) != nil {
 			r.Recorder.Event(order, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete finished artifact workflow '%s': %v", sha, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		log.V(1).Info("Deleted finished artifact workflow", "artifactWorkflow", sha)
@@ -260,7 +293,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		aw := arcv1alpha1.ArtifactWorkflow{}
 		if err := r.Get(ctx, namespacedName(daw.objectMeta.Namespace, daw.objectMeta.Name), &aw); err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to get artifact workflow")
+			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
 			awStatus := order.Status.ArtifactWorkflows[sha]
@@ -281,11 +314,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			order.Status.ArtifactWorkflows[sha] = aws
 		}
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+			return ctrlResult, errLogAndWrap(log, err, "failed to update status")
 		}
 	}
 
-	return ctrl.Result{}, nil
+	return ctrlResult, nil
 }
 
 func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.ArtifactWorkflow, error) {

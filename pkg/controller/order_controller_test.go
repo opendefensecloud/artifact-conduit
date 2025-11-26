@@ -4,6 +4,7 @@
 package controller
 
 import (
+	"fmt"
 	"maps"
 	"slices"
 
@@ -691,7 +692,67 @@ var _ = Describe("OrderController", func() {
 				}
 				return len(awList.Items)
 			}).Should(Equal(1))
+		})
 
+		It("should handle force reconcile annotation", func() {
+			createEndpoints("src-1", "dst-1")
+			// Create test Order with a single artifact
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-force-reconcile",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflow was created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// Verify that the artifact workflow is re-created (i.e., a new one with a different UID)
+			var originalUID string
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, namespacedName(awList.Items[0].Namespace, awList.Items[0].Name), &awList.Items[0])).To(Succeed())
+				originalUID = string(awList.Items[0].UID)
+				return originalUID
+			}).ShouldNot(BeEmpty())
+
+			// Annotate order to force reconcile
+			Eventually(func() error {
+				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
+					return err
+				}
+				if order.Annotations == nil {
+					order.Annotations = map[string]string{}
+				}
+				order.Annotations[forceAtAnnotation] = fmt.Sprintf("%v", metav1.Now().Unix())
+				return k8sClient.Update(ctx, order)
+			}).Should(Succeed())
+
+			// Verify that a new ArtifactWorkflow has been created
+			Eventually(func() string {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil || len(awList.Items) == 0 {
+					return ""
+				}
+				return string(awList.Items[0].UID)
+			}).ShouldNot(Equal(originalUID))
 		})
 	})
 })

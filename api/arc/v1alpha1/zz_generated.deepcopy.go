@@ -259,6 +259,8 @@ func (in *ArtifactWorkflowSpec) DeepCopy() *ArtifactWorkflowSpec {
 func (in *ArtifactWorkflowStatus) DeepCopyInto(out *ArtifactWorkflowStatus) {
 	*out = *in
 	in.CompletionTime.DeepCopyInto(&out.CompletionTime)
+	in.LastReconcileAt.DeepCopyInto(&out.LastReconcileAt)
+	in.LastForceAt.DeepCopyInto(&out.LastForceAt)
 	return
 }
 
@@ -581,6 +583,8 @@ func (in *OrderStatus) DeepCopyInto(out *OrderStatus) {
 			(*out)[key] = *val.DeepCopy()
 		}
 	}
+	in.LastReconcileAt.DeepCopyInto(&out.LastReconcileAt)
+	in.LastForceAt.DeepCopyInto(&out.LastForceAt)
 	return
 }
 

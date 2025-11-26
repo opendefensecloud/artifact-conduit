@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -97,4 +98,18 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 			dst[prefix+kt] = v
 		}
 	}
+}
+
+// GetForceAtAnnotationValue returns the time specified in the force reconcile annotation, or zero time if not present.
+func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
+	annotations := o.GetAnnotations()
+	if forceAt, present := annotations[forceAtAnnotation]; present {
+		i, err := strconv.ParseInt(forceAt, 10, 64)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("invalid force reconcile annotation: %w", err)
+		}
+		forceAtTime := time.Unix(i, 0)
+		return forceAtTime, nil
+	}
+	return time.Time{}, nil
 }
