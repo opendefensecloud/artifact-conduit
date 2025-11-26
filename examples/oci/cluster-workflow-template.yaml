@@ -60,6 +60,8 @@ spec:
           - name: work-volume
             mountPath: /data
         source: |
+          set -euo pipefail
+
           echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
           mkdir -p /data/image-storage
 
@@ -119,6 +121,8 @@ spec:
             mountPath: /data
 
         source: |
+          set -euo pipefail
+
           echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
 
           # Conditionally login to registry
