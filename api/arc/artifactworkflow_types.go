@@ -32,8 +32,8 @@ func (p WorkflowPhase) Completed() bool {
 
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpec struct {
-	// Type specifies which ArtifactType is used to process this artifact.
-	Type string `json:"type"`
+	// WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType
+	WorkflowTemplateRef ArtifactTypeTemplateRef `json:"workflowTemplateRef"`
 	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.
 	Parameters []ArtifactWorkflowParameter `json:"parameters,omitempty"`
 	// SrcSecretRef references the secret containing credentials for the source.

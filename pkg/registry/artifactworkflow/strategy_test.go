@@ -45,8 +45,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type:       "test-type",
-						Parameters: []arc.ArtifactWorkflowParameter{},
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
+						Parameters:          []arc.ArtifactWorkflowParameter{},
 					},
 				}
 
@@ -62,7 +62,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 							{Name: "param2", Value: "value2"},
@@ -83,7 +83,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 							{Name: "param1", Value: "value2"},
@@ -114,7 +114,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 							{Name: "param2", Value: "value2"},
@@ -148,7 +148,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 							{Name: "param2", Value: "value2"},
@@ -180,7 +180,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "samevalue"},
 							{Name: "param2", Value: "samevalue"},
@@ -227,7 +227,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 					Namespace: "default",
 				},
 				Spec: arc.ArtifactWorkflowSpec{
-					Type: "test-type",
+					WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 					Parameters: []arc.ArtifactWorkflowParameter{
 						{Name: "param1", Value: "value1"},
 					},
@@ -249,7 +249,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 					Namespace: "default",
 				},
 				Spec: arc.ArtifactWorkflowSpec{
-					Type: "test-type",
+					WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 					Parameters: []arc.ArtifactWorkflowParameter{
 						{Name: "param1", Value: "value1"},
 					},
@@ -262,7 +262,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 					Namespace: "default",
 				},
 				Spec: arc.ArtifactWorkflowSpec{
-					Type: "test-type",
+					WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 					Parameters: []arc.ArtifactWorkflowParameter{
 						{Name: "param1", Value: "value2"},
 						{Name: "param2", Value: "value3"},
@@ -289,7 +289,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 						},
@@ -312,7 +312,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 						},
@@ -320,7 +320,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 				}
 
 				newWorkflow := oldWorkflow.DeepCopy()
-				newWorkflow.Spec.Type = "different-type"
+				newWorkflow.Spec.WorkflowTemplateRef.Name = "different-type"
 
 				strategy := artifactworkflow.NewStrategy(testObjectTyper{})
 				errs := strategy.ValidateUpdate(ctx, newWorkflow, oldWorkflow)
@@ -337,7 +337,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 						},
@@ -364,7 +364,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 						},
@@ -390,7 +390,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 							{Name: "param2", Value: "value2"},
@@ -418,7 +418,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactWorkflowSpec{
-						Type: "test-type",
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
 							{Name: "param1", Value: "value1"},
 						},
