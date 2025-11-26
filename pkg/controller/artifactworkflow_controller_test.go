@@ -45,7 +45,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: at.Name,
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
@@ -58,9 +58,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
 			}).Should(Succeed())
 
-			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
+			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(1))
 			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
-				{Name: atValue, Value: (*wfv1alpha1.AnyString)(&atValue)},
 				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
 			}))
 			Expect(wf.Spec.Volumes).To(HaveLen(2))
@@ -79,7 +78,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: at.Name,
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
@@ -94,9 +93,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), wf)
 			}).Should(Succeed())
 
-			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(2))
+			Expect(wf.Spec.Arguments.Parameters).To(HaveLen(1))
 			Expect(wf.Spec.Arguments.Parameters).To(ConsistOf([]wfv1alpha1.Parameter{
-				{Name: atValue, Value: (*wfv1alpha1.AnyString)(&atValue)},
 				{Name: aw.Name, Value: (*wfv1alpha1.AnyString)(&aw.Name)},
 			}))
 			Expect(wf.Spec.Volumes).To(HaveLen(2))
@@ -128,7 +126,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: at.Name,
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},
@@ -168,7 +166,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					Name:      awName,
 				},
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
-					Type: at.Name,
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 						{Name: awName, Value: awName},
 					},

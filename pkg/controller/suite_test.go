@@ -153,11 +153,13 @@ func setupClusterArtifactType(ctx context.Context) *arcv1alpha1.ClusterArtifactT
 					},
 				},
 				WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
-					Name: atValue,
+					Name: "dummy",
 				},
 			},
 		}
 		Expect(k8sClient.Create(ctx, at)).To(Succeed(), "failed to create test artifact type")
+		at.Spec.WorkflowTemplateRef.Name = at.Name
+		Expect(k8sClient.Update(ctx, at)).To(Succeed(), "failed to add proper workflow template ref")
 		DeferCleanup(k8sClient.Delete, ctx, at)
 	})
 

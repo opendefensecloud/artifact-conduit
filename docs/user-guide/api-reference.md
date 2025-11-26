@@ -92,6 +92,7 @@ ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or 
 
 _Appears in:_
 - [ArtifactTypeSpec](#artifacttypespec)
+- [ArtifactWorkflowSpec](#artifactworkflowspec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -152,7 +153,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `type` _string_ | Type specifies which ArtifactType is used to process this artifact. |  |  |
+| `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |

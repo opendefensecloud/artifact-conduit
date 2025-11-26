@@ -102,9 +102,9 @@ var _ = Describe("OrderController", func() {
 
 			// Verify artifact workflows contents
 			for _, aw := range awList.Items {
-				Expect(aw.Spec.Type).To(Or(Equal(at1.Name), Equal(at2.Name)))
+				Expect(aw.Spec.WorkflowTemplateRef.Name).To(Or(Equal(at1.Spec.WorkflowTemplateRef.Name), Equal(at2.Spec.WorkflowTemplateRef.Name)))
 				suffix := "1"
-				if aw.Spec.Type == at2.Name {
+				if aw.Spec.WorkflowTemplateRef.Name == at2.Spec.WorkflowTemplateRef.Name {
 					suffix = "2"
 				}
 				Expect(aw.Spec.SrcSecretRef.Name).To(Equal("src-" + suffix))
@@ -137,6 +137,10 @@ var _ = Describe("OrderController", func() {
 					{
 						Name:  "specKey",
 						Value: "value-" + suffix,
+					},
+					{ // Added by ArtifactType
+						Name:  atValue,
+						Value: atValue,
 					},
 				}))
 			}
@@ -181,7 +185,7 @@ var _ = Describe("OrderController", func() {
 
 			// Verify artifact workflow parameters - should use default refs
 			for _, aw := range awList.Items {
-				Expect(aw.Spec.Type).To(Or(Equal(at1.Name), Equal(at2.Name)))
+				Expect(aw.Spec.WorkflowTemplateRef.Name).To(Or(Equal(at1.Spec.WorkflowTemplateRef.Name), Equal(at2.Spec.WorkflowTemplateRef.Name)))
 				Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 					{
 						Name:  "srcType",
@@ -256,8 +260,8 @@ var _ = Describe("OrderController", func() {
 
 			// Verify artifact workflow contents
 			for _, aw := range awList.Items {
-				switch aw.Spec.Type {
-				case at1.Name:
+				switch aw.Spec.WorkflowTemplateRef.Name {
+				case at1.Spec.WorkflowTemplateRef.Name:
 					// Should use defaults for both
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -269,7 +273,7 @@ var _ = Describe("OrderController", func() {
 							Value: "default-dst",
 						},
 					}))
-				case at2.Name:
+				case at2.Spec.WorkflowTemplateRef.Name:
 					// Should use custom src, default dst
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -281,7 +285,7 @@ var _ = Describe("OrderController", func() {
 							Value: "default-dst",
 						},
 					}))
-				case at3.Name:
+				case at3.Spec.WorkflowTemplateRef.Name:
 					// Should use custom refs for both
 					Expect(aw.Spec.Parameters).To(ContainElements([]arcv1alpha1.ArtifactWorkflowParameter{
 						{
@@ -505,7 +509,7 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(1))
 			aw := awList.Items[0]
-			Expect(aw.Spec.Type).To(Equal(at1.Name))
+			Expect(aw.Spec.WorkflowTemplateRef.Name).To(Equal(at1.Spec.WorkflowTemplateRef.Name))
 			Expect(aw.Spec.SrcSecretRef.Name).To(Equal(""))
 			Expect(aw.Spec.DstSecretRef.Name).To(Equal(""))
 			Expect(aw.Spec.Parameters).To(ConsistOf([]arcv1alpha1.ArtifactWorkflowParameter{
@@ -536,6 +540,10 @@ var _ = Describe("OrderController", func() {
 				{
 					Name:  "specKey",
 					Value: "value",
+				},
+				{ // Added by ArtifactType
+					Name:  atValue,
+					Value: atValue,
 				},
 			}))
 		})

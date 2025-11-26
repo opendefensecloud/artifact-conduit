@@ -690,12 +690,11 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 				Description: "ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"type": {
+					"workflowTemplateRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactType is used to process this artifact.",
-							Default:     "",
-							Type:        []string{"string"},
-							Format:      "",
+							Description: "WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType",
+							Default:     map[string]interface{}{},
+							Ref:         ref(v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName()),
 						},
 					},
 					"parameters": {
@@ -727,11 +726,11 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 						},
 					},
 				},
-				Required: []string{"type", "srcSecretRef", "dstSecretRef"},
+				Required: []string{"workflowTemplateRef", "srcSecretRef", "dstSecretRef"},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 

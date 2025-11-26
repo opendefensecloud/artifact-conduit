@@ -55,7 +55,8 @@ kind: ArtifactWorkflow
 metadata:
   name: example-order-1 # sha256 for procedural
 spec:
-  type: oci # artifactType, correcesponds to workflow
+  workflowTemplateRef:
+    name: foo
   srcSecretRef:
     name: lala
   dstSecretRef:
@@ -79,10 +80,10 @@ spec:
   usage: PullOnly | PushOnly | All # enum
 ```
 
-### `ArtifactType`
+### `ArtifactType` and `ClusterArtifactType`
 ```yaml
 apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactType
+kind: ArtifactType # or ClusterArtifactType
 metadata:
   name: oci
 spec:

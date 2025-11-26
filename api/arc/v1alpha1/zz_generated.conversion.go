@@ -491,7 +491,9 @@ func Convert_arc_ArtifactWorkflowParameter_To_v1alpha1_ArtifactWorkflowParameter
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *ArtifactWorkflowSpec, out *arc.ArtifactWorkflowSpec, s conversion.Scope) error {
-	out.Type = in.Type
+	if err := Convert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
+		return err
+	}
 	out.Parameters = *(*[]arc.ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.SrcSecretRef = in.SrcSecretRef
 	out.DstSecretRef = in.DstSecretRef
@@ -504,7 +506,9 @@ func Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *Artif
 }
 
 func autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.ArtifactWorkflowSpec, out *ArtifactWorkflowSpec, s conversion.Scope) error {
-	out.Type = in.Type
+	if err := Convert_arc_ArtifactTypeTemplateRef_To_v1alpha1_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
+		return err
+	}
 	out.Parameters = *(*[]ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.SrcSecretRef = in.SrcSecretRef
 	out.DstSecretRef = in.DstSecretRef

@@ -12,10 +12,10 @@ import (
 // ArtifactWorkflowSpecApplyConfiguration represents a declarative configuration of the ArtifactWorkflowSpec type for use
 // with apply.
 type ArtifactWorkflowSpecApplyConfiguration struct {
-	Type         *string                                       `json:"type,omitempty"`
-	Parameters   []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
-	SrcSecretRef *v1.LocalObjectReference                      `json:"srcSecretRef,omitempty"`
-	DstSecretRef *v1.LocalObjectReference                      `json:"dstSecretRef,omitempty"`
+	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration    `json:"workflowTemplateRef,omitempty"`
+	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
+	SrcSecretRef        *v1.LocalObjectReference                      `json:"srcSecretRef,omitempty"`
+	DstSecretRef        *v1.LocalObjectReference                      `json:"dstSecretRef,omitempty"`
 }
 
 // ArtifactWorkflowSpecApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowSpec type for use with
@@ -24,11 +24,11 @@ func ArtifactWorkflowSpec() *ArtifactWorkflowSpecApplyConfiguration {
 	return &ArtifactWorkflowSpecApplyConfiguration{}
 }
 
-// WithType sets the Type field in the declarative configuration to the given value
+// WithWorkflowTemplateRef sets the WorkflowTemplateRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Type field is set to the value of the last call.
-func (b *ArtifactWorkflowSpecApplyConfiguration) WithType(value string) *ArtifactWorkflowSpecApplyConfiguration {
-	b.Type = &value
+// If called multiple times, the WorkflowTemplateRef field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithWorkflowTemplateRef(value *ArtifactTypeTemplateRefApplyConfiguration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.WorkflowTemplateRef = value
 	return b
 }
 
