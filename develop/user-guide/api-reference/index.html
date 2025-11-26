@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2129,6 +2129,12 @@
 <td></td>
 <td></td>
 </tr>
+<tr>
+<td><code>completionTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>CompletionTime is the time when the workflow finished</td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h4 id="clusterartifacttype">ClusterArtifactType<a class="headerlink" href="#clusterartifacttype" title="Permanent link">¶</a></h4>
@@ -2411,6 +2417,12 @@
 <td></td>
 <td></td>
 </tr>
+<tr>
+<td><code>completionTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>CompletionTime is the time when the workflow finished</td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h4 id="orderdefaults">OrderDefaults<a class="headerlink" href="#orderdefaults" title="Permanent link">¶</a></h4>
@@ -2464,6 +2476,12 @@
 <tr>
 <td><code>artifacts</code> <em><a href="#orderartifact">OrderArtifact</a> array</em></td>
 <td>Artifacts lists all artifacts, that will be processed by this Order.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>TTLSecondsAfterCompletion</code> <em>integer</em></td>
+<td>TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
 <td></td>
 <td></td>
 </tr>
