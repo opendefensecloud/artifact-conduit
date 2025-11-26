@@ -369,9 +369,14 @@ var _ = Describe("OrderController", func() {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
 			}).Should(Equal(1))
-		})
 
-		// TODO: test ttl-based cleanup
+			// Check that the completion time is set in the order status
+			Eventually(func() metav1.Time {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
+				return awStatus.CompletionTime
+			}).ShouldNot(BeZero())
+		})
 
 		It("should create a new artifact workflow and update status when an artifact is added", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")

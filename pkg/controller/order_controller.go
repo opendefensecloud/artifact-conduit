@@ -164,15 +164,22 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	finishedAWs := []string{}
 	for sha := range order.Status.ArtifactWorkflows {
 		awStatus := order.Status.ArtifactWorkflows[sha]
-		if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
-			if order.Spec.TtlSecondsAfterCompletion != nil && *order.Spec.TtlSecondsAfterCompletion > 0 {
-				if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TtlSecondsAfterCompletion)*time.Second {
-					finishedAWs = append(finishedAWs, sha)
-				}
-			} else {
+
+		// Only consider succeeded workflows for TTL cleanup
+		if awStatus.Phase != arcv1alpha1.WorkflowSucceeded {
+			continue
+		}
+
+		// If TTL is set, check if it has expired
+		if order.Spec.TtlSecondsAfterCompletion != nil && *order.Spec.TtlSecondsAfterCompletion > 0 {
+			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TtlSecondsAfterCompletion)*time.Second {
 				finishedAWs = append(finishedAWs, sha)
 			}
+			continue
 		}
+
+		// No TTL set, cleanup immediately
+		finishedAWs = append(finishedAWs, sha)
 	}
 
 	// Create missing artifact workflows
