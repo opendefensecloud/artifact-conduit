@@ -101,6 +101,10 @@ Parameter names are derived from the API spec, but translated to camelCase. The 
 
 The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.
 
+!!! note
+
+    Parameters can come from `ArtifactWorkflow` and `ArtifactType`. These parameters are merged when creating the Argo Workflow with `ArtifactType` taking precedence over `ArtifactWorkflow`.
+
 However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
 
 Using `oras` in a workflow might therefore look as follows:
