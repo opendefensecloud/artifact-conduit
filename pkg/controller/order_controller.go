@@ -177,8 +177,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 
 		// If TTL is set, check if it has expired
-		if order.Spec.TtlSecondsAfterCompletion != nil && *order.Spec.TtlSecondsAfterCompletion > 0 {
-			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TtlSecondsAfterCompletion)*time.Second {
+		if order.Spec.TTLSecondsAfterCompletion != nil && *order.Spec.TTLSecondsAfterCompletion > 0 {
+			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TTLSecondsAfterCompletion)*time.Second {
 				finishedAWs = append(finishedAWs, sha)
 			}
 			continue

@@ -362,7 +362,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  |  |
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
-| `ttlSecondsAfterCompletion` _integer_ | TtlSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
+| `TTLSecondsAfterCompletion` _integer_ | TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
 
 
 #### OrderStatus
