@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1872,9 +1872,10 @@ flowchart LR
   end
     Order -- contains --&gt; Spec
     Spec -- generates --&gt; ArtifactWorkflow1 &amp; ArtifactWorkflow2 &amp; ArtifactWorkflowN
+    Spec -- uses type --&gt; ArtifactTypeDef
     Spec -- reads &amp; tracks generations of --&gt; EndpointSrc &amp; EndpointDst &amp; EndpointSecret
-    ArtifactWorkflow1 -- type --&gt; ArtifactTypeDef
-    ArtifactWorkflow2 -- type --&gt; ArtifactTypeDef
+    ArtifactWorkflow1 -- workflowTemplateRef --&gt; WorkflowTemplate
+    ArtifactWorkflow2 -- workflowTemplateRef --&gt; WorkflowTemplate
     ArtifactWorkflow1 -- srcRef --&gt; EndpointSrc
     ArtifactWorkflow2 -- srcRef --&gt; EndpointSrc
     ArtifactWorkflow1 -- dstRef --&gt; EndpointDst
@@ -1884,9 +1885,9 @@ flowchart LR
     ArtifactTypeDef -- workflowTemplateRef --&gt; WorkflowTemplate
     ArtifactWorkflow1 -- references --&gt; EndpointSecret
     ArtifactWorkflow2 -- references --&gt; EndpointSecret
-    ArtifactWorkflow1 -- instantiates --&gt; WorkflowTemplate
-    ArtifactWorkflow2 -- instantiates --&gt; WorkflowTemplate
-    WorkflowTemplate -- instantiates --&gt; WorkflowInstance1 &amp; WorkflowInstance2
+    ArtifactWorkflow1 -- instantiates --&gt; WorkflowInstance1
+    ArtifactWorkflow2 -- instantiates --&gt; WorkflowInstance2
+    WorkflowInstance1 &amp; WorkflowInstance2 -- uses --&gt; WorkflowTemplate
     WorkflowInstance1 -- mounts --&gt; EndpointSecret
     WorkflowInstance2 -- mounts --&gt; EndpointSecret
 

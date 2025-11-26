@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1269,10 +1269,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#artifacttype" class="md-nav__link">
+  <a href="#artifacttype-and-clusterartifacttype" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArtifactType
+        ArtifactType and ClusterArtifactType
       
     </span>
   </a>
@@ -1426,10 +1426,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#artifacttype" class="md-nav__link">
+  <a href="#artifacttype-and-clusterartifacttype" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArtifactType
+        ArtifactType and ClusterArtifactType
       
     </span>
   </a>
@@ -1518,7 +1518,8 @@
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-order-1</span><span class="w"> </span><span class="c1"># sha256 for procedural</span>
 <span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># artifactType, correcesponds to workflow</span>
+<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
 <span class="w">  </span><span class="nt">srcSecretRef</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lala</span>
 <span class="w">  </span><span class="nt">dstSecretRef</span><span class="p">:</span>
@@ -1539,9 +1540,9 @@
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry-credentials</span>
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PullOnly | PushOnly | All</span><span class="w"> </span><span class="c1"># enum</span>
 </code></pre></div>
-<h3 id="artifacttype"><code>ArtifactType</code><a class="headerlink" href="#artifacttype" title="Permanent link">¶</a></h3>
+<h3 id="artifacttype-and-clusterartifacttype"><code>ArtifactType</code> and <code>ClusterArtifactType</code><a class="headerlink" href="#artifacttype-and-clusterartifacttype" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span><span class="w"> </span><span class="c1"># or ClusterArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="nt">spec</span><span class="p">:</span>

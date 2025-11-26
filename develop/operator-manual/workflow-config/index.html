@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1531,11 +1531,12 @@ However please note, that cluster-wide equivalents exist (<code>ClusterArtifactT
     Order --&gt;|creates| ArtifactWorkflow
     Order --&gt;|references| SrcEndpoint
     Order --&gt;|references| DstEndpoint
-    ArtifactWorkflow --&gt;|specifies type| ArtifactTypeDef
+    Order --&gt;|specifies type| ArtifactTypeDef
+    ArtifactWorkflow --&gt;|references| WorkflowTemplate
     ArtifactWorkflow --&gt;|references| SrcSecret
     ArtifactWorkflow --&gt;|references| DstSecret
 
-    ArtifactTypeDef --&gt;|validates src/dst types| ArtifactWorkflow
+    ArtifactTypeDef --&gt;|validates src/dst types| Order
     ArtifactTypeDef --&gt;|references| WorkflowTemplate
 
     SrcEndpoint --&gt;|references| SrcSecret
@@ -1572,7 +1573,8 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-frag</span>
 <span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Artifact Type!</span>
+<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># based on Artifact Type used in Order</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-workflow-template</span>
 <span class="w">  </span><span class="nt">srcSecretRef</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc-creds</span>
 <span class="w">  </span><span class="nt">dstSecretRef</span><span class="p">:</span>
@@ -1638,7 +1640,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <p>The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Parameters can come from <code>ArtifactWorkflow</code> and <code>ArtifactType</code>. These parameters are merged when creating the Argo Workflow with <code>ArtifactType</code> taking precedence over <code>ArtifactWorkflow</code>.</p>
+<p>Parameters can come from the <code>Order</code> and <code>ArtifactType</code>. These parameters are merged when creating the <code>ArtifactWorkflow</code> with <code>ArtifactType</code> taking precedence over <code>Order</code>.</p>
 </div>
 <p>However the source and destination secrets are mounted at <code>/secret/src/</code> and <code>/secret/dst/</code> respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.</p>
 <p>Using <code>oras</code> in a workflow might therefore look as follows:</p>

@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1963,7 +1963,8 @@
 <h4 id="artifacttypetemplateref">ArtifactTypeTemplateRef<a class="headerlink" href="#artifacttypetemplateref" title="Permanent link">¶</a></h4>
 <p>ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.</p>
 <p><em>Appears in:</em>
-- <a href="#artifacttypespec">ArtifactTypeSpec</a></p>
+- <a href="#artifacttypespec">ArtifactTypeSpec</a>
+- <a href="#artifactworkflowspec">ArtifactWorkflowSpec</a></p>
 <table>
 <thead>
 <tr>
@@ -2078,8 +2079,8 @@
 </thead>
 <tbody>
 <tr>
-<td><code>type</code> <em>string</em></td>
-<td>Type specifies which ArtifactType is used to process this artifact.</td>
+<td><code>workflowTemplateRef</code> <em><a href="#artifacttypetemplateref">ArtifactTypeTemplateRef</a></em></td>
+<td>WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType</td>
 <td></td>
 <td></td>
 </tr>
