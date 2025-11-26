@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"slices"
-	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
@@ -49,14 +48,15 @@ type ArtifactWorkflowReconciler struct {
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.LoggerFrom(ctx)
+	ctrlResult := ctrl.Result{}
 
 	aw := &arcv1alpha1.ArtifactWorkflow{}
 	if err := r.Get(ctx, req.NamespacedName, aw); err != nil {
 		if apierrors.IsNotFound(err) {
 			// Object not found, return.
-			return ctrl.Result{}, nil
+			return ctrlResult, nil
 		}
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
+		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
 	}
 
 	// Update last reconcile time
@@ -67,7 +67,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		log.V(1).Info("ArtifactWorkflow is being deleted")
 		// Cleanup workflow, if exists
 		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "workflow deletion failed")
+			return ctrlResult, errLogAndWrap(log, err, "workflow deletion failed")
 		}
 
 		// Remove finalizer
@@ -77,10 +77,10 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 				return f == artifactWorkflowFinalizer
 			})
 			if err := r.Update(ctx, aw); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
+				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
-		return ctrl.Result{}, nil
+		return ctrlResult, nil
 	}
 
 	// Add finalizer if not present and not deleting
@@ -89,10 +89,10 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			log.V(1).Info("Adding finalizer to ArtifactWorkflow")
 			aw.Finalizers = append(aw.Finalizers, artifactWorkflowFinalizer)
 			if err := r.Update(ctx, aw); err != nil {
-				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
+				return ctrlResult, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
-			return ctrl.Result{}, nil
+			return ctrlResult, nil
 		}
 	}
 
@@ -106,26 +106,26 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		r.Recorder.Event(aw, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
 		// Delete existing workflow, if any
 		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
+			return ctrlResult, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
 		}
 		// Update last force time
 		aw.Status.LastForceAt = metav1.Now()
 		if err := r.Status().Update(ctx, aw); err != nil {
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
+			return ctrlResult, errLogAndWrap(log, err, "failed to update last force time")
 		}
 		// Return without requeue; the update event will trigger reconciliation again
-		return ctrl.Result{}, nil
+		return ctrlResult, nil
 	}
 
 	if aw.Status.Phase == arcv1alpha1.WorkflowUnknown {
-		return r.createArgoWorkflow(ctx, log, aw)
+		return ctrlResult, r.createArgoWorkflow(ctx, log, aw)
 	}
 
 	if aw.Status.Phase.InProgress() {
-		return r.checkArgoWorkflow(ctx, log, aw)
+		return ctrlResult, r.checkArgoWorkflow(ctx, log, aw)
 	}
 
-	return ctrl.Result{}, nil
+	return ctrlResult, nil
 }
 
 func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
@@ -143,18 +143,18 @@ func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log
 	return nil
 }
 
-func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
+func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
 	artifactType := &arcv1alpha1.ArtifactType{}
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.Type), artifactType); client.IgnoreNotFound(err) != nil {
 		r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type '%s': %v", aw.Spec.Type, err))
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
+		return errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 	}
 	var artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec
 	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 		if err := r.Get(ctx, namespacedName("", aw.Spec.Type), clusterArtifactType); err != nil {
 			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidArtifactType", fmt.Sprintf("Failed to fetch artifact type on cluster scope '%s': %v", aw.Spec.Type, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
+			return errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
 		// For ClusterArtifactType we only reference ClusterWorkloadTemplates
@@ -167,7 +167,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
 			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for source")
+			return errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
 
@@ -175,27 +175,27 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
 			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
-			return ctrl.Result{}, errLogAndWrap(log, err, "failed to fetch secret for destination")
+			return errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}
 
 	wf := r.hydrateArgoWorkflow(aw, artifactTypeSpec, &srcSecret, &dstSecret)
 
 	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
+		return errLogAndWrap(log, err, "failed to set controller reference")
 	}
 
 	if err := r.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
 		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.Name, err))
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to create argo workflow")
+		return errLogAndWrap(log, err, "failed to create argo workflow")
 	}
 	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.Name))
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := r.Status().Update(ctx, aw); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+		return errLogAndWrap(log, err, "failed to update status")
 	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
 func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, artifactTypeSpec *arcv1alpha1.ArtifactTypeSpec, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
@@ -266,22 +266,21 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 	return wf
 }
 
-func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
+func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
 	wf := wfv1alpha1.Workflow{}
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get workflow")
+		return errLogAndWrap(log, err, "failed to get workflow")
 	}
 	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil // nothing updated
+		return nil // nothing updated
 	}
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
-	if aw.Status.Phase == arcv1alpha1.WorkflowSucceeded {
+	switch aw.Status.Phase {
+	case arcv1alpha1.WorkflowSucceeded:
 		aw.Status.CompletionTime = metav1.Now()
-	}
-
-	// If workflow has errored or failed, fetch logs and update status message
-	if (aw.Status.Phase == arcv1alpha1.WorkflowError || aw.Status.Phase == arcv1alpha1.WorkflowFailed) && aw.Status.Message == "" {
+	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
+		// If workflow has errored or failed, fetch logs and update status message
 		switch aw.Status.Phase {
 		case arcv1alpha1.WorkflowFailed:
 			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
@@ -292,14 +291,10 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 	}
 
 	if err := r.Status().Update(ctx, aw); err != nil {
-		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
+		return errLogAndWrap(log, err, "failed to update status")
 	}
-	switch aw.Status.Phase {
-	case arcv1alpha1.WorkflowPending, arcv1alpha1.WorkflowRunning:
-		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
-	default:
-		return ctrl.Result{}, nil
-	}
+
+	return nil
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
