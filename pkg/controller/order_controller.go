@@ -122,6 +122,32 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 	}
 
+	// Handle force reconcile annotation
+	forceAt, err := GetForceAtAnnotationValue(order)
+	if err != nil {
+		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
+	}
+	if !forceAt.IsZero() && (order.Status.LastForceAt.IsZero() || forceAt.After(order.Status.LastForceAt.Time)) {
+		log.V(1).Info("Force reconcile requested")
+		r.Recorder.Event(order, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
+		// Delete existing artifact workflows to force re-creation
+		for sha := range order.Status.ArtifactWorkflows {
+			// Remove Secret and ArtifactWorkflow
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: awObjectMeta(order, sha),
+			}
+			_ = r.Delete(ctx, aw) // Ignore errors
+			delete(order.Status.ArtifactWorkflows, sha)
+		}
+		// Update last force time
+		order.Status.LastForceAt = metav1.Now()
+		if err := r.Status().Update(ctx, order); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
+		}
+		// Return without requeue; the update event will trigger reconciliation again
+		return ctrl.Result{}, nil
+	}
+
 	// Make sure status is initialized
 	if order.Status.ArtifactWorkflows == nil {
 		order.Status.ArtifactWorkflows = map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
@@ -281,6 +307,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
+	}
+
+	// Requeue after some time to monitor progress based on the phase of the artifact workflows
+	if anyPhaseChanged {
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil // TODO: make this configurable
 	}
 
 	return ctrl.Result{}, nil

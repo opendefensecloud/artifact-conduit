@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
@@ -65,16 +66,10 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if !aw.DeletionTimestamp.IsZero() {
 		log.V(1).Info("ArtifactWorkflow is being deleted")
 		// Cleanup workflow, if exists
-		wf := wfv1alpha1.Workflow{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: aw.Namespace,
-				Name:      aw.Name,
-			},
-		}
-		if err := r.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
+		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "workflow deletion failed")
 		}
+
 		// Remove finalizer
 		if slices.Contains(aw.Finalizers, artifactWorkflowFinalizer) {
 			log.V(1).Info("Removing finalizer from ArtifactWorkflow")
@@ -101,6 +96,27 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		}
 	}
 
+	// Handle force reconcile annotation
+	forceAt, err := GetForceAtAnnotationValue(aw)
+	if err != nil {
+		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
+	}
+	if !forceAt.IsZero() && (aw.Status.LastForceAt.IsZero() || forceAt.After(aw.Status.LastForceAt.Time)) {
+		log.V(1).Info("Force reconcile requested")
+		r.Recorder.Event(aw, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
+		// Delete existing workflow, if any
+		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
+		}
+		// Update last force time
+		aw.Status.LastForceAt = metav1.Now()
+		if err := r.Status().Update(ctx, aw); err != nil {
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
+		}
+		// Return without requeue; the update event will trigger reconciliation again
+		return ctrl.Result{}, nil
+	}
+
 	if aw.Status.Phase == arcv1alpha1.WorkflowUnknown {
 		return r.createArgoWorkflow(ctx, log, aw)
 	}
@@ -110,6 +126,21 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
+	wf := wfv1alpha1.Workflow{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: aw.Namespace,
+			Name:      aw.Name,
+		},
+	}
+	if err := r.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
+		return errLogAndWrap(log, err, "workflow deletion failed")
+	}
+	r.Recorder.Event(aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted workflow '%s'", aw.Name))
+	return nil
 }
 
 func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) (ctrl.Result, error) {
@@ -241,7 +272,7 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get workflow")
 	}
 	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return ctrl.Result{}, nil // nothing updated
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil // nothing updated
 	}
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
@@ -263,7 +294,12 @@ func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log 
 	if err := r.Status().Update(ctx, aw); err != nil {
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 	}
-	return ctrl.Result{}, nil
+	switch aw.Status.Phase {
+	case arcv1alpha1.WorkflowPending, arcv1alpha1.WorkflowRunning:
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
+	default:
+		return ctrl.Result{}, nil
+	}
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
