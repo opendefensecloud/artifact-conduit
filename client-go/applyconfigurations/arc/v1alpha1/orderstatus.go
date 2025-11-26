@@ -5,11 +5,17 @@
 
 package v1alpha1
 
+import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // OrderStatusApplyConfiguration represents a declarative configuration of the OrderStatus type for use
 // with apply.
 type OrderStatusApplyConfiguration struct {
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatusApplyConfiguration `json:"artifactWorkflows,omitempty"`
 	Message           *string                                                  `json:"message,omitempty"`
+	LastReconcileAt   *v1.Time                                                 `json:"lastReconcileAt,omitempty"`
+	LastForceAt       *v1.Time                                                 `json:"lastForceAt,omitempty"`
 }
 
 // OrderStatusApplyConfiguration constructs a declarative configuration of the OrderStatus type for use with
@@ -37,5 +43,21 @@ func (b *OrderStatusApplyConfiguration) WithArtifactWorkflows(entries map[string
 // If called multiple times, the Message field is set to the value of the last call.
 func (b *OrderStatusApplyConfiguration) WithMessage(value string) *OrderStatusApplyConfiguration {
 	b.Message = &value
+	return b
+}
+
+// WithLastReconcileAt sets the LastReconcileAt field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the LastReconcileAt field is set to the value of the last call.
+func (b *OrderStatusApplyConfiguration) WithLastReconcileAt(value v1.Time) *OrderStatusApplyConfiguration {
+	b.LastReconcileAt = &value
+	return b
+}
+
+// WithLastForceAt sets the LastForceAt field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the LastForceAt field is set to the value of the last call.
+func (b *OrderStatusApplyConfiguration) WithLastForceAt(value v1.Time) *OrderStatusApplyConfiguration {
+	b.LastForceAt = &value
 	return b
 }

@@ -58,6 +58,10 @@ type ArtifactWorkflowStatus struct {
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
 	// CompletionTime is the time when the workflow finished
 	CompletionTime metav1.Time `json:"completionTime,omitempty"`
+	// LastReconcileAt is the last time the Order was reconciled
+	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`
+	// LastForceAt is the last time a force reconciliation was requested
+	LastForceAt metav1.Time `json:"lastForceAt,omitempty"`
 }
 
 // +genclient

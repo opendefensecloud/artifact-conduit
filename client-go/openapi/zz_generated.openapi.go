@@ -763,6 +763,18 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
+					"lastReconcileAt": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastReconcileAt is the last time the Order was reconciled",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"lastForceAt": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastForceAt is the last time a force reconciliation was requested",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
 				},
 			},
 		},
@@ -1308,11 +1320,23 @@ func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) commo
 							Format:      "",
 						},
 					},
+					"lastReconcileAt": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastReconcileAt is the last time the Order was reconciled",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"lastForceAt": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastForceAt is the last time a force reconciliation was requested",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.OrderArtifactWorkflowStatus{}.OpenAPIModelName()},
+			v1alpha1.OrderArtifactWorkflowStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 

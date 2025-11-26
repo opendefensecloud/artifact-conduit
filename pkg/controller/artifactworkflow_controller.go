@@ -58,6 +58,10 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
+	// Update last reconcile time
+	aw.Status.LastReconcileAt = metav1.Now()
+
+	// Handle deletion
 	if !aw.DeletionTimestamp.IsZero() {
 		log.V(1).Info("ArtifactWorkflow is being deleted")
 		// Cleanup workflow, if exists

@@ -70,6 +70,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
+	// Update last reconcile time
+	order.Status.LastReconcileAt = metav1.Now()
+
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
