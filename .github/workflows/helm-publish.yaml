@@ -24,6 +24,12 @@ jobs:
     permissions:
       contents: read
       packages: write
+    # Condition: Run on tag push, published release, OR PR with 'ok-to-helm' label
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ok-to-helm')) ||
+      (github.event_name == 'release' && github.event.action == 'published')
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -42,8 +48,18 @@ jobs:
       - name: Extract version from tag
         id: version
         run: |
-          # Remove 'v' prefix from tag if present (e.g., v0.1.0 -> 0.1.0)
-          VERSION=${GITHUB_REF_NAME#v}
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            # Remove 'v' prefix from tag if present (e.g., v0.1.0 -> 0.1.0)
+            VERSION=${GITHUB_REF_NAME#v}
+            echo "source=tag" >> $GITHUB_OUTPUT
+          else
+            # For pull requests and other refs, compute a semver version
+            # Format: 0.0.0-pr.<pr_number>.<short_sha>
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+            VERSION="0.0.0-pr.${PR_NUMBER}.${SHORT_SHA}"
+            echo "source=computed" >> $GITHUB_OUTPUT
+          fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Chart version: ${VERSION}"
 
@@ -82,10 +98,3 @@ jobs:
               echo "✓ Published ${PACKAGE} to ghcr.io/${{ github.repository_owner }}/charts"
             fi
           done
-
-      - name: Upload chart packages as release assets
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "*.tgz"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
