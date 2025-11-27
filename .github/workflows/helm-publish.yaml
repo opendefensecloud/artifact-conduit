@@ -1,0 +1,90 @@
+name: Publish Helm Chart
+
+on:
+  release:
+    types:
+      - published
+  push:
+    branches:
+    - main
+    tags:
+    - v*
+    paths-ignore:
+    - 'docs/**'
+    - '**/*.md'
+  pull_request:
+    paths-ignore:
+    - 'docs/**'
+    - '**/*.md'
+    types: [labeled, unlabeled, opened, synchronize, reopened]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v4.0.1'
+
+      - name: Login to GitHub Container Registry
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          # Remove 'v' prefix from tag if present (e.g., v0.1.0 -> 0.1.0)
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Chart version: ${VERSION}"
+
+      - name: Update chart version and appVersion
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          for chart in charts/*/; do
+            if [ -f "${chart}Chart.yaml" ]; then
+              CHART_NAME=$(basename "${chart}")
+              echo "Updating ${CHART_NAME} to version ${VERSION}"
+
+              # Update version and appVersion in Chart.yaml
+              sed -i "s/^version:.*/version: ${VERSION}/" "${chart}Chart.yaml"
+              sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "${chart}Chart.yaml"
+
+              echo "Updated Chart.yaml:"
+              grep -E '^(version|appVersion):' "${chart}Chart.yaml"
+            fi
+          done
+
+      - name: Package and publish Helm charts
+        run: |
+          for chart in charts/*/; do
+            if [ -f "${chart}Chart.yaml" ]; then
+              CHART_NAME=$(basename "${chart}")
+              echo "Packaging and publishing chart: ${CHART_NAME}"
+
+              # Package the chart
+              helm package "${chart}"
+
+              # Push to OCI registry
+              PACKAGE=$(ls ${CHART_NAME}-*.tgz)
+              helm push "${PACKAGE}" oci://ghcr.io/${{ github.repository_owner }}/charts
+
+              echo "✓ Published ${PACKAGE} to ghcr.io/${{ github.repository_owner }}/charts"
+            fi
+          done
+
+      - name: Upload chart packages as release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.tgz"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

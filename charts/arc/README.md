@@ -11,12 +11,39 @@ This Helm chart deploys Artifact Conduit (ARC) - a Kubernetes-native system for 
 
 ## Installation
 
-### Add Helm Repository
+### Install from OCI Registry
+
+ARC Helm charts are published to GitHub Container Registry as OCI artifacts.
 
 ```bash
-# Add the ARC Helm repository (when published)
-helm repo add arc https://opendefensecloud.github.io/artifact-conduit
-helm repo update
+# Pull and install the latest version
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc \
+  --namespace arc-system \
+  --create-namespace
+
+# Install a specific version
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc --version 0.1.0 \
+  --namespace arc-system \
+  --create-namespace
+
+# Install with custom values
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc \
+  --namespace arc-system \
+  --create-namespace \
+  -f custom-values.yaml
+```
+
+### Install from Source
+
+For development or testing, install directly from the source repository:
+
+```bash
+# Clone the repository
+git clone https://github.com/opendefensecloud/artifact-conduit.git
+cd artifact-conduit
+
+# Install from local chart
+helm install arc ./charts/arc --namespace arc-system --create-namespace
 ```
 
 ### Install cert-manager (if not already installed)
@@ -30,19 +57,6 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/do
 ```bash
 kubectl create namespace argo
 kubectl apply -n argo -f https://github.com/argoproj/argo-workflows/releases/latest/download/install.yaml
-```
-
-### Install ARC
-
-```bash
-# Install in the default namespace
-helm install arc arc/arc
-
-# Install in a custom namespace
-helm install arc arc/arc --namespace arc-system --create-namespace
-
-# Install with custom values
-helm install arc arc/arc --namespace arc-system --create-namespace -f custom-values.yaml
 ```
 
 ## Components
@@ -115,7 +129,7 @@ The chart deploys three main components:
 ### Basic Installation
 
 ```bash
-helm install arc arc/arc \
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc \
   --namespace arc-system \
   --create-namespace
 ```
@@ -152,7 +166,7 @@ etcd:
 ```
 
 ```bash
-helm install arc arc/arc -f ha-values.yaml
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc -f ha-values.yaml
 ```
 
 ### Enable Metrics with Prometheus
@@ -169,7 +183,7 @@ controller:
 ```
 
 ```bash
-helm install arc arc/arc -f metrics-values.yaml
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc -f metrics-values.yaml
 ```
 
 ### Custom Storage Class
@@ -185,7 +199,7 @@ etcd:
 ```
 
 ```bash
-helm install arc arc/arc -f storage-values.yaml
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc -f storage-values.yaml
 ```
 
 ### Using External etcd
@@ -201,13 +215,17 @@ apiserver:
 ```
 
 ```bash
-helm install arc arc/arc -f external-etcd-values.yaml
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc -f external-etcd-values.yaml
 ```
 
 ## Upgrading
 
 ```bash
-helm upgrade arc arc/arc --namespace arc-system
+# Upgrade to the latest version
+helm upgrade arc oci://ghcr.io/opendefensecloud/charts/arc --namespace arc-system
+
+# Upgrade to a specific version
+helm upgrade arc oci://ghcr.io/opendefensecloud/charts/arc --version 0.2.0 --namespace arc-system
 ```
 
 ## Uninstalling
@@ -306,7 +324,7 @@ If you're currently using Kustomize to deploy ARC:
 
 4. Test with dry-run:
    ```bash
-   helm install arc arc/arc --dry-run --debug -f your-values.yaml
+   helm install arc oci://ghcr.io/opendefensecloud/charts/arc --dry-run --debug -f your-values.yaml
    ```
 
 5. Uninstall Kustomize deployment and install Helm chart
