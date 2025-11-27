@@ -525,6 +525,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#kustomize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kustomize
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#submit-an-example-order" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1339,6 +1350,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#kustomize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kustomize
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#submit-an-example-order" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1386,9 +1408,20 @@
 <p>To try out ARC, you can install it and run example orders.</p>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¶</a></h2>
 <p>Before installing ARC, you need a Kubernetes cluster and <code>kubectl</code> configured to access it.
-For quick testing, you can use a local cluster with <a href="https://kind.sigs.k8s.io/"><code>kind</code></a> or similar tools.</p>
+For quick testing, you can use a local cluster with <a href="https://kind.sigs.k8s.io/">kind</a> or similar tools.</p>
+<p>ARC relies heavily on Argo Workflows, so you <strong>must</strong> install it first, see <a href="https://argo-workflows.readthedocs.io/en/stable/installation/">Argo Workflows documentation</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These instructions are intended to help you get started quickly. They are not suitable for production. For production installs, please refer to the <a href="../operator-manual/installation/">installation documentation</a>.</p>
+</div>
 <h2 id="install-arc">Install ARC<a class="headerlink" href="#install-arc" title="Permanent link">¶</a></h2>
-<p>//TODO</p>
+<h2 id="kustomize">Kustomize<a class="headerlink" href="#kustomize" title="Permanent link">¶</a></h2>
+<p>First, specify the version you want to install in an environment variable. Modify the command below:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">ARC_VERSION</span><span class="o">=</span><span class="s2">"main"</span>
+</code></pre></div>
+<p>Then, copy the commands below to apply the kustomization:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span><span class="s2">"https://github.com/opendefensecloud/artifact-conduit/examples/deployment?ref=</span><span class="si">${</span><span class="nv">ARC_VERSION</span><span class="si">}</span><span class="s2">"</span>
+</code></pre></div>
 <h2 id="submit-an-example-order">Submit an example order<a class="headerlink" href="#submit-an-example-order" title="Permanent link">¶</a></h2>
 <p>// TODO</p>
 
