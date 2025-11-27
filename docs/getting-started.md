@@ -1,4 +1,4 @@
-# Getting started
+# Quick Start
 
 To try out ARC, you can install it and run example orders.
 

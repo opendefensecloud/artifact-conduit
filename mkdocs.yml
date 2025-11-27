@@ -92,7 +92,9 @@ validation:
   anchors: warn
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
+  - Getting Started:
+      - getting-started.md
+      - walk-through/about.md
   - User Guide:
       - user-guide/core-concepts.md
       - user-guide/api-reference.md
