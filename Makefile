@@ -91,7 +91,8 @@ test: setup-envtest ginkgo ## Run all tests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
 
-KIND_CLUSTER ?= arc-test-e2e
+
+KIND_CLUSTER_E2E ?= arc-test-e2e
 
 .PHONY: setup-test-e2e
 setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
@@ -100,22 +101,50 @@ setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
 		exit 1; \
 	}
 	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER)' already exists. Skipping creation." ;; \
+		*"$(KIND_CLUSTER_E2E)"*) \
+			echo "Kind cluster '$(KIND_CLUSTER_E2E)' already exists. Skipping creation." ;; \
 		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER)'..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER) ;; \
+			echo "Creating Kind cluster '$(KIND_CLUSTER_E2E)'..."; \
+			$(KIND) create cluster --name $(KIND_CLUSTER_E2E) ;; \
 	esac
 
 .PHONY: test-e2e
 test-e2e: setup-test-e2e manifests ## Run the e2e tests. Expected an isolated environment using Kind.
-	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -ginkgo.v
+	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -ginkgo.v
 	$(MAKE) cleanup-test-e2e
 
 
 .PHONY: cleanup-test-e2e
 cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
-	@$(KIND) delete cluster --name $(KIND_CLUSTER)
+	@$(KIND) delete cluster --name $(KIND_CLUSTER_E2E)
+
+
+KIND_CLUSTER_DEV ?= arc-dev
+
+.PHONY: setup-dev-cluster
+setup-dev-cluster: ## Set up a Kind cluster for local development if it does not exist
+	@command -v $(KIND) >/dev/null 2>&1 || { \
+		echo "Kind is not installed. Please install Kind manually."; \
+		exit 1; \
+	}
+	@case "$$($(KIND) get clusters)" in \
+		*"$(KIND_CLUSTER_DEV)"*) \
+			echo "Kind cluster '$(KIND_CLUSTER_DEV)' already exists. Skipping creation." ;; \
+		*) \
+			echo "Creating Kind cluster '$(KIND_CLUSTER_DEV)'..."; \
+			$(KIND) create cluster --name $(KIND_CLUSTER_DEV) ;; \
+	esac
+
+.PHONY: dev-cluster
+dev-cluster: setup-dev-cluster
+	@echo -e "\nSETTING UP CERT-MANAGER:\n"
+	kubectl apply --context kind-$(KIND_CLUSTER_DEV) -f \
+		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
+	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
+	kubectl --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
+	kubectl apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
+		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
+	@echo -e "\nDONE"
 
 .PHONY: docker-build
 docker-build: docker-build-apiserver docker-build-manager
