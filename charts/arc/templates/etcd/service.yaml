@@ -1,0 +1,22 @@
+{{- if .Values.etcd.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arc.etcd.serviceName" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.etcd.labels" . | nindent 4 }}
+  {{- with .Values.etcd.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.etcd.service.type }}
+  ports:
+    - port: {{ .Values.etcd.service.port }}
+      targetPort: 2379
+      protocol: TCP
+      name: client
+  selector:
+    {{- include "arc.etcd.selectorLabels" . | nindent 4 }}
+{{- end }}

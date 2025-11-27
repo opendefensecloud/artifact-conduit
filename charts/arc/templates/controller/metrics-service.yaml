@@ -1,0 +1,22 @@
+{{- if and .Values.controller.enabled .Values.controller.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arc.controller.metricsServiceName" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.controller.labels" . | nindent 4 }}
+  {{- with .Values.controller.metrics.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.controller.metrics.service.type }}
+  ports:
+    - name: https
+      port: {{ .Values.controller.metrics.service.port }}
+      protocol: TCP
+      targetPort: {{ .Values.controller.metrics.service.port }}
+  selector:
+    {{- include "arc.controller.selectorLabels" . | nindent 4 }}
+{{- end }}

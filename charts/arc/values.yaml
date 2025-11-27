@@ -1,0 +1,464 @@
+# Default values for arc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# -- Global settings that can be shared with subcharts
+global:
+  # -- Global image pull secrets
+  imagePullSecrets: []
+  # -- Global storage class for persistent volumes
+  storageClass: ""
+
+# -- Override the name of the chart
+nameOverride: ""
+# -- Override the full name of the chart
+fullnameOverride: ""
+
+# -- Override the namespace to install into
+namespaceOverride: ""
+# -- Create namespace if it doesn't exist
+createNamespace: false
+
+# -- Common labels applied to all resources
+commonLabels: {}
+# -- Common annotations applied to all resources
+commonAnnotations: {}
+
+# API Server configuration
+apiserver:
+  # -- Enable API Server deployment
+  enabled: true
+
+  # -- Number of API Server replicas
+  replicaCount: 1
+
+  image:
+    # -- API Server image repository
+    repository: ghcr.io/opendefensecloud/arc-apiserver
+    # -- API Server image tag (defaults to chart appVersion if not set)
+    tag: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Image pull secrets for API Server
+  imagePullSecrets: []
+
+  # -- Override API Server name
+  nameOverride: ""
+  # -- Override API Server full name
+  fullnameOverride: ""
+
+  # -- Command to run in the container
+  command: ["/arc-apiserver"]
+
+  # API Server command-line arguments
+  args:
+    # -- etcd server URLs (auto-configured to internal etcd service if empty)
+    etcdServers: ""
+    # -- Secure port for HTTPS
+    securePort: 8443
+    # -- Audit log path ("-" for stdout)
+    auditLogPath: "-"
+    # -- Enable priority and fairness
+    enablePriorityAndFairness: false
+    # -- Audit log max age
+    auditLogMaxAge: 0
+    # -- Audit log max backup
+    auditLogMaxBackup: 0
+
+  # -- Additional command-line arguments as key-value pairs
+  extraArgs: {}
+  #   some-flag: "value"
+
+  # -- Additional environment variables
+  extraEnv: []
+  #   - name: ENV_VAR
+  #     value: "value"
+
+  service:
+    # -- Service type
+    type: ClusterIP
+    # -- Service port
+    port: 443
+    # -- Service target port
+    targetPort: 8443
+    # -- Service annotations
+    annotations: {}
+
+  # -- Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # -- Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+
+  # -- Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+
+  # -- Liveness probe configuration
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8443
+      scheme: HTTPS
+    initialDelaySeconds: 20
+    periodSeconds: 20
+
+  # -- Readiness probe configuration
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 8443
+      scheme: HTTPS
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  # -- Node selector for pod assignment
+  nodeSelector: {}
+
+  # -- Tolerations for pod assignment
+  tolerations: []
+
+  # -- Affinity for pod assignment
+  affinity: {}
+
+  # -- Pod annotations
+  podAnnotations: {}
+
+  # -- Pod labels
+  podLabels: {}
+
+  serviceAccount:
+    # -- Create service account
+    create: true
+    # -- Service account annotations
+    annotations: {}
+    # -- Service account name (auto-generated if not set)
+    name: ""
+
+  # APIService registration configuration
+  apiservice:
+    # -- Group priority minimum
+    groupPriorityMinimum: 2000
+    # -- Version priority
+    versionPriority: 100
+
+# Controller Manager configuration
+controller:
+  # -- Enable Controller Manager deployment
+  enabled: true
+
+  # -- Number of Controller Manager replicas
+  replicaCount: 1
+
+  image:
+    # -- Controller Manager image repository
+    repository: ghcr.io/opendefensecloud/arc-controller-manager
+    # -- Controller Manager image tag (defaults to chart appVersion if not set)
+    tag: ""
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Image pull secrets for Controller Manager
+  imagePullSecrets: []
+
+  # -- Override Controller Manager name
+  nameOverride: ""
+  # -- Override Controller Manager full name
+  fullnameOverride: ""
+
+  # -- Command to run in the container
+  command: ["/arc-controller-manager"]
+
+  # Controller Manager command-line arguments
+  args:
+    # -- Health probe bind address
+    healthProbeBindAddress: ":8081"
+    # -- Metrics bind address (set to "0" to disable, ":8443" for HTTPS)
+    metricsBindAddress: "0"
+    # -- Serve metrics securely via HTTPS
+    metricsSecure: true
+    # -- Enable HTTP/2 for metrics server
+    enableHTTP2: false
+    # -- Enable leader election (set to true for HA)
+    leaderElect: false
+    # -- Pprof bind address (empty to disable)
+    pprofBindAddress: ""
+
+  # -- Additional command-line arguments as key-value pairs
+  extraArgs: {}
+
+  # -- Additional environment variables
+  extraEnv: []
+
+  # Metrics configuration
+  metrics:
+    # -- Enable metrics service
+    enabled: false
+
+    service:
+      # -- Metrics service type
+      type: ClusterIP
+      # -- Metrics service port
+      port: 8443
+      # -- Metrics service annotations
+      annotations: {}
+
+    # cert-manager integration for secure metrics
+    certManager:
+      # -- Enable cert-manager for metrics certificates
+      enabled: false
+      # -- Path to mount certificates
+      certPath: /tmp/k8s-metrics-server/metrics-certs
+      # -- Certificate file name
+      certName: tls.crt
+      # -- Certificate key file name
+      certKey: tls.key
+
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      # -- Enable ServiceMonitor
+      enabled: false
+      # -- Scrape interval
+      interval: 30s
+      # -- Scrape timeout
+      scrapeTimeout: 10s
+      # -- Additional labels for ServiceMonitor
+      additionalLabels: {}
+
+  # -- Resource limits and requests
+  resources:
+    limits:
+      cpu: 100m
+      memory: 30Mi
+    requests:
+      cpu: 100m
+      memory: 20Mi
+
+  # -- Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+
+  # -- Liveness probe configuration
+  livenessProbe:
+    httpGet:
+      path: /healthz
+      port: 8081
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  # -- Readiness probe configuration
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 8081
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  # -- Node selector for pod assignment
+  nodeSelector: {}
+
+  # -- Tolerations for pod assignment
+  tolerations: []
+
+  # -- Affinity for pod assignment
+  affinity: {}
+
+  # -- Pod annotations
+  podAnnotations: {}
+
+  # -- Pod labels
+  podLabels: {}
+
+  serviceAccount:
+    # -- Create service account
+    create: true
+    # -- Service account annotations
+    annotations: {}
+    # -- Service account name (auto-generated if not set)
+    name: ""
+
+# etcd configuration
+etcd:
+  # -- Enable etcd deployment
+  enabled: true
+
+  # -- Number of etcd replicas (single instance for non-HA)
+  replicaCount: 1
+
+  image:
+    # -- etcd image repository
+    repository: quay.io/coreos/etcd
+    # -- etcd image tag
+    tag: v3.6.6
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Image pull secrets for etcd
+  imagePullSecrets: []
+
+  # etcd command-line arguments
+  args:
+    # -- Listen client URLs
+    listenClientUrls: "http://[::]:2379"
+    # -- Advertise client URLs
+    advertiseClientUrls: "http://localhost:2379"
+    # -- Data directory
+    dataDir: "/etcd-data-dir/default.etcd"
+
+  # -- Additional command-line arguments as key-value pairs
+  extraArgs: {}
+
+  # -- Additional environment variables
+  extraEnv: []
+
+  service:
+    # -- Service type
+    type: ClusterIP
+    # -- Service port
+    port: 2379
+    # -- Service annotations
+    annotations: {}
+
+  # Persistent volume configuration
+  persistence:
+    # -- Enable persistence
+    enabled: true
+    # -- Storage class (uses default if empty)
+    storageClass: ""
+    # -- Access mode
+    accessMode: ReadWriteOnce
+    # -- Storage size
+    size: 1Gi
+    # -- PVC annotations
+    annotations: {}
+
+  # -- Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+  # -- Pod security context
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+
+  # -- Container security context
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+
+  # -- Liveness probe configuration
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 2379
+    initialDelaySeconds: 15
+    periodSeconds: 20
+
+  # -- Readiness probe configuration
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 2379
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+  # -- Node selector for pod assignment
+  nodeSelector: {}
+
+  # -- Tolerations for pod assignment
+  tolerations: []
+
+  # -- Affinity for pod assignment
+  affinity: {}
+
+  # -- Pod annotations
+  podAnnotations: {}
+
+  # -- Pod labels
+  podLabels: {}
+
+# cert-manager configuration
+certManager:
+  # -- Enable cert-manager integration (requires cert-manager to be installed)
+  enabled: true
+
+  # Issuer configuration
+  issuer:
+    # -- Create Issuer resource
+    create: true
+    # -- Issuer kind (Issuer or ClusterIssuer)
+    kind: Issuer
+    # -- Issuer name (auto-generated if empty)
+    name: ""
+
+    # -- Use self-signed issuer
+    selfSigned: true
+
+    # CA issuer configuration
+    ca:
+      # -- Enable CA issuer
+      enabled: false
+      # -- CA secret name
+      secretName: ""
+
+    # ACME/Let's Encrypt configuration
+    acme:
+      # -- Enable ACME issuer
+      enabled: false
+      # -- ACME server URL
+      server: ""
+      # -- Email for ACME registration
+      email: ""
+      # -- Private key secret reference
+      privateKeySecretRef: ""
+
+  # Certificate configuration
+  certificate:
+    # -- Certificate duration
+    duration: 2160h  # 90 days
+    # -- Renew before duration
+    renewBefore: 720h  # 30 days
+
+# RBAC configuration
+rbac:
+  # -- Create RBAC resources
+  create: true
+
+  # -- Additional ClusterRole rules for controller
+  additionalControllerRules: []
+  #   - apiGroups: [""]
+  #     resources: ["configmaps"]
+  #     verbs: ["get", "list", "watch"]
+
+  # -- Additional ClusterRole rules for apiserver
+  additionalAPIServerRules: []
+  #   - apiGroups: [""]
+  #     resources: ["secrets"]
+  #     verbs: ["get", "list"]

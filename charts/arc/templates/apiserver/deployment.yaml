@@ -1,0 +1,107 @@
+{{- if .Values.apiserver.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arc.apiserver.fullname" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.apiserver.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "arc.apiserver.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: apiserver
+        {{- with .Values.apiserver.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "arc.apiserver.selectorLabels" . | nindent 8 }}
+        {{- with .Values.apiserver.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.apiserver.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      {{- if not $.Values.apiserver.imagePullSecrets }}
+      imagePullSecrets:
+      {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "arc.apiserver.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.apiserver.podSecurityContext | nindent 8 }}
+      containers:
+        - name: apiserver
+          image: {{ include "arc.apiserver.image" . }}
+          imagePullPolicy: {{ .Values.apiserver.image.pullPolicy }}
+          {{- with .Values.apiserver.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          args:
+            - --etcd-servers={{ include "arc.etcd.connectionUrl" . }}
+            - --secure-port={{ .Values.apiserver.args.securePort }}
+            {{- if .Values.certManager.enabled }}
+            - --tls-cert-file=/var/run/arc/serving-cert/tls.crt
+            - --tls-private-key-file=/var/run/arc/serving-cert/tls.key
+            {{- end }}
+            - --audit-log-path={{ .Values.apiserver.args.auditLogPath }}
+            - --enable-priority-and-fairness={{ .Values.apiserver.args.enablePriorityAndFairness }}
+            - --audit-log-maxage={{ .Values.apiserver.args.auditLogMaxAge }}
+            - --audit-log-maxbackup={{ .Values.apiserver.args.auditLogMaxBackup }}
+            {{- range $key, $value := .Values.apiserver.extraArgs }}
+            - --{{ $key }}={{ $value }}
+            {{- end }}
+          {{- with .Values.apiserver.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.apiserver.args.securePort }}
+              name: apiserver
+              protocol: TCP
+          securityContext:
+            {{- toYaml .Values.apiserver.securityContext | nindent 12 }}
+          {{- if .Values.certManager.enabled }}
+          volumeMounts:
+            - name: serving-cert
+              mountPath: /var/run/arc/serving-cert
+              readOnly: true
+          {{- end }}
+          livenessProbe:
+            {{- toYaml .Values.apiserver.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.apiserver.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.apiserver.resources | nindent 12 }}
+      {{- if .Values.certManager.enabled }}
+      volumes:
+        - name: serving-cert
+          secret:
+            secretName: {{ include "arc.apiserver.fullname" . }}-cert
+      {{- end }}
+      {{- with .Values.apiserver.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiserver.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.apiserver.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 10
+{{- end }}

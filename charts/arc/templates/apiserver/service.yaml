@@ -1,0 +1,22 @@
+{{- if .Values.apiserver.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arc.apiserver.serviceName" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+  {{- with .Values.apiserver.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.apiserver.service.type }}
+  ports:
+    - port: {{ .Values.apiserver.service.port }}
+      targetPort: {{ .Values.apiserver.service.targetPort }}
+      protocol: TCP
+      name: https
+  selector:
+    {{- include "arc.apiserver.selectorLabels" . | nindent 4 }}
+{{- end }}

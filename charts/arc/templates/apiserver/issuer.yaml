@@ -1,0 +1,26 @@
+{{- if and .Values.apiserver.enabled .Values.certManager.enabled .Values.certManager.issuer.create }}
+apiVersion: cert-manager.io/v1
+kind: {{ .Values.certManager.issuer.kind }}
+metadata:
+  name: {{ include "arc.certManager.issuerName" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.certManager.issuer.selfSigned }}
+  selfSigned: {}
+  {{- else if .Values.certManager.issuer.ca.enabled }}
+  ca:
+    secretName: {{ .Values.certManager.issuer.ca.secretName }}
+  {{- else if .Values.certManager.issuer.acme.enabled }}
+  acme:
+    server: {{ .Values.certManager.issuer.acme.server }}
+    email: {{ .Values.certManager.issuer.acme.email }}
+    privateKeySecretRef:
+      name: {{ .Values.certManager.issuer.acme.privateKeySecretRef }}
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+  {{- end }}
+{{- end }}
