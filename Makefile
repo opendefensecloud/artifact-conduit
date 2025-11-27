@@ -164,6 +164,11 @@ dev-cluster-rebuild:
 		--set controller.image.repository=local/arc-controller-manager \
 		--set controller.image.tag=dev.$(TIMESTAMP)
 
+.PHONY: cleanup-dev-cluster
+cleanup-dev-cluster: ## Tear down the Kind cluster used for e2e tests
+	@$(KIND) delete cluster --name $(KIND_CLUSTER_DEV)
+
+
 .PHONY: docker-build
 docker-build: docker-build-apiserver docker-build-manager
 
