@@ -446,13 +446,6 @@ certManager:
     # -- Renew before duration
     renewBefore: 720h  # 30 days
 
-# Argo Workflows CRD management
-argoWorkflows:
-  # -- Install Argo Workflows CRD from external source
-  installCRD: false
-  # -- URL to Argo Workflows CRD manifest
-  crdUrl: "https://raw.githubusercontent.com/argoproj/argo-workflows/stable/manifests/base/crds/full/argoproj.io_workflows.yaml"
-
 # RBAC configuration
 rbac:
   # -- Create RBAC resources
