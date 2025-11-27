@@ -1,3 +1,0 @@
-# Definition of Done
-
-TODO
