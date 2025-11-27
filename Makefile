@@ -138,35 +138,53 @@ setup-dev-cluster: ## Set up a Kind cluster for local development if it does not
 .PHONY: dev-cluster
 dev-cluster: setup-dev-cluster
 	@echo -e "\nSETTING UP CERT-MANAGER:\n"
-	kubectl apply --context kind-$(KIND_CLUSTER_DEV) -f \
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
 		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
-	kubectl --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
-	kubectl apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
+	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
 		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
+	$(HELM) upgrade --install --create-namespace \
+		--namespace arc-system arc charts/arc \
+		--set fullnameOverride=arc
 	@echo -e "\nDONE"
+
+TIMESTAMP ?= $(shell date '+%Y%m%d%H%M%S')
+
+.PHONY: dev-cluster-rebuild
+dev-cluster-rebuild:
+	$(MAKE) APISERVER_IMG=local/arc-apiserver:dev.$(TIMESTAMP) docker-build-apiserver
+	$(MAKE) MANAGER_IMG=local/arc-controller-manager:dev.$(TIMESTAMP) docker-build-manager
+	$(KIND) load docker-image local/arc-apiserver:dev.$(TIMESTAMP) --name $(KIND_CLUSTER_DEV)
+	$(KIND) load docker-image local/arc-controller-manager:dev.$(TIMESTAMP) --name $(KIND_CLUSTER_DEV)
+	$(HELM) upgrade --namespace arc-system arc charts/arc \
+		--set fullnameOverride=arc \
+		--set apiserver.image.repository=local/arc-apiserver \
+		--set apiserver.image.tag=dev.$(TIMESTAMP) \
+		--set controller.image.repository=local/arc-controller-manager \
+		--set controller.image.tag=dev.$(TIMESTAMP)
 
 .PHONY: docker-build
 docker-build: docker-build-apiserver docker-build-manager
 
 .PHONY: docker-build-apiserver
 docker-build-apiserver:
-	docker build --target apiserver -t ${APISERVER_IMG} .
+	$(DOCKER) build --target apiserver -t ${APISERVER_IMG} .
 
 .PHONY: docker-build-manager
 docker-build-manager:
-	docker build --target manager -t ${MANAGER_IMG} .
+	$(DOCKER) build --target manager -t ${MANAGER_IMG} .
 
 .PHONY: docs-docker-build
 docs-docker-build:
-	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
+	@$(DOCKER) build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
 docs: ## Serve the documentation using Docker.
-	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
+	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
