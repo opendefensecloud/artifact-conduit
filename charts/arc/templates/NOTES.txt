@@ -82,18 +82,21 @@ Check pods:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 {{- if .Values.certManager.enabled }}
-✓ cert-manager integration is enabled
-  Verify cert-manager is installed:
-    kubectl get pods -n cert-manager
+{{ if .Capabilities.APIVersions.Has "cert-manager.io/v1" -}}
+✓ cert-manager integration is enabled and cert-manager was detected
+{{- else }}
+⚠ cert-manager integration is enabled and cert-manager was **not** detected
+{{- end }}
 {{- else }}
 ⚠ cert-manager integration is disabled
   The API Server requires TLS certificates. Make sure to provide them manually.
 {{- end }}
 
-{{- if not .Values.argoWorkflows.installCRD }}
-⚠ Argo Workflows CRD installation is disabled
-  Make sure Argo Workflows is installed separately:
-    kubectl get crd workflows.argoproj.io
+{{ if .Capabilities.APIVersions.Has "argoproj.io/v1alpha1/Workflow" -}}
+✓ Argo Workflows is available
+{{- else }}
+⚠ Argo Workflows is **not** available
+  ARC requires Argo Workflows to schedule orders.
 {{- end }}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
