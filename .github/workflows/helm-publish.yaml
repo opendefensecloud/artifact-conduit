@@ -56,8 +56,9 @@ jobs:
               echo "Updating ${CHART_NAME} to version ${VERSION}"
 
               # Update version and appVersion in Chart.yaml
-              sed -i "s/^version:.*/version: ${VERSION}/" "${chart}Chart.yaml"
-              sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" "${chart}Chart.yaml"
+              # Use | as delimiter to avoid issues with / in version strings
+              sed -i "s|^version:.*|version: ${VERSION}|" "${chart}Chart.yaml"
+              sed -i "s|^appVersion:.*|appVersion: \"${VERSION}\"|" "${chart}Chart.yaml"
 
               echo "Updated Chart.yaml:"
               grep -E '^(version|appVersion):' "${chart}Chart.yaml"
