@@ -170,6 +170,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 		desiredAWs[daw.sha] = *daw
 	}
+	order.Status.Message = "" // Clear any previous error message
 
 	// List missing artifact workflows
 	createAWs := []string{}
