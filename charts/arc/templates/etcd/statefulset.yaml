@@ -1,0 +1,117 @@
+{{- if .Values.etcd.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "arc.etcd.fullname" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.etcd.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  serviceName: {{ include "arc.etcd.serviceName" . }}
+  replicas: {{ .Values.etcd.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "arc.etcd.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: etcd
+        {{- with .Values.etcd.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "arc.etcd.selectorLabels" . | nindent 8 }}
+        {{- with .Values.etcd.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.etcd.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      {{- if not $.Values.etcd.imagePullSecrets }}
+      imagePullSecrets:
+      {{- end }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.etcd.podSecurityContext | nindent 8 }}
+      containers:
+        - name: etcd
+          image: {{ include "arc.etcd.image" . }}
+          imagePullPolicy: {{ .Values.etcd.image.pullPolicy }}
+          command:
+            - etcd
+          args:
+            - -listen-client-urls={{ .Values.etcd.args.listenClientUrls }}
+            - -advertise-client-urls={{ .Values.etcd.args.advertiseClientUrls }}
+            - -data-dir={{ .Values.etcd.args.dataDir }}
+            {{- range $key, $value := .Values.etcd.extraArgs }}
+            - --{{ $key }}={{ $value }}
+            {{- end }}
+          {{- with .Values.etcd.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 2379
+              name: client
+              protocol: TCP
+          securityContext:
+            {{- toYaml .Values.etcd.securityContext | nindent 12 }}
+          livenessProbe:
+            {{- toYaml .Values.etcd.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.etcd.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.etcd.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /etcd-data-dir
+      {{- with .Values.etcd.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.etcd.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.etcd.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: 10
+  {{- if .Values.etcd.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        {{- with .Values.etcd.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          - {{ .Values.etcd.persistence.accessMode }}
+        {{- if .Values.etcd.persistence.storageClass }}
+        {{- if (eq "-" .Values.etcd.persistence.storageClass) }}
+        storageClassName: ""
+        {{- else }}
+        storageClassName: {{ .Values.etcd.persistence.storageClass }}
+        {{- end }}
+        {{- else if .Values.global.storageClass }}
+        storageClassName: {{ .Values.global.storageClass }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.etcd.persistence.size }}
+  {{- else }}
+  volumes:
+    - name: data
+      emptyDir: {}
+  {{- end }}
+{{- end }}

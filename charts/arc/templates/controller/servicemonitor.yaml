@@ -1,0 +1,23 @@
+{{- if and .Values.controller.enabled .Values.controller.metrics.enabled .Values.controller.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "arc.controller.fullname" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.controller.labels" . | nindent 4 }}
+    {{- with .Values.controller.metrics.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "arc.controller.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: https
+      scheme: https
+      interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.controller.metrics.serviceMonitor.scrapeTimeout }}
+      tlsConfig:
+        insecureSkipVerify: true
+{{- end }}

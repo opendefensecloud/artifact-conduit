@@ -1,0 +1,43 @@
+apiVersion: v2
+name: arc
+description: Helm chart for Artifact Conduit (ARC) - A Kubernetes-native system for artifact procurement and transfer across security zones
+type: application
+version: 0.1.0
+appVersion: "latest"
+home: https://arc.opendefense.cloud
+icon: https://raw.githubusercontent.com/opendefensecloud/artifact-conduit/main/docs/arc_logo.svg
+sources:
+  - https://github.com/opendefensecloud/artifact-conduit
+maintainers:
+  - name: ARC Team
+    email: arc@opendefense.cloud
+keywords:
+  - artifact
+  - conduit
+  - oci
+  - helm
+  - security
+  - registry
+  - kubernetes
+annotations:
+  # Artifact Hub annotations
+  artifacthub.io/category: integration-delivery
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/operator: "true"
+  artifacthub.io/operatorCapabilities: Full Lifecycle
+  artifacthub.io/prerelease: "true"
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial Helm chart release for ARC
+    - kind: added
+      description: Support for API Server, Controller Manager, and etcd deployment
+    - kind: added
+      description: cert-manager integration for TLS certificates
+    - kind: added
+      description: Full RBAC configuration for all components
+    - kind: added
+      description: Optional Prometheus ServiceMonitor support
+  artifacthub.io/recommendations: |
+    - url: https://cert-manager.io/
+    - url: https://argoproj.github.io/workflows/

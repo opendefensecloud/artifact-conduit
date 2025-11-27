@@ -1,0 +1,20 @@
+{{- if .Values.apiserver.enabled }}
+apiVersion: apiregistration.k8s.io/v1
+kind: APIService
+metadata:
+  name: v1alpha1.arc.bwi.de
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+  {{- if .Values.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ include "arc.namespace" . }}/{{ include "arc.certManager.certificateName" . }}
+  {{- end }}
+spec:
+  group: arc.bwi.de
+  version: v1alpha1
+  service:
+    namespace: {{ include "arc.namespace" . }}
+    name: {{ include "arc.apiserver.serviceName" . }}
+  groupPriorityMinimum: {{ .Values.apiserver.apiservice.groupPriorityMinimum }}
+  versionPriority: {{ .Values.apiserver.apiservice.versionPriority }}
+{{- end }}

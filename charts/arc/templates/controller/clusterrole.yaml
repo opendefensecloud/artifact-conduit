@@ -1,0 +1,82 @@
+{{- if and .Values.controller.enabled .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "arc.controller.fullname" . }}
+  labels:
+    {{- include "arc.controller.labels" . | nindent 4 }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - arc.bwi.de
+    resources:
+      - artifacttypes
+      - clusterartifacttypes
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - arc.bwi.de
+    resources:
+      - artifactworkflows
+      - orders
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - arc.bwi.de
+    resources:
+      - artifactworkflows/finalizers
+      - orders/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - arc.bwi.de
+    resources:
+      - artifactworkflows/status
+      - orders/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflows
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  {{- with .Values.rbac.additionalControllerRules }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+{{- end }}

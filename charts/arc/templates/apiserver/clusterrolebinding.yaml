@@ -1,0 +1,16 @@
+{{- if and .Values.apiserver.enabled .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "arc.apiserver.fullname" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "arc.apiserver.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "arc.apiserver.serviceAccountName" . }}
+    namespace: {{ include "arc.namespace" . }}
+{{- end }}

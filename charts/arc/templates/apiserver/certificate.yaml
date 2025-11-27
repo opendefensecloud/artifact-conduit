@@ -1,0 +1,19 @@
+{{- if and .Values.apiserver.enabled .Values.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "arc.certManager.certificateName" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+    - {{ include "arc.apiserver.serviceName" . }}.{{ include "arc.namespace" . }}.svc
+    - {{ include "arc.apiserver.serviceName" . }}.{{ include "arc.namespace" . }}.svc.cluster.local
+  issuerRef:
+    kind: {{ .Values.certManager.issuer.kind }}
+    name: {{ include "arc.certManager.issuerName" . }}
+  secretName: {{ include "arc.certManager.certificateSecretName" . }}
+  duration: {{ .Values.certManager.certificate.duration }}
+  renewBefore: {{ .Values.certManager.certificate.renewBefore }}
+{{- end }}
