@@ -737,6 +737,62 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Production installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kustomize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kustomize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helm-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helm Chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1330,6 +1386,62 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Production installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#installation-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Methods
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation Methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kustomize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kustomize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helm-chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helm Chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1369,7 +1481,27 @@
 <h2 id="non-production-installation">Non-production installation¶<a class="headerlink" href="#non-production-installation" title="Permanent link">¶</a></h2>
 <p>If you just want to try out ARC in a non-production environment (including on desktop via minikube/kind/k3d etc) follow the <a href="../../getting-started/">quick-start guide</a>.</p>
 <h2 id="production-installation">Production installation<a class="headerlink" href="#production-installation" title="Permanent link">¶</a></h2>
-<p>//TODO</p>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¶</a></h3>
+<p>ARC has the following CNCF projects as dependencies:</p>
+<ul>
+<li><a href="https://argo-workflows.readthedocs.io/en/stable/installation/">Argo Workflows</a></li>
+<li><a href="https://cert-manager.io/docs/installation/">cert-manager</a></li>
+</ul>
+<p>Please make sure you have these dependencies installed before you proceed.</p>
+<h3 id="installation-methods">Installation Methods<a class="headerlink" href="#installation-methods" title="Permanent link">¶</a></h3>
+<p>To install ARC, navigate to the <a href="https://github.com/opendefensecloud/artifact-conduit/releases">releases page</a> and find the release you wish to use (the latest full release is preferred).</p>
+<h4 id="kustomize">Kustomize<a class="headerlink" href="#kustomize" title="Permanent link">¶</a></h4>
+<p>You can use Kustomize to patch your preferred configurations on top of the base manifests.</p>
+<p>First, specify the version you want to install in an environment variable. Modify the command below:</p>
+<div class="codehilite"><pre><span></span><code>ARC_VERSION="main"
+</code></pre></div>
+
+<p>Then, copy the commands below to apply the kustomization:</p>
+<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>"https://github.com/opendefensecloud/artifact-conduit/examples/deployment?ref=<span class="cp">${</span><span class="n">ARC_VERSION</span><span class="cp">}</span>"
+</code></pre></div>
+
+<h4 id="helm-chart">Helm Chart<a class="headerlink" href="#helm-chart" title="Permanent link">¶</a></h4>
+<p>// TODO</p>
 
 
 
