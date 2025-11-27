@@ -216,10 +216,7 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 	}
 
 	wf := &wfv1alpha1.Workflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      aw.Name,
-			Namespace: aw.Namespace,
-		},
+		ObjectMeta: workflowObjectMeta(aw),
 		Spec: wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
 				Name:         aw.Spec.WorkflowTemplateRef.Name,

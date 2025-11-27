@@ -32,11 +32,21 @@ func awName(order *arcv1alpha1.Order, sha string) string {
 	return fmt.Sprintf("%s-%s", order.Name, sha)
 }
 
-func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
+func cloneObjectMeta(meta metav1.ObjectMeta, name string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
-		Namespace: order.Namespace,
-		Name:      awName(order, sha),
+		Namespace:   meta.Namespace,
+		Name:        name,
+		Labels:      meta.Labels,
+		Annotations: meta.Annotations,
 	}
+}
+
+func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
+	return cloneObjectMeta(order.ObjectMeta, awName(order, sha))
+}
+
+func workflowObjectMeta(aw *arcv1alpha1.ArtifactWorkflow) metav1.ObjectMeta {
+	return cloneObjectMeta(aw.ObjectMeta, aw.Name)
 }
 
 // TODO: add unit tests
