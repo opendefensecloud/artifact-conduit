@@ -13,6 +13,13 @@ spec:
           requests:
             storage: 10Gi
 
+  # --- Required Volumes ---
+  volumes:
+    # Volume for Cosign signing key
+    - name: signing-secret-vol
+      secret:
+        secretName: cosign-key # Assumes a secret named 'cosign-key' exists with the key/password
+
   # --- Input Parameters ---
   arguments:
     parameters:
@@ -41,6 +48,10 @@ spec:
         - - name: scan-image
             when: "{{workflow.parameters.srcType}} == oci"
             template: scan-image
+
+        - - name: attest-scan
+            when: "{{workflow.parameters.srcType}} == oci"
+            template: attest-scan-results
 
         - - name: push-image
             when: "{{workflow.parameters.srcType}} == oci"
@@ -74,7 +85,7 @@ spec:
           SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
 
           # Skopeo copy command
-          skopeo copy --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
+          skopeo copy --preserve-digests --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
 
     # --- 2. Scan Image (Trivy) ---
     - name: scan-image
@@ -105,6 +116,46 @@ spec:
         env:
           - name: PATH
             value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+
+    # --- 2.5. Attest Scan Results (Cosign) ---
+    # This step uses the Cosign CLI to sign the scan results file and upload the attestation.
+    - name: attest-scan-results
+      script:
+        image: gcr.io/projectsigstore/cosign/cli:latest
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+          # Mount the secret containing the private key for Cosign
+          - name: signing-secret-vol
+            readOnly: true
+            mountPath: /secrets/cosign
+        env:
+          # Set the password for the Cosign private key
+          - name: COSIGN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: cosign-key
+                key: password
+        source: |
+          set -euo pipefail
+
+          # The target image path is the destination URL + override spec
+          DEST_IMAGE="{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+          ATTEST_FILE="/data/scan-results.json"
+          PRIVATE_KEY="/secrets/cosign/cosign.key"
+
+          echo "Generating and uploading scan attestation for $DEST_IMAGE"
+
+          # Use Cosign to attach an attestation (predicate) to the image
+          cosign attest \
+            --key $PRIVATE_KEY \
+            --predicate $ATTEST_FILE \
+            --type vuln \
+            $DEST_IMAGE
+
+          echo "✅ Attestation complete."
+
     # --- 3. Push Image (Skopeo) ---
     - name: push-image
 
@@ -119,6 +170,9 @@ spec:
             mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
+          - name: signing-secret-vol
+            readOnly: true
+            mountPath: /secrets/cosign
 
         source: |
           set -euo pipefail
@@ -133,5 +187,9 @@ spec:
           # Construct the full destination image path
           DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
 
+          # Sign the image
+          echo "Signing image with key in /secrets/cosign/cosign.key"
+          SIGNING_ARGS=" --sign-key /secrets/cosign/cosign.key"
+
           # Skopeo copy command
-          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
+          skopeo copy ${SIGNING_ARGS} --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
