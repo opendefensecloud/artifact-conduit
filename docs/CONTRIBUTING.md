@@ -2,7 +2,64 @@
 
 This guide provides technical information for developers contributing to the Artifact Conduit (ARC) project. It covers the development workflow, build system, code organization, and common development tasks. For detailed information about specific topics, see the referenced sections.
 
-***
+## Development Environment Architecture
+
+The ARC project uses a declarative, reproducible development environment based on Nix. This approach ensures that all developers work with identical tool versions and configurations, eliminating "works on my machine" issues.
+
+```mermaid
+graph TB
+    subgraph "Developer Machine"
+        Shell["Developer Shell"]
+        Direnv["direnv<br/>Automatic Environment Loader"]
+        Devenv["devenv<br/>Nix-based Dev Environment"]
+        
+        subgraph "Nix Environment"
+            NixStore["Nix Store<br/>/nix/store/*"]
+            Go["Go 1.25.2"]
+            Make["GNU Make"]
+            Lint["golangci-lint"]
+            Vulncheck["govulncheck"]
+            Oras["oras CLI"]
+            CobraCLI["cobra-cli"]
+            GitHooks["Git Hooks<br/>pre-commit"]
+        end
+    end
+    
+    subgraph "Configuration Files"
+        EnvRC[".envrc<br/>direnv config"]
+        DevenvNix["devenv.nix<br/>Environment definition"]
+        DevenvYAML["devenv.yaml<br/>Input sources"]
+        DevenvLock["devenv.lock<br/>Dependency locks"]
+    end
+    
+    Shell -->|cd into repo| Direnv
+    Direnv -->|reads| EnvRC
+    Direnv -->|activates| Devenv
+    Devenv -->|reads| DevenvNix
+    Devenv -->|reads| DevenvYAML
+    Devenv -->|locked by| DevenvLock
+    Devenv -->|provisions| NixStore
+    
+    NixStore -->|provides| Go
+    NixStore -->|provides| Make
+    NixStore -->|provides| Lint
+    NixStore -->|provides| Vulncheck
+    NixStore -->|provides| Oras
+    NixStore -->|provides| CobraCLI
+    NixStore -->|installs| GitHooks
+```
+
+**Environment Loading Flow**: When a developer navigates into the repository directory, `direnv` automatically detects the `.envrc` file and activates the `devenv` environment, which provisions all required tools from the Nix store.
+
+## Prerequisites
+
+Before setting up the ARC development environment, ensure the following software is installed on your system:
+
+| Requirement             | Purpose                                                 | Minimum Version |
+| ----------------------- | ------------------------------------------------------- | --------------- |
+| **Nix Package Manager** | Provides reproducible package management                | 2.3+            |
+| **direnv**              | Automatically loads environment when entering directory | 2.20+           |
+| **Git**                 | Version control (provided by Nix if needed)             | 2.0+            |
 
 ## Development Workflow Overview
 

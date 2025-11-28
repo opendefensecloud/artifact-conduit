@@ -110,7 +110,9 @@ nav:
   - Developer Guide:
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
+      - developer-guide/architecture.md
       - developer-guide/working-with-docs.md
+      - developer-guide/workflow-execution.md
       - ADRs:
           - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md
           - developer-guide/adrs/001-ARC-Architecture.md

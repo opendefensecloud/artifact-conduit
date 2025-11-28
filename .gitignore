@@ -43,6 +43,6 @@ devenv.local.yaml
 .pre-commit-config.yaml
 
 tmp/
-doctest/
+deep-docs/
 
 *.coverprofile
