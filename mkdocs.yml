@@ -110,6 +110,7 @@ nav:
       - operator-manual/extending-artifact-types.md
       - operator-manual/force-reconciliation.md
       - operator-manual/debugging.md
+      - operator-manual/ttl-based-cleanup.md
   - Developer Guide:
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
