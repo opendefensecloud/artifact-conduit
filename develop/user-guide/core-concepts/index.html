@@ -715,6 +715,62 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The Endpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pullonly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PullOnly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pushonly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PushOnly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -736,6 +792,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="The ArtifactWorkflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-argo-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Argo Workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1549,6 +1622,62 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="The Endpoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage Modes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Modes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pullonly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PullOnly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pushonly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PushOnly
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#all" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        All
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1570,6 +1699,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="The ArtifactWorkflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integration-with-argo-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration with Argo Workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1609,26 +1755,47 @@
 <h1 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">¶</a></h1>
 <p>This page serves as an introduction to the core concepts of Artficat Conduit (ARC).</p>
 <h2 id="the-order">The <code>Order</code><a class="headerlink" href="#the-order" title="Permanent link">¶</a></h2>
-<p>The <code>Order</code> is the primary user-facing Kubernetes resource for requesting artifact operations.
-It declares intent to procure one or more artifacts with shared configuration defaults.</p>
+<p>The <code>Order</code> resource is the primary Custom Resource Definition (CRD) in the ARC (Artifact Conduit) system for declaring high-level artifact transfer operations. An <code>Order</code> specifies one or more artifacts to be processed, along with default source and destination endpoints. The <code>OrderReconciler</code> decomposes each Order into individual <code>ArtifactWorkflow</code> resources, which represent atomic artifact operations that can be executed independently.</p>
+<p>The status map is populated by the <code>OrderReconciler</code> as <code>ArtifactWorkflows</code> are created. Each key is a truncated SHA-256 hash computed from the artifact's type, source endpoint (including generation), destination endpoint (including generation), source secret (including generation), destination secret (including generation), and spec fields, ensuring idempotent workflow generation and change detection.</p>
 <p>See the <a href="../api-reference/#orderspec">spec documentation</a> for details on how to define an <code>Order</code>.</p>
 <h2 id="the-endpoint">The <code>Endpoint</code><a class="headerlink" href="#the-endpoint" title="Permanent link">¶</a></h2>
-<p>The <code>Endpoint</code> is a Kubernetes resource that defines the location and configuration for accessing an external service or system.
-It can be used for both input and output artifacts, depending on the context in which it's referenced.</p>
+<p>An <code>Endpoint</code> defines the configuration for artifact sources and destinations, including authentication credentials and usage constraints.
+The <code>Endpoint</code> resource is a namespace-scoped configuration object that represents a location where artifacts can be pulled from or pushed to.</p>
 <p>See the <a href="../api-reference/#endpointspec">spec documentation</a> for details on how to define an <code>Endpoint</code>.</p>
+<h3 id="usage-modes">Usage Modes<a class="headerlink" href="#usage-modes" title="Permanent link">¶</a></h3>
+<p>The <code>usage</code> field controls how an Endpoint can be used in artifact workflows:</p>
+<h4 id="pullonly">PullOnly<a class="headerlink" href="#pullonly" title="Permanent link">¶</a></h4>
+<p>The Endpoint can only be used as a source (<code>srcRef</code>) in ArtifactWorkflows. Attempts to use it as a destination will be rejected during validation.</p>
+<p><strong>Use Case</strong>: Public or third-party registries where ARC has read-only access.</p>
+<h4 id="pushonly">PushOnly<a class="headerlink" href="#pushonly" title="Permanent link">¶</a></h4>
+<p>The Endpoint can only be used as a destination (<code>dstRef</code>) in ArtifactWorkflows. Attempts to use it as a source will be rejected during validation.</p>
+<p><strong>Use Case</strong>: Internal registries in air-gapped environments where artifacts are pushed but never pulled.</p>
+<h4 id="all">All<a class="headerlink" href="#all" title="Permanent link">¶</a></h4>
+<p>The Endpoint can be used as both a source and a destination. This is the most flexible mode and is the default if <code>usage</code> is not specified.</p>
+<p><strong>Use Case</strong>: Internal registries that serve as intermediate storage or cache layers.</p>
 <h2 id="the-clusterartifacttype-and-artifacttype">The <code>ClusterArtifactType</code> and <code>ArtifactType</code><a class="headerlink" href="#the-clusterartifacttype-and-artifacttype" title="Permanent link">¶</a></h2>
-<p><code>ClusterArtifactType</code> resources are cluster-wide, while <code>ArtifactType</code> resources are namespaced.
-They specify processing rules and references an Argo <code>WorkflowTemplate</code> resource for processing artifacts of this type, e.g <code>oci</code> or <code>helm</code>.
-Furthermore they allow specifying additional parameters passed to workflows.</p>
+<p>The <code>[Cluster]ArtifactType</code> resource defines artifact processing capabilities within ARC by:</p>
+<ol>
+<li>Specifying validation rules for source and destination endpoint types</li>
+<li>Declaring parameters required by the underlying WorkflowTemplate</li>
+<li>Referencing an Argo WorkflowTemplate that implements the artifact processing logic</li>
+</ol>
+<p><code>ClusterArtifactType</code> resources are cluster-scoped configuration objects. <code>ArtifactType</code> resources are namespaced. Both establish the contract between ARC's orchestration layer and Argo Workflows' execution layer. When an ArtifactWorkflow is created with a specific type (e.g., <code>oci</code>), ARC queries the corresponding <code>ArtifactType</code> to validate endpoints and construct workflow parameters.</p>
 <p>See the <a href="../api-reference/#artifacttypespec">spec documentation</a> for details on how to define an <code>ArtifactType</code>.</p>
 <h2 id="the-artifactworkflow">The <code>ArtifactWorkflow</code><a class="headerlink" href="#the-artifactworkflow" title="Permanent link">¶</a></h2>
-<p><code>ArtifactWorkflow</code> resources are hydrated by the ARC Controller Manager from <code>Order</code> resources. They reference an Argo <a href="https://argo-workflows.readthedocs.io/en/stable/workflow-templates/">Workflow Template</a> along with parameters that are passed to it.
-These workflow templates are meant to be defined by operators of ARC along with <code>ClusterArtifactType</code> or <code>ArtifactType</code> resources, e.g. <code>oci</code> or <code>helm</code>.
-They are then used as a template for creating workflows that process artifacts of a certain type.</p>
+<p>The ArtifactWorkflow resource represents a single, executable artifact operation within the ARC system. ArtifactWorkflows are the execution layer counterpart to the declarative Order resource - while an Order may specify multiple artifacts to process, each artifact is decomposed into an individual ArtifactWorkflow that can be independently executed by Argo Workflows.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This resource type is created by the ARC Controller Manager and not to be used directly.</p>
 </div>
+<h3 id="integration-with-argo-workflows">Integration with Argo Workflows<a class="headerlink" href="#integration-with-argo-workflows" title="Permanent link">¶</a></h3>
+<p>The ArtifactType acts as a bridge between ARC's declarative resource model and Argo Workflows' imperative execution model. When the ArtifactWorkflow reconciler processes a resource, it:</p>
+<ol>
+<li>Queries the ArtifactType by name (matching <code>ArtifactWorkflow.spec.type</code>)</li>
+<li>Validates source and destination endpoints against <code>rules.srcTypes</code> and <code>rules.dstTypes</code></li>
+<li>Constructs workflow parameters by merging ArtifactType defaults with flattened artifact specifications</li>
+<li>Creates an Argo Workflow referencing the specified WorkflowTemplate</li>
+</ol>
 <p>See the <a href="../api-reference/#artifactworkflowspec">spec documentation</a> for details on their specification.</p>
 
 
