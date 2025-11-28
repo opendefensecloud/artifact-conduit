@@ -43,6 +43,13 @@ var _ = Describe("ARC", Ordered, func() {
 		dir, err := getProjectDir()
 		Expect(err).NotTo(HaveOccurred())
 		cmd = exec.Command("kubectl", "apply", "-n", namespace, "-k", filepath.Join(dir, "test", "fixtures"))
+		cmd = exec.Command(helmBinary, "upgrade", "--install",
+			"--namespace", namespace, "arc", filepath.Join(dir, "charts", "arc"),
+			"--set", "fullnameOverride=arc",
+			"--set", "apiserver.image.repository=apiserver",
+			"--set", "apiserver.image.tag=e2e",
+			"--set", "controller.image.repository=manager",
+			"--set", "controller.image.tag=e2e")
 		_, err = run(cmd)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -51,9 +58,7 @@ var _ = Describe("ARC", Ordered, func() {
 	// and deleting the namespace.
 	AfterAll(func() {
 		By("undeploying the apiserver and controller-manager")
-		dir, err := getProjectDir()
-		Expect(err).NotTo(HaveOccurred())
-		cmd := exec.Command("kubectl", "delete", "-n", namespace, "-k", filepath.Join(dir, "test", "fixtures"))
+		cmd := exec.Command(helmBinary, "uninstall", "-n", namespace, "arc")
 		_, _ = run(cmd)
 
 		By("removing manager namespace")
@@ -104,7 +109,7 @@ var _ = Describe("ARC", Ordered, func() {
 			verifyControllerUp := func(g Gomega) {
 				// Get the name of the controller-manager pod
 				cmd := exec.Command("kubectl", "get",
-					"pods", "-l", "control-plane=controller-manager",
+					"pods", "-l", "app.kubernetes.io/component=controller-manager",
 					"-o", "go-template={{ range .items }}"+
 						"{{ if not .metadata.deletionTimestamp }}"+
 						"{{ .metadata.name }}"+

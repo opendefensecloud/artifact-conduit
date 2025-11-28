@@ -91,7 +91,8 @@ test: setup-envtest ginkgo ## Run all tests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
 
-KIND_CLUSTER ?= arc-test-e2e
+
+KIND_CLUSTER_E2E ?= arc-test-e2e
 
 .PHONY: setup-test-e2e
 setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
@@ -100,44 +101,95 @@ setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
 		exit 1; \
 	}
 	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER)' already exists. Skipping creation." ;; \
+		*"$(KIND_CLUSTER_E2E)"*) \
+			echo "Kind cluster '$(KIND_CLUSTER_E2E)' already exists. Skipping creation." ;; \
 		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER)'..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER) ;; \
+			echo "Creating Kind cluster '$(KIND_CLUSTER_E2E)'..."; \
+			$(KIND) create cluster --name $(KIND_CLUSTER_E2E) ;; \
 	esac
 
 .PHONY: test-e2e
 test-e2e: setup-test-e2e manifests ## Run the e2e tests. Expected an isolated environment using Kind.
-	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -ginkgo.v
+	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -ginkgo.v
 	$(MAKE) cleanup-test-e2e
 
 
 .PHONY: cleanup-test-e2e
 cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
-	@$(KIND) delete cluster --name $(KIND_CLUSTER)
+	@$(KIND) delete cluster --name $(KIND_CLUSTER_E2E)
+
+
+KIND_CLUSTER_DEV ?= arc-dev
+
+.PHONY: setup-dev-cluster
+setup-dev-cluster: ## Set up a Kind cluster for local development if it does not exist
+	@command -v $(KIND) >/dev/null 2>&1 || { \
+		echo "Kind is not installed. Please install Kind manually."; \
+		exit 1; \
+	}
+	@case "$$($(KIND) get clusters)" in \
+		*"$(KIND_CLUSTER_DEV)"*) \
+			echo "Kind cluster '$(KIND_CLUSTER_DEV)' already exists. Skipping creation." ;; \
+		*) \
+			echo "Creating Kind cluster '$(KIND_CLUSTER_DEV)'..."; \
+			$(KIND) create cluster --name $(KIND_CLUSTER_DEV) ;; \
+	esac
+
+.PHONY: dev-cluster
+dev-cluster: setup-dev-cluster
+	@echo -e "\nSETTING UP CERT-MANAGER:\n"
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
+		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
+	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
+	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
+		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
+	$(HELM) upgrade --install --create-namespace \
+		--namespace arc-system arc charts/arc \
+		--set fullnameOverride=arc
+	@echo -e "\nDONE"
+
+TIMESTAMP ?= $(shell date '+%Y%m%d%H%M%S')
+
+.PHONY: dev-cluster-rebuild
+dev-cluster-rebuild:
+	$(MAKE) APISERVER_IMG=local/arc-apiserver:dev.$(TIMESTAMP) docker-build-apiserver
+	$(MAKE) MANAGER_IMG=local/arc-controller-manager:dev.$(TIMESTAMP) docker-build-manager
+	$(KIND) load docker-image local/arc-apiserver:dev.$(TIMESTAMP) --name $(KIND_CLUSTER_DEV)
+	$(KIND) load docker-image local/arc-controller-manager:dev.$(TIMESTAMP) --name $(KIND_CLUSTER_DEV)
+	$(HELM) upgrade --namespace arc-system arc charts/arc \
+		--set fullnameOverride=arc \
+		--set apiserver.image.repository=local/arc-apiserver \
+		--set apiserver.image.tag=dev.$(TIMESTAMP) \
+		--set controller.image.repository=local/arc-controller-manager \
+		--set controller.image.tag=dev.$(TIMESTAMP)
+
+.PHONY: cleanup-dev-cluster
+cleanup-dev-cluster: ## Tear down the Kind cluster used for e2e tests
+	@$(KIND) delete cluster --name $(KIND_CLUSTER_DEV)
+
 
 .PHONY: docker-build
 docker-build: docker-build-apiserver docker-build-manager
 
 .PHONY: docker-build-apiserver
 docker-build-apiserver:
-	docker build --target apiserver -t ${APISERVER_IMG} .
+	$(DOCKER) build --target apiserver -t ${APISERVER_IMG} .
 
 .PHONY: docker-build-manager
 docker-build-manager:
-	docker build --target manager -t ${MANAGER_IMG} .
+	$(DOCKER) build --target manager -t ${MANAGER_IMG} .
 
 .PHONY: docs-docker-build
 docs-docker-build:
-	@docker build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
+	@$(DOCKER) build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
 docs: ## Serve the documentation using Docker.
-	@docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
+	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)

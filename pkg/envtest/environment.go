@@ -30,10 +30,10 @@ type Environment struct {
 
 func NewEnvironment() (*Environment, error) {
 	env := &envtest.Environment{
-		CRDDirectoryPaths: []string{filepath.Join("..", "..", "config", "crd", "external")},
+		CRDDirectoryPaths: []string{filepath.Join("..", "..", "test", "fixtures", "external-crds")},
 	}
 	ext := &utilsenvtest.EnvironmentExtensions{
-		APIServiceDirectoryPaths:       []string{filepath.Join("..", "..", "config", "apiserver", "apiservice", "bases")},
+		APIServiceDirectoryPaths:       []string{filepath.Join("..", "..", "test", "fixtures", "apiservice")},
 		ErrorIfAPIServicePathIsMissing: true,
 	}
 	return &Environment{
