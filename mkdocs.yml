@@ -107,6 +107,7 @@ nav:
       # - operator-manual/new-features.md
       # - operator-manual/security.md
       - operator-manual/workflow-config.md
+      - operator-manual/extending-artifact-types.md
   - Developer Guide:
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
