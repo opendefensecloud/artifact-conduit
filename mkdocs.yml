@@ -108,6 +108,8 @@ nav:
       # - operator-manual/security.md
       - operator-manual/workflow-config.md
       - operator-manual/extending-artifact-types.md
+      - operator-manual/force-reconciliation.md
+      - operator-manual/debugging.md
   - Developer Guide:
       - CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
