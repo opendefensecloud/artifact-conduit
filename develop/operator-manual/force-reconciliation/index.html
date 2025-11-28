@@ -5,31 +5,31 @@
       
       
       
-        <link rel="canonical" href="https://arc.opendefense.cloud/develop/developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/">
+        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/force-reconciliation/">
       
       
-        <link rel="prev" href="../../workflow-execution/">
+        <link rel="prev" href="../extending-artifact-types/">
       
       
-        <link rel="next" href="../001-ARC-Architecture/">
+        <link rel="next" href="../debugging/">
       
       
         
       
       
-      <link rel="icon" href="../../../arc_logo.svg">
+      <link rel="icon" href="../../arc_logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
       
-        <title>Find a Common Way to Document Architectural Design Decsisions - Artifact Conduit</title>
+        <title>Force reconciliation - Artifact Conduit</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -48,15 +48,15 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/panzoom.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/panzoom.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
             .gslide-title { margin-top: 0px; user-select: text; }
             .gslide-desc { color: #666; user-select: text; }
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#find-a-common-way-to-document-architectural-design-decsisions" class="md-skip">
+        <a href="#force-reconciliation-annotation" class="md-skip">
           Skip to content
         </a>
       
@@ -101,12 +101,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest version.
-  <a href="../../../..">
+  <a href="../../..">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -118,9 +118,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../../arc_logo.svg" alt="logo">
+  <img src="../../arc_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -137,7 +137,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Find a Common Way to Document Architectural Design Decsisions
+              Force reconciliation
             
           </span>
         </div>
@@ -259,7 +259,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -280,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -302,7 +302,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../user-guide/core-concepts/" class="md-tabs__link">
+        <a href="../../user-guide/core-concepts/" class="md-tabs__link">
           
   
   
@@ -320,6 +320,8 @@
   
   
   
+    
+  
   
     
     
@@ -327,11 +329,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../operator-manual/installation/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../installation/" class="md-tabs__link">
           
   
   
@@ -352,13 +356,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../CODE_OF_CONDUCT/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
   
@@ -400,9 +402,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../../arc_logo.svg" alt="logo">
+  <img src="../../arc_logo.svg" alt="logo">
 
     </a>
     Artifact Conduit
@@ -429,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -512,7 +514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -540,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../walk-through/about/" class="md-nav__link">
+      <a href="../../walk-through/about/" class="md-nav__link">
         
   
   
@@ -631,7 +633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/core-concepts/" class="md-nav__link">
+      <a href="../../user-guide/core-concepts/" class="md-nav__link">
         
   
   
@@ -659,7 +661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/api-reference/" class="md-nav__link">
+      <a href="../../user-guide/api-reference/" class="md-nav__link">
         
   
   
@@ -691,8 +693,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -714,17 +718,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -742,7 +749,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -816,7 +823,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -844,7 +851,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/helm/" class="md-nav__link">
+      <a href="../helm/" class="md-nav__link">
         
   
   
@@ -880,7 +887,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/releases/" class="md-nav__link">
+      <a href="../releases/" class="md-nav__link">
         
   
   
@@ -908,7 +915,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/upgrading/" class="md-nav__link">
+      <a href="../upgrading/" class="md-nav__link">
         
   
   
@@ -936,7 +943,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/workflow-config/" class="md-nav__link">
+      <a href="../workflow-config/" class="md-nav__link">
         
   
   
@@ -964,7 +971,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/extending-artifact-types/" class="md-nav__link">
+      <a href="../extending-artifact-types/" class="md-nav__link">
         
   
   
@@ -989,10 +996,35 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../operator-manual/force-reconciliation/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Force reconciliation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1008,6 +1040,68 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#force-reconciliation-annotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Force Reconciliation Annotation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#annotation-based-debugging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Annotation-Based Debugging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#force-reconcile-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Force Reconcile Logic
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reconciliation-timestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reconciliation Timestamps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1020,7 +1114,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/debugging/" class="md-nav__link">
+      <a href="../debugging/" class="md-nav__link">
         
   
   
@@ -1052,10 +1146,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -1075,20 +1167,17 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -1106,7 +1195,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1124,7 +1213,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
   
@@ -1152,7 +1241,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CONTRIBUTING/" class="md-nav__link">
+      <a href="../../CONTRIBUTING/" class="md-nav__link">
         
   
   
@@ -1180,7 +1269,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/" class="md-nav__link">
+      <a href="../../developer-guide/architecture/" class="md-nav__link">
         
   
   
@@ -1208,7 +1297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../working-with-docs/" class="md-nav__link">
+      <a href="../../developer-guide/working-with-docs/" class="md-nav__link">
         
   
   
@@ -1236,7 +1325,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../workflow-execution/" class="md-nav__link">
+      <a href="../../developer-guide/workflow-execution/" class="md-nav__link">
         
   
   
@@ -1261,10 +1350,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1283,11 +1370,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6">
         
           
           <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
@@ -1308,7 +1395,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1323,44 +1410,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Find a Common Way to Document Architectural Design Decsisions
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--accepted"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/" class="md-nav__link">
         
   
   
@@ -1383,59 +1436,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context and Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#considered-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Considered Options
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-outcome" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Outcome
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1448,7 +1448,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001-ARC-Architecture/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/001-ARC-Architecture/" class="md-nav__link">
         
   
   
@@ -1483,7 +1483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../002-ARC-API/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/002-ARC-API/" class="md-nav__link">
         
   
   
@@ -1518,7 +1518,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003-Branch-Naming/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/003-Branch-Naming/" class="md-nav__link">
         
   
   
@@ -1578,8 +1578,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1588,10 +1586,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
+  <a href="#force-reconciliation-annotation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context and Problem Statement
+        Force Reconciliation Annotation
       
     </span>
   </a>
@@ -1599,10 +1597,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#considered-options" class="md-nav__link">
+  <a href="#annotation-based-debugging" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Considered Options
+        Annotation-Based Debugging
       
     </span>
   </a>
@@ -1610,10 +1608,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#decision-outcome" class="md-nav__link">
+  <a href="#force-reconcile-logic" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Decision Outcome
+        Force Reconcile Logic
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reconciliation-timestamps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reconciliation Timestamps
       
     </span>
   </a>
@@ -1637,7 +1646,7 @@
 
 
   
-    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/force-reconciliation.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1646,42 +1655,59 @@
     
       
     
-    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/force-reconciliation.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
     </a>
   
 
 
-<h1 id="find-a-common-way-to-document-architectural-design-decsisions">Find a Common Way to Document Architectural Design Decsisions<a class="headerlink" href="#find-a-common-way-to-document-architectural-design-decsisions" title="Permanent link">¶</a></h1>
-<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">¶</a></h2>
-<p>We want to record architectural decisions made in this project independent whether decisions concern the architecture ("architectural decision record"), the code, or other fields. Which format and structure should these records follow?</p>
-<h2 id="considered-options">Considered Options<a class="headerlink" href="#considered-options" title="Permanent link">¶</a></h2>
-<ul>
-<li><a href="https://adr.github.io/madr/">MADR</a>&nbsp;4.0.0 – The Markdown Architectural Decision Records</li>
-<li><a href="http://thinkrelevance.com/blog/2011/11/15/documenting-architecture-decisions">Michael Nygard's template</a>&nbsp;– The first incarnation of the term "ADR"</li>
-<li><a href="https://www.infoq.com/articles/sustainable-architectural-design-decisions">Sustainable Architectural Decisions</a>&nbsp;– The Y-Statements</li>
-<li>Other templates listed at&nbsp;<a href="https://github.com/joelparkerhenderson/architecture_decision_record">https://github.com/joelparkerhenderson/architecture_decision_record</a></li>
-<li>Formless – No conventions for file format and structure</li>
-</ul>
-<h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">¶</a></h2>
-<p>Chosen option: "MADR 4.0.0", because</p>
-<ul>
-<li>Implicit assumptions should be made explicit. Design documentation is important to enable people understanding the decisions later on. See also&nbsp;<a href="https://doi.org/10.1109/TSE.1986.6312940">"A rational design process: How and why to fake it"</a>.</li>
-<li>MADR allows for structured capturing of any decision.</li>
-<li>The MADR format is lean and fits our development style.</li>
-<li>The MADR structure is comprehensible and facilitates usage &amp; maintenance.</li>
-<li>The MADR project is vivid.</li>
-</ul>
+  <h1>Force reconciliation</h1>
+
+<h2 id="force-reconciliation-annotation">Force Reconciliation Annotation<a class="headerlink" href="#force-reconciliation-annotation" title="Permanent link">¶</a></h2>
+<h2 id="annotation-based-debugging">Annotation-Based Debugging<a class="headerlink" href="#annotation-based-debugging" title="Permanent link">¶</a></h2>
+<p>Both <code>Order</code> and <code>ArtifactWorkflow</code> resources support manual reconciliation triggering via the <code>arc.opendefense.cloud/forceAt</code> annotation:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-order</span>
+<span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">arc.opendefense.cloud/forceAt</span><span class="p">:</span><span class="w"> </span><span class="s">"1735689600"</span><span class="w">  </span><span class="c1"># Unix timestamp</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ...</span>
+</code></pre></div>
+<h2 id="force-reconcile-logic">Force Reconcile Logic<a class="headerlink" href="#force-reconcile-logic" title="Permanent link">¶</a></h2>
+<p>Controllers check the annotation and compare it against the last force reconciliation timestamp:
+For <code>Order</code>, force reconciliation deletes all <code>ArtifactWorkflows</code> to trigger fresh creation. For <code>ArtifactWorkflow</code>, it deletes the Argo Workflow.</p>
+<h2 id="reconciliation-timestamps">Reconciliation Timestamps<a class="headerlink" href="#reconciliation-timestamps" title="Permanent link">¶</a></h2>
+<p>Both <code>Order</code> and <code>ArtifactWorkflow</code> resources track reconciliation timestamps in their status:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status.lastReconcileAt</code></td>
+<td><code>metav1.Time</code></td>
+<td>Timestamp of most recent reconciliation</td>
+</tr>
+<tr>
+<td><code>status.lastForceAt</code></td>
+<td><code>metav1.Time</code></td>
+<td>Timestamp of most recent force reconciliation</td>
+</tr>
+</tbody>
+</table>
 
 
 
 
 
 
-
-  
-  
 
 
 
@@ -1730,14 +1756,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
-        <script src="../../../assets/javascripts/panzoom.min.js"></script>
+        <script src="../../assets/javascripts/panzoom.min.js"></script>
       
-        <script src="../../../assets/javascripts/zoompan.js"></script>
+        <script src="../../assets/javascripts/zoompan.js"></script>
       
     
   
