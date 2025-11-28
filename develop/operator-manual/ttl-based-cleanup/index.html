@@ -5,31 +5,31 @@
       
       
       
-        <link rel="canonical" href="https://arc.opendefense.cloud/develop/developer-guide/adrs/002-ARC-API/">
+        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/ttl-based-cleanup/">
       
       
-        <link rel="prev" href="../001-ARC-Architecture/">
+        <link rel="prev" href="../debugging/">
       
       
-        <link rel="next" href="../003-Branch-Naming/">
+        <link rel="next" href="../../CODE_OF_CONDUCT/">
       
       
         
       
       
-      <link rel="icon" href="../../../arc_logo.svg">
+      <link rel="icon" href="../../arc_logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
     
     
       
-        <title>Define an Optimal API for the Project Beginning - Artifact Conduit</title>
+        <title>TTL-Based Cleanup - Artifact Conduit</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.618322db.min.css">
       
         
-        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -48,15 +48,15 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/panzoom.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/panzoom.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
+  <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"><script src="../../assets/javascripts/glightbox.min.js"></script><style id="glightbox-style">
             html.glightbox-open { overflow: initial; height: 100%; }
             .gslide-title { margin-top: 0px; user-select: text; }
             .gslide-desc { color: #666; user-select: text; }
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#define-an-optimal-api-for-the-project-beginning" class="md-skip">
+        <a href="#ttl-based-cleanup" class="md-skip">
           Skip to content
         </a>
       
@@ -101,12 +101,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're not viewing the latest version.
-  <a href="../../../..">
+  <a href="../../..">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -118,9 +118,9 @@
 
 <header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../.." title="Artifact Conduit" class="md-header__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../../arc_logo.svg" alt="logo">
+  <img src="../../arc_logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -137,7 +137,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Define an Optimal API for the Project Beginning
+              TTL-Based Cleanup
             
           </span>
         </div>
@@ -259,7 +259,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../.." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -280,7 +280,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -302,7 +302,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../../user-guide/core-concepts/" class="md-tabs__link">
+        <a href="../../user-guide/core-concepts/" class="md-tabs__link">
           
   
   
@@ -320,6 +320,8 @@
   
   
   
+    
+  
   
     
     
@@ -327,11 +329,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../../operator-manual/installation/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../installation/" class="md-tabs__link">
           
   
   
@@ -352,13 +356,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../../../CODE_OF_CONDUCT/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../CODE_OF_CONDUCT/" class="md-tabs__link">
           
   
   
@@ -400,9 +402,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
+    <a href="../.." title="Artifact Conduit" class="md-nav__button md-logo" aria-label="Artifact Conduit" data-md-component="logo">
       
-  <img src="../../../arc_logo.svg" alt="logo">
+  <img src="../../arc_logo.svg" alt="logo">
 
     </a>
     Artifact Conduit
@@ -429,7 +431,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -512,7 +514,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../getting-started/" class="md-nav__link">
+      <a href="../../getting-started/" class="md-nav__link">
         
   
   
@@ -540,7 +542,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../walk-through/about/" class="md-nav__link">
+      <a href="../../walk-through/about/" class="md-nav__link">
         
   
   
@@ -631,7 +633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/core-concepts/" class="md-nav__link">
+      <a href="../../user-guide/core-concepts/" class="md-nav__link">
         
   
   
@@ -659,7 +661,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../user-guide/api-reference/" class="md-nav__link">
+      <a href="../../user-guide/api-reference/" class="md-nav__link">
         
   
   
@@ -691,8 +693,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -716,17 +720,20 @@
     
     
       
+        
+        
+      
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -744,7 +751,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -818,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -846,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/helm/" class="md-nav__link">
+      <a href="../helm/" class="md-nav__link">
         
   
   
@@ -882,7 +889,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/releases/" class="md-nav__link">
+      <a href="../releases/" class="md-nav__link">
         
   
   
@@ -910,7 +917,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/upgrading/" class="md-nav__link">
+      <a href="../upgrading/" class="md-nav__link">
         
   
   
@@ -938,7 +945,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/workflow-config/" class="md-nav__link">
+      <a href="../workflow-config/" class="md-nav__link">
         
   
   
@@ -966,7 +973,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/extending-artifact-types/" class="md-nav__link">
+      <a href="../extending-artifact-types/" class="md-nav__link">
         
   
   
@@ -994,7 +1001,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/force-reconciliation/" class="md-nav__link">
+      <a href="../force-reconciliation/" class="md-nav__link">
         
   
   
@@ -1022,7 +1029,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../operator-manual/debugging/" class="md-nav__link">
+      <a href="../debugging/" class="md-nav__link">
         
   
   
@@ -1047,10 +1054,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../operator-manual/ttl-based-cleanup/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTL-Based Cleanup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1066,6 +1100,37 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#cleanup-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cleanup Behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1082,10 +1147,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -1105,20 +1168,17 @@
     
     
       
-        
-        
-      
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5">
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
   
@@ -1136,7 +1196,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1154,7 +1214,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../../CODE_OF_CONDUCT/" class="md-nav__link">
         
   
   
@@ -1182,7 +1242,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../CONTRIBUTING/" class="md-nav__link">
+      <a href="../../CONTRIBUTING/" class="md-nav__link">
         
   
   
@@ -1210,7 +1270,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/" class="md-nav__link">
+      <a href="../../developer-guide/architecture/" class="md-nav__link">
         
   
   
@@ -1238,7 +1298,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../working-with-docs/" class="md-nav__link">
+      <a href="../../developer-guide/working-with-docs/" class="md-nav__link">
         
   
   
@@ -1266,7 +1326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../workflow-execution/" class="md-nav__link">
+      <a href="../../developer-guide/workflow-execution/" class="md-nav__link">
         
   
   
@@ -1291,10 +1351,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1313,11 +1371,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6">
         
           
           <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
@@ -1338,7 +1396,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1356,7 +1414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../000-Use-Markdown-Architectural-Decision-Records/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/" class="md-nav__link">
         
   
   
@@ -1391,7 +1449,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../001-ARC-Architecture/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/001-ARC-Architecture/" class="md-nav__link">
         
   
   
@@ -1423,44 +1481,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Define an Optimal API for the Project Beginning
-  
-
-    
-  </span>
-  
-  
-    
-  
-  
-    <span class="md-status md-status--in decission"></span>
-  
-
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../developer-guide/adrs/002-ARC-API/" class="md-nav__link">
         
   
   
@@ -1483,98 +1507,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context and Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proposed-solution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed Solution
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proposed Solution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Order
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#artifactworkflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ArtifactWorkflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#artifacttype-and-clusterartifacttype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ArtifactType and ClusterArtifactType
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1587,7 +1519,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../003-Branch-Naming/" class="md-nav__link">
+      <a href="../../developer-guide/adrs/003-Branch-Naming/" class="md-nav__link">
         
   
   
@@ -1657,74 +1589,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
+  <a href="#cleanup-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Context and Problem Statement
+        Cleanup Behavior
       
     </span>
   </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proposed-solution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proposed Solution
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Proposed Solution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Order
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#artifactworkflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ArtifactWorkflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#artifacttype-and-clusterartifacttype" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ArtifactType and ClusterArtifactType
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1745,7 +1616,7 @@
 
 
   
-    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/developer-guide/adrs/002-ARC-API.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/ttl-based-cleanup.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1754,103 +1625,45 @@
     
       
     
-    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/developer-guide/adrs/002-ARC-API.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/ttl-based-cleanup.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
     </a>
   
 
 
-<h1 id="define-an-optimal-api-for-the-project-beginning">Define an Optimal API for the Project Beginning<a class="headerlink" href="#define-an-optimal-api-for-the-project-beginning" title="Permanent link">¶</a></h1>
-<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">¶</a></h2>
-<p>This ADR is about finding the right API for ARC.</p>
-<h2 id="proposed-solution">Proposed Solution<a class="headerlink" href="#proposed-solution" title="Permanent link">¶</a></h2>
-<p>Options were discussed and documented here: <a href="https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn">https://app.bwi.conceptboard.com/board/u9c0-4nk5-rrhd-knre-6cfn</a></p>
-<h3 id="order"><code>Order</code><a class="headerlink" href="#order" title="Permanent link">¶</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-order</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">srcRef</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker-hub</span>
-<span class="w">      </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"> </span><span class="c1"># optional</span>
-<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
-<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># artifactType, correcesponds to workflow</span>
-<span class="w">      </span><span class="nt">dstRef</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">other-internal-registry</span>
-<span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span><span class="w"> </span><span class="c1"># optional</span>
-<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
-<span class="w">        </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span><span class="w"> </span><span class="c1"># default alpine:3.18; support CEL?</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/ubuntu:1.0</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm</span>
-<span class="w">      </span><span class="nt">srcRef</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">jetstack-helm</span>
-<span class="w">      </span><span class="nt">dstRef</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-helm-registry</span>
-<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager</span>
-<span class="w">        </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"47.11"</span>
-<span class="w">        </span><span class="nt">override</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm-charts/cert-manager:47.11</span>
-</code></pre></div>
-<h3 id="artifactworkflow"><code>ArtifactWorkflow</code><a class="headerlink" href="#artifactworkflow" title="Permanent link">¶</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactWorkflow</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-order-1</span><span class="w"> </span><span class="c1"># sha256 for procedural</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">foo</span>
-<span class="w">  </span><span class="nt">srcSecretRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lala</span>
-<span class="w">  </span><span class="nt">dstSecretRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">other-internal-registry</span>
-<span class="w">  </span><span class="nt">parameters</span><span class="p">:</span><span class="w"> </span><span class="c1"># input from order used to hydrate parameters for workflow</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
-<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-</code></pre></div>
-<h3 id="endpoint"><code>Endpoint</code><a class="headerlink" href="#endpoint" title="Permanent link">¶</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span><span class="w"> </span><span class="c1"># Endpoint Type! set valid types on controller manager?</span>
-<span class="w">  </span><span class="nt">remoteURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://artifactory.example.com/artifactory/ace-oci-local</span>
-<span class="w">  </span><span class="nt">secretRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># STANDARDIZED!</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry-credentials</span>
-<span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PullOnly | PushOnly | All</span><span class="w"> </span><span class="c1"># enum</span>
-</code></pre></div>
-<h3 id="artifacttype-and-clusterartifacttype"><code>ArtifactType</code> and <code>ClusterArtifactType</code><a class="headerlink" href="#artifacttype-and-clusterartifacttype" title="Permanent link">¶</a></h3>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span><span class="w"> </span><span class="c1"># or ClusterArtifactType</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">srcTypes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3</span><span class="w"> </span><span class="c1"># Endpoint Types!</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">helm</span>
-<span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
-</code></pre></div>
+<h1 id="ttl-based-cleanup">TTL-Based Cleanup<a class="headerlink" href="#ttl-based-cleanup" title="Permanent link">¶</a></h1>
+<p>The <code>Order.spec.TTLSecondsAfterCompletion</code> field controls automatic cleanup of completed <code>ArtifactWorkflow</code> resources. Understanding this mechanism is important for status visibility.</p>
+<h2 id="cleanup-behavior">Cleanup Behavior<a class="headerlink" href="#cleanup-behavior" title="Permanent link">¶</a></h2>
+<table>
+<thead>
+<tr>
+<th>TTL Value</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Not set (nil)</td>
+<td>ArtifactWorkflows deleted immediately after reaching <code>Succeeded</code> phase</td>
+</tr>
+<tr>
+<td><code>0</code></td>
+<td>ArtifactWorkflows deleted immediately after reaching <code>Succeeded</code> phase</td>
+</tr>
+<tr>
+<td><code>&gt; 0</code></td>
+<td>ArtifactWorkflows retained for specified seconds after completion, then deleted</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note:</strong> Only <code>Succeeded</code> workflows are subject to TTL cleanup. <code>Failed</code> and <code>Error</code> workflows are retained indefinitely for troubleshooting unless explicitly deleted.</p>
 
 
 
 
 
 
-
-  
-  
 
 
 
@@ -1899,14 +1712,14 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "content.code.select", "content.tooltips", "header.autohide", "navigation.indexes", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../../assets/javascripts/bundle.e71a0d61.min.js"></script>
       
-        <script src="../../../assets/javascripts/panzoom.min.js"></script>
+        <script src="../../assets/javascripts/panzoom.min.js"></script>
       
-        <script src="../../../assets/javascripts/zoompan.js"></script>
+        <script src="../../assets/javascripts/zoompan.js"></script>
       
     
   
