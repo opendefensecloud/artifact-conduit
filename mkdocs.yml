@@ -104,8 +104,8 @@ nav:
           - operator-manual/helm.md
       - operator-manual/releases.md
       - operator-manual/upgrading.md
-      - operator-manual/new-features.md
-      - operator-manual/security.md
+      # - operator-manual/new-features.md
+      # - operator-manual/security.md
       - operator-manual/workflow-config.md
   - Developer Guide:
       - CODE_OF_CONDUCT.md
