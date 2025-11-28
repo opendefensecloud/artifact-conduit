@@ -140,6 +140,7 @@ dev-cluster: setup-dev-cluster
 	@echo -e "\nSETTING UP CERT-MANAGER:\n"
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
 		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
+	$(KUBECTL) wait deployment.apps/cert-manager-webhook --for condition=Available --namespace cert-manager --timeout 5m
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
