@@ -99,7 +99,9 @@ nav:
       - user-guide/core-concepts.md
       - user-guide/api-reference.md
   - Operator Manual:
-      - operator-manual/installation.md
+      - Installation:
+          - operator-manual/installation.md
+          - operator-manual/helm.md
       - operator-manual/releases.md
       - operator-manual/upgrading.md
       - operator-manual/new-features.md

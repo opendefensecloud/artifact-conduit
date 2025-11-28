@@ -1,4 +1,4 @@
-# Installation
+# Overview
 
 ## Non-production installation¶
 
@@ -31,6 +31,6 @@ Then, copy the commands below to apply the kustomization:
 
     kubectl apply -k "https://github.com/opendefensecloud/artifact-conduit/examples/deployment?ref=${ARC_VERSION}"
 
-#### Helm Chart
+#### Helm
 
-// TODO
+See [Helm installation](./helm.md) for more information.
