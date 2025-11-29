@@ -12,9 +12,12 @@ import (
 	"go.opendefense.cloud/arc/pkg/registry/artifactworkflow"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"sigs.k8s.io/structured-merge-diff/v6/fieldpath"
 )
 
 type testObjectTyper struct{}
@@ -481,6 +484,235 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 				Expect(errs[0].Type).To(Equal(field.ErrorTypeInternal))
 				Expect(errs[0].Detail).To(ContainSubstring("old object is not an ArtifactWorkflow"))
 			})
+		})
+	})
+
+	Describe("GetAttrs", func() {
+		It("should return labels and fields for an ArtifactWorkflow", func() {
+			aw := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+					Labels: map[string]string{
+						"app": "test",
+					},
+				},
+			}
+
+			lbls, flds, err := artifactworkflow.GetAttrs(aw)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(lbls).To(HaveKeyWithValue("app", "test"))
+			Expect(flds.Has("metadata.name")).To(BeTrue())
+			Expect(flds.Get("metadata.name")).To(Equal("test-workflow"))
+		})
+
+		It("should return error for non-ArtifactWorkflow object", func() {
+			notAWorkflow := &arc.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "not-a-workflow",
+				},
+			}
+
+			_, _, err := artifactworkflow.GetAttrs(notAWorkflow)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("not an ArtifactWorkflow"))
+		})
+	})
+
+	Describe("MatchArtifactWorkflow", func() {
+		It("should create a selection predicate", func() {
+			labelSelector := labels.Everything()
+			fieldSelector := fields.Everything()
+
+			predicate := artifactworkflow.MatchArtifactWorkflow(labelSelector, fieldSelector)
+			Expect(predicate.Label).To(Equal(labelSelector))
+			Expect(predicate.Field).To(Equal(fieldSelector))
+			Expect(predicate.GetAttrs).NotTo(BeNil())
+		})
+	})
+
+	Describe("SelectableFields", func() {
+		It("should return selectable fields for an ArtifactWorkflow", func() {
+			aw := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			flds := artifactworkflow.SelectableFields(aw)
+			Expect(flds.Has("metadata.name")).To(BeTrue())
+			Expect(flds.Has("metadata.namespace")).To(BeTrue())
+		})
+	})
+
+	Describe("AllowCreateOnUpdate", func() {
+		It("should return false", func() {
+			strategy := artifactworkflow.NewStrategy(testObjectTyper{})
+			Expect(strategy.AllowCreateOnUpdate()).To(BeFalse())
+		})
+	})
+
+	Describe("AllowUnconditionalUpdate", func() {
+		It("should return false", func() {
+			strategy := artifactworkflow.NewStrategy(testObjectTyper{})
+			Expect(strategy.AllowUnconditionalUpdate()).To(BeFalse())
+		})
+	})
+
+	Describe("Canonicalize", func() {
+		It("should not modify the object", func() {
+			aw := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			original := aw.DeepCopy()
+			strategy := artifactworkflow.NewStrategy(testObjectTyper{})
+			strategy.Canonicalize(aw)
+			Expect(aw).To(Equal(original))
+		})
+	})
+
+	Describe("WarningsOnCreate", func() {
+		It("should return nil", func() {
+			aw := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			strategy := artifactworkflow.NewStrategy(testObjectTyper{})
+			warnings := strategy.WarningsOnCreate(ctx, aw)
+			Expect(warnings).To(BeNil())
+		})
+	})
+
+	Describe("WarningsOnUpdate", func() {
+		It("should return nil", func() {
+			oldWorkflow := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			newWorkflow := oldWorkflow.DeepCopy()
+
+			strategy := artifactworkflow.NewStrategy(testObjectTyper{})
+			warnings := strategy.WarningsOnUpdate(ctx, newWorkflow, oldWorkflow)
+			Expect(warnings).To(BeNil())
+		})
+	})
+})
+
+var _ = Describe("ArtifactWorkflow Status Strategy", func() {
+	var (
+		ctx context.Context
+	)
+
+	BeforeEach(func() {
+		ctx = context.Background()
+	})
+
+	Describe("NewStatusStrategy", func() {
+		It("should create a new status strategy", func() {
+			s := artifactworkflow.NewStatusStrategy(testObjectTyper{})
+			Expect(s).NotTo(BeNil())
+		})
+	})
+
+	Describe("GetResetFields", func() {
+		It("should return spec as a reset field", func() {
+			statusStrategy := artifactworkflow.NewStatusStrategy(testObjectTyper{})
+			resetFields := statusStrategy.GetResetFields()
+			Expect(resetFields).To(HaveKey(fieldpath.APIVersion("arc.bwi.de/v1alpha1")))
+
+			fieldSet := resetFields["arc.bwi.de/v1alpha1"]
+			Expect(fieldSet).NotTo(BeNil())
+			Expect(fieldSet.Has(fieldpath.MakePathOrDie("spec"))).To(BeTrue())
+		})
+	})
+
+	Describe("PrepareForUpdate", func() {
+		It("should preserve spec from old object", func() {
+			oldWorkflow := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+				Spec: arc.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "original-template"},
+					Parameters: []arc.ArtifactWorkflowParameter{
+						{Name: "original-param", Value: "original-value"},
+					},
+				},
+				Status: arc.ArtifactWorkflowStatus{
+					Phase: "Pending",
+				},
+			}
+
+			newWorkflow := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+				Spec: arc.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "modified-template"},
+					Parameters: []arc.ArtifactWorkflowParameter{
+						{Name: "modified-param", Value: "modified-value"},
+					},
+				},
+				Status: arc.ArtifactWorkflowStatus{
+					Phase: "Running",
+				},
+			}
+
+			statusStrategy := artifactworkflow.NewStatusStrategy(testObjectTyper{})
+			statusStrategy.PrepareForUpdate(ctx, newWorkflow, oldWorkflow)
+
+			// Spec should be preserved from old object
+			Expect(newWorkflow.Spec).To(Equal(oldWorkflow.Spec))
+			// Status should remain as set in new object
+			Expect(string(newWorkflow.Status.Phase)).To(Equal("Running"))
+		})
+	})
+
+	Describe("ValidateUpdate", func() {
+		It("should return empty error list", func() {
+			oldWorkflow := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			newWorkflow := oldWorkflow.DeepCopy()
+			newWorkflow.Status.Phase = "Completed"
+
+			statusStrategy := artifactworkflow.NewStatusStrategy(testObjectTyper{})
+			errs := statusStrategy.ValidateUpdate(ctx, newWorkflow, oldWorkflow)
+			Expect(errs).To(BeEmpty())
+		})
+	})
+
+	Describe("WarningsOnUpdate", func() {
+		It("should return nil", func() {
+			oldWorkflow := &arc.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-workflow",
+					Namespace: "default",
+				},
+			}
+
+			newWorkflow := oldWorkflow.DeepCopy()
+
+			statusStrategy := artifactworkflow.NewStatusStrategy(testObjectTyper{})
+			warnings := statusStrategy.WarningsOnUpdate(ctx, newWorkflow, oldWorkflow)
+			Expect(warnings).To(BeNil())
 		})
 	})
 })
