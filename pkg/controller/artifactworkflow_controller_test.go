@@ -218,6 +218,71 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}).To(ContainSubstring("Step 'step1' failed"))
 		})
 
+		It("should track error Workflow status of created ArtifactWorkflows", func() {
+			awName := "track-error-status"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowError
+			wf.Status.Message = "Workflow encountered an error during execution"
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowError))
+		})
+
+		It("should track pending Workflow status of created ArtifactWorkflows", func() {
+			awName := "track-pending-status"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowPending
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowPending))
+		})
+
 		It("should handle force reconcile annotation", func() {
 			awName := "force-reconcile"
 			aw := &arcv1alpha1.ArtifactWorkflow{
