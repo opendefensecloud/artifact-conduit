@@ -35,7 +35,7 @@ jobs:
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ok-to-image')) ||
       (github.event_name == 'release' && github.event.action == 'published')
-    runs-on: self-hosted
+    runs-on: arc-scale-set
     steps:
     - uses: actions/checkout@v6
     - uses: docker/metadata-action@v5

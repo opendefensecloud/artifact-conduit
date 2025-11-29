@@ -20,7 +20,7 @@ on:
 
 jobs:
   publish:
-    runs-on: self-hosted
+    runs-on: arc-scale-set
     permissions:
       contents: read
       packages: write

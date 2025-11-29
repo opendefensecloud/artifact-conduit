@@ -12,7 +12,7 @@ on:
 
 jobs:
   lint:
-    runs-on: self-hosted
+    runs-on: arc-scale-set
     steps:
       - name: Checkout
         uses: actions/checkout@v6
