@@ -176,7 +176,7 @@ spec:
           - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
         env:
           - name: DOCKER_CONFIG
-            value: /data/.docker/config.json
+            value: /data/.docker
         volumeMounts:
           - name: work-volume
             mountPath: /data
@@ -194,7 +194,7 @@ spec:
           - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
         env:
           - name: DOCKER_CONFIG
-            value: /data/.docker/config.json
+            value: /data/.docker
         volumeMounts:
           - name: work-volume
             mountPath: /data
