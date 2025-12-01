@@ -13,13 +13,6 @@ spec:
           requests:
             storage: 10Gi
 
-  # --- Required Volumes ---
-  volumes:
-    # Volume for Cosign signing key
-    - name: signing-secret-vol
-      secret:
-        secretName: cosign-key # Assumes a secret named 'cosign-key' exists with the key/password
-
   # --- Input Parameters ---
   arguments:
     parameters:
@@ -126,17 +119,7 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
-          # Mount the secret containing the private key for Cosign
-          - name: signing-secret-vol
-            readOnly: true
-            mountPath: /secrets/cosign
-        env:
-          # Set the password for the Cosign private key
-          - name: COSIGN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: cosign-key
-                key: password
+
         source: |
           set -euo pipefail
 
@@ -145,14 +128,22 @@ spec:
           ATTEST_FILE="/data/scan-results.json"
           PRIVATE_KEY="/secrets/cosign/cosign.key"
 
+          # Conditionally login to registry
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              cat /secrets/dst/password | cosign login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
+          fi
+
           echo "Generating and uploading scan attestation for $DEST_IMAGE"
 
           # Use Cosign to attach an attestation (predicate) to the image
-          cosign attest \
+          cosign --key k8s://{{workflow.namespace}}/cosgin-key attest \
             --key $PRIVATE_KEY \
             --predicate $ATTEST_FILE \
             --type vuln \
             $DEST_IMAGE
+
+          # Sign the image with Cosign
+          cosign sign --key k8s://{{workflow.namespace}}/cosgin-key $DEST_IMAGE
 
           echo "✅ Attestation complete."
 
@@ -187,9 +178,5 @@ spec:
           # Construct the full destination image path
           DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
 
-          # Sign the image
-          echo "Signing image with key in /secrets/cosign/cosign.key"
-          SIGNING_ARGS=" --sign-key /secrets/cosign/cosign.key"
-
           # Skopeo copy command
-          skopeo copy ${SIGNING_ARGS} --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
+          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
