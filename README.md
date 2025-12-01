@@ -1,7 +1,7 @@
 # Artifact Conduit (ARC)
 
 [![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
-[![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=develop)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=main)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=main)
 
 <img src="docs/arc_logo.svg" width="150" style="float: left; margin-right:20px">
 ARC (Artifact Conduit) is an open-source system that acts as a gateway for procuring various artifact types and transferring them across security zones while ensuring policy compliance through automated scanning and validation. The system addresses the challenge of bringing external artifacts — container images, Helm charts, software packages, and other resources — into restricted environments where direct internet access is prohibited.
