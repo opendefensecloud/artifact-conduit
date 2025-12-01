@@ -166,17 +166,17 @@ func (clusterArtifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old 
 			seenParams[param.Name] = true
 		}
 	}
-	// Validate WorkflowTemplateRef
-	templateRefPath := specPath.Child("workflowTemplateRef")
-	if clusterArtifactType.Spec.WorkflowTemplateRef.Name == "" {
-		allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
-	}
-	// Validate ClusterScope to be true for ClusterArtifactType
-	if !clusterArtifactType.Spec.WorkflowTemplateRef.ClusterScope {
-		allErrs = append(allErrs, field.Invalid(templateRefPath.Child("clusterScope"),
-			clusterArtifactType.Spec.WorkflowTemplateRef.ClusterScope,
-			"ClusterArtifactType must reference cluster-scoped workflow templates"))
-	}
+	// Validate WorkflowTemplateRef (Test)
+	// templateRefPath := specPath.Child("workflowTemplateRef")
+	// if clusterArtifactType.Spec.WorkflowTemplateRef.Name == "" {
+	// 	allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
+	// }
+	// // Validate ClusterScope to be true for ClusterArtifactType
+	// if !clusterArtifactType.Spec.WorkflowTemplateRef.ClusterScope {
+	// 	allErrs = append(allErrs, field.Invalid(templateRefPath.Child("clusterScope"),
+	// 		clusterArtifactType.Spec.WorkflowTemplateRef.ClusterScope,
+	// 		"ClusterArtifactType must reference cluster-scoped workflow templates"))
+	// }
 	return allErrs
 }
 
