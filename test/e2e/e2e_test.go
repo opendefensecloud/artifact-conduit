@@ -145,8 +145,8 @@ var _ = Describe("ARC", Ordered, func() {
 		})
 
 		It("should create oci workflowtemplate and artifact type", func() {
-			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
-			_, err = run(cmd)
+			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
+			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
 			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
