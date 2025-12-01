@@ -114,7 +114,7 @@ spec:
     # This step uses the Cosign CLI to sign the scan results file and upload the attestation.
     - name: attest-scan-results
       script:
-        image: gcr.io/projectsigstore/cosign/cli:latest
+        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
