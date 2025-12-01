@@ -15,6 +15,13 @@ spec:
   # ...
 ```
 
+Set the annotation as follows:
+
+```bash
+kubectl annotate --overwrite orders.arc.bwi.de/<order-name> \
+"arc.opendefense.cloud/forceAt"="$(date +%s)"
+```
+
 ## Force Reconcile Logic
 
 Controllers check the annotation and compare it against the last force reconciliation timestamp:
@@ -24,7 +31,7 @@ For `Order`, force reconciliation deletes all `ArtifactWorkflows` to trigger fre
 
 Both `Order` and `ArtifactWorkflow` resources track reconciliation timestamps in their status:
 
-| Field                    | Type          | Purpose                                       |
-| ------------------------ | ------------- | --------------------------------------------- |
-| `status.lastReconcileAt` | `metav1.Time` | Timestamp of most recent reconciliation       |
-| `status.lastForceAt`     | `metav1.Time` | Timestamp of most recent force reconciliation |
+| Field                     | Type          | Purpose                                       |
+| ------------------------- | ------------- | --------------------------------------------- |
+| `.status.lastReconcileAt` | `metav1.Time` | Timestamp of most recent reconciliation       |
+| `.status.lastForceAt`     | `metav1.Time` | Timestamp of most recent force reconciliation |
