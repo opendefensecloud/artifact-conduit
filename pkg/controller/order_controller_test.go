@@ -649,6 +649,231 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(0))
 		})
 
+		It("should fail when source endpoint has incompatible usage (PushOnly)", func() {
+			// Create endpoint with PushOnly usage (cannot be used as source)
+			secret := corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "push-only-secret",
+					Namespace: ns.Name,
+				},
+				StringData: map[string]string{"key": "value"},
+			}
+			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+
+			pushOnlyEndpoint := arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "push-only-endpoint",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type:      "oci",
+					RemoteURL: "https://push-only.example.com",
+					SecretRef: corev1.LocalObjectReference{Name: "push-only-secret"},
+					Usage:     arcv1alpha1.EndpointUsagePushOnly,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &pushOnlyEndpoint)).To(Succeed())
+
+			// Create a valid destination endpoint
+			createEndpoints("valid-dst")
+
+			// Create order using push-only endpoint as source
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-push-only-src",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "push-only-endpoint"},
+							DstRef: corev1.LocalObjectReference{Name: "valid-dst"},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that order status contains error message about incompatible usage
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("is not compatible with source usage"))
+
+			// Verify no artifact workflows were created
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should fail when destination endpoint has incompatible usage (PullOnly)", func() {
+			// Create endpoint with PullOnly usage (cannot be used as destination)
+			secret := corev1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pull-only-secret",
+					Namespace: ns.Name,
+				},
+				StringData: map[string]string{"key": "value"},
+			}
+			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+
+			pullOnlyEndpoint := arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "pull-only-endpoint",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type:      "oci",
+					RemoteURL: "https://pull-only.example.com",
+					SecretRef: corev1.LocalObjectReference{Name: "pull-only-secret"},
+					Usage:     arcv1alpha1.EndpointUsagePullOnly,
+				},
+			}
+			Expect(k8sClient.Create(ctx, &pullOnlyEndpoint)).To(Succeed())
+
+			// Create a valid source endpoint
+			createEndpoints("valid-src")
+
+			// Create order using pull-only endpoint as destination
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-pull-only-dst",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "valid-src"},
+							DstRef: corev1.LocalObjectReference{Name: "pull-only-endpoint"},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that order status contains error message about incompatible usage
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("is not compatible with destination usage"))
+
+			// Verify no artifact workflows were created
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should fail when artifact type does not exist", func() {
+			createEndpoints("src-nonexistent", "dst-nonexistent")
+
+			// Create order referencing a non-existent artifact type
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-nonexistent-type",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   "nonexistent-artifact-type",
+							SrcRef: corev1.LocalObjectReference{Name: "src-nonexistent"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-nonexistent"},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that order status contains error message about missing artifact type
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("failed to fetch ArtifactType or ClusterArtifactType"))
+
+			// Verify no artifact workflows were created
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should fail when source endpoint does not exist", func() {
+			createEndpoints("dst-only")
+
+			// Create order referencing a non-existent source endpoint
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-nonexistent-src",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "nonexistent-src"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-only"},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that order status contains error message about missing endpoint
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("failed to fetch endpoint for source"))
+
+			// Verify no artifact workflows were created
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should fail when destination endpoint does not exist", func() {
+			createEndpoints("src-only")
+
+			// Create order referencing a non-existent destination endpoint
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-nonexistent-dst",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type:   at1.Name,
+							SrcRef: corev1.LocalObjectReference{Name: "src-only"},
+							DstRef: corev1.LocalObjectReference{Name: "nonexistent-dst"},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify that order status contains error message about missing endpoint
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+				return order.Status.Message
+			}).Should(ContainSubstring("failed to fetch endpoint for destination"))
+
+			// Verify no artifact workflows were created
+			Consistently(func() int {
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
 		It("should work with namespaced artifact type", func() {
 			at := &arcv1alpha1.ArtifactType{
 				ObjectMeta: metav1.ObjectMeta{
