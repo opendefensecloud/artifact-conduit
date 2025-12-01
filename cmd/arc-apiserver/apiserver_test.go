@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package apiserver_test
+package main_test
 
 import (
 	. "github.com/onsi/ginkgo/v2"
