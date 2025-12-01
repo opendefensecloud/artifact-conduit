@@ -35,7 +35,7 @@ jobs:
       github.event_name == 'push' ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ok-to-image')) ||
       (github.event_name == 'release' && github.event.action == 'published')
-    runs-on: ubuntu-latest
+    runs-on: arc-scale-set
     steps:
     - uses: actions/checkout@v6
     - uses: docker/metadata-action@v5
@@ -55,11 +55,7 @@ jobs:
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
       with:
-        platforms: all
-    - name: Set up Docker Context for Buildx
-      id: buildx-context
-      run: |
-        docker context create builders
+        platforms: arm64
     - name: Set up Docker Buildx
       timeout-minutes: 5
       uses: docker/setup-buildx-action@v3

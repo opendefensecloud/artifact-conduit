@@ -20,7 +20,7 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: arc-scale-set
     permissions:
       contents: read
       packages: write

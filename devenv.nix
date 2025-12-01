@@ -9,34 +9,14 @@
 {
   # https://devenv.sh/packages/
   packages = [
-    pkgs.git
     pkgs.gnumake
     pkgs.jq
-    pkgs.cobra-cli
-    pkgs.golangci-lint
-    pkgs.govulncheck
-    pkgs.oras
     pkgs.shellcheck
     pkgs.yq-go
     pkgs.kind
+    pkgs.kubectl
+    pkgs.kubernetes-helm
   ];
-
-  # aliases for common git commands
-  scripts.gss.exec = ''
-    git status --short
-  '';
-  scripts.gp.exec = ''
-    git push
-  '';
-  scripts.gl.exec = ''
-    git pull
-  '';
-  scripts.gcam.exec = ''
-    git commit --all --message "$@";
-  '';
-  scripts.gaa.exec = ''
-    git add --all
-  '';
 
   # https://devenv.sh/languages/
   languages.go.enable = true;

@@ -18,7 +18,7 @@ env:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: arc-scale-set
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -30,7 +30,7 @@ jobs:
 
   test:
     needs: lint
-    runs-on: ubuntu-latest
+    runs-on: arc-scale-set
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
