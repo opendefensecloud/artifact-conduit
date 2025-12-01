@@ -13,7 +13,7 @@ permissions:
   contents: write
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: arc-scale-set
     steps:
       - uses: actions/checkout@v6
         with:
