@@ -34,21 +34,56 @@ spec:
     # --- Main Pipeline Entrypoint ---
     - name: oci-pipeline
       steps:
+        - - name: authenticate-registries
+            template: authenticate-registries
+
         - - name: pull-image
-            when: "{{workflow.parameters.srcType}} == oci"
             template: pull-image
 
         - - name: scan-image
-            when: "{{workflow.parameters.srcType}} == oci"
             template: scan-image
 
+        - - name: push-image
+            template: push-image
+
         - - name: attest-scan
-            when: "{{workflow.parameters.srcType}} == oci"
             template: attest-scan-results
 
-        - - name: push-image
-            when: "{{workflow.parameters.srcType}} == oci"
-            template: push-image
+        - - name: sign-image
+            template: sign-image
+
+    # --- 0. Authenticate (Skopeo) ---
+    - name: authenticate-registries
+
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+
+        # Mount the volumes
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /secrets/src
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /secrets/dst
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          set -euo pipefail
+
+          # Conditionally login to source registry
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."
+              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file /data/.docker/config.json
+          fi
+
+          # Conditionally login to destination registry
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."
+              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file /data/.docker/config.json
+          fi
 
     # --- 1. Pull Image (Skopeo) ---
     - name: pull-image
@@ -58,9 +93,6 @@ spec:
         command: [sh, -c]
         # Mount the secret volume to a temporary directory
         volumeMounts:
-          - name: src-secret-vol
-            readOnly: true
-            mountPath: /secrets/src
           - name: work-volume
             mountPath: /data
         source: |
@@ -69,16 +101,11 @@ spec:
           echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
           mkdir -p /data/image-storage
 
-          # Conditionally login to registry
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}}
-          fi
+          skopeo copy --preserve-digests --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}} "oci:/data/image-storage/scanned-image"
 
-          # Construct the full source image path
-          SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
-
-          # Skopeo copy command
-          skopeo copy --preserve-digests --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"
+        env:
+          - name: REGISTRY_AUTH_FILE
+            value: /data/.docker/config.json
 
     # --- 2. Scan Image (Trivy) ---
     - name: scan-image
@@ -110,43 +137,6 @@ spec:
           - name: PATH
             value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
 
-    # --- 2.5. Attest Scan Results (Cosign) ---
-    # This step uses the Cosign CLI to sign the scan results file and upload the attestation.
-    - name: attest-scan-results
-      script:
-        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
-        command: [sh, -c]
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-
-        source: |
-          set -euo pipefail
-
-          # The target image path is the destination URL + override spec
-          DEST_IMAGE="{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
-          ATTEST_FILE="/data/scan-results.json"
-          PRIVATE_KEY="/secrets/cosign/cosign.key"
-
-          # Conditionally login to registry
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              cat /secrets/dst/password | cosign login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
-          fi
-
-          echo "Generating and uploading scan attestation for $DEST_IMAGE"
-
-          # Use Cosign to attach an attestation (predicate) to the image
-          cosign --key k8s://{{workflow.namespace}}/cosgin-key attest \
-            --key $PRIVATE_KEY \
-            --predicate $ATTEST_FILE \
-            --type vuln \
-            $DEST_IMAGE
-
-          # Sign the image with Cosign
-          cosign sign --key k8s://{{workflow.namespace}}/cosgin-key $DEST_IMAGE
-
-          echo "✅ Attestation complete."
-
     # --- 3. Push Image (Skopeo) ---
     - name: push-image
 
@@ -156,27 +146,55 @@ spec:
 
         # Mount the secret volume to a temporary directory
         volumeMounts:
-          - name: dst-secret-vol
-            readOnly: true
-            mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
-          - name: signing-secret-vol
-            readOnly: true
-            mountPath: /secrets/cosign
 
         source: |
           set -euo pipefail
 
           echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}
 
-          # Conditionally login to registry
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
-          fi
+        env:
+          - name: REGISTRY_AUTH_FILE
+            value: /data/.docker/config.json
 
-          # Construct the full destination image path
-          DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+    # --- 4. Attest Scan Results (Cosign) ---
+    - name: attest-scan-results
+      container:
+        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
+        command:
+          - cosign
+          - attest
+          - --allow-http-registry=true
+          - --key
+          - k8s://{{workflow.namespace}}/cosgin-key
+          - --predicate
+          - /data/scan-results.json
+          - --type
+          - vuln
+          - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+        env:
+          - name: DOCKER_CONFIG
+            value: /data/.docker/config.json
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
 
-          # Skopeo copy command
-          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" $DEST_IMAGE
+    # --- 5. Sign the image (Cosign) ---
+    - name: sign-image
+      container:
+        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
+        command:
+          - cosign
+          - sign
+          - --allow-http-registry=true
+          - --key
+          - k8s://{{workflow.namespace}}/cosgin-key
+          - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+        env:
+          - name: DOCKER_CONFIG
+            value: /data/.docker/config.json
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
