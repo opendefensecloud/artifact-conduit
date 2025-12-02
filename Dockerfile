@@ -2,12 +2,15 @@
 FROM --platform=$BUILDPLATFORM golang:1.25 AS builder
 
 WORKDIR /workspace
+RUN go env -w GOMODCACHE=/root/.cache/go-build
+
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
+
 # Cache deps before building and copying source so that we don't need to re-download as much
 # and so that source changes don't invalidate our downloaded layer
-RUN go mod download
+RUN --mount=type=cache,target=/root/.cache/go-build go mod download
 
 # Copy the go source
 COPY api/ api/
@@ -19,7 +22,6 @@ ARG TARGETOS
 ARG TARGETARCH
 
 RUN mkdir bin
-
 
 FROM builder AS apiserver-builder
 RUN --mount=type=cache,target=/root/.cache/go-build \
