@@ -6,6 +6,7 @@ package artifacttype
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -103,7 +104,24 @@ func (artifactTypeStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (artifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	newArtifactType, ok := obj.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("not an ArtifactType"))}
+	}
+
+	oldArtifactType, ok := old.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("old object is not an ArtifactType"))}
+	}
+
+	allErrs := field.ErrorList{}
+
+	// Check if spec has been modified (spec should be immutable)
+	if !reflect.DeepEqual(newArtifactType.Spec, oldArtifactType.Spec) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "spec is immutable and cannot be updated"))
+	}
+
+	return allErrs
 }
 
 // WarningsOnUpdate returns warnings for the given update.
