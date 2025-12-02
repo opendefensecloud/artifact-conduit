@@ -63,7 +63,26 @@ func (artifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, old runti
 }
 
 func (artifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	artifactType, ok := obj.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.Invalid(field.NewPath(""), obj, "expected ArtifactType object")}
+	}
+
+	allErrs := field.ErrorList{}
+
+	// Validate Parameters - check for empty names and duplicates
+	paramNames := make(map[string]bool)
+	for i, param := range artifactType.Spec.Parameters {
+		if param.Name == "" {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "parameters").Index(i).Child("name"), "parameter name is required"))
+		} else if paramNames[param.Name] {
+			allErrs = append(allErrs, field.Duplicate(field.NewPath("spec", "parameters").Index(i).Child("name"), param.Name))
+		} else {
+			paramNames[param.Name] = true
+		}
+	}
+
+	return allErrs
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
