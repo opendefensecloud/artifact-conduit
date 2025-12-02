@@ -3,6 +3,7 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: oci-image-pipeline
 spec:
+  serviceAccountName: arc-workflow
   securityContext:
     fsGroup: 65532
     runAsUser: 65532
@@ -93,8 +94,6 @@ spec:
               cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
-          chmod 777 ${DOCKER_CONFIG}/config.json
-
     # --- 1. Pull Image (Skopeo) ---
     - name: pull-image
       retryStrategy:
@@ -183,7 +182,7 @@ spec:
           [
             "--allow-http-registry=true",
             "--key",
-            "k8s://{{workflow.namespace}}/cosgin-key",
+            "k8s://{{workflow.namespace}}/cosign-key",
             "--predicate",
             "/data/scan-results.json",
             "--type",
@@ -207,7 +206,8 @@ spec:
             "--yes",
             "--allow-http-registry=true",
             "--key",
-            "k8s://{{workflow.namespace}}/cosgin-key {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
+            "k8s://{{workflow.namespace}}/cosign-key",
+            "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
           ]
         env:
           - name: DOCKER_CONFIG
