@@ -13,7 +13,7 @@ metadata:
   name: internal
 spec:
   type: oci # Endpoint Type!
-  remoteURL: dst.zot:80 # port optional, but endpoint can only be used with plain http with helm, if port is specified
+  remoteURL: dst.zot # port optional, but endpoint can only be used with plain http with helm, if port is specified
   secretRef:
     name: dst-reg-secret
   usage: PushOnly
