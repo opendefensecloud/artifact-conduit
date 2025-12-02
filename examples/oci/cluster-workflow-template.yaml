@@ -3,6 +3,10 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: oci-image-pipeline
 spec:
+  securityContext:
+    fsGroup: 65532
+    runAsUser: 65532
+
   # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
     - metadata:
@@ -70,23 +74,31 @@ spec:
           - name: work-volume
             mountPath: /data
 
+        env:
+          - name: DOCKER_CONFIG
+            value: /data/.docker
+
         source: |
           set -euo pipefail
 
           # Conditionally login to source registry
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
               echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."
-              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file /data/.docker/config.json
+              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
           # Conditionally login to destination registry
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."
-              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file /data/.docker/config.json
+              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
+
+          chmod 777 ${DOCKER_CONFIG}/config.json
 
     # --- 1. Pull Image (Skopeo) ---
     - name: pull-image
+      retryStrategy:
+        limit: "2"
 
       script:
         image: quay.io/skopeo/stable:latest
@@ -121,6 +133,7 @@ spec:
 
           # Trivy scan in a directory mode
           trivy image \
+            --cache-dir /data/.trivy/cache \
             --exit-code 1 \
             --severity "{{workflow.parameters.scanSeverity}}" \
             --format json \
@@ -139,6 +152,8 @@ spec:
 
     # --- 3. Push Image (Skopeo) ---
     - name: push-image
+      retryStrategy:
+        limit: "2"
 
       script:
         image: quay.io/skopeo/stable:latest
@@ -162,18 +177,19 @@ spec:
     # --- 4. Attest Scan Results (Cosign) ---
     - name: attest-scan-results
       container:
-        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
-        command:
-          - cosign
-          - attest
-          - --allow-http-registry=true
-          - --key
-          - k8s://{{workflow.namespace}}/cosgin-key
-          - --predicate
-          - /data/scan-results.json
-          - --type
-          - vuln
-          - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+        image: cgr.dev/chainguard/cosign:latest
+        command: [cosign, attest]
+        args:
+          [
+            "--allow-http-registry=true",
+            "--key",
+            "k8s://{{workflow.namespace}}/cosgin-key",
+            "--predicate",
+            "/data/scan-results.json",
+            "--type",
+            "vuln",
+            "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
+          ]
         env:
           - name: DOCKER_CONFIG
             value: /data/.docker
@@ -184,17 +200,19 @@ spec:
     # --- 5. Sign the image (Cosign) ---
     - name: sign-image
       container:
-        image: ghcr.io/sigstore/cosign/cosign:v3.0.2
-        command:
-          - cosign
-          - sign
-          - --allow-http-registry=true
-          - --key
-          - k8s://{{workflow.namespace}}/cosgin-key
-          - "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+        image: cgr.dev/chainguard/cosign:latest
+        command: [cosign, sign]
+        args:
+          [
+            "--yes",
+            "--allow-http-registry=true",
+            "--key",
+            "k8s://{{workflow.namespace}}/cosgin-key {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
+          ]
         env:
           - name: DOCKER_CONFIG
             value: /data/.docker
         volumeMounts:
           - name: work-volume
             mountPath: /data
+            readOnly: true
