@@ -73,11 +73,12 @@ func (artifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) fi
 	// Validate Parameters - check for empty names and duplicates
 	paramNames := make(map[string]bool)
 	for i, param := range artifactType.Spec.Parameters {
-		if param.Name == "" {
+		switch {
+		case param.Name == "":
 			allErrs = append(allErrs, field.Required(field.NewPath("spec", "parameters").Index(i).Child("name"), "parameter name is required"))
-		} else if paramNames[param.Name] {
+		case paramNames[param.Name]:
 			allErrs = append(allErrs, field.Duplicate(field.NewPath("spec", "parameters").Index(i).Child("name"), param.Name))
-		} else {
+		default:
 			paramNames[param.Name] = true
 		}
 	}
