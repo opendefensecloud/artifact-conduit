@@ -63,7 +63,26 @@ func (clusterArtifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, ol
 }
 
 func (clusterArtifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	// Type assertion
+	clusterArtifactType, ok := obj.(*arc.ClusterArtifactType)
+	if !ok {
+		return field.ErrorList{field.Invalid(field.NewPath(""), obj, "expected ClusterArtifactType")}
+	}
+	// Individual validations
+	allErrs := field.ErrorList{}
+	specPath := field.NewPath("spec")
+	// Validate parameters - only check for duplicate values
+	parametersPath := specPath.Child("parameters")
+	seenParams := make(map[string]bool)
+	for i, param := range clusterArtifactType.Spec.Parameters {
+		paramPath := parametersPath.Index(i)
+		if seenParams[param.Name] {
+			allErrs = append(allErrs, field.Duplicate(paramPath.Child("name"), param.Name))
+		} else {
+			seenParams[param.Name] = true
+		}
+	}
+	return allErrs
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
@@ -83,7 +102,46 @@ func (clusterArtifactTypeStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (clusterArtifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	// Type assertion
+	clusterArtifactType, ok := obj.(*arc.ClusterArtifactType)
+	if !ok {
+		return field.ErrorList{field.Invalid(field.NewPath(""), obj, "expected ClusterArtifactType")}
+	}
+	// Individual validations
+	allErrs := field.ErrorList{}
+	specPath := field.NewPath("spec")
+	rulesPath := specPath.Child("rules")
+	// Validate SrcTypes and DstTypes
+	for i, srcType := range clusterArtifactType.Spec.Rules.SrcTypes {
+		if srcType == "" {
+			allErrs = append(allErrs, field.Required(rulesPath.Child("srcTypes").Index(i), "source type cannot be empty"))
+		}
+	}
+	for i, dstType := range clusterArtifactType.Spec.Rules.DstTypes {
+		if dstType == "" {
+			allErrs = append(allErrs, field.Required(rulesPath.Child("dstTypes").Index(i), "destination type cannot be empty"))
+		}
+	}
+	// Validate parameters
+	parametersPath := specPath.Child("parameters")
+	seenParams := make(map[string]bool)
+	for i, param := range clusterArtifactType.Spec.Parameters {
+		paramPath := parametersPath.Index(i)
+		switch {
+		case param.Name == "":
+			allErrs = append(allErrs, field.Required(paramPath.Child("name"), "parameter name cannot be empty"))
+		case seenParams[param.Name]:
+			allErrs = append(allErrs, field.Duplicate(paramPath.Child("name"), param.Name))
+		default:
+			seenParams[param.Name] = true
+		}
+	}
+	// Validate WorkflowTemplateRef
+	templateRefPath := specPath.Child("workflowTemplateRef")
+	if clusterArtifactType.Spec.WorkflowTemplateRef.Name == "" {
+		allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
+	}
+	return allErrs
 }
 
 // WarningsOnUpdate returns warnings for the given update.
