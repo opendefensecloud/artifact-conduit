@@ -78,5 +78,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ matrix.image.target }}
-          cache-from: type=registry,ref=user/app:buildcache
-          cache-to: type=registry,ref=user/app:buildcache,mode=max
+          cache-from: type=registry,ref=${{ github.repository_owner }}/${{ matrix.image.name }}:buildcache
+          cache-to: type=registry,ref=${{ github.repository_owner }}/${{ matrix.image.name }}:buildcache,mode=max
