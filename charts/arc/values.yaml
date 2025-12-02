@@ -103,7 +103,7 @@ apiserver:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-      - ALL
+        - ALL
 
   # -- Liveness probe configuration
   livenessProbe:
@@ -239,11 +239,11 @@ controller:
   # -- Resource limits and requests
   resources:
     limits:
-      cpu: 100m
-      memory: 30Mi
+      cpu: 300m
+      memory: 128Mi
     requests:
       cpu: 100m
-      memory: 20Mi
+      memory: 64Mi
 
   # -- Pod security context
   podSecurityContext:
@@ -256,7 +256,7 @@ controller:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-      - ALL
+        - ALL
 
   # -- Liveness probe configuration
   livenessProbe:
@@ -371,7 +371,7 @@ etcd:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
-      - ALL
+        - ALL
 
   # -- Liveness probe configuration
   livenessProbe:
@@ -442,9 +442,9 @@ certManager:
   # Certificate configuration
   certificate:
     # -- Certificate duration
-    duration: 2160h  # 90 days
+    duration: 2160h # 90 days
     # -- Renew before duration
-    renewBefore: 720h  # 30 days
+    renewBefore: 720h # 30 days
 
 # RBAC configuration
 rbac:
