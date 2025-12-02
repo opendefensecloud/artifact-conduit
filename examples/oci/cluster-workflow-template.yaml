@@ -18,6 +18,17 @@ spec:
           requests:
             storage: 10Gi
 
+  # Mount certificate bundle
+  volumes:
+    - name: ca-certificates
+      configMap:
+        name: "root-bundle"
+        defaultMode: 0644
+        optional: false
+        items:
+          - key: trust-bundle.pem
+            path: trust-bundle.pem
+
   # --- Input Parameters ---
   arguments:
     parameters:
@@ -30,8 +41,6 @@ spec:
       - name: specImage # The source image path (e.g., library/alpine:3.18)
       - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
       - name: scanSeverity # Additional parameter coming from ArtifactType
-      - name: srcTLSVerify # Additional parameter coming from ArtifactType
-      - name: dstTLSVerify # Additional parameter coming from ArtifactType
 
   entrypoint: oci-pipeline
 
@@ -74,6 +83,9 @@ spec:
             mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
 
         env:
           - name: DOCKER_CONFIG
@@ -85,13 +97,13 @@ spec:
           # Conditionally login to source registry
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
               echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."
-              cat /secrets/src/password | skopeo login --tls-verify={{workflow.parameters.srcTLSVerify}} -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
+              cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
           # Conditionally login to destination registry
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."
-              cat /secrets/dst/password | skopeo login --tls-verify={{workflow.parameters.dstTLSVerify}} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
+              cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
     # --- 1. Pull Image (Skopeo) ---
@@ -106,13 +118,17 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
+
         source: |
           set -euo pipefail
 
           echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
           mkdir -p /data/image-storage
 
-          skopeo copy --preserve-digests --src-tls-verify={{workflow.parameters.srcTLSVerify}} --multi-arch all docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}} "oci:/data/image-storage/scanned-image"
+          skopeo copy --preserve-digests --multi-arch all docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}} "oci:/data/image-storage/scanned-image"
 
         env:
           - name: REGISTRY_AUTH_FILE
@@ -126,6 +142,9 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
 
         source: |
           echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"
@@ -162,12 +181,15 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
 
         source: |
           set -euo pipefail
 
           echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
-          skopeo copy --dest-tls-verify={{workflow.parameters.dstTLSVerify}} "oci:/data/image-storage/scanned-image" docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}
+          skopeo copy "oci:/data/image-storage/scanned-image" docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}
 
         env:
           - name: REGISTRY_AUTH_FILE
@@ -195,6 +217,9 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
 
     # --- 5. Sign the image (Cosign) ---
     - name: sign-image
@@ -215,4 +240,7 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+            readOnly: true
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
             readOnly: true

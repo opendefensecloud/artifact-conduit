@@ -11,9 +11,5 @@ spec:
   parameters:
     - name: scanSeverity
       value: HIGH,CRITICAL
-    - name: srcTLSVerify
-      value: "true"
-    - name: dstTLSVerify
-      value: "false"
   workflowTemplateRef: # argo.ClusterWorkflowTemplate
     name: oci-image-pipeline
