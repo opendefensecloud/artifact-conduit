@@ -51,22 +51,29 @@ spec:
         - - name: authenticate-registries
             template: authenticate-registries
 
+        - - name: check-availability
+            template: check-availability
+
         - - name: pull-image
             template: pull-image
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
 
         - - name: scan-image
             template: scan-image
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
 
         - - name: push-image
             template: push-image
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
 
         - - name: attest-scan
             template: attest-scan-results
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
 
-        - - name: sign-image
-            template: sign-image
+        # - - name: sign-image
+        #     template: sign-image
 
-    # --- 0. Authenticate (Skopeo) ---
+    # --- Authenticate (Skopeo) ---
     - name: authenticate-registries
 
       script:
@@ -74,7 +81,7 @@ spec:
         command: [sh, -c]
 
         # Mount the volumes
-        volumeMounts:
+        volumeMounts: &volumeMounts
           - name: src-secret-vol
             readOnly: true
             mountPath: /secrets/src
@@ -87,9 +94,11 @@ spec:
             name: ca-certificates
             readOnly: true
 
-        env:
+        env: &env
           - name: DOCKER_CONFIG
             value: /data/.docker
+          - name: REGISTRY_AUTH_FILE
+            value: /data/.docker/config.json
 
         source: |
           set -euo pipefail
@@ -106,7 +115,31 @@ spec:
               cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
-    # --- 1. Pull Image (Skopeo) ---
+    # --- Check Availability (Skopeo) ---
+    - name: check-availability
+      retryStrategy:
+        limit: "2"
+
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+        env: *env
+
+        source: |
+          skopeo inspect "docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}" >/dev/null 2>&1
+
+          EXIT_CODE=$?
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+              echo "available"
+          else
+              # Image does not exist
+              echo "unavailable"
+          fi
+          exit 0
+
+    # --- Pull Image (Skopeo) ---
     - name: pull-image
       retryStrategy:
         limit: "2"
@@ -114,13 +147,8 @@ spec:
       script:
         image: quay.io/skopeo/stable:latest
         command: [sh, -c]
-        # Mount the secret volume to a temporary directory
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
+        volumeMounts: *volumeMounts
+        env: *env
 
         source: |
           set -euo pipefail
@@ -130,21 +158,11 @@ spec:
 
           skopeo copy --preserve-digests --multi-arch all docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}} "oci:/data/image-storage/scanned-image"
 
-        env:
-          - name: REGISTRY_AUTH_FILE
-            value: /data/.docker/config.json
-
-    # --- 2. Scan Image (Trivy) ---
     - name: scan-image
       script:
         image: aquasec/trivy:latest
         command: [sh, -c]
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
+        volumeMounts: *volumeMounts
 
         source: |
           echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"
@@ -164,11 +182,9 @@ spec:
               echo "❌ Scan failed!"
               exit 1
           fi
-        env:
-          - name: PATH
-            value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+        env: *env
 
-    # --- 3. Push Image (Skopeo) ---
+    # --- Push Image (Skopeo) ---
     - name: push-image
       retryStrategy:
         limit: "2"
@@ -178,24 +194,17 @@ spec:
         command: [sh, -c]
 
         # Mount the secret volume to a temporary directory
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
+        volumeMounts: *volumeMounts
 
         source: |
           set -euo pipefail
 
           echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
-          skopeo copy "oci:/data/image-storage/scanned-image" docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}
+          skopeo copy --dest-precompute-digests --preserve-digests "oci:/data/image-storage/scanned-image" docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}
 
-        env:
-          - name: REGISTRY_AUTH_FILE
-            value: /data/.docker/config.json
+        env: *env
 
-    # --- 4. Attest Scan Results (Cosign) ---
+    # --- Attest Scan Results (Cosign) ---
     - name: attest-scan-results
       container:
         image: cgr.dev/chainguard/cosign:latest
@@ -211,17 +220,10 @@ spec:
             "vuln",
             "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
           ]
-        env:
-          - name: DOCKER_CONFIG
-            value: /data/.docker
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
+        env: *env
+        volumeMounts: *volumeMounts
 
-    # --- 5. Sign the image (Cosign) ---
+    # --- Sign the image (Cosign) ---
     - name: sign-image
       container:
         image: cgr.dev/chainguard/cosign:latest
@@ -234,13 +236,5 @@ spec:
             "k8s://{{workflow.namespace}}/cosign-key",
             "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
           ]
-        env:
-          - name: DOCKER_CONFIG
-            value: /data/.docker
-        volumeMounts:
-          - name: work-volume
-            mountPath: /data
-            readOnly: true
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
+        env: *env
+        volumeMounts: *volumeMounts
