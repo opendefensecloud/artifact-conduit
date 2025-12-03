@@ -22,11 +22,13 @@ const (
 	certmanagerVersion = "v1.19.1"
 	certmanagerURLTmpl = "https://github.com/cert-manager/cert-manager/releases/download/%s/cert-manager.yaml"
 
+	trustmanagerChart   = "oci://quay.io/jetstack/charts/trust-manager"
+	trustmanagerVersion = "v0.20.2"
+
 	argoWorkflowsVersion = "v3.7.4"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
-	zotVersion = "0.1.x"
 
 	apiserverImage = "apiserver:e2e"
 	managerImage   = "manager:e2e"
@@ -56,9 +58,6 @@ var (
 	}()
 
 	kubeConfigPath = ""
-
-	isCertManagerAlreadyInstalled   = false
-	isArgoWorkflowsAlreadyInstalled = false
 )
 
 // TestE2E runs the end-to-end (e2e) test suite for the project. These tests execute in an isolated,
@@ -85,16 +84,19 @@ var _ = BeforeSuite(func() {
 	f.Sync()
 	kubeConfigPath = f.Name()
 
-	// Build images
-	By("building the apiserver image")
-	cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
-	_, err = run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
+	go func() {
+		defer GinkgoRecover()
+		// Build images
+		By("building the apiserver image")
+		cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
+		_, err = run(cmd)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
 
-	By("building the manager image")
-	cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
-	_, err = run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
+		By("building the manager image")
+		cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
+		_, err = run(cmd)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
+	}()
 
 	// Load images
 	By("loading the apiserver image on Kind")
@@ -105,53 +107,23 @@ var _ = BeforeSuite(func() {
 	err = loadImageToKindClusterWithName(managerImage)
 	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
 
-	By("checking if cert manager is installed already")
-	isCertManagerAlreadyInstalled = areCRDsInstalled(
-		"certificates.cert-manager.io",
-		"issuers.cert-manager.io",
-		"clusterissuers.cert-manager.io",
-		"certificaterequests.cert-manager.io",
-		"orders.acme.cert-manager.io",
-		"challenges.acme.cert-manager.io",
-	)
-	if !isCertManagerAlreadyInstalled {
-		logf("Installing CertManager...\n")
-		Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
-	} else {
-		logf("WARNING: CertManager is already installed. Skipping installation...\n")
-	}
+	logf("Installing CertManager...\n")
+	Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
 
-	isArgoWorkflowsAlreadyInstalled = areCRDsInstalled(
-		"workflows.argoproj.io",
-		"workflowtemplates.argoproj.io",
-		"clusterworkflowtemplates.argoproj.io",
-	)
-	if !isArgoWorkflowsAlreadyInstalled {
-		logf("Installing Argo Workflows...\n")
-		Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
-	} else {
-		logf("WARNING: Argo Workflows is already installed. Skipping installation...\n")
-	}
+	logf("Installing TrustManager...\n")
+	Expect(installTrustManager()).To(Succeed(), "Failed to install TrustManager")
 
-	dir, err := getProjectDir()
-	Expect(err).NotTo(HaveOccurred())
-	cmd = exec.Command(helmBinary, "install", "--create-namespace", "--namespace=zot", fmt.Sprintf("--repo=%s", zotRepoURL), "-f", filepath.Join(dir, "test", "fixtures", "dst-zot.yaml"), "dst", "zot")
-	_, err = run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to install zot")
+	logf("Installing Argo Workflows...\n")
+	Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
+
+	logf("Installing Zot...\n")
+	Expect(installZot()).To(Succeed(), "Failed to install Argo Workflows")
 })
 
 var _ = AfterSuite(func() {
-	logf("Uninstalling Zot...\n")
-	cmd := exec.Command(helmBinary, "uninstall", "--namespace=zot", "dst")
+	cmd := exec.Command("kubectl", "delete", "namespace", "zot")
 	_, _ = run(cmd)
-	logf("Uninstalling CertManager...\n")
-	if !isCertManagerAlreadyInstalled {
-		uninstallCertManager()
-	}
-	logf("Uninstalling Argo Workflows...\n")
-	if !isArgoWorkflowsAlreadyInstalled {
-		uninstallArgoWorkflows()
-	}
+
 	if kubeConfigPath != "" {
 		os.Remove(kubeConfigPath)
 	}
@@ -187,23 +159,47 @@ func loadImageToKindClusterWithName(name string) error {
 	return err
 }
 
-func areCRDsInstalled(crds ...string) bool {
-	cmd := exec.Command("kubectl", "get", "crds")
-	output, err := run(cmd)
+func installZot() error {
+	dir, err := getProjectDir()
+
+	Expect(err).NotTo(HaveOccurred())
+	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=zot", fmt.Sprintf("--repo=%s", zotRepoURL), "-f", filepath.Join(dir, "test", "fixtures", "dst-zot.yaml"), "dst", "zot")
+	_, err = run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to install zot")
+	cmd = exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "zot-cert.yaml"))
+	_, err = run(cmd)
+
+	return err
+}
+
+func installTrustManager() error {
+	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=cert-manager", "trust-manager", trustmanagerChart, "--version", trustmanagerVersion)
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	// Wait for trust-manager to be ready, which can take time if trust-manager
+	// was re-installed after uninstalling on a cluster.
+	cmd = exec.Command("kubectl", "wait", "deployment.apps/trust-manager",
+		"--for", "condition=Available",
+		"--namespace", "cert-manager",
+		"--timeout", "5m",
+	)
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	dir, err := getProjectDir()
 	if err != nil {
-		return false
+		return err
 	}
 
-	crdList := getNonEmptyLines(output)
-	for _, crd := range crds {
-		for _, line := range crdList {
-			if strings.Contains(line, crd) {
-				return true
-			}
-		}
-	}
+	cmd = exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "trustmanager.yaml"))
+	_, err = run(cmd)
 
-	return false
+	return err
 }
 
 // installCertManager installs the cert manager bundle.
@@ -213,6 +209,7 @@ func installCertManager() error {
 	if _, err := run(cmd); err != nil {
 		return err
 	}
+
 	// Wait for cert-manager-webhook to be ready, which can take time if cert-manager
 	// was re-installed after uninstalling on a cluster.
 	cmd = exec.Command("kubectl", "wait", "deployment.apps/cert-manager-webhook",
@@ -221,29 +218,12 @@ func installCertManager() error {
 		"--timeout", "5m",
 	)
 
-	_, err := run(cmd)
+	dir, err := getProjectDir()
+	Expect(err).NotTo(HaveOccurred())
+	cmd = exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "certmanager.yaml"))
+	_, err = run(cmd)
+
 	return err
-}
-
-func uninstallCertManager() {
-	url := fmt.Sprintf(certmanagerURLTmpl, certmanagerVersion)
-	cmd := exec.Command("kubectl", "delete", "-f", url)
-	if _, err := run(cmd); err != nil {
-		warnError(err)
-	}
-
-	// Delete leftover leases in kube-system (not cleaned by default)
-	kubeSystemLeases := []string{
-		"cert-manager-cainjector-leader-election",
-		"cert-manager-controller",
-	}
-	for _, lease := range kubeSystemLeases {
-		cmd = exec.Command("kubectl", "delete", "lease", lease,
-			"-n", "kube-system", "--ignore-not-found", "--force", "--grace-period=0")
-		if _, err := run(cmd); err != nil {
-			warnError(err)
-		}
-	}
 }
 
 func installArgoWorkflows() error {
@@ -270,20 +250,6 @@ func installArgoWorkflows() error {
 	return err
 }
 
-func uninstallArgoWorkflows() {
-	url := fmt.Sprintf(argoWorkflowsURLTmpl, argoWorkflowsVersion)
-	cmd := exec.Command("kubectl", "delete", "-n", "argo", "-f", url)
-	if _, err := run(cmd); err != nil {
-		warnError(err)
-	}
-
-	// Delete the argo namespace
-	cmd = exec.Command("kubectl", "delete", "namespace", "argo", "--ignore-not-found", "--force", "--grace-period=0")
-	if _, err := run(cmd); err != nil {
-		warnError(err)
-	}
-}
-
 // getNonEmptyLines converts given command output string into individual objects
 // according to line breakers, and ignores the empty elements in it.
 func getNonEmptyLines(output string) []string {
@@ -306,10 +272,6 @@ func getProjectDir() (string, error) {
 	}
 	wd = strings.ReplaceAll(wd, "/test/e2e", "")
 	return wd, nil
-}
-
-func warnError(err error) {
-	logf("warning: %v\n", err)
 }
 
 func logf(format string, a ...any) {

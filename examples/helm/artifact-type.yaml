@@ -12,7 +12,5 @@ spec:
   parameters:
     - name: scanSeverity
       value: HIGH,CRITICAL
-    - name: dstPlainHTTP
-      value: "true"
   workflowTemplateRef: # argo.Workflow
     name: helm-chart-pipeline
