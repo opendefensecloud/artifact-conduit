@@ -1,4 +1,6 @@
 name: Helm Lint
+permissions:
+  contents: read
 
 on:
   push:
