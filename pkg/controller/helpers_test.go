@@ -19,9 +19,9 @@ var _ = Describe("Helper Functions", func() {
 	Describe("generatePodNameFromNodeStatus", func() {
 		It("should generate pod name from node status", func() {
 			node := wfv1alpha1.NodeStatus{
-				ID:          "workflow-abc123-def456",
-				BoundaryID:  "workflow-abc123",
-				DisplayName: "step-name",
+				ID:           "workflow-abc123-def456",
+				BoundaryID:   "workflow-abc123",
+				TemplateName: "step-name",
 			}
 
 			result := generatePodNameFromNodeStatus(node)
@@ -30,9 +30,9 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should handle node ID without dashes", func() {
 			node := wfv1alpha1.NodeStatus{
-				ID:          "simple",
-				BoundaryID:  "boundary",
-				DisplayName: "display",
+				ID:           "simple",
+				BoundaryID:   "boundary",
+				TemplateName: "display",
 			}
 
 			result := generatePodNameFromNodeStatus(node)
