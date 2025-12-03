@@ -22,7 +22,7 @@ metadata:
   name: internal
 spec:
   type: oci # Endpoint Type!
-  remoteURL: dst.zot:80 # port required for helm workflow to push to plain http
+  remoteURL: dst.zot
   secretRef:
     name: dst-reg-secret
   usage: PushOnly
@@ -50,4 +50,3 @@ spec:
         repo: myexamples
         chart: hello-world
         version: v0.1.0
-

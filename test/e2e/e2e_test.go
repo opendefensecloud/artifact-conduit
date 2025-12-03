@@ -57,8 +57,12 @@ var _ = Describe("ARC", Ordered, func() {
 	// After all tests have been executed, clean up by undeploying the controller, uninstalling CRDs,
 	// and deleting the namespace.
 	AfterAll(func() {
+		By("removing all orders")
+		cmd := exec.Command("kubectl", "delete", "orders", "-n", "default", "--all")
+		_, _ = run(cmd)
+
 		By("undeploying the apiserver and controller-manager")
-		cmd := exec.Command(helmBinary, "uninstall", "-n", namespace, "arc")
+		cmd = exec.Command(helmBinary, "uninstall", "-n", namespace, "arc")
 		_, _ = run(cmd)
 
 		By("removing manager namespace")
@@ -165,12 +169,14 @@ var _ = Describe("ARC", Ordered, func() {
 		})
 
 		It("should prepare default namespace for Argo Workflows", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "role.yaml"))
+			cmd := exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
-			cmd = exec.Command("kubectl", "create", "rolebinding", "-n", "default", "--role=executor", "--serviceaccount=default:default", "executor")
+
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "service-account.yaml"))
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
+
 		})
 
 		It("should run workflows of oci order successfully", func() {
@@ -178,7 +184,7 @@ var _ = Describe("ARC", Ordered, func() {
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
