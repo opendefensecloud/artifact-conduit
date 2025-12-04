@@ -43,98 +43,97 @@ spec:
     # --- Main Pipeline Entrypoint ---
     - name: oci-pipeline
       steps:
-        - - name: check-availability
-            template: check-availability
+        # - - name: check-availability
+        #     template: check-availability
 
         - - name: determine-size-s3
             template: determine-size-s3
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
+            when: "{{workflow.parameters.srcType}} == 's3'"
 
         - - name: determine-size-http
             template: determine-size-http
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
+            when: " {{workflow.parameters.srcType}} == 'http'"
 
         - - name: generate-volume-s3
             template: generate-volume
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
+            when: " {{workflow.parameters.srcType}} == 's3'"
             arguments:
               parameters:
-                - name: file-size-bytes
-                  value: "{{steps.determine-size-s3.outputs.parameters.file-size-bytes}}"
+                - name: file-size
+                  value: "{{steps.determine-size-s3.outputs.result}}"
 
         - - name: generate-volume-http
             template: generate-volume
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
+            when: "{{workflow.parameters.srcType}} == 'http'"
             arguments:
               parameters:
-                - name: file-size-bytes
-                  value: "{{steps.determine-size-s3.outputs.parameters.file-size-bytes}}"
+                - name: file-size
+                  value: "{{steps.determine-size-http.outputs.result}}"
 
         - - name: pull-s3
             template: pull-s3
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
+            when: "{{workflow.parameters.srcType}} == 's3'"
 
-        - - name: pull-http
+        - - name: pull-httpj
             template: pull-http
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
+            when: "{{workflow.parameters.srcType}} == 'http'"
 
-    # --- Check Availability in Destination (aws-cli) ---
-    - name: check-availability
-      retryStrategy:
-        limit: "2"
+    # # --- Check Availability in Destination (aws-cli) ---
+    # - name: check-availability
+    #   retryStrategy:
+    #     limit: "2"
 
+    #   script:
+    #     image: amazon/aws-cli:latest
+    #     command: [sh, -c]
+
+    #     # Mount the volumes
+    #     volumeMounts:
+    #       - name: dst-secret-vol
+    #         readOnly: true
+    #         mountPath: /secrets/dst
+    #       - mountPath: /etc/ssl/certs/
+    #         name: ca-certificates
+    #         readOnly: true
+
+    #     envFrom:
+    #       - secretRef:
+    #           name: s3-secret
+
+    #     source: |
+    #       if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
+    #         bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
+    #         key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+
+    #         md5=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text)
+    #         if [ "$EXIT_CODE" -eq 0 ]; then
+    #           if [[ $md5 != *${{workflow.parameters.specMd5}}* ]]; then
+    #             echo "md5 mismatch, aborting"
+    #             exit 1
+    #           else
+    #             echo "available"
+    #           fi
+    #         else
+    #             echo "unavailable"
+    #         fi
+    #       else
+    #         aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+    #         if [ "$EXIT_CODE" -eq 0 ]; then
+    #             echo "available"
+    #         else
+    #             echo "unavailable"
+    #         fi
+    #       fi
+    #       exit 0
+
+    - name: determine-size-s3
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-
-        # Mount the volumes
-        volumeMounts:
-          - name: dst-secret-vol
-            readOnly: true
-            mountPath: /secrets/dst
-          - mountPath: /etc/ssl/certs/
-            name: ca-certificates
-            readOnly: true
 
         envFrom:
           - secretRef:
               name: s3-secret
-
-        source: |
-          if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
-            bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
-            key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
-
-            md5=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text)
-            if [ "$EXIT_CODE" -eq 0 ]; then
-              if [[ $md5 != *${{workflow.parameters.specMd5}}* ]]; then
-                echo "md5 mismatch, aborting"
-                exit 1
-              else 
-                echo "available"
-              fi
-            else
-                echo "unavailable"
-            fi
-          else
-            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
-            if [ "$EXIT_CODE" -eq 0 ]; then
-                echo "available"
-            else
-                echo "unavailable"
-            fi
-          fi
-          exit 0
-
-    - name: determine-size-s3
-      outputs:
-        parameters:
-          - name: file-size-bytes
-            valueFrom:
-              path: /tmp/file-size-bytes.txt
-      script:
-        image: amazon/aws-cli:latest
-        command: [sh, -c]
 
         source: |
           set -euo pipefail
@@ -148,22 +147,14 @@ spec:
             exit 1
           fi
 
-          echo "Filesize is $FILE_SIZE_BYTES bytes"
-
           if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
-              echo "100M" > /tmp/file-size-bytes.txt
+              echo "100Mi"
+              exit 0
           fi
 
-          fileSizeInMi=$(echo "$(expr ${FILE_SIZE_BYTES} / 1024)M")
-
-          echo "$FILE_SIZE_BYTES" > /tmp/file-size-bytes.txt
+          echo "$(expr ${FILE_SIZE_BYTES} / 1024)Mi"
 
     - name: determine-size-http
-      outputs:
-        parameters:
-          - name: file-size-bytes
-            valueFrom:
-              path: /tmp/file-size-bytes.txt
       script:
         image: quay.io/curl/curl:latest
         command: [sh, -c]
@@ -177,18 +168,17 @@ spec:
             exit 1
           fi
 
-          echo "Filesize is $FILE_SIZE_BYTES bytes"
-
           if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
-              echo "100M" > /tmp/file-size-bytes.txt
+              echo "100Mi"
+              exit 0
           fi
 
-          fileSizeInMi=$(echo "$(expr ${FILE_SIZE_BYTES} / 1024)M")
+          echo "$(expr ${FILE_SIZE_BYTES} / 1024)Mi"
 
     - name: generate-volume
       inputs:
         parameters:
-          - name: file-size-bytes
+          - name: file-size
       resource:
         action: create
         setOwnerReference: true
@@ -201,7 +191,7 @@ spec:
             accessModes: ['ReadWriteOnce']
             resources:
               requests:
-                storage: '{{inputs.parameters.file-size-bytes}}'
+                storage: "{{inputs.parameters.file-size}}"
 
     - name: pull-s3
       volumes: &volumes
