@@ -60,7 +60,7 @@ spec:
             arguments:
               parameters:
                 - name: file-size-bytes
-                  value: "{{steps.determine-size-s3.outputs.result}}"
+                  value: "{{steps.determine-size-s3.outputs.parameters.file-size-bytes}}"
 
         - - name: generate-volume-http
             template: generate-volume
@@ -68,19 +68,15 @@ spec:
             arguments:
               parameters:
                 - name: file-size-bytes
-                  value: "{{steps.determine-size-http.outputs.result}}"
+                  value: "{{steps.determine-size-s3.outputs.parameters.file-size-bytes}}"
 
-        # - - name: pull-blob
-        #     template: pull-blob
-        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+        - - name: pull-s3
+            template: pull-s3
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
 
-        # - - name: scan-blob
-        #     template: scan-blob
-        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
-
-        # - - name: push-blob
-        #     template: push-blob
-        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+        - - name: pull-http
+            template: pull-http
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
 
     # --- Check Availability in Destination (aws-cli) ---
     - name: check-availability
@@ -105,15 +101,13 @@ spec:
               name: s3-secret
 
         source: |
-          // Check if md5 is not empty
-          if [[ ! -z ${{workflow.parameters.md5}} ]]; then
-            local bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
-            local key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+          if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
+            bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
+            key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
 
-            // Get the md5 hash of the file
             md5=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text)
             if [ "$EXIT_CODE" -eq 0 ]; then
-              if [[ $md5 != *${{workflow.parameters.md5}}* ]]; then
+              if [[ $md5 != *${{workflow.parameters.specMd5}}* ]]; then
                 echo "md5 mismatch, aborting"
                 exit 1
               else 
@@ -123,7 +117,6 @@ spec:
                 echo "unavailable"
             fi
           else
-            // Check if file exists
             aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
             if [ "$EXIT_CODE" -eq 0 ]; then
                 echo "available"
@@ -135,9 +128,10 @@ spec:
 
     - name: determine-size-s3
       outputs:
-        result:
-          valueFrom:
-            path: /tmp/file-size-bytes.txt
+        parameters:
+          - name: file-size-bytes
+            valueFrom:
+              path: /tmp/file-size-bytes.txt
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
@@ -145,21 +139,31 @@ spec:
         source: |
           set -euo pipefail
 
-          local bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
-          local key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+          bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
+          key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
 
           FILE_SIZE_BYTES=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$bucket" --key "$key" --query 'ContentLength' --output text)
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
           fi
+
+          echo "Filesize is $FILE_SIZE_BYTES bytes"
+
+          if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
+              echo "100M" > /tmp/file-size-bytes.txt
+          fi
+
+          fileSizeInMi=$(echo "$(expr ${FILE_SIZE_BYTES} / 1024)M")
+
           echo "$FILE_SIZE_BYTES" > /tmp/file-size-bytes.txt
 
     - name: determine-size-http
       outputs:
-        result:
-          valueFrom:
-            path: /tmp/file-size-bytes.txt
+        parameters:
+          - name: file-size-bytes
+            valueFrom:
+              path: /tmp/file-size-bytes.txt
       script:
         image: quay.io/curl/curl:latest
         command: [sh, -c]
@@ -172,7 +176,14 @@ spec:
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
           fi
-          echo "$FILE_SIZE_BYTES" > /tmp/file-size-bytes.txt
+
+          echo "Filesize is $FILE_SIZE_BYTES bytes"
+
+          if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
+              echo "100M" > /tmp/file-size-bytes.txt
+          fi
+
+          fileSizeInMi=$(echo "$(expr ${FILE_SIZE_BYTES} / 1024)M")
 
     - name: generate-volume
       inputs:
@@ -191,3 +202,38 @@ spec:
             resources:
               requests:
                 storage: '{{inputs.parameters.file-size-bytes}}'
+
+    - name: pull-s3
+      volumes: &volumes
+        - name: work-volume
+          persistentVolumeClaim:
+            claimName: "{{ workflow.name }}"
+      script:
+        image: amazon/aws-cli:latest
+        command: [sh, -c]
+        volumeMounts: &volumeMounts
+          - name: work-volume
+            mountPath: /data
+
+        source: |
+          set -euo pipefail
+
+          mkdir -p /data/storage
+
+          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
+          aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
+
+    - name: pull-http
+      volumes: *volumes
+      script:
+        image: quay.io/curl/curl:latest
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+
+        source: |
+          set -euo pipefail
+
+          mkdir -p /data/storage
+
+          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
+          curl --output "/data/storage/file" "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"

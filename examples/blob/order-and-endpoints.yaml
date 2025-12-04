@@ -4,7 +4,7 @@ metadata:
   name: src-s3
 spec:
   type: s3 # Endpoint Type!
-  remoteURL: s3://src.minio
+  remoteURL: http://src.minio
   usage: PullOnly
   secretRef:
     name: s3-secret
@@ -24,7 +24,7 @@ metadata:
   name: internal-s3
 spec:
   type: s3 # Endpoint Type!
-  remoteURL: s3://dst.minio
+  remoteURL: http://dst.minio
   secretRef:
     name: s3-secret
   usage: PushOnly
@@ -41,13 +41,13 @@ spec:
       name: internal-s3
   artifacts:
     - type: blob # Artifact Type!
+      srcRef:
+        name: src-http
       spec:
         key: "opendefensecloud/artifact-conduit/refs/heads/feature/101-example-for-blob-file-transfer-s3/examples/blob/file.txt"
         md5: "5eb63bbbe01eeed093cb22bb8f5acdc3" # optional
         override: "test/result.txt" # optional, defaults to key
     - type: blob # Artifact Type!
-      srcRef:
-        name: src-http
       spec:
         key: "test/file.txt"
         md5: "5eb63bbbe01eeed093cb22bb8f5acdc3" # optional
