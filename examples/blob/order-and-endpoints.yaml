@@ -7,7 +7,7 @@ spec:
   remoteURL: s3://src.minio
   usage: PullOnly
   secretRef:
-    name: src-s3-secret
+    name: s3-secret
 ---
 apiVersion: arc.bwi.de/v1alpha1
 kind: Endpoint
@@ -17,13 +17,13 @@ spec:
   type: s3 # Endpoint Type!
   remoteURL: s3://dst.minio
   secretRef:
-    name: dst-s3-secret
+    name: s3-secret
   usage: PushOnly
 ---
 apiVersion: arc.bwi.de/v1alpha1
 kind: Order
 metadata:
-  name: example-oci-order
+  name: example-blob-order
 spec:
   defaults:
     srcRef:
@@ -33,6 +33,6 @@ spec:
   artifacts:
     - type: s3 # Artifact Type!
       spec:
-        file: "some/file.txt"
+        file: "test/file.txt"
         sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9" # optional
-        override: "some/other/file.txt" # optional, default "some/file.txt"
+        override: "test/result.txt" # optional, default "some/file.txt"

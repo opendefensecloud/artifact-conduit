@@ -1,0 +1,22 @@
+fullnameOverride: src
+
+rootUser: "admin"
+rootPassword: "adminadmin"
+
+persistence:
+  enabled: true
+  size: 1Gi
+
+mode: standalone
+
+resources:
+  requests:
+    memory: 2Gi
+
+buckets:
+  - name: test
+    policy: download
+
+serviceAccount:
+  create: true
+  name: "minio-sa-src"

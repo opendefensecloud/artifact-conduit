@@ -168,6 +168,16 @@ var _ = Describe("ARC", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
+		It("should create blob workflowtemplate and artifact type", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "blob", "cluster-workflow-template.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "blob", "artifact-type.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+		})
+
 		It("should prepare default namespace for Argo Workflows", func() {
 			cmd := exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
 			_, err := run(cmd)
@@ -176,7 +186,42 @@ var _ = Describe("ARC", Ordered, func() {
 			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "service-account.yaml"))
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
+		})
 
+		It("should run workflows of blob order successfully", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "blob", "order-and-endpoints.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			verifyOrderSuccessful := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-blob-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
+				output, err := run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("SucceededSucceeded")) // two artifacts are ordered
+			}
+			Eventually(verifyOrderSuccessful).Should(Succeed())
+		})
+
+		It("should run workflows of helm order successfully", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "helm", "order-and-endpoints.yaml"))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			verifyOrderSuccessful := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-helm-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
+				output, err := run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("SucceededSucceeded")) // two artifacts are ordered
+			}
+			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})
 
 		It("should run workflows of oci order successfully", func() {
@@ -197,24 +242,6 @@ var _ = Describe("ARC", Ordered, func() {
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(output).To(Equal("Succeeded"))
-			}
-			Eventually(verifyOrderSuccessful).Should(Succeed())
-		})
-
-		It("should run workflows of helm order successfully", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "helm", "order-and-endpoints.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			verifyOrderSuccessful := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-helm-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("SucceededSucceeded")) // two artifacts are ordered
 			}
 			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})
