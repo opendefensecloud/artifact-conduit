@@ -34,6 +34,7 @@ spec:
       - name: dstSecret
       - name: specFile # The source file path (e.g., file.txt)
       - name: specOverride # The target file path (e.g., some/other.txt)
+      - name: specMd5 # The md5 checksum of the source file (e.g., 5eb63bbbe01eeed093cb22bb8f5acdc3), optional
       - name: storageQuota # Additional parameter coming from ArtifactType
 
   entrypoint: oci-pipeline
@@ -84,10 +85,30 @@ spec:
               name: s3-secret
 
         source: |
-          aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specFile}}" >/dev/null 2>&1
-          if [ "$EXIT_CODE" -eq 0 ]; then
-              echo "available"
+          // Check if md5 is not empty
+          if [[ ! -z ${{workflow.parameters.md5}} ]]; then
+            local bucket=$(echo {{workflow.parameters.specFile}} | cut -d/ -f1)
+            local key=$(echo {{workflow.parameters.specFile}} | cut -d/ -f2-)
+
+            // Get the md5 hash of the file
+            md5 = $(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text --no-cli-pager)
+            if [ "$EXIT_CODE" -eq 0 ]; then
+              if [[ $md5 != *${{workflow.parameters.md5}}* ]]; then
+                echo "md5 mismatch, aborting"
+                exit 1
+              else 
+                echo "available"
+              fi
+            else
+                echo "unavailable"
+            fi
           else
-              echo "unavailable"
+            // Check if file exists
+            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specFile}}" >/dev/null 2>&1
+            if [ "$EXIT_CODE" -eq 0 ]; then
+                echo "available"
+            else
+                echo "unavailable"
+            fi
           fi
           exit 0
