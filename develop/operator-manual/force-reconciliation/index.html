@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1706,6 +1706,10 @@
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># ...</span>
 </code></pre></div>
+<p>Set the annotation as follows:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>annotate<span class="w"> </span>--overwrite<span class="w"> </span>orders.arc.bwi.de/&lt;order-name&gt;<span class="w"> </span><span class="se">\</span>
+<span class="s2">"arc.opendefense.cloud/forceAt"</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span>
+</code></pre></div>
 <h2 id="force-reconcile-logic">Force Reconcile Logic<a class="headerlink" href="#force-reconcile-logic" title="Permanent link">¶</a></h2>
 <p>Controllers check the annotation and compare it against the last force reconciliation timestamp:
 For <code>Order</code>, force reconciliation deletes all <code>ArtifactWorkflows</code> to trigger fresh creation. For <code>ArtifactWorkflow</code>, it deletes the Argo Workflow.</p>
@@ -1721,12 +1725,12 @@ For <code>Order</code>, force reconciliation deletes all <code>ArtifactWorkflows
 </thead>
 <tbody>
 <tr>
-<td><code>status.lastReconcileAt</code></td>
+<td><code>.status.lastReconcileAt</code></td>
 <td><code>metav1.Time</code></td>
 <td>Timestamp of most recent reconciliation</td>
 </tr>
 <tr>
-<td><code>status.lastForceAt</code></td>
+<td><code>.status.lastForceAt</code></td>
 <td><code>metav1.Time</code></td>
 <td>Timestamp of most recent force reconciliation</td>
 </tr>
