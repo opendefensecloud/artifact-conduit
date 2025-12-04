@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ClusterWorkflowTemplate
 metadata:
-  name: s3-pipeline
+  name: blob-pipeline
 spec:
   retryStrategy:
     retryPolicy: OnError
@@ -32,7 +32,7 @@ spec:
       - name: dstType
       - name: dstRemoteURL
       - name: dstSecret
-      - name: specFile # The source file path (e.g., file.txt)
+      - name: specKey # The source file path (e.g., file.txt)
       - name: specOverride # The target file path (e.g., some/other.txt)
       - name: specMd5 # The md5 checksum of the source file (e.g., 5eb63bbbe01eeed093cb22bb8f5acdc3), optional
       - name: storageQuota # Additional parameter coming from ArtifactType
@@ -46,9 +46,29 @@ spec:
         - - name: check-availability
             template: check-availability
 
-        # - - name: create-pvc
-        #     template: create-pvc
-        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+        - - name: determine-size-s3
+            template: determine-size-s3
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
+
+        - - name: determine-size-http
+            template: determine-size-http
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
+
+        - - name: generate-volume-s3
+            template: generate-volume
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 's3'"
+            arguments:
+              parameters:
+                - name: file-size-bytes
+                  value: "{{steps.determine-size-s3.outputs.result}}"
+
+        - - name: generate-volume-http
+            template: generate-volume
+            when: "{{ steps.check-availability.outputs.result }} == 'unavailable' && {{workflow.parameters.srcType}} == 'http'"
+            arguments:
+              parameters:
+                - name: file-size-bytes
+                  value: "{{steps.determine-size-http.outputs.result}}"
 
         # - - name: pull-blob
         #     template: pull-blob
@@ -62,7 +82,7 @@ spec:
         #     template: push-blob
         #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
 
-    # --- Check Availability (aws-cli) ---
+    # --- Check Availability in Destination (aws-cli) ---
     - name: check-availability
       retryStrategy:
         limit: "2"
@@ -87,11 +107,11 @@ spec:
         source: |
           // Check if md5 is not empty
           if [[ ! -z ${{workflow.parameters.md5}} ]]; then
-            local bucket=$(echo {{workflow.parameters.specFile}} | cut -d/ -f1)
-            local key=$(echo {{workflow.parameters.specFile}} | cut -d/ -f2-)
+            local bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
+            local key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
 
             // Get the md5 hash of the file
-            md5 = $(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text --no-cli-pager)
+            md5=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text)
             if [ "$EXIT_CODE" -eq 0 ]; then
               if [[ $md5 != *${{workflow.parameters.md5}}* ]]; then
                 echo "md5 mismatch, aborting"
@@ -104,7 +124,7 @@ spec:
             fi
           else
             // Check if file exists
-            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specFile}}" >/dev/null 2>&1
+            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
             if [ "$EXIT_CODE" -eq 0 ]; then
                 echo "available"
             else
@@ -112,3 +132,62 @@ spec:
             fi
           fi
           exit 0
+
+    - name: determine-size-s3
+      outputs:
+        result:
+          valueFrom:
+            path: /tmp/file-size-bytes.txt
+      script:
+        image: amazon/aws-cli:latest
+        command: [sh, -c]
+
+        source: |
+          set -euo pipefail
+
+          local bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
+          local key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+
+          FILE_SIZE_BYTES=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$bucket" --key "$key" --query 'ContentLength' --output text)
+
+          if [ -z "$FILE_SIZE_BYTES" ]; then
+            exit 1
+          fi
+          echo "$FILE_SIZE_BYTES" > /tmp/file-size-bytes.txt
+
+    - name: determine-size-http
+      outputs:
+        result:
+          valueFrom:
+            path: /tmp/file-size-bytes.txt
+      script:
+        image: quay.io/curl/curl:latest
+        command: [sh, -c]
+
+        source: |
+          set -euo pipefail
+
+          FILE_SIZE_BYTES=$(curl -sI "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}" | grep -i Content-Length | awk '{print $2}')
+
+          if [ -z "$FILE_SIZE_BYTES" ]; then
+            exit 1
+          fi
+          echo "$FILE_SIZE_BYTES" > /tmp/file-size-bytes.txt
+
+    - name: generate-volume
+      inputs:
+        parameters:
+          - name: file-size-bytes
+      resource:
+        action: create
+        setOwnerReference: true
+        manifest: |
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: {{ workflow.name }}
+          spec:
+            accessModes: ['ReadWriteOnce']
+            resources:
+              requests:
+                storage: '{{inputs.parameters.file-size-bytes}}'
