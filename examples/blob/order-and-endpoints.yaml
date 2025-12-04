@@ -1,0 +1,38 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: src-s3
+spec:
+  type: s3 # Endpoint Type!
+  remoteURL: s3://src.minio
+  usage: PullOnly
+  secretRef:
+    name: src-s3-secret
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal-s3
+spec:
+  type: s3 # Endpoint Type!
+  remoteURL: s3://dst.minio
+  secretRef:
+    name: dst-s3-secret
+  usage: PushOnly
+---
+apiVersion: arc.bwi.de/v1alpha1
+kind: Order
+metadata:
+  name: example-oci-order
+spec:
+  defaults:
+    srcRef:
+      name: src-s3
+    dstRef:
+      name: internal-s3
+  artifacts:
+    - type: s3 # Artifact Type!
+      spec:
+        file: "some/file.txt"
+        sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9" # optional
+        override: "some/other/file.txt" # optional, default "some/file.txt"
