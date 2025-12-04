@@ -37,11 +37,11 @@ spec:
       - name: specMd5 # The md5 checksum of the source file (e.g., 5eb63bbbe01eeed093cb22bb8f5acdc3), optional
       - name: storageQuota # Additional parameter coming from ArtifactType
 
-  entrypoint: oci-pipeline
+  entrypoint: pipeline
 
   templates:
     # --- Main Pipeline Entrypoint ---
-    - name: oci-pipeline
+    - name: pipeline
       steps:
         # - - name: check-availability
         #     template: check-availability
@@ -49,10 +49,6 @@ spec:
         - - name: determine-size-s3
             template: determine-size-s3
             when: "{{workflow.parameters.srcType}} == 's3'"
-
-        - - name: determine-size-http
-            template: determine-size-http
-            when: " {{workflow.parameters.srcType}} == 'http'"
 
         - - name: generate-volume-s3
             template: generate-volume
@@ -62,6 +58,14 @@ spec:
                 - name: file-size
                   value: "{{steps.determine-size-s3.outputs.result}}"
 
+        - - name: pull-s3
+            template: pull-s3
+            when: "{{workflow.parameters.srcType}} == 's3'"
+
+        - - name: determine-size-http
+            template: determine-size-http
+            when: " {{workflow.parameters.srcType}} == 'http'"
+
         - - name: generate-volume-http
             template: generate-volume
             when: "{{workflow.parameters.srcType}} == 'http'"
@@ -70,11 +74,7 @@ spec:
                 - name: file-size
                   value: "{{steps.determine-size-http.outputs.result}}"
 
-        - - name: pull-s3
-            template: pull-s3
-            when: "{{workflow.parameters.srcType}} == 's3'"
-
-        - - name: pull-httpj
+        - - name: pull-http
             template: pull-http
             when: "{{workflow.parameters.srcType}} == 'http'"
 
@@ -138,10 +138,10 @@ spec:
         source: |
           set -euo pipefail
 
-          bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
-          key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+          BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
+          KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
 
-          FILE_SIZE_BYTES=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$bucket" --key "$key" --query 'ContentLength' --output text)
+          FILE_SIZE_BYTES=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
