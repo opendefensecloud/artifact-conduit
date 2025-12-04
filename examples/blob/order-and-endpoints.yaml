@@ -34,5 +34,5 @@ spec:
     - type: s3 # Artifact Type!
       spec:
         file: "test/file.txt"
-        sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9" # optional
+        md5: "5eb63bbbe01eeed093cb22bb8f5acdc3" # optional
         override: "test/result.txt" # optional, default "some/file.txt"
