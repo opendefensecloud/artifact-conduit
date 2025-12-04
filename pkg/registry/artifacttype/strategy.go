@@ -6,6 +6,7 @@ package artifacttype
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -63,7 +64,27 @@ func (artifactTypeStrategy) PrepareForUpdate(ctx context.Context, obj, old runti
 }
 
 func (artifactTypeStrategy) Validate(ctx context.Context, obj runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	artifactType, ok := obj.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.Invalid(field.NewPath(""), obj, "expected ArtifactType object")}
+	}
+
+	allErrs := field.ErrorList{}
+
+	// Validate Parameters - check for empty names and duplicates
+	paramNames := make(map[string]bool)
+	for i, param := range artifactType.Spec.Parameters {
+		switch {
+		case param.Name == "":
+			allErrs = append(allErrs, field.Required(field.NewPath("spec", "parameters").Index(i).Child("name"), "parameter name is required"))
+		case paramNames[param.Name]:
+			allErrs = append(allErrs, field.Duplicate(field.NewPath("spec", "parameters").Index(i).Child("name"), param.Name))
+		default:
+			paramNames[param.Name] = true
+		}
+	}
+
+	return allErrs
 }
 
 // WarningsOnCreate returns warnings for the creation of the given object.
@@ -83,7 +104,24 @@ func (artifactTypeStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (artifactTypeStrategy) ValidateUpdate(ctx context.Context, obj, old runtime.Object) field.ErrorList {
-	return field.ErrorList{}
+	newArtifactType, ok := obj.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("not an ArtifactType"))}
+	}
+
+	oldArtifactType, ok := old.(*arc.ArtifactType)
+	if !ok {
+		return field.ErrorList{field.InternalError(field.NewPath(""), fmt.Errorf("old object is not an ArtifactType"))}
+	}
+
+	allErrs := field.ErrorList{}
+
+	// Check if spec has been modified (spec should be immutable)
+	if !reflect.DeepEqual(newArtifactType.Spec, oldArtifactType.Spec) {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec"), "spec is immutable and cannot be updated"))
+	}
+
+	return allErrs
 }
 
 // WarningsOnUpdate returns warnings for the given update.
