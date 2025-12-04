@@ -3,6 +3,8 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: helm-chart-pipeline
 spec:
+  serviceAccountName: arc-workflow
+
   # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
     - metadata:

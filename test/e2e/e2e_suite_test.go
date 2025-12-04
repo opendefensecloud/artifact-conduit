@@ -28,6 +28,8 @@ const (
 	argoWorkflowsVersion = "v3.7.4"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
+	minioRepoUrl = "https://charts.min.io"
+
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
 
 	apiserverImage = "apiserver:e2e"
@@ -118,10 +120,16 @@ var _ = BeforeSuite(func() {
 
 	logf("Installing Zot...\n")
 	Expect(installZot()).To(Succeed(), "Failed to install Argo Workflows")
+
+	logf("Installing Minio...\n")
+	Expect(installMinio()).To(Succeed(), "Failed to install Minio")
 })
 
 var _ = AfterSuite(func() {
 	cmd := exec.Command("kubectl", "delete", "namespace", "zot")
+	_, _ = run(cmd)
+
+	cmd = exec.Command("kubectl", "delete", "namespace", "minio")
 	_, _ = run(cmd)
 
 	if kubeConfigPath != "" {
@@ -156,6 +164,21 @@ func loadImageToKindClusterWithName(name string) error {
 	kindOptions := []string{"load", "docker-image", name, "--name", kindCluster}
 	cmd := exec.Command(kindBinary, kindOptions...)
 	_, err := run(cmd)
+	return err
+}
+
+func installMinio() error {
+	dir, err := getProjectDir()
+	Expect(err).NotTo(HaveOccurred())
+
+	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=minio", fmt.Sprintf("--repo=%s", minioRepoUrl), "-f", filepath.Join(dir, "test", "fixtures", "dst-minio.yaml"), "dst", "minio")
+	_, err = run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+
+	cmd = exec.Command(helmBinary, "upgrade", "--install", "--namespace=minio", fmt.Sprintf("--repo=%s", minioRepoUrl), "-f", filepath.Join(dir, "test", "fixtures", "src-minio.yaml"), "src", "minio")
+	_, err = run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+
 	return err
 }
 
