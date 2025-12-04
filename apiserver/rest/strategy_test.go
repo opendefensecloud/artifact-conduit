@@ -33,6 +33,7 @@ func (t *testObj) GetObjectMeta() *metav1.ObjectMeta { return &t.ObjectMeta }
 func (t *testObj) NamespaceScoped() bool             { return true }
 func (t *testObj) New() runtime.Object               { return &testObj{} }
 func (t *testObj) NewList() runtime.Object           { return &testObjList{} }
+
 func (t *testObj) GetGroupResource() schema.GroupResource {
 	return schema.GroupResource{Group: "arc", Resource: "testobjs"}
 }
@@ -161,5 +162,39 @@ var _ = Describe("DefaultStrategy", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(tbl).ToNot(BeNil())
 		Expect(tbl.Rows).To(HaveLen(1))
+	})
+})
+
+var _ = Describe("PrepareForUpdaterStrategy", func() {
+	It("should call OverrideFn on PrepareForUpdate", func() {
+		called := false
+		var gotCtx context.Context
+		var gotObj, gotOld runtime.Object
+		s := &PrepareForUpdaterStrategy{
+			RESTUpdateStrategy: &DefaultStrategy{Object: &testObj{}},
+			OverrideFn: func(ctx context.Context, obj, old runtime.Object) {
+				called = true
+				gotCtx = ctx
+				gotObj = obj
+				gotOld = old
+			},
+		}
+		obj := &testObj{Status: "new"}
+		old := &testObj{Status: "old"}
+		//nolint:staticcheck
+		ctx := context.WithValue(context.Background(), "key", "val")
+		s.PrepareForUpdate(ctx, obj, old)
+		Expect(called).To(BeTrue())
+		Expect(gotCtx).To(Equal(ctx))
+		Expect(gotObj).To(Equal(obj))
+		Expect(gotOld).To(Equal(old))
+	})
+
+	It("should panic if OverrideFn is nil", func() {
+		s := &PrepareForUpdaterStrategy{}
+		obj := &testObj{}
+		old := &testObj{}
+		// Should not panic, but does nothing
+		Expect(func() { s.PrepareForUpdate(context.Background(), obj, old) }).To(Panic())
 	})
 })
