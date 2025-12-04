@@ -49,7 +49,6 @@ func init() {
 func main() {
 	code := apiserver.NewBuilder(scheme).
 		WithComponentName(componentName).
-		WithGroupName(arc.GroupName). // TODO: required or can be computed/retrieved somehow?
 		WithOpenAPIDefinitions(componentName, "v0.1.0", openapi.GetOpenAPIDefinitions).
 		WithExtraAdmissionInitializers(func(c *server.RecommendedConfig) (apiserver.SharedInformerFactory, []admission.PluginInitializer, error) {
 			client, err := clientset.NewForConfig(c.LoopbackClientConfig)
@@ -64,9 +63,6 @@ func main() {
 		With(apiserver.Resource(&arc.Endpoint{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.ArtifactType{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.ClusterArtifactType{}, arcv1alpha1.SchemeGroupVersion)).
-		WithOrderedGroupVersions([]schema.GroupVersion{
-			arcv1alpha1.SchemeGroupVersion,
-		}). // TODO: can we make explicit OrderedGroupVersions optional?
 		Execute()
 	os.Exit(code)
 }

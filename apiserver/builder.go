@@ -40,11 +40,10 @@ type APIGroupFn func(scheme *runtime.Scheme, codecs serializer.CodecFactory, c *
 
 type Builder struct {
 	componentName                          string
-	groupName                              string
 	alternateDNS                           []string
 	scheme                                 *runtime.Scheme
 	codecs                                 serializer.CodecFactory
-	orderedGroupVersions                   []schema.GroupVersion
+	groupVersions                          []schema.GroupVersion
 	skipDefaultComponentGlobalsRegistrySet bool
 	extraAdmissionInitializers             ExtraAdmissionInitializers
 	sharedInformerFactories                []SharedInformerFactory
@@ -60,16 +59,12 @@ func NewBuilder(scheme *runtime.Scheme) *Builder {
 		codecs:                  serializer.NewCodecFactory(scheme),
 		sharedInformerFactories: []SharedInformerFactory{},
 		apiGroupFns:             []APIGroupFn{},
+		groupVersions:           []schema.GroupVersion{},
 	}
 }
 
 func (b *Builder) WithComponentName(n string) *Builder {
 	b.componentName = n
-	return b
-}
-
-func (b *Builder) WithGroupName(n string) *Builder {
-	b.groupName = n
 	return b
 }
 
@@ -94,8 +89,9 @@ func (b *Builder) WithAPIGroupFn(fn APIGroupFn) *Builder {
 	return b
 }
 
-func (b *Builder) With(fn APIGroupFn) *Builder {
-	return b.WithAPIGroupFn(fn)
+func (b *Builder) With(rh ResourceHandler) *Builder {
+	_ = b.WithAPIGroupFn(rh.apiGroupFn)
+	return b.WithGroupVersions(rh.groupVersions...)
 }
 
 func (b *Builder) WithExtraAdmissionInitializers(f ExtraAdmissionInitializers) *Builder {
@@ -114,23 +110,32 @@ func (b *Builder) WithSharedInformerFactory(f SharedInformerFactory) *Builder {
 	return b
 }
 
-// WithOrderedGroupVersions sets the ordered group versions which are used
+// WithGroupVersions sets the ordered group versions which are used
 // to configure storage encoding/decoding for the API server. This must be
 // provided by callers so that the storage codec matches the registered types
 // in the scheme.
-func (b *Builder) WithOrderedGroupVersions(gvs []schema.GroupVersion) *Builder {
-	b.orderedGroupVersions = gvs
+func (b *Builder) WithGroupVersions(gvs ...schema.GroupVersion) *Builder {
+	b.groupVersions = append(b.groupVersions, gvs...)
 	return b
 }
 
 func (b *Builder) Execute() int {
+	groupName := ""
+	for _, gv := range b.groupVersions {
+		if groupName != "" && groupName != gv.Group {
+			panic("all exposed resources expected to have the same group")
+		}
+		groupName = gv.Group
+	}
+	orderedGroupVersions := b.scheme.PrioritizedVersionsForGroup(groupName)
+
 	if b.recommendedOptions == nil {
 		b.recommendedOptions = genericoptions.NewRecommendedOptions(
-			fmt.Sprintf("/registry/%s", b.groupName),
-			b.codecs.LegacyCodec(b.orderedGroupVersions...),
+			fmt.Sprintf("/registry/%s", groupName),
+			b.codecs.LegacyCodec(orderedGroupVersions...),
 		)
 	}
-	b.recommendedOptions.Etcd.StorageConfig.EncodeVersioner = schema.GroupVersions(b.orderedGroupVersions)
+	b.recommendedOptions.Etcd.StorageConfig.EncodeVersioner = schema.GroupVersions(orderedGroupVersions)
 	if b.extraAdmissionInitializers != nil {
 		b.recommendedOptions.ExtraAdmissionInitializers = func(c *genericapiserver.RecommendedConfig) ([]admission.PluginInitializer, error) {
 			informerFactory, pluginInitialisers, err := b.extraAdmissionInitializers(c)
@@ -159,7 +164,7 @@ func (b *Builder) Execute() int {
 		},
 		RunE: func(c *cobra.Command, args []string) error {
 			// Validate essential builder configuration early to provide a helpful error
-			if len(b.orderedGroupVersions) == 0 {
+			if len(orderedGroupVersions) == 0 {
 				return fmt.Errorf("orderedGroupVersions not set on Builder; call WithOrderedGroupVersions(...) before Execute")
 			}
 			errors := []error{}
