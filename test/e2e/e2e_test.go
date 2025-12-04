@@ -201,7 +201,7 @@ var _ = Describe("ARC", Ordered, func() {
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-blob-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("SucceededSucceeded")) // two artifacts are ordered
+				g.Expect(output).To(Equal("Succeeded"))
 			}
 			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})

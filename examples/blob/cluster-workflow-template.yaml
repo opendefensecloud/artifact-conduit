@@ -81,10 +81,10 @@ spec:
 
         envFrom:
           - secretRef:
-              name: src-secret-vol
+              name: s3-secret
 
         source: |
-          aws --endpoint-url "{{inputs.parameters.srcRemoteURL}}" s3 ls "{{inputs.parameters.specFile}}" >/dev/null 2>&1
+          aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specFile}}" >/dev/null 2>&1
           if [ "$EXIT_CODE" -eq 0 ]; then
               echo "available"
           else
