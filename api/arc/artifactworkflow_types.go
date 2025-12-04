@@ -4,8 +4,11 @@
 package arc
 
 import (
+	"go.opendefense.cloud/arc/apiserver/resource"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // WorkflowPhase is an enum tracking in which phase a Workflow can be.
@@ -84,4 +87,33 @@ type ArtifactWorkflowList struct {
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	Items []ArtifactWorkflow `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+var _ resource.Object = &ArtifactWorkflow{}
+var _ resource.ObjectWithStatusSubResource = &ArtifactWorkflow{}
+
+func (o *ArtifactWorkflow) GetObjectMeta() *metav1.ObjectMeta {
+	return &o.ObjectMeta
+}
+
+func (o *ArtifactWorkflow) NamespaceScoped() bool {
+	return true
+}
+
+func (o *ArtifactWorkflow) New() runtime.Object {
+	return &ArtifactWorkflow{}
+}
+
+func (o *ArtifactWorkflow) NewList() runtime.Object {
+	return &ArtifactWorkflowList{}
+}
+
+func (o *ArtifactWorkflow) GetGroupResource() schema.GroupResource {
+	return SchemeGroupVersion.WithResource("artifactworkflows").GroupResource()
+}
+
+func (o *ArtifactWorkflow) CopyStatusTo(obj runtime.Object) {
+	if obj, ok := obj.(*ArtifactWorkflow); ok {
+		obj.Status = o.Status
+	}
 }

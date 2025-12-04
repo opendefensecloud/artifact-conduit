@@ -8,6 +8,7 @@ import (
 	"net"
 
 	"github.com/spf13/cobra"
+	"go.opendefense.cloud/arc/apiserver/rest"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -91,6 +92,10 @@ func (b *Builder) WithAPIGroupFn(fn APIGroupFn) *Builder {
 	}
 	b.apiGroupFns = append(b.apiGroupFns, fn)
 	return b
+}
+
+func (b *Builder) With(fn APIGroupFn) *Builder {
+	return b.WithAPIGroupFn(fn)
 }
 
 func (b *Builder) WithExtraAdmissionInitializers(f ExtraAdmissionInitializers) *Builder {
@@ -184,12 +189,30 @@ func (b *Builder) Execute() int {
 			}
 
 			// TODO: install API groups with their storage backends!
+			apiGroupMap := map[string]*genericapiserver.APIGroupInfo{}
 			for _, fn := range b.apiGroupFns {
 				apiGroupInfo := fn(b.scheme, b.codecs, &completedConfig)
-				if err := server.InstallAPIGroup(&apiGroupInfo); err != nil {
-					return err
+				groupName := ""
+				for _, gv := range apiGroupInfo.PrioritizedVersions {
+					groupName = gv.Group
+					break
+				}
+				if groupName == "" {
+					return fmt.Errorf("empty group name is not allowed")
 				}
 
+				if apiGroupInfoPrev, ok := apiGroupMap[groupName]; ok {
+					apiGroupInfoPrev.VersionedResourcesStorageMap = mergeVersionedResourcesStorageMap(apiGroupInfoPrev.VersionedResourcesStorageMap, apiGroupInfo.VersionedResourcesStorageMap)
+				} else {
+					apiGroupMap[groupName] = &apiGroupInfo
+				}
+
+			}
+
+			for _, apiGroupInfo := range apiGroupMap {
+				if err := server.InstallAPIGroup(apiGroupInfo); err != nil {
+					return err
+				}
 			}
 
 			server.AddPostStartHookOrDie(fmt.Sprintf("start-%s-server-informers", b.componentName), func(context genericapiserver.PostStartHookContext) error {
@@ -260,4 +283,25 @@ func (b *Builder) Execute() int {
 	// TODO: add kube version compatibility matrix and feature gates
 
 	return cli.Run(cmd)
+}
+
+func mergeVersionedResourcesStorageMap(a map[string]map[string]rest.Storage, b map[string]map[string]rest.Storage) map[string]map[string]rest.Storage {
+	c := map[string]map[string]rest.Storage{}
+	for version, storeMap := range a {
+		if _, ok := c[version]; !ok {
+			c[version] = map[string]rest.Storage{}
+		}
+		for resource, store := range storeMap {
+			c[version][resource] = store
+		}
+	}
+	for version, storeMap := range b {
+		if _, ok := c[version]; !ok {
+			c[version] = map[string]rest.Storage{}
+		}
+		for resource, store := range storeMap {
+			c[version][resource] = store
+		}
+	}
+	return c
 }

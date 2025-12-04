@@ -4,8 +4,11 @@
 package arc
 
 import (
+	"go.opendefense.cloud/arc/apiserver/resource"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // EndpointUsage is the usage of the endpoint.
@@ -58,4 +61,26 @@ type EndpointList struct {
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
 	Items []Endpoint `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+var _ resource.Object = &Endpoint{}
+
+func (o *Endpoint) GetObjectMeta() *metav1.ObjectMeta {
+	return &o.ObjectMeta
+}
+
+func (o *Endpoint) NamespaceScoped() bool {
+	return true
+}
+
+func (o *Endpoint) New() runtime.Object {
+	return &Endpoint{}
+}
+
+func (o *Endpoint) NewList() runtime.Object {
+	return &EndpointList{}
+}
+
+func (o *Endpoint) GetGroupResource() schema.GroupResource {
+	return SchemeGroupVersion.WithResource("endpoints").GroupResource()
 }
