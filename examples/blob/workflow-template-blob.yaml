@@ -1,0 +1,93 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: s3-pipeline
+spec:
+  retryStrategy:
+    retryPolicy: OnError
+    limit: 1
+
+  serviceAccountName: arc-workflow
+  securityContext:
+    fsGroup: 65532
+    runAsUser: 65532
+
+  # Mount certificate bundle
+  volumes:
+    - name: ca-certificates
+      configMap:
+        name: "root-bundle"
+        defaultMode: 0644
+        optional: false
+        items:
+          - key: trust-bundle.pem
+            path: trust-bundle.pem
+
+  # --- Input Parameters ---
+  arguments:
+    parameters:
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      - name: specFile # The source file path (e.g., file.txt)
+      - name: specOverride # The target file path (e.g., some/other.txt)
+      - name: storageQuota # Additional parameter coming from ArtifactType
+
+  entrypoint: oci-pipeline
+
+  templates:
+    # --- Main Pipeline Entrypoint ---
+    - name: oci-pipeline
+      steps:
+        - - name: check-availability
+            template: check-availability
+
+        # - - name: create-pvc
+        #     template: create-pvc
+        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+
+        # - - name: pull-blob
+        #     template: pull-blob
+        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+
+        # - - name: scan-blob
+        #     template: scan-blob
+        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+
+        # - - name: push-blob
+        #     template: push-blob
+        #     when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+
+    # --- Check Availability (aws-cli) ---
+    - name: check-availability
+      retryStrategy:
+        limit: "2"
+
+      script:
+        image: amazon/aws-cli:latest
+        command: [sh, -c]
+
+        # Mount the volumes
+        volumeMounts:
+          - name: dst-secret-vol
+            readOnly: true
+            mountPath: /secrets/dst
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
+
+        envFrom:
+          - secretRef:
+              name: src-secret-vol
+
+        source: |
+          aws --endpoint-url "{{inputs.parameters.srcRemoteURL}}" s3 ls "{{inputs.parameters.specFile}}" >/dev/null 2>&1
+          if [ "$EXIT_CODE" -eq 0 ]; then
+              echo "available"
+          else
+              echo "unavailable"
+          fi
+          exit 0

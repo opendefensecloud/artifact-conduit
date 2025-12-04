@@ -1,0 +1,15 @@
+apiVersion: arc.bwi.de/v1alpha1
+kind: ClusterArtifactType
+metadata:
+  name: s3
+spec:
+  rules:
+    srcTypes: # Endpoint Types
+      - s3
+    dstTypes:
+      - s3
+  parameters:
+    - name: storageQuota
+      value: "10Gi"
+  workflowTemplateRef: # argo.ClusterWorkflowTemplate
+    name: s3-pipeline
