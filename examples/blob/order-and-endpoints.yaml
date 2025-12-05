@@ -46,9 +46,9 @@ spec:
       spec:
         key: "opendefensecloud/artifact-conduit/refs/heads/feature/101-example-for-blob-file-transfer-s3/examples/blob/file.txt"
         md5: "5eb63bbbe01eeed093cb22bb8f5acdc3" # optional
-        override: "test/result.txt" # optional, defaults to key
+        override: "test/result-http.txt" # optional, defaults to key
     - type: blob # Artifact Type!
       spec:
         key: "test/file.txt"
         md5: "5eb63bbbe01eeed093cb22bb8f5acdc3" # optional
-        override: "test/result.txt" # optional, defaults to key
+        override: "test/result-s3.txt" # optional, defaults to key
