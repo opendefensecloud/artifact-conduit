@@ -1,7 +1,7 @@
 fullnameOverride: dst
 service:
   type: ClusterIP
-  port: 80
+  port: 443
 persistence: true
 pvc:
   storage: 1Gi
@@ -45,7 +45,22 @@ configFiles:
             "users": ["admin"],
             "actions": ["read", "create", "update", "delete"]
           }
+        },
+        "tls": {
+          "cert":"/var/lib/ssl/tls.crt",
+          "key":"/var/lib/ssl/tls.key"
         }
       },
       "log": { "level": "debug" }
     }
+httpGet:
+  scheme: HTTPS
+  port: 5000
+extraVolumes:
+  - name: cert
+    secret:
+      secretName: zot-tls
+extraVolumeMounts:
+  - mountPath: /var/lib/ssl
+    name: cert
+    readOnly: true

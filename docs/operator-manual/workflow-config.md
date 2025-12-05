@@ -1,7 +1,7 @@
 # Workflow Config
 
 !!! note
-    
+
     Throughout this walkthrough we only cover `ArtifactType` and `WorkflowTemplate`.
     However please note, that cluster-wide equivalents exist (`ClusterArtifactType` and `ClusterWorkflowTemplate`).
 
@@ -14,7 +14,7 @@ The following diagram illustrates how ARC resources work together to instantiate
 ```mermaid
 graph TB
     Order["📋 Order<br/>(User Request)"]
-    ArtifactWorkflow["📦 ArtifactWorkflow"]
+    ClusterArtifactType["📦 ClusterArtifactType"]
     ArtifactTypeDef["🏷️ ArtifactType"]
     SrcEndpoint["🔌 Endpoint (Source)"]
     DstEndpoint["🔌 Endpoint (Destination)"]
@@ -23,13 +23,13 @@ graph TB
     WorkflowTemplate["⚙️ WorkflowTemplate"]
     Workflow["🚀 Workflow"]
 
-    Order -->|creates| ArtifactWorkflow
+    Order -->|creates| ClusterArtifactType
     Order -->|references| SrcEndpoint
     Order -->|references| DstEndpoint
     Order -->|specifies type| ArtifactTypeDef
-    ArtifactWorkflow -->|references| WorkflowTemplate
-    ArtifactWorkflow -->|references| SrcSecret
-    ArtifactWorkflow -->|references| DstSecret
+    ClusterArtifactType -->|references| WorkflowTemplate
+    ClusterArtifactType -->|references| SrcSecret
+    ClusterArtifactType -->|references| DstSecret
 
     ArtifactTypeDef -->|validates src/dst types| Order
     ArtifactTypeDef -->|references| WorkflowTemplate
@@ -38,12 +38,12 @@ graph TB
     DstEndpoint -->|references| DstSecret
 
     WorkflowTemplate -->|blueprint for| Workflow
-    ArtifactWorkflow -->|provides params & instantiates| Workflow
+    ClusterArtifactType -->|provides params & instantiates| Workflow
     SrcSecret -->|mounts to| Workflow
     DstSecret -->|mounts to| Workflow
 
     style Order stroke:#e1f5ff,stroke-width:2px
-    style ArtifactWorkflow stroke:#f3e5f5,stroke-width:2px
+    style ClusterArtifactType stroke:#f3e5f5,stroke-width:2px
     style ArtifactTypeDef stroke:#e8f5e9,stroke-width:2px
     style SrcEndpoint stroke:#fff3e0,stroke-width:2px
     style DstEndpoint stroke:#fff3e0,stroke-width:2px
@@ -61,7 +61,7 @@ A workflow created by ARC is composed out of three parts:
 2. Parameters passed to the entrypoint of the workflow
 3. A mount for the source and destination secrets respectively
 
-When a `ArtifactWorkflow` is created (usually by an `Order` from a user) it might look as follows:
+When a `ClusterArtifactType` is created (usually by an `Order` from a user) it might look as follows:
 
 ```yaml
 {% include "../../examples/artifact-workflow.yaml" %}
@@ -73,15 +73,15 @@ The two referenced `Endpoints` by `srcRef` and `dstRef` might look as follows re
 {% include "../../examples/endpoint.yaml" %}
 ```
 
-How these objects are tied into a workflow is described by the `ArtifactType`:
+How these objects are tied into a workflow is described by the `ClusterArtifactType`:
 
 ```yaml
 {% include "../../examples/artifact-type.yaml" %}
 ```
 
-The `ArtifactWorkflow` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
+The `ClusterArtifactType` defines which `ArtifactType` is used. In our case `oci` and therefore the controller will instantiate the `oci-workflow-template`.
 
-The two endpoints specified by the `ArtifactWorkflow` are compliant as the workflow does only support endpoints of the type `oci`. It is important to understand that there are both endpoint types and artifact types.
+The two endpoints specified by the `ClusterArtifactType` are compliant as the workflow does only support endpoints of the type `oci`. It is important to understand that there are both endpoint types and artifact types.
 
 The controller will verify the endpoints and retrieve the associated secrets.
 
@@ -104,15 +104,9 @@ The parameters do not contain secrets, but can be used to interact with third-pa
 
 !!! note
 
-    Parameters can come from the `Order` and `ArtifactType`. These parameters are merged when creating the `ArtifactWorkflow` with `ArtifactType` taking precedence over `Order`.
+    Parameters can come from the `Order` and `ArtifactType`. These parameters are merged when creating the `ClusterArtifactType` with `ArtifactType` taking precedence over `Order`.
 
 However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
-
-Using `oras` in a workflow might therefore look as follows:
-
-```bash
-oras pull -u "$(cat /secret/src/username)" -p "$(cat /secret/src/password)" {{ workflow.parameters.srcRemoteURL }}/{{ workflow.parameters.spec.image }}
-```
 
 ## Example for an OCI usecase
 
@@ -134,8 +128,5 @@ These are the example secrets for pulling and pushing.
 
 ### Workflow Example
 
-To create a `Workflow` based on the template the following `yaml` can be used.
-
-```yaml
-{% include "../../examples/workflow-oci.yaml" %}
-```
+There are many example below [examples](https://github.com/opendefensecloud/artifact-conduit/tree/main/examples) for different usecases.
+Examples for Helm, OCI, OCM and Blob stores are available in the corresponding subdirectories.

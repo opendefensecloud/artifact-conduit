@@ -18,7 +18,7 @@ import (
 
 func generatePodNameFromNodeStatus(node wfv1alpha1.NodeStatus) string {
 	podId := node.ID[strings.LastIndex(node.ID, "-")+1:]
-	return fmt.Sprintf("%s-%s-%s", node.BoundaryID, node.DisplayName, podId)
+	return fmt.Sprintf("%s-%s-%s", node.BoundaryID, node.TemplateName, podId)
 }
 
 func namespacedName(namespace, name string) types.NamespacedName {

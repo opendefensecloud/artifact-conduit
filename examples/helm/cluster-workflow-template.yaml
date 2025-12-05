@@ -13,6 +13,17 @@ spec:
           requests:
             storage: 10Gi
 
+  # Mount certificate bundle
+  volumes:
+    - name: ca-certificates
+      configMap:
+        name: "root-bundle"
+        defaultMode: 0644
+        optional: false
+        items:
+          - key: trust-bundle.pem
+            path: trust-bundle.pem
+
   # --- Input Parameters ---
   arguments:
     parameters:
@@ -26,7 +37,6 @@ spec:
       - name: specRepo # OCI repo name for pull or push to OCI registry
       - name: specVersion # Version of the chart
       - name: scanSeverity # Additional parameter coming from ArtifactType
-      - name: dstPlainHTTP # Additional parameter coming from ArtifactType
 
   entrypoint: helm-pipeline
 
@@ -59,6 +69,7 @@ spec:
             mountPath: /secrets/src # For passing OCI login credentials
           - name: work-volume
             mountPath: /data
+
         source: |
           set -euo pipefail
 
@@ -149,6 +160,9 @@ spec:
             mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
+          - mountPath: /etc/ssl/certs/
+            name: ca-certificates
+            readOnly: true
 
         source: |
           set -euo pipefail
@@ -170,9 +184,6 @@ spec:
 
           # Conditionally login to registry
           LOGIN_FLAGS=""
-          if [ "{{workflow.parameters.dstPlainHTTP}}" = "true" ]; then
-              LOGIN_FLAGS="--insecure --plain-http"
-          fi
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               cat /secrets/dst/password | helm registry login ${LOGIN_FLAGS} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
           fi

@@ -1,5 +1,5 @@
 apiVersion: arc.bwi.de/v1alpha1
-kind: ArtifactType
+kind: ClusterArtifactType
 metadata:
   name: oci
 spec:
@@ -8,5 +8,8 @@ spec:
       - oci
     dstTypes:
       - oci
-  workflowTemplateRef: # argo.Workflow
-    name: oci-workflow-template
+  parameters:
+    - name: scanSeverity
+      value: HIGH,CRITICAL
+  workflowTemplateRef: # argo.ClusterWorkflowTemplate
+    name: oci-image-pipeline
