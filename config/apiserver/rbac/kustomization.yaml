@@ -1,4 +1,0 @@
-resources:
-  - apiserver_service_account.yaml
-  - apiserver_role.yaml
-  - apiserver_role_binding.yaml
