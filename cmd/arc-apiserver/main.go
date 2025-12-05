@@ -13,7 +13,7 @@ import (
 	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 	"go.opendefense.cloud/arc/client-go/openapi"
 	"go.opendefense.cloud/arc/pkg/admission/orderinitializer"
-	"go.opendefense.cloud/sl/apiserver"
+	"go.opendefense.cloud/kit/apiserver"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
