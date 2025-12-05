@@ -20,7 +20,7 @@ import (
 
 const (
 	certmanagerVersion = "v1.19.1"
-	certmanagerURLTmpl = "https://github.com/cert-manager/cert-manager/releases/download/%s/cert-manager.yaml"
+	certmanagerChart   = "oci://quay.io/jetstack/charts/cert-manager"
 
 	trustmanagerChart   = "oci://quay.io/jetstack/charts/trust-manager"
 	trustmanagerVersion = "v0.20.2"
@@ -110,7 +110,7 @@ var _ = BeforeSuite(func() {
 	Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
 
 	logf("Installing TrustManager...\n")
-	Expect(installTrustManager()).To(Succeed(), "Failed to install TrustManager")
+	Eventually(installTrustManager).Should(Succeed(), "Failed to install TrustManager")
 
 	logf("Installing Argo Workflows...\n")
 	Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
@@ -224,19 +224,12 @@ func installTrustManager() error {
 
 // installCertManager installs the cert manager bundle.
 func installCertManager() error {
-	url := fmt.Sprintf(certmanagerURLTmpl, certmanagerVersion)
-	cmd := exec.Command("kubectl", "apply", "-f", url)
+	cmd := exec.Command(helmBinary, "upgrade", "--install", "cert-manager", certmanagerChart, "--version", certmanagerVersion, "--namespace", "cert-manager", "--create-namespace", "--set", "crds.enabled=true")
 	if _, err := run(cmd); err != nil {
 		return err
 	}
 
-	// Wait for cert-manager-webhook to be ready, which can take time if cert-manager
-	// was re-installed after uninstalling on a cluster.
-	cmd = exec.Command("kubectl", "wait", "deployment.apps/cert-manager-webhook",
-		"--for", "condition=Available",
-		"--namespace", "cert-manager",
-		"--timeout", "5m",
-	)
+	// The helm chart waits until cert-manager is fully functional, so no further tests required.
 
 	dir, err := getProjectDir()
 	Expect(err).NotTo(HaveOccurred())
