@@ -58,7 +58,7 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 .PHONY: clean
-clean:
+clean: ## Clean local codebase and remove temporary files
 	rm -rf $(LOCALBIN)
 
 .PHONY: codegen
@@ -137,7 +137,7 @@ setup-dev-cluster: ## Set up a Kind cluster for local development if it does not
 	esac
 
 .PHONY: dev-cluster
-dev-cluster: setup-dev-cluster
+dev-cluster: setup-dev-cluster ## Install all necessary components into local Kind cluster for local development
 	@echo -e "\nSETTING UP CERT-MANAGER:\n"
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
 		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
@@ -175,7 +175,7 @@ dev-cluster: setup-dev-cluster
 TIMESTAMP ?= $(shell date '+%Y%m%d%H%M%S')
 
 .PHONY: dev-cluster-rebuild
-dev-cluster-rebuild:
+dev-cluster-rebuild: ## Rebuild local images, load them into Kind cluster and update deployment
 	$(MAKE) APISERVER_IMG=local/arc-apiserver:dev.$(TIMESTAMP) docker-build-apiserver
 	$(MAKE) MANAGER_IMG=local/arc-controller-manager:dev.$(TIMESTAMP) docker-build-manager
 	$(KIND) load docker-image local/arc-apiserver:dev.$(TIMESTAMP) --name $(KIND_CLUSTER_DEV)
@@ -193,25 +193,25 @@ cleanup-dev-cluster: ## Tear down the Kind cluster used for e2e tests
 
 
 .PHONY: docker-build
-docker-build: docker-build-apiserver docker-build-manager
+docker-build: docker-build-apiserver docker-build-manager ## Build apiserver and manager image
 
 .PHONY: docker-build-apiserver
-docker-build-apiserver:
+docker-build-apiserver: ## Build apiserver image
 	$(DOCKER) build --target apiserver -t ${APISERVER_IMG} .
 
 .PHONY: docker-build-manager
-docker-build-manager:
+docker-build-manager: ## Build manager image
 	$(DOCKER) build --target manager -t ${MANAGER_IMG} .
 
 .PHONY: docker-build-docs
-docker-build-docs:
+docker-build-docs: ## Build mkdocs image for local serving of documentation
 	@$(DOCKER) build --target mkdocs -t local/mkdocs-material .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
-docs: docs-crd-ref docker-build-docs ## Serve the documentation using Docker.
+docs: docs-crd-ref docker-build-docs ## Serve the documentation using Docker
 	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs local/mkdocs-material
 
 $(LOCALBIN):
