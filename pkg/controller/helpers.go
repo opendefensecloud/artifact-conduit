@@ -34,10 +34,9 @@ func awName(order *arcv1alpha1.Order, sha string) string {
 
 func cloneObjectMeta(meta metav1.ObjectMeta, name string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
-		Namespace:   meta.Namespace,
-		Name:        name,
-		Labels:      meta.Labels,
-		Annotations: meta.Annotations,
+		Namespace: meta.Namespace,
+		Name:      name,
+		Labels:    meta.Labels,
 	}
 }
 
