@@ -11,6 +11,6 @@ spec:
       - s3
   parameters:
     - name: storageQuota
-      value: "10Gi"
+      value: "4096" # bytes
   workflowTemplateRef: # argo.ClusterWorkflowTemplate
     name: blob-pipeline

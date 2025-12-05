@@ -144,6 +144,10 @@ spec:
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
           fi
+          if [[ "$FILE_SIZE_BYTES" -gt "{{workflow.parameters.storageQuota}}" ]]; then
+            echo "File size $FILE_SIZE_BYTES bigger than storage quota of {{workflow.parameters.storageQuota}} bytes."
+            exit 1
+          fi
 
           echo "$(expr ${FILE_SIZE_BYTES} / 1024 + 100)Mi"
 
@@ -158,6 +162,10 @@ spec:
           FILE_SIZE_BYTES=$(curl -sI "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}" | grep -i Content-Length | awk '{print $2}')
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
+            exit 1
+          fi
+          if [[ "$FILE_SIZE_BYTES" -gt "{{workflow.parameters.storageQuota}}" ]]; then
+            echo "File size $FILE_SIZE_BYTES bigger than storage quota of {{workflow.parameters.storageQuota}} bytes."
             exit 1
           fi
 
