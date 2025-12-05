@@ -193,11 +193,11 @@ var _ = Describe("PrepareForUpdaterStrategy", func() {
 		Expect(gotOld).To(Equal(old))
 	})
 
-	It("should panic if OverrideFn is nil", func() {
+	It("should not panic if OverrideFn is nil", func() {
 		s := &PrepareForUpdaterStrategy{}
 		obj := &testObj{}
 		old := &testObj{}
 		// Should not panic, but does nothing
-		Expect(func() { s.PrepareForUpdate(context.Background(), obj, old) }).To(Panic())
+		Expect(func() { s.PrepareForUpdate(context.Background(), obj, old) }).ToNot(Panic())
 	})
 })
