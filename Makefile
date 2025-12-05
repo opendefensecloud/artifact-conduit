@@ -90,7 +90,7 @@ test: setup-envtest ginkgo ## Run all tests
 
 .PHONY: manifests
 manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=config/controller/rbac
+	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=charts/arc/files
 
 
 KIND_CLUSTER_E2E ?= arc-test-e2e
@@ -144,9 +144,9 @@ dev-cluster: setup-dev-cluster
 	$(KUBECTL) wait deployment.apps/cert-manager-webhook --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f \
 		test/fixtures/certmanager.yaml
-	
+
 	@echo -e "\nSETTING UP TRUST-MANAGER:\n"
-	$(HELM) upgrade --install --namespace=cert-manager trust-manager oci://quay.io/jetstack/charts/trust-manager --version v0.20.2 
+	$(HELM) upgrade --install --namespace=cert-manager trust-manager oci://quay.io/jetstack/charts/trust-manager --version v0.20.2
 	$(KUBECTL) wait deployment.apps/trust-manager --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f  \
 		test/fixtures/trustmanager.yaml
