@@ -6,4 +6,4 @@ metrics:
   bindAddress: 127.0.0.1:8080
 leaderElection:
   leaderElect: true
-  resourceName: arc.bwi.de
+  resourceName: arc.opendefense.cloud

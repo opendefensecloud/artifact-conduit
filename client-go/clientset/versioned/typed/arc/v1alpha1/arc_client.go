@@ -22,7 +22,7 @@ type ArcV1alpha1Interface interface {
 	OrdersGetter
 }
 
-// ArcV1alpha1Client is used to interact with features provided by the arc.bwi.de group.
+// ArcV1alpha1Client is used to interact with features provided by the arc.opendefense.cloud group.
 type ArcV1alpha1Client struct {
 	restClient rest.Interface
 }

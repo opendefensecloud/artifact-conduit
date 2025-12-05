@@ -25,7 +25,7 @@ graph TB
         AWCtrl["ArtifactWorkflow Controller<br/>Manages ArtifactWorkflow resources<br/>Creates Argo Workflows"]
     end
     
-    subgraph "Custom Resources (arc.bwi.de/v1alpha1)"
+    subgraph "Custom Resources (arc.opendefense.cloud/v1alpha1)"
         Order["Order<br/>User-facing orchestration"]
         ArtifactWF["ArtifactWorkflow<br/>Execution unit"]
         Endpoint["Endpoint<br/>Source/Destination config"]
@@ -47,7 +47,7 @@ graph TB
     GitOps -->|"Declarative Config"| Kubectl
     Kubectl -->|"API Requests"| K8sAPI
     
-    K8sAPI <-->|"Routes arc.bwi.de"| APIAgg
+    K8sAPI <-->|"Routes arc.opendefense.cloud"| APIAgg
     APIAgg <-->|"Custom Resources"| ARCAPI
     ARCAPI <-->|"Persists"| ETCDArc
     

@@ -22,7 +22,7 @@ This enables operators to define and execute complex workflows without needing t
 
 ## Core Concepts
 
-ARC introduces four primary custom resource types under the `arc.bwi.de/v1alpha1` API group:
+ARC introduces four primary custom resource types under the `arc.opendefense.cloud/v1alpha1` API group:
 
 | Resource             | Purpose                                                                                    | Scope                            |
 | -------------------- | ------------------------------------------------------------------------------------------ | -------------------------------- |

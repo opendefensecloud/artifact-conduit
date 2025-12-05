@@ -21,7 +21,7 @@ View logs:
   kubectl logs -l {{ include "arc.apiserver.selectorLabels" . | replace "\n" "," }} -n {{ include "arc.namespace" . }}
 
 Verify APIService registration:
-  kubectl get apiservice v1alpha1.arc.bwi.de
+  kubectl get apiservice v1alpha1.arc.opendefense.cloud
 {{- end }}
 
 {{- if .Values.controller.enabled }}
@@ -65,7 +65,7 @@ Check pods:
    kubectl get all -n {{ include "arc.namespace" . }}
 
 2. Check the custom resources are available:
-   kubectl api-resources --api-group=arc.bwi.de
+   kubectl api-resources --api-group=arc.opendefense.cloud
 
 3. Install Argo Workflows (if not already installed):
    kubectl apply -n argo -f https://github.com/argoproj/argo-workflows/releases/latest/download/install.yaml

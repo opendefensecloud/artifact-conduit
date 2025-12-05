@@ -241,7 +241,7 @@ After installing ARC, you need to:
 1. **Verify Installation**
    ```bash
    kubectl get all -n arc-system
-   kubectl get apiservice v1alpha1.arc.bwi.de
+   kubectl get apiservice v1alpha1.arc.opendefense.cloud
    ```
 
 2. **Create WorkflowTemplates**

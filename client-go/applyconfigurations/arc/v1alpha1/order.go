@@ -27,7 +27,7 @@ func Order(name, namespace string) *OrderApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Order")
-	b.WithAPIVersion("arc.bwi.de/v1alpha1")
+	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
 func (b OrderApplyConfiguration) IsApplyConfiguration() {}

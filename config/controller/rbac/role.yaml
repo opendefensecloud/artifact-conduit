@@ -32,7 +32,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - arc.bwi.de
+  - arc.opendefense.cloud
   resources:
   - artifacttypes
   - clusterartifacttypes
@@ -42,7 +42,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - arc.bwi.de
+  - arc.opendefense.cloud
   resources:
   - artifactworkflows
   - orders
@@ -55,14 +55,14 @@ rules:
   - update
   - watch
 - apiGroups:
-  - arc.bwi.de
+  - arc.opendefense.cloud
   resources:
   - artifactworkflows/finalizers
   - orders/finalizers
   verbs:
   - update
 - apiGroups:
-  - arc.bwi.de
+  - arc.opendefense.cloud
   resources:
   - artifactworkflows/status
   - orders/status

@@ -28,7 +28,7 @@ func ArtifactType(name, namespace string) *ArtifactTypeApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("ArtifactType")
-	b.WithAPIVersion("arc.bwi.de/v1alpha1")
+	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
 func (b ArtifactTypeApplyConfiguration) IsApplyConfiguration() {}

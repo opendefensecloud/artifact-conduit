@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	orderFinalizer = "arc.bwi.de/order-finalizer"
+	orderFinalizer = "arc.opendefense.cloud/order-finalizer"
 )
 
 // OrderReconciler reconciles a Order object
@@ -47,13 +47,13 @@ type desiredAW struct {
 	sha         string
 }
 
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=endpoints,verbs=get;list;watch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifacttypes,verbs=get;list;watch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=orders,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=orders/finalizers,verbs=update
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=clusterartifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=orders,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=orders/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=orders/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 

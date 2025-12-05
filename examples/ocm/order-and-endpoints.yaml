@@ -1,4 +1,4 @@
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
   name: ghcr
@@ -7,7 +7,7 @@ spec:
   remoteURL: ghcr.io
   usage: PullOnly
 ---
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
   name: internal
@@ -18,7 +18,7 @@ spec:
     name: dst-reg-secret
   usage: PushOnly
 ---
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
   name: example-ocm-order

@@ -6,7 +6,7 @@
 // +k8s:conversion-gen=go.opendefense.cloud/arc/api/arc
 // +k8s:defaulter-gen=TypeMeta
 // +k8s:prerelease-lifecycle-gen=true
-// +groupName=arc.bwi.de
+// +groupName=arc.opendefense.cloud
 // +k8s:openapi-model-package=de.bwi.arc.v1alpha1
 
 // Package v1alpha1 is the v1alpha1 version of the API.

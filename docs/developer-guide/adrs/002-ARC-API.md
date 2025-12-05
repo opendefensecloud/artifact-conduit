@@ -15,7 +15,7 @@ Options were discussed and documented here: <https://app.bwi.conceptboard.com/bo
 
 ### `Order`
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
   name: example-order
@@ -50,7 +50,7 @@ spec:
 
 ### `ArtifactWorkflow`
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ArtifactWorkflow
 metadata:
   name: example-order-1 # sha256 for procedural
@@ -68,7 +68,7 @@ spec:
 
 ### `Endpoint`
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
   name: internal-registry
@@ -82,7 +82,7 @@ spec:
 
 ### `ArtifactType` and `ClusterArtifactType`
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ArtifactType # or ClusterArtifactType
 metadata:
   name: oci
