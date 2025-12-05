@@ -78,6 +78,12 @@ spec:
             template: pull-http
             when: "{{workflow.parameters.srcType}} == 'http'"
 
+        - - name: scan-clamav
+            template: scan-clamav
+
+        - - name: push
+            template: push
+
     # --- Check Availability in Destination (aws-cli) ---
     - name: check-availability
       retryStrategy:
@@ -226,3 +232,39 @@ spec:
 
           echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
           curl --output "/data/storage/file" "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+
+    - name: scan-clamav
+      volumes: *volumes
+      script:
+        image: clamav/clamav:stable
+        command: ["/bin/bash", "-c"]
+        volumeMounts: *volumeMounts
+        source: |
+          set -euo pipefail
+
+          echo "Scanning blob with ClamAV..."
+
+          /usr/bin/clamscan --no-summary "/data/storage/file"
+          SCAN_RESULT=$?
+
+          if [ $SCAN_RESULT -eq 0 ]; then
+            echo "✅ Scan successful."
+          else
+            echo "❌ Scan failed (Exit Code: $SCAN_RESULT)."
+            exit 1
+          fi
+
+    - name: push
+      volumes: *volumes
+      script:
+        image: amazon/aws-cli:latest
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+        envFrom:
+          - secretRef:
+              name: s3-secret
+        source: |
+          set -euo pipefail
+
+          echo "Uploading {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}..."
+          aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
