@@ -1808,7 +1808,7 @@ However please note, that cluster-wide equivalents exist (<code>ClusterArtifactT
     </nav>
     <pre class="mermaid"><code>graph TB
     Order["📋 Order&lt;br/&gt;(User Request)"]
-    ArtifactWorkflow["📦 ArtifactWorkflow"]
+    ClusterArtifactType["📦 ClusterArtifactType"]
     ArtifactTypeDef["🏷️ ArtifactType"]
     SrcEndpoint["🔌 Endpoint (Source)"]
     DstEndpoint["🔌 Endpoint (Destination)"]
@@ -1817,13 +1817,13 @@ However please note, that cluster-wide equivalents exist (<code>ClusterArtifactT
     WorkflowTemplate["⚙️ WorkflowTemplate"]
     Workflow["🚀 Workflow"]
 
-    Order --&gt;|creates| ArtifactWorkflow
+    Order --&gt;|creates| ClusterArtifactType
     Order --&gt;|references| SrcEndpoint
     Order --&gt;|references| DstEndpoint
     Order --&gt;|specifies type| ArtifactTypeDef
-    ArtifactWorkflow --&gt;|references| WorkflowTemplate
-    ArtifactWorkflow --&gt;|references| SrcSecret
-    ArtifactWorkflow --&gt;|references| DstSecret
+    ClusterArtifactType --&gt;|references| WorkflowTemplate
+    ClusterArtifactType --&gt;|references| SrcSecret
+    ClusterArtifactType --&gt;|references| DstSecret
 
     ArtifactTypeDef --&gt;|validates src/dst types| Order
     ArtifactTypeDef --&gt;|references| WorkflowTemplate
@@ -1832,12 +1832,12 @@ However please note, that cluster-wide equivalents exist (<code>ClusterArtifactT
     DstEndpoint --&gt;|references| DstSecret
 
     WorkflowTemplate --&gt;|blueprint for| Workflow
-    ArtifactWorkflow --&gt;|provides params &amp; instantiates| Workflow
+    ClusterArtifactType --&gt;|provides params &amp; instantiates| Workflow
     SrcSecret --&gt;|mounts to| Workflow
     DstSecret --&gt;|mounts to| Workflow
 
     style Order stroke:#e1f5ff,stroke-width:2px
-    style ArtifactWorkflow stroke:#f3e5f5,stroke-width:2px
+    style ClusterArtifactType stroke:#f3e5f5,stroke-width:2px
     style ArtifactTypeDef stroke:#e8f5e9,stroke-width:2px
     style SrcEndpoint stroke:#fff3e0,stroke-width:2px
     style DstEndpoint stroke:#fff3e0,stroke-width:2px
@@ -1856,7 +1856,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <li>Parameters passed to the entrypoint of the workflow</li>
 <li>A mount for the source and destination secrets respectively</li>
 </ol>
-<p>When a <code>ArtifactWorkflow</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
+<p>When a <code>ClusterArtifactType</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactWorkflow</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -1896,9 +1896,9 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst-creds</span>
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PushOnly</span>
 </code></pre></div>
-<p>How these objects are tied into a workflow is described by the <code>ArtifactType</code>:</p>
+<p>How these objects are tied into a workflow is described by the <code>ClusterArtifactType</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactType</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="nt">spec</span><span class="p">:</span>
@@ -1907,11 +1907,14 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
 <span class="w">    </span><span class="nt">dstTypes</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.Workflow</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-workflow-template</span>
+<span class="w">  </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HIGH,CRITICAL</span>
+<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span><span class="w"> </span><span class="c1"># argo.ClusterWorkflowTemplate</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline</span>
 </code></pre></div>
-<p>The <code>ArtifactWorkflow</code> defines which <code>ArtifactType</code> is used. In our case <code>oci</code> and therefore the controller will instantiate the <code>oci-workflow-template</code>.</p>
-<p>The two endpoints specified by the <code>ArtifactWorkflow</code> are compliant as the workflow does only support endpoints of the type <code>oci</code>. It is important to understand that there are both endpoint types and artifact types.</p>
+<p>The <code>ClusterArtifactType</code> defines which <code>ArtifactType</code> is used. In our case <code>oci</code> and therefore the controller will instantiate the <code>oci-workflow-template</code>.</p>
+<p>The two endpoints specified by the <code>ClusterArtifactType</code> are compliant as the workflow does only support endpoints of the type <code>oci</code>. It is important to understand that there are both endpoint types and artifact types.</p>
 <p>The controller will verify the endpoints and retrieve the associated secrets.</p>
 <h2 id="resulting-parameters-and-runtime-configuration">Resulting parameters and runtime-configuration<a class="headerlink" href="#resulting-parameters-and-runtime-configuration" title="Permanent link">¶</a></h2>
 <p>The above resources will instantiate the workflow with the following parameters:</p>
@@ -1929,12 +1932,9 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <p>The parameters do not contain secrets, but can be used to interact with third-party tools in the workflow and create conditional steps in the workflow, e.g. for different support source or destination types.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Parameters can come from the <code>Order</code> and <code>ArtifactType</code>. These parameters are merged when creating the <code>ArtifactWorkflow</code> with <code>ArtifactType</code> taking precedence over <code>Order</code>.</p>
+<p>Parameters can come from the <code>Order</code> and <code>ArtifactType</code>. These parameters are merged when creating the <code>ClusterArtifactType</code> with <code>ArtifactType</code> taking precedence over <code>Order</code>.</p>
 </div>
 <p>However the source and destination secrets are mounted at <code>/secret/src/</code> and <code>/secret/dst/</code> respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.</p>
-<p>Using <code>oras</code> in a workflow might therefore look as follows:</p>
-<div class="highlight"><pre><span></span><code>oras<span class="w"> </span>pull<span class="w"> </span>-u<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/username<span class="k">)</span><span class="s2">"</span><span class="w"> </span>-p<span class="w"> </span><span class="s2">"</span><span class="k">$(</span>cat<span class="w"> </span>/secret/src/password<span class="k">)</span><span class="s2">"</span><span class="w"> </span><span class="o">{{</span><span class="w"> </span>workflow.parameters.srcRemoteURL<span class="w"> </span><span class="o">}}</span>/<span class="o">{{</span><span class="w"> </span>workflow.parameters.spec.image<span class="w"> </span><span class="o">}}</span>
-</code></pre></div>
 <h2 id="example-for-an-oci-usecase">Example for an OCI usecase<a class="headerlink" href="#example-for-an-oci-usecase" title="Permanent link">¶</a></h2>
 <h3 id="workflowtemplate">WorkflowTemplate<a class="headerlink" href="#workflowtemplate" title="Permanent link">¶</a></h3>
 <p>The following template is an example for a workflow that uses the <code>oci</code> source and destination. It can be used as a starting point to create your own workflows.</p>
@@ -2102,55 +2102,8 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">  </span><span class="nt">.dockerconfigjson</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO&gt;</span>
 </code></pre></div>
 <h3 id="workflow-example">Workflow Example<a class="headerlink" href="#workflow-example" title="Permanent link">¶</a></h3>
-<p>To create a <code>Workflow</code> based on the template the following <code>yaml</code> can be used.</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Workflow</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">generateName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-scan-flexible-</span>
-<span class="nt">spec</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># Reference the template defined above</span>
-<span class="w">  </span><span class="nt">workflowTemplateRef</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline-flexible</span>
-
-<span class="w">  </span><span class="c1"># --- Shared Volumes ---</span>
-<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># This volume will contain the actual authentication file from the secret</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-secret-vol</span>
-<span class="w">      </span><span class="nt">secret</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="s">"src-reg-secret"</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-secret-vol</span>
-<span class="w">      </span><span class="nt">secret</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="s">"dst-reg-secret"</span>
-
-<span class="w">  </span><span class="c1"># Pass the specific image paths and scan settings</span>
-<span class="w">  </span><span class="nt">arguments</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
-<span class="w">      </span><span class="c1"># --- Source Parameters ---</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcType</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcRemoteURL</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">srcSecret</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"false"</span>
-
-<span class="w">      </span><span class="c1"># --- Destination Parameters ---</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstType</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstRemoteURL</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstSecret</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span>
-
-<span class="w">      </span><span class="c1"># --- Image Specs ---</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specImage</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">library/alpine:3.18</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">myteam/alpine:3.18-dev</span>
-
-<span class="w">      </span><span class="c1"># --- Scanning ---</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HIGH,CRITICAL</span>
-</code></pre></div>
+<p>There are many example below <a href="https://github.com/opendefensecloud/artifact-conduit/tree/main/examples">examples</a> for different usecases.
+Examples for Helm, OCI, OCM and Blob stores are available in the corresponding subdirectories.</p>
 
 
 
