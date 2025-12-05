@@ -1,7 +1,7 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package artifactworkflow_test
+package arc_test
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestArtifactWorkflowRegistry(t *testing.T) {
+func TestAPI(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "ArtifactWorkflow Registry Suite")
+	RunSpecs(t, "API Suite")
 }

@@ -1,10 +1,11 @@
 // Copyright 2025 BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-package apiserver_test
+package main_test
 
 import (
 	"context"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/envtest"
+	"go.opendefense.cloud/sl/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -53,7 +54,11 @@ var _ = BeforeSuite(func() {
 
 	Expect(arcv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
-	testEnv, err = envtest.NewEnvironment()
+	testEnv, err = envtest.NewEnvironment(
+		"go.opendefense.cloud/arc/cmd/arc-apiserver",
+		[]string{filepath.Join("..", "..", "test", "fixtures", "external-crds")},
+		[]string{filepath.Join("..", "..", "test", "fixtures", "apiservice")},
+	)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(testEnv).NotTo(BeNil())
 
