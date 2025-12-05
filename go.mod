@@ -8,7 +8,7 @@ require (
 	github.com/jastBytes/sprint v0.0.3
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
-	go.opendefense.cloud/sl v0.0.0-20251205110826-5c978e315185
+	go.opendefense.cloud/sl v0.1.1
 	k8s.io/api v0.34.2
 	k8s.io/apimachinery v0.34.2
 	k8s.io/apiserver v0.34.2
