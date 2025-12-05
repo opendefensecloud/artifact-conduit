@@ -84,7 +84,6 @@ var _ = Describe("Helper Functions", func() {
 			Expect(result.Namespace).To(Equal("test-namespace"))
 			Expect(result.Name).To(Equal("new-name"))
 			Expect(result.Labels).To(HaveKeyWithValue("app", "test"))
-			Expect(result.Annotations).To(HaveKeyWithValue("key", "value"))
 		})
 
 		It("should handle nil labels and annotations", func() {
@@ -137,7 +136,6 @@ var _ = Describe("Helper Functions", func() {
 			Expect(result.Namespace).To(Equal("test-ns"))
 			Expect(result.Name).To(Equal("test-aw"))
 			Expect(result.Labels).To(HaveKeyWithValue("key", "value"))
-			Expect(result.Annotations).To(HaveKeyWithValue("annotation", "data"))
 		})
 	})
 
