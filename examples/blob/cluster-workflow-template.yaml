@@ -43,8 +43,8 @@ spec:
     # --- Main Pipeline Entrypoint ---
     - name: pipeline
       steps:
-        # - - name: check-availability
-        #     template: check-availability
+        - - name: check-availability
+            template: check-availability
 
         - - name: determine-size-s3
             template: determine-size-s3
@@ -78,53 +78,51 @@ spec:
             template: pull-http
             when: "{{workflow.parameters.srcType}} == 'http'"
 
-    # # --- Check Availability in Destination (aws-cli) ---
-    # - name: check-availability
-    #   retryStrategy:
-    #     limit: "2"
+    # --- Check Availability in Destination (aws-cli) ---
+    - name: check-availability
+      retryStrategy:
+        limit: "2"
 
-    #   script:
-    #     image: amazon/aws-cli:latest
-    #     command: [sh, -c]
+      script:
+        image: amazon/aws-cli:latest
+        command: [sh, -c]
 
-    #     # Mount the volumes
-    #     volumeMounts:
-    #       - name: dst-secret-vol
-    #         readOnly: true
-    #         mountPath: /secrets/dst
-    #       - mountPath: /etc/ssl/certs/
-    #         name: ca-certificates
-    #         readOnly: true
+        envFrom:
+          - secretRef:
+              name: s3-secret
 
-    #     envFrom:
-    #       - secretRef:
-    #           name: s3-secret
+        source: |
+          if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
+            BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
+            KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
 
-    #     source: |
-    #       if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
-    #         bucket=$(echo {{workflow.parameters.specKey}} | cut -d/ -f1)
-    #         key=$(echo {{workflow.parameters.specKey}} | cut -d/ -f2-)
+            MD5=$(aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query ETag --output text --no-cli-pager)
+            if [ $? -eq 254 ]; then
+                echo "unavailable"
+                exit 0
+            fi
 
-    #         md5=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket $bucket --key $key --query ETag --output text)
-    #         if [ "$EXIT_CODE" -eq 0 ]; then
-    #           if [[ $md5 != *${{workflow.parameters.specMd5}}* ]]; then
-    #             echo "md5 mismatch, aborting"
-    #             exit 1
-    #           else
-    #             echo "available"
-    #           fi
-    #         else
-    #             echo "unavailable"
-    #         fi
-    #       else
-    #         aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
-    #         if [ "$EXIT_CODE" -eq 0 ]; then
-    #             echo "available"
-    #         else
-    #             echo "unavailable"
-    #         fi
-    #       fi
-    #       exit 0
+            if [ $? -eq 0 ]; then
+              if [[ $MD5 != {{workflow.parameters.specMd5}} ]]; then
+                echo "md5 mismatch, aborting"
+                exit 1
+              else
+                echo "available"
+                exit 0
+              fi
+            fi
+            
+            echo "unavailable"
+            exit 0
+          else
+            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+            if [ $? -eq 0 ]; then
+                echo "available"
+            else
+                echo "unavailable"
+            fi
+          fi
+          exit 0
 
     - name: determine-size-s3
       script:
