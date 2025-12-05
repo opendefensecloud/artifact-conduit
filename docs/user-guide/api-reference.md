@@ -1,7 +1,7 @@
 # API Reference
 
 ## Packages
-- [arc.opendefense.cloud/v1alpha1](#arcbwidev1alpha1)
+- [arc.opendefense.cloud/v1alpha1](#arcopendefensecloudv1alpha1)
 
 
 ## arc.opendefense.cloud/v1alpha1
