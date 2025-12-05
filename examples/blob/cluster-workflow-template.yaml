@@ -147,12 +147,7 @@ spec:
             exit 1
           fi
 
-          if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
-              echo "100Mi"
-              exit 0
-          fi
-
-          echo "$(expr ${FILE_SIZE_BYTES} / 1024)Mi"
+          echo "$(expr ${FILE_SIZE_BYTES} / 1024 + 100)Mi"
 
     - name: determine-size-http
       script:
@@ -168,12 +163,8 @@ spec:
             exit 1
           fi
 
-          if [[ "$FILE_SIZE_BYTES" -lt "102400" ]]; then
-              echo "100Mi"
-              exit 0
-          fi
-
-          echo "$(expr ${FILE_SIZE_BYTES} / 1024)Mi"
+          FILE_SIZE_BYTES=$(echo $FILE_SIZE_BYTES | tr '\r' ' ')
+          echo "$(expr ${FILE_SIZE_BYTES} / 1024 + 100)Mi"
 
     - name: generate-volume
       inputs:
@@ -204,7 +195,9 @@ spec:
         volumeMounts: &volumeMounts
           - name: work-volume
             mountPath: /data
-
+        envFrom:
+          - secretRef:
+              name: s3-secret
         source: |
           set -euo pipefail
 
