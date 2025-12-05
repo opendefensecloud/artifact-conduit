@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/envtest"
+	"go.opendefense.cloud/sl/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"

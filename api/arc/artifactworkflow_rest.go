@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"go.opendefense.cloud/arc/apiserver/resource"
-	"go.opendefense.cloud/arc/apiserver/rest"
+	"go.opendefense.cloud/sl/apiserver/resource"
+	"go.opendefense.cloud/sl/apiserver/rest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

@@ -6,6 +6,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/envtest"
+	"go.opendefense.cloud/sl/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
@@ -65,7 +66,11 @@ var _ = BeforeSuite(func() {
 	Expect(arcv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 	Expect(wfv1alpha1.AddToScheme(scheme.Scheme)).To(Succeed())
 
-	testEnv, err = envtest.NewEnvironment()
+	testEnv, err = envtest.NewEnvironment(
+		"go.opendefense.cloud/arc/cmd/arc-apiserver",
+		[]string{filepath.Join("..", "..", "test", "fixtures", "external-crds")},
+		[]string{filepath.Join("..", "..", "test", "fixtures", "apiservice")},
+	)
 	Expect(err).NotTo(HaveOccurred())
 	Expect(testEnv).NotTo(BeNil())
 
