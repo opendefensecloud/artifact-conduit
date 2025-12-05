@@ -1697,7 +1697,7 @@
 <h2 id="force-reconciliation-annotation">Force Reconciliation Annotation<a class="headerlink" href="#force-reconciliation-annotation" title="Permanent link">¶</a></h2>
 <h2 id="annotation-based-debugging">Annotation-Based Debugging<a class="headerlink" href="#annotation-based-debugging" title="Permanent link">¶</a></h2>
 <p>Both <code>Order</code> and <code>ArtifactWorkflow</code> resources support manual reconciliation triggering via the <code>arc.opendefense.cloud/forceAt</code> annotation:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-order</span>
@@ -1707,7 +1707,7 @@
 <span class="w">  </span><span class="c1"># ...</span>
 </code></pre></div>
 <p>Set the annotation as follows:</p>
-<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>annotate<span class="w"> </span>--overwrite<span class="w"> </span>orders.arc.bwi.de/&lt;order-name&gt;<span class="w"> </span><span class="se">\</span>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>annotate<span class="w"> </span>--overwrite<span class="w"> </span>orders.arc.opendefense.cloud/&lt;order-name&gt;<span class="w"> </span><span class="se">\</span>
 <span class="s2">"arc.opendefense.cloud/forceAt"</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span>
 </code></pre></div>
 <h2 id="force-reconcile-logic">Force Reconcile Logic<a class="headerlink" href="#force-reconcile-logic" title="Permanent link">¶</a></h2>

@@ -1741,7 +1741,7 @@
         AWCtrl["ArtifactWorkflow Controller&lt;br/&gt;Manages ArtifactWorkflow resources&lt;br/&gt;Creates Argo Workflows"]
     end
 
-    subgraph "Custom Resources (arc.bwi.de/v1alpha1)"
+    subgraph "Custom Resources (arc.opendefense.cloud/v1alpha1)"
         Order["Order&lt;br/&gt;User-facing orchestration"]
         ArtifactWF["ArtifactWorkflow&lt;br/&gt;Execution unit"]
         Endpoint["Endpoint&lt;br/&gt;Source/Destination config"]
@@ -1763,7 +1763,7 @@
     GitOps --&gt;|"Declarative Config"| Kubectl
     Kubectl --&gt;|"API Requests"| K8sAPI
 
-    K8sAPI &lt;--&gt;|"Routes arc.bwi.de"| APIAgg
+    K8sAPI &lt;--&gt;|"Routes arc.opendefense.cloud"| APIAgg
     APIAgg &lt;--&gt;|"Custom Resources"| ARCAPI
     ARCAPI &lt;--&gt;|"Persists"| ETCDArc
 

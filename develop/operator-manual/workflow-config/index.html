@@ -1857,7 +1857,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <li>A mount for the source and destination secrets respectively</li>
 </ol>
 <p>When a <code>ClusterArtifactType</code> is created (usually by an <code>Order</code> from a user) it might look as follows:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ArtifactWorkflow</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-frag</span>
@@ -1874,7 +1874,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="c1"># ...</span>
 </code></pre></div>
 <p>The two referenced <code>Endpoints</code> by <code>srcRef</code> and <code>dstRef</code> might look as follows respectively:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc</span>
@@ -1885,7 +1885,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysrc-creds</span>
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PullOnly</span>
 <span class="nn">---</span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Endpoint</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mydst</span>
@@ -1897,7 +1897,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">  </span><span class="nt">usage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PushOnly</span>
 </code></pre></div>
 <p>How these objects are tied into a workflow is described by the <code>ClusterArtifactType</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.bwi.de/v1alpha1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
