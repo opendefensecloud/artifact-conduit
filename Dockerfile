@@ -47,3 +47,12 @@ WORKDIR /
 COPY --from=manager-builder /workspace/bin/arc-controller-manager .
 USER 65532:65532
 ENTRYPOINT ["/arc-controller-manager"]
+
+# Let's create a custom image with relevant plugins for local serving of docs
+FROM squidfunk/mkdocs-material AS mkdocs
+
+RUN pip install mkdocs-glightbox
+RUN pip install mkdocs-include-markdown-plugin
+RUN pip install mkdocs-panzoom-plugin
+
+CMD ["serve", "--dev-addr=0.0.0.0:8000", "--livereload"]

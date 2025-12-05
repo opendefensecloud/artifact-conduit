@@ -203,16 +203,16 @@ docker-build-apiserver:
 docker-build-manager:
 	$(DOCKER) build --target manager -t ${MANAGER_IMG} .
 
-.PHONY: docs-docker-build
-docs-docker-build:
-	@$(DOCKER) build -t squidfunk/mkdocs-material -f mkdocs.Dockerfile .
+.PHONY: docker-build-docs
+docker-build-docs:
+	@$(DOCKER) build --target mkdocs -t local/mkdocs-material .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
 .PHONY: docs
-docs: ## Serve the documentation using Docker.
-	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
+docs: docs-crd-ref docker-build-docs ## Serve the documentation using Docker.
+	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs local/mkdocs-material
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
