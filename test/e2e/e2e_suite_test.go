@@ -86,19 +86,16 @@ var _ = BeforeSuite(func() {
 	f.Sync()
 	kubeConfigPath = f.Name()
 
-	go func() {
-		defer GinkgoRecover()
-		// Build images
-		By("building the apiserver image")
-		cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
-		_, err = run(cmd)
-		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
+	// Build images
+	By("building the apiserver image")
+	cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
+	_, err = run(cmd)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
 
-		By("building the manager image")
-		cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
-		_, err = run(cmd)
-		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
-	}()
+	By("building the manager image")
+	cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
+	_, err = run(cmd)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
 
 	// Load images
 	By("loading the apiserver image on Kind")
