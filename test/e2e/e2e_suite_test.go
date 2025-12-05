@@ -172,10 +172,6 @@ func installMinio() error {
 	_, err = run(cmd)
 	Expect(err).NotTo(HaveOccurred())
 
-	cmd = exec.Command(helmBinary, "upgrade", "--install", "--namespace=minio", fmt.Sprintf("--repo=%s", minioRepoUrl), "-f", filepath.Join(dir, "test", "fixtures", "src-minio.yaml"), "src", "minio")
-	_, err = run(cmd)
-	Expect(err).NotTo(HaveOccurred())
-
 	return err
 }
 

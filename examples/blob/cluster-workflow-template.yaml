@@ -84,11 +84,16 @@ spec:
               name: s3-secret
 
         source: |
+          AWS_NO_AUTH=""
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              AWS_NO_AUTH="--no-sign-request"
+          fi
+
           if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
             BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
             KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
 
-            MD5=$(aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query ETag --output text --no-cli-pager)
+            MD5=$(aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query ETag --output text --no-cli-pager)
             if [ $? -eq 254 ]; then
                 echo "unavailable"
                 exit 0
@@ -107,7 +112,7 @@ spec:
             echo "unavailable"
             exit 0
           else
-            aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
                 echo "available"
             else
@@ -131,7 +136,12 @@ spec:
           BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
           KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
 
-          FILE_SIZE_BYTES=$(aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
+          AWS_NO_AUTH=""
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              AWS_NO_AUTH="--no-sign-request"
+          fi
+
+          FILE_SIZE_BYTES=$(aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
@@ -200,7 +210,11 @@ spec:
           set -euo pipefail
           mkdir -p /data/storage
           echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
-          aws --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
+          AWS_NO_AUTH=""
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              AWS_NO_AUTH="--no-sign-request"
+          fi
+          aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
 
     - name: pull-http
       volumes: *volumes
