@@ -94,7 +94,7 @@ graph TB
 For the OCI pipeline, the ArtifactType would be defined as:
 
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ArtifactType
 metadata:
   name: oci

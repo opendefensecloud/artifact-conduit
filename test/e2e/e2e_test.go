@@ -140,7 +140,7 @@ var _ = Describe("ARC", Ordered, func() {
 			Eventually(verifyControllerUp).Should(Succeed())
 
 			verifyAPIServicesAvailable := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "apiservices", "v1alpha1.arc.bwi.de", "-o", "go-template={{ range .status.conditions }}{{ if eq .type \"Available\" }}{{ .status }}{{ end }}{{ end }}")
+				cmd := exec.Command("kubectl", "get", "apiservices", "v1alpha1.arc.opendefense.cloud", "-o", "go-template={{ range .status.conditions }}{{ if eq .type \"Available\" }}{{ .status }}{{ end }}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
 				g.Expect(output).To(Equal("True"))
@@ -201,7 +201,7 @@ var _ = Describe("ARC", Ordered, func() {
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-blob-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("Succeeded"))
+				g.Expect(output).To(Equal("SucceededSucceeded"))
 			}
 			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})

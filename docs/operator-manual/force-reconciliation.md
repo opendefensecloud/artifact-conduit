@@ -5,7 +5,7 @@
 Both `Order` and `ArtifactWorkflow` resources support manual reconciliation triggering via the `arc.opendefense.cloud/forceAt` annotation:
 
 ```yaml
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
   name: my-order
@@ -18,7 +18,7 @@ spec:
 Set the annotation as follows:
 
 ```bash
-kubectl annotate --overwrite orders.arc.bwi.de/<order-name> \
+kubectl annotate --overwrite orders.arc.opendefense.cloud/<order-name> \
 "arc.opendefense.cloud/forceAt"="$(date +%s)"
 ```
 

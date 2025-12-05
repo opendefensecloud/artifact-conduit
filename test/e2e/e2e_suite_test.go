@@ -20,7 +20,7 @@ import (
 
 const (
 	certmanagerVersion = "v1.19.1"
-	certmanagerURLTmpl = "https://github.com/cert-manager/cert-manager/releases/download/%s/cert-manager.yaml"
+	certmanagerChart   = "oci://quay.io/jetstack/charts/cert-manager"
 
 	trustmanagerChart   = "oci://quay.io/jetstack/charts/trust-manager"
 	trustmanagerVersion = "v0.20.2"
@@ -86,19 +86,16 @@ var _ = BeforeSuite(func() {
 	f.Sync()
 	kubeConfigPath = f.Name()
 
-	go func() {
-		defer GinkgoRecover()
-		// Build images
-		By("building the apiserver image")
-		cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
-		_, err = run(cmd)
-		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
+	// Build images
+	By("building the apiserver image")
+	cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
+	_, err = run(cmd)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
 
-		By("building the manager image")
-		cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
-		_, err = run(cmd)
-		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
-	}()
+	By("building the manager image")
+	cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
+	_, err = run(cmd)
+	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
 
 	// Load images
 	By("loading the apiserver image on Kind")
@@ -113,7 +110,7 @@ var _ = BeforeSuite(func() {
 	Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")
 
 	logf("Installing TrustManager...\n")
-	Expect(installTrustManager()).To(Succeed(), "Failed to install TrustManager")
+	Eventually(installTrustManager).Should(Succeed(), "Failed to install TrustManager")
 
 	logf("Installing Argo Workflows...\n")
 	Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
@@ -175,10 +172,6 @@ func installMinio() error {
 	_, err = run(cmd)
 	Expect(err).NotTo(HaveOccurred())
 
-	cmd = exec.Command(helmBinary, "upgrade", "--install", "--namespace=minio", fmt.Sprintf("--repo=%s", minioRepoUrl), "-f", filepath.Join(dir, "test", "fixtures", "src-minio.yaml"), "src", "minio")
-	_, err = run(cmd)
-	Expect(err).NotTo(HaveOccurred())
-
 	return err
 }
 
@@ -227,19 +220,12 @@ func installTrustManager() error {
 
 // installCertManager installs the cert manager bundle.
 func installCertManager() error {
-	url := fmt.Sprintf(certmanagerURLTmpl, certmanagerVersion)
-	cmd := exec.Command("kubectl", "apply", "-f", url)
+	cmd := exec.Command(helmBinary, "upgrade", "--install", "cert-manager", certmanagerChart, "--version", certmanagerVersion, "--namespace", "cert-manager", "--create-namespace", "--set", "crds.enabled=true")
 	if _, err := run(cmd); err != nil {
 		return err
 	}
 
-	// Wait for cert-manager-webhook to be ready, which can take time if cert-manager
-	// was re-installed after uninstalling on a cluster.
-	cmd = exec.Command("kubectl", "wait", "deployment.apps/cert-manager-webhook",
-		"--for", "condition=Available",
-		"--namespace", "cert-manager",
-		"--timeout", "5m",
-	)
+	// The helm chart waits until cert-manager is fully functional, so no further tests required.
 
 	dir, err := getProjectDir()
 	Expect(err).NotTo(HaveOccurred())

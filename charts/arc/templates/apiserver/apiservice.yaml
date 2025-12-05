@@ -2,7 +2,7 @@
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1alpha1.arc.bwi.de
+  name: v1alpha1.arc.opendefense.cloud
   labels:
     {{- include "arc.apiserver.labels" . | nindent 4 }}
   {{- if .Values.certManager.enabled }}
@@ -10,7 +10,7 @@ metadata:
     cert-manager.io/inject-ca-from: {{ include "arc.namespace" . }}/{{ include "arc.certManager.certificateName" . }}
   {{- end }}
 spec:
-  group: arc.bwi.de
+  group: arc.opendefense.cloud
   version: v1alpha1
   service:
     namespace: {{ include "arc.namespace" . }}

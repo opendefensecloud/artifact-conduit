@@ -1,4 +1,4 @@
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ClusterArtifactType
 metadata:
   name: blob
@@ -11,6 +11,6 @@ spec:
       - s3
   parameters:
     - name: storageQuota
-      value: "4096" # bytes
+      value: "1073741824" # bytes
   workflowTemplateRef: # argo.ClusterWorkflowTemplate
     name: blob-pipeline

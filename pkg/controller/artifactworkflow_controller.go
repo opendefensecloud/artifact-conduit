@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	artifactWorkflowFinalizer = "arc.bwi.de/artifact-workflow-finalizer"
+	artifactWorkflowFinalizer = "arc.opendefense.cloud/artifact-workflow-finalizer"
 )
 
 // ArtifactWorkflowReconciler reconciles a ArtifactWorkflow object
@@ -37,9 +37,9 @@ type ArtifactWorkflowReconciler struct {
 	Recorder  record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=clusterartifacttypes,verbs=get;list;watch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=arc.bwi.de,resources=artifactworkflows/finalizers,verbs=update
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=clusterartifacttypes,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifactworkflows/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifactworkflows/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=argoproj.io,resources=workflows,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=core,resources=events,verbs=create;patch

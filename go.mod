@@ -5,12 +5,10 @@ go 1.25.2
 require (
 	github.com/argoproj/argo-workflows/v3 v3.7.4
 	github.com/go-logr/logr v1.4.3
-	github.com/ironcore-dev/controller-utils v0.11.0
-	github.com/ironcore-dev/ironcore v0.2.4
 	github.com/jastBytes/sprint v0.0.3
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
-	go.opendefense.cloud/sl v0.0.0-20251205110826-5c978e315185
+	go.opendefense.cloud/sl v0.1.1
 	k8s.io/api v0.34.2
 	k8s.io/apimachinery v0.34.2
 	k8s.io/apiserver v0.34.2
@@ -72,6 +70,8 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/ironcore-dev/controller-utils v0.11.0 // indirect
+	github.com/ironcore-dev/ironcore v0.2.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

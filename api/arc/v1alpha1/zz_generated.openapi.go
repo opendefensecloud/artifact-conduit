@@ -10,120 +10,120 @@ package v1alpha1
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactType) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactType"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactType"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactTypeList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeList"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactTypeList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactTypeRules) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeRules"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactTypeRules"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactTypeSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeSpec"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactTypeSpec"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactTypeStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeStatus"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactTypeStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactTypeTemplateRef) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactTypeTemplateRef"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactTypeTemplateRef"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflow) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactWorkflow"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflow"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactWorkflowList"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflowList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowParameter) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactWorkflowParameter"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflowParameter"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactWorkflowSpec"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflowSpec"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ArtifactWorkflowStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ArtifactWorkflowStatus"
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflowStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ClusterArtifactType) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ClusterArtifactType"
+	return "cloud.opendefense.arc.v1alpha1.ClusterArtifactType"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ClusterArtifactTypeList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.ClusterArtifactTypeList"
+	return "cloud.opendefense.arc.v1alpha1.ClusterArtifactTypeList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in Endpoint) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.Endpoint"
+	return "cloud.opendefense.arc.v1alpha1.Endpoint"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in EndpointList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.EndpointList"
+	return "cloud.opendefense.arc.v1alpha1.EndpointList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in EndpointSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.EndpointSpec"
+	return "cloud.opendefense.arc.v1alpha1.EndpointSpec"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in EndpointStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.EndpointStatus"
+	return "cloud.opendefense.arc.v1alpha1.EndpointStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in Order) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.Order"
+	return "cloud.opendefense.arc.v1alpha1.Order"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderArtifact) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderArtifact"
+	return "cloud.opendefense.arc.v1alpha1.OrderArtifact"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderArtifactWorkflowStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderArtifactWorkflowStatus"
+	return "cloud.opendefense.arc.v1alpha1.OrderArtifactWorkflowStatus"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderDefaults) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderDefaults"
+	return "cloud.opendefense.arc.v1alpha1.OrderDefaults"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderList) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderList"
+	return "cloud.opendefense.arc.v1alpha1.OrderList"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderSpec) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderSpec"
+	return "cloud.opendefense.arc.v1alpha1.OrderSpec"
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderStatus) OpenAPIModelName() string {
-	return "de.bwi.arc.v1alpha1.OrderStatus"
+	return "cloud.opendefense.arc.v1alpha1.OrderStatus"
 }

@@ -157,7 +157,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		PprofBindAddress:       pprofAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "arc.bwi.de",
+		LeaderElectionID:       "arc.opendefense.cloud",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to create manager")

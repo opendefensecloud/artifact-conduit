@@ -28,7 +28,7 @@ func Endpoint(name, namespace string) *EndpointApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("Endpoint")
-	b.WithAPIVersion("arc.bwi.de/v1alpha1")
+	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
 func (b EndpointApplyConfiguration) IsApplyConfiguration() {}

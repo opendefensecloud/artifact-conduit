@@ -1,9 +1,9 @@
 apiVersion: apiregistration.k8s.io/v1
 kind: APIService
 metadata:
-  name: v1alpha1.arc.bwi.de
+  name: v1alpha1.arc.opendefense.cloud
 spec:
-  group: arc.bwi.de
+  group: arc.opendefense.cloud
   version: v1alpha1
   service:
     namespace: system

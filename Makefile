@@ -159,7 +159,6 @@ dev-cluster: setup-dev-cluster
 		test/fixtures/secret.yaml
 
 	@echo -e "\nSETTING UP MINIO:\n"
-	$(HELM) upgrade --install --create-namespace --namespace=minio --repo=https://charts.min.io -f test/fixtures/src-minio.yaml src minio
 	$(HELM) upgrade --install --create-namespace --namespace=minio --repo=https://charts.min.io -f test/fixtures/dst-minio.yaml dst minio
 
 	@echo -e "\nSETTING UP ZOT:\n"

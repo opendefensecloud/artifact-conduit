@@ -1,4 +1,4 @@
-apiVersion: arc.bwi.de/v1alpha1
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ClusterArtifactType
 metadata:
   name: oci

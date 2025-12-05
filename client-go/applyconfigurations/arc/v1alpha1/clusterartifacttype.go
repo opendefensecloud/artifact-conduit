@@ -27,7 +27,7 @@ func ClusterArtifactType(name string) *ClusterArtifactTypeApplyConfiguration {
 	b := &ClusterArtifactTypeApplyConfiguration{}
 	b.WithName(name)
 	b.WithKind("ClusterArtifactType")
-	b.WithAPIVersion("arc.bwi.de/v1alpha1")
+	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
 func (b ClusterArtifactTypeApplyConfiguration) IsApplyConfiguration() {}

@@ -1,10 +1,10 @@
 # API Reference
 
 ## Packages
-- [arc.bwi.de/v1alpha1](#arcbwidev1alpha1)
+- [arc.opendefense.cloud/v1alpha1](#arcopendefensecloudv1alpha1)
 
 
-## arc.bwi.de/v1alpha1
+## arc.opendefense.cloud/v1alpha1
 
 Package v1alpha1 is the v1alpha1 version of the API.
 
