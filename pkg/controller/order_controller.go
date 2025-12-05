@@ -442,6 +442,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
 		srcEndpoint.Name,
 		dstEndpoint.Name,
+		order.Status.LastForceAt,
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
