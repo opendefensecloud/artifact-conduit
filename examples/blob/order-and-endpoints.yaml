@@ -4,7 +4,7 @@ metadata:
   name: src-s3
 spec:
   type: s3 # Endpoint Type!
-  remoteURL: http://src.minio
+  remoteURL: http://src.minio:9000
   usage: PullOnly
   secretRef:
     name: s3-secret
@@ -24,7 +24,7 @@ metadata:
   name: internal-s3
 spec:
   type: s3 # Endpoint Type!
-  remoteURL: http://dst.minio
+  remoteURL: http://dst.minio:9000
   secretRef:
     name: s3-secret
   usage: PushOnly
