@@ -3,7 +3,7 @@ status: accepted
 date: 2025-11-11
 ---
 
-# Find a Common Way to Document Architectural Design Decsisions
+# Find a Common Way to Document Architectural Design Decisions
 
 ## Context and Problem Statement
 

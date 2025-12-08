@@ -9,8 +9,8 @@ For quick testing, you can use a local cluster with [kind](https://kind.sigs.k8s
 
 ARC has the following CNCF projects as dependencies:
 
-- [Argo Workflows](https://argo-workflows.readthedocs.io/en/stable/installation/)
-- [cert-manager](https://cert-manager.io/docs/installation/)
+- [Argo Workflows](https://argo-workflows.readthedocs.io/en/stable/installation/) is used as workflow engine by ARC.
+- [cert-manager](https://cert-manager.io/docs/installation/) provides the certificates for the extension apiserver and etcd.
 
 Please make sure you have these dependencies installed before you proceed.
 
@@ -18,9 +18,7 @@ Please make sure you have these dependencies installed before you proceed.
 
     These instructions are intended to help you get started quickly. They are not suitable for production. For production installs, please refer to the [installation documentation](./operator-manual/installation.md).
 
-## Install ARC
-
-## Kustomize
+## Install ARC via Helm
 
 First, specify the version you want to install in an environment variable. Modify the command below:
 
@@ -30,7 +28,7 @@ You can also retrieve the latest version from the GitHub API:
 
      export ARC_VERSION="$(curl -s https://api.github.com/repos/opendefensecloud/artifact-conduit/releases/latest | jq -r '.tag_name')"
 
-Then, copy the commands below to install ARC with `helm`
+Then, copy the commands below to install ARC with `helm`:
 
     helm install \
       arc oci://ghcr.io/opendefensecloud/charts/arc \
@@ -39,6 +37,8 @@ Then, copy the commands below to install ARC with `helm`
       --create-namespace \
       --set fullnameOverride=arc
 
-## Submit an example order
+## Checkout the examples
 
-// TODO
+Keep in mind that multiple resources have to be created to be able to run workflows for your orders, so the best place to start is the [examples](../examples/).
+
+For an `Order` to complete you need to define `ArtifactType` or `ClusterArtifactType` for your desired artifact types, which in turn reference the workflow templates.
