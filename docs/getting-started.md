@@ -24,11 +24,20 @@ Please make sure you have these dependencies installed before you proceed.
 
 First, specify the version you want to install in an environment variable. Modify the command below:
 
-    ARC_VERSION="main"
+    export ARC_VERSION="vX.X.X"
 
-Then, copy the commands below to apply the kustomization:
+You can also retrieve the latest version from the GitHub API:
 
-    kubectl apply -k "https://github.com/opendefensecloud/artifact-conduit/examples/deployment?ref=${ARC_VERSION}"
+     export ARC_VERSION="$(curl -s https://api.github.com/repos/opendefensecloud/artifact-conduit/releases/latest | jq -r '.tag_name')"
+
+Then, copy the commands below to install ARC with `helm`
+
+    helm install \
+      arc oci://ghcr.io/opendefensecloud/charts/arc \
+      --version $ARC_VERSION \
+      --namespace arc-system \
+      --create-namespace \
+      --set fullnameOverride=arc
 
 ## Submit an example order
 
