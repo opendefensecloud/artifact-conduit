@@ -31,6 +31,7 @@ jobs:
       contents: read
       packages: write # Push to ghcr.io
       id-token: write # Needed to create an OIDC token for keyless signing
+      attestations: write # Write attestations to GitHub API as well
     name: Build and Publish Docker Image
     # Condition: Run on push to main, published release, OR PR with 'ok-to-image' label
     if: |
@@ -97,11 +98,21 @@ jobs:
               --yes \
               "$tag"@${{ steps.image.outputs.digest }}
           done
-      - name: Generate provenance
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+      - name: Extract first tag
+        id: first-tag
+        run: |
+          IFS=$'\n' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
+          echo "tag=${TAGS[0]}" >> $GITHUB_OUTPUT
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
-          digest: ${{ needs.image.outputs.digest }}
-          registry-username: ${{ github.actor }}
-        secrets:
-          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ steps.first-tag.outputs.tag }}
+          format: 'cyclonedx-json'
+          output-file: 'sbom.cyclonedx.json'
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v3
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          sbom-path: 'sbom.cyclonedx.json'
+          push-to-registry: true
