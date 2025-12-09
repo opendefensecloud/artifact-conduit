@@ -97,3 +97,11 @@ jobs:
               --yes \
               "$tag"@${{ steps.image.outputs.digest }}
           done
+      - name: Generate provenance
+        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+        with:
+          image: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
+          digest: ${{ needs.image.outputs.digest }}
+          registry-username: ${{ github.actor }}
+        secrets:
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
