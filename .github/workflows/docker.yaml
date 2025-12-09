@@ -93,6 +93,6 @@ jobs:
               -a "repo=${{ github.repository }}" \
               -a "workflow=${{ github.workflow }}" \
               -a "sha=${{ github.sha }}" \
-              -yes \
+              --yes \
               "$tag"@${{ steps.image.outputs.digest }}
           done
