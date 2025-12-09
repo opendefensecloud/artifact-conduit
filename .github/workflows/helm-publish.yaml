@@ -42,6 +42,9 @@ jobs:
         with:
           version: 'v4.0.1'
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.0.0
+
       - name: Login to GitHub Container Registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
