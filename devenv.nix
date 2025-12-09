@@ -16,6 +16,7 @@
     pkgs.kind
     pkgs.kubectl
     pkgs.kubernetes-helm
+    pkgs.cosign
   ];
 
   # https://devenv.sh/languages/
