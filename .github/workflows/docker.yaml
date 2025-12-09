@@ -116,9 +116,6 @@ jobs:
           IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
           for tag in "${TAGS[@]}"; do
             cosign attest --type spdxjson \
-              -a "repo=${{ github.repository }}" \
-              -a "workflow=${{ github.workflow }}" \
-              -a "sha=${{ github.sha }}" \
               --yes \
               --predicate sbom.cyclonedx.json \
               "$tag"@${{ steps.image.outputs.digest }}
