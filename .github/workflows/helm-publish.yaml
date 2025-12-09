@@ -109,6 +109,6 @@ jobs:
               CHART_DIGEST=$(awk '/Digest: /{print $2}' push-metadata.txt)
               echo "CHART_DIGEST=${CHART_DIGEST}" | tee -a $GITHUB_ENV
 
-              cosign sign --yes "ghcr.io/${{ github.repository_owner }}/charts:${{ steps.version.outputs.version }}@${CHART_DIGEST}"
+              cosign sign --yes "ghcr.io/${{ github.repository_owner }}/charts/${CHART_NAME}@${CHART_DIGEST}"
             fi
           done
