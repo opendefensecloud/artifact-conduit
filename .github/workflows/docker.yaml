@@ -1,4 +1,4 @@
-name: Build/Publish Docker Image
+name: Docker
 
 on:
   release:
@@ -29,7 +29,8 @@ jobs:
             target: apiserver
     permissions:
       contents: read
-      packages: write
+      packages: write # Push to ghcr.io
+      id-token: write # Needed to create an OIDC token for keyless signing
     name: Build and Publish Docker Image
     # Condition: Run on push to main, published release, OR PR with 'ok-to-image' label
     if: |
@@ -82,7 +83,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3
+        uses: sigstore/cosign-installer@v4
       - name: Sign image with cosign
         env:
           COSIGN_EXPERIMENTAL: 1

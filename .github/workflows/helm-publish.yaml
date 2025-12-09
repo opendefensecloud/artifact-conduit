@@ -1,4 +1,4 @@
-name: Publish Helm Chart
+name: Helm Publish
 
 on:
   release:
