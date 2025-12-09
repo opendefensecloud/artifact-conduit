@@ -83,7 +83,9 @@ var _ = Describe("Endpoint", func() {
 					Namespace:    ns.Name,
 					GenerateName: "test-",
 				},
-				Spec: arcv1alpha1.EndpointSpec{},
+				Spec: arcv1alpha1.EndpointSpec{
+					RemoteURL: "test",
+				},
 			}
 			Expect(k8sClient.Create(ctx, ep)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), ep)).To(Succeed())
