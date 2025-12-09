@@ -109,21 +109,10 @@ jobs:
           image: ${{ steps.first-tag.outputs.tag }}
           format: 'cyclonedx-json'
           output-file: 'sbom.cyclonedx.json'
-      - name: Attest SBOM with cosign
-        env:
-          COSIGN_EXPERIMENTAL: 1
-        run: |
-          IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
-          for tag in "${TAGS[@]}"; do
-            cosign attest --type spdxjson \
-              --yes \
-              --predicate sbom.cyclonedx.json \
-              "$tag"@${{ steps.image.outputs.digest }}
-          done
-      - name: Attest SBOM with GitHub
+      - name: Attest SBOM
         uses: actions/attest-sbom@v3
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
           sbom-path: 'sbom.cyclonedx.json'
-          push-to-registry: false
+          push-to-registry: true
