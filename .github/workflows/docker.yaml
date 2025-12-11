@@ -1,4 +1,4 @@
-name: Build/Publish Docker Image
+name: Docker
 
 on:
   release:
@@ -29,7 +29,9 @@ jobs:
             target: apiserver
     permissions:
       contents: read
-      packages: write
+      packages: write # Push to ghcr.io
+      id-token: write # Needed to create an OIDC token for keyless signing
+      attestations: write # Write attestations to GitHub API as well
     name: Build and Publish Docker Image
     # Condition: Run on push to main, published release, OR PR with 'ok-to-image' label
     if: |
@@ -69,6 +71,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push
+        id: image
         timeout-minutes: 10
         uses: docker/build-push-action@v6
         with:
@@ -80,3 +83,42 @@ jobs:
           target: ${{ matrix.image.target }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v4.0.0
+      - name: Sign image with cosign
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
+          for tag in "${TAGS[@]}"; do
+            cosign sign \
+              -a "repo=${{ github.repository }}" \
+              -a "workflow=${{ github.workflow }}" \
+              -a "sha=${{ github.sha }}" \
+              --yes \
+              "$tag"@${{ steps.image.outputs.digest }}
+          done
+      - name: Extract first tag
+        id: first-tag
+        run: |
+          IFS=$'\n' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
+          echo "tag=${TAGS[0]}" >> $GITHUB_OUTPUT
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ steps.first-tag.outputs.tag }}
+          format: 'cyclonedx-json'
+          output-file: 'sbom.cyclonedx.json'
+      - name: Attest SBOM
+        uses: actions/attest-sbom@v3
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          sbom-path: 'sbom.cyclonedx.json'
+          push-to-registry: true
+      - name: Attest provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
+          subject-digest: ${{ steps.image.outputs.digest }}
+          push-to-registry: true

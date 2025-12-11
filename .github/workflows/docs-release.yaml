@@ -1,13 +1,7 @@
-name: Build/Publish Develop Docs
+name: Docs Release
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - mkdocs.yml
-      - .github/workflows/develop-docs.yaml
-      - Makefile
+  release:
+    types: [published]
 
 permissions:
   contents: write
@@ -25,8 +19,7 @@ jobs:
         run: |
           pip install mkdocs-material
           pip install mkdocs-glightbox
-          pip install mkdocs-include-markdown-plugin
-          pip install mkdocs-panzoom-plugin
+          pip install mkdocs-mermaid-zoom
           pip install pillow cairosvg mike
       - name: Setup Docs Deploy
         run: |
@@ -34,4 +27,4 @@ jobs:
           git config --global user.email "docs.deploy@opendefense.cloud"
       - name: Build Docs Website
         run: |
-          mike deploy --push develop
+          mike deploy --push --update-aliases ${{ github.event.release.tag_name }} latest
