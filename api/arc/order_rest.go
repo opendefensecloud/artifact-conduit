@@ -14,11 +14,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
+var orderColumnDefinitions = []metav1.TableColumnDefinition{
+	{Name: "Name", Type: "string", Description: "Name of the Order"},
+	{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+	{Name: "Phase", Type: "string", Description: "Current phase of the Order"},
+	{Name: "Message", Type: "string", Description: "Status message describing the current condition of the Order"},
+}
+
 var _ resource.Object = &Order{}
 var _ resource.ObjectWithStatusSubResource = &Order{}
 var _ rest.Validater = &Order{}
 var _ rest.ValidateUpdater = &Order{}
 var _ rest.TableConverter = &Order{}
+var _ rest.TableConverter = &OrderList{}
 
 func (o *Order) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -74,26 +82,42 @@ func validateOrder(o *Order) field.ErrorList {
 	return allErrs
 }
 
+func (o *Order) IntoTableRow() metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []any{
+			o.Name,
+			o.CreationTimestamp,
+			getOrderPhase(o.Status),
+			o.Status.Message,
+		},
+		Object: runtime.RawExtension{Object: o},
+	}
+}
+
 func (o *Order) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
 	table := &metav1.Table{
-		ColumnDefinitions: []metav1.TableColumnDefinition{
-			{Name: "Name", Type: "string", Description: "Name of the Order"},
-			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
-			{Name: "Phase", Type: "string", Description: "Current phase of the Order"},
-			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the Order"},
-		},
+		ColumnDefinitions: orderColumnDefinitions,
 		Rows: []metav1.TableRow{
-			{
-				Cells: []interface{}{
-					o.Name,
-					o.CreationTimestamp,
-					getOrderPhase(o.Status),
-					o.Status.Message,
-				},
-				Object: runtime.RawExtension{Object: o},
-			},
+			o.IntoTableRow(),
 		},
 	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
+}
+
+func (ol *OrderList) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	rows := make([]metav1.TableRow, 0, len(ol.Items))
+	for _, o := range ol.Items {
+		rows = append(rows, o.IntoTableRow())
+	}
+
+	table := &metav1.Table{
+		ColumnDefinitions: orderColumnDefinitions,
+		Rows:              rows,
+	}
+	table.ResourceVersion = ol.GetResourceVersion()
+	table.Continue = ol.GetContinue()
+	table.RemainingItemCount = ol.GetRemainingItemCount()
 	return table, nil
 }
 
