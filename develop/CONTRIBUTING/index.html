@@ -22,7 +22,7 @@
     
     
       
-        <title>Artifact Conduit (ARC) Developer Guide - Artifact Conduit</title>
+        <title>Contributing - Artifact Conduit</title>
       
     
     
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#artifact-conduit-arc-developer-guide" class="md-skip">
+        <a href="#contributing" class="md-skip">
           Skip to content
         </a>
       
@@ -137,7 +137,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Artifact Conduit (ARC) Developer Guide
+              Contributing
             
           </span>
         </div>
@@ -938,14 +938,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../operator-manual/workflow-config/" class="md-nav__link">
+      <a href="../operator-manual/understanding-workflows/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Workflow Config
+    Understanding Workflows
   
 
     
@@ -1101,6 +1101,8 @@
       
         
       
+        
+      
     
     
     
@@ -1161,7 +1163,7 @@
   <span class="md-ellipsis">
     
   
-    Contributor Covenant Code of Conduct
+    Code of Conduct
   
 
     
@@ -1198,7 +1200,7 @@
   <span class="md-ellipsis">
     
   
-    Artifact Conduit (ARC) Developer Guide
+    Contributing
   
 
     
@@ -1216,7 +1218,7 @@
   <span class="md-ellipsis">
     
   
-    Artifact Conduit (ARC) Developer Guide
+    Contributing
   
 
     
@@ -1242,10 +1244,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development-environment-architecture" class="md-nav__link">
+  <a href="#how-to-provide-feedback" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Environment Architecture
+        How To Provide Feedback
       
     </span>
   </a>
@@ -1253,10 +1255,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#code-of-conduct" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prerequisites
+        Code of Conduct
       
     </span>
   </a>
@@ -1264,10 +1266,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#development-workflow-overview" class="md-nav__link">
+  <a href="#community-meetings-monthly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Workflow Overview
+        Community Meetings (monthly)
       
     </span>
   </a>
@@ -1275,22 +1277,78 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#build-system" class="md-nav__link">
+  <a href="#contributor-meetings-twice-monthly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Build System
+        Contributor Meetings (twice monthly)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Build System">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-contribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How To Contribute
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How To Contribute">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tool-versions" class="md-nav__link">
+  <a href="#authoring-prs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tool Versions
+        Authoring PRs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authoring PRs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Locally
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Policy
       
     </span>
   </a>
@@ -1301,81 +1359,76 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#codebase-organization" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#other-contributions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Codebase Organization
+        Other Contributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Other Contributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reviewing-prs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewing PRs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#code-generation-process" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#timeliness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Code Generation Process
+        Timeliness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timeliness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr-author-timeliness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR Author Timeliness
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#testing-strategy" class="md-nav__link">
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#triaging-bugs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Testing Strategy
+        Triaging Bugs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#continuous-integration-ci-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Continuous Integration (CI) Pipeline
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-a-new-custom-resource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Custom Resource
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#modifying-existing-api-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Modifying Existing API Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-quality-linting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code Quality &amp; Linting
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1423,14 +1476,42 @@
   
   
     <li class="md-nav__item">
-      <a href="../developer-guide/working-with-docs/" class="md-nav__link">
+      <a href="../developer-guide/developing-locally/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Documentation Setup
+    Developing locally
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/documentation-changes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Changes
   
 
     
@@ -1500,10 +1581,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_7">
         
           
-          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5_7" id="__nav_5_7_label" tabindex="0">
             
   
   
@@ -1521,8 +1602,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1546,7 +1627,7 @@
   <span class="md-ellipsis">
     
   
-    Find a Common Way to Document Architectural Design Decsisions
+    Find a Common Way to Document Architectural Design Decisions
   
 
     
@@ -1714,10 +1795,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development-environment-architecture" class="md-nav__link">
+  <a href="#how-to-provide-feedback" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Environment Architecture
+        How To Provide Feedback
       
     </span>
   </a>
@@ -1725,10 +1806,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#code-of-conduct" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prerequisites
+        Code of Conduct
       
     </span>
   </a>
@@ -1736,10 +1817,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#development-workflow-overview" class="md-nav__link">
+  <a href="#community-meetings-monthly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Workflow Overview
+        Community Meetings (monthly)
       
     </span>
   </a>
@@ -1747,22 +1828,78 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#build-system" class="md-nav__link">
+  <a href="#contributor-meetings-twice-monthly" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Build System
+        Contributor Meetings (twice monthly)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Build System">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#slack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-contribute" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How To Contribute
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How To Contribute">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#tool-versions" class="md-nav__link">
+  <a href="#authoring-prs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tool Versions
+        Authoring PRs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Authoring PRs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Locally
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Policy
       
     </span>
   </a>
@@ -1773,81 +1910,76 @@
     </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#codebase-organization" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#other-contributions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Codebase Organization
+        Other Contributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Other Contributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reviewing-prs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reviewing PRs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#code-generation-process" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#timeliness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Code Generation Process
+        Timeliness
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timeliness">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pr-author-timeliness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR Author Timeliness
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#testing-strategy" class="md-nav__link">
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#triaging-bugs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Testing Strategy
+        Triaging Bugs
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#continuous-integration-ci-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Continuous Integration (CI) Pipeline
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#adding-a-new-custom-resource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Adding a New Custom Resource
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#modifying-existing-api-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Modifying Existing API Types
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#code-quality-linting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Code Quality &amp; Linting
-      
-    </span>
-  </a>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1884,283 +2016,89 @@
   
 
 
-<h1 id="artifact-conduit-arc-developer-guide">Artifact Conduit (ARC) Developer Guide<a class="headerlink" href="#artifact-conduit-arc-developer-guide" title="Permanent link">¶</a></h1>
-<p>This guide provides technical information for developers contributing to the Artifact Conduit (ARC) project. It covers the development workflow, build system, code organization, and common development tasks. For detailed information about specific topics, see the referenced sections.</p>
-<h2 id="development-environment-architecture">Development Environment Architecture<a class="headerlink" href="#development-environment-architecture" title="Permanent link">¶</a></h2>
-<p>The ARC project uses a declarative, reproducible development environment based on Nix. This approach ensures that all developers work with identical tool versions and configurations, eliminating "works on my machine" issues.</p>
-<div class="panzoom-box" data-key="alt" id="panzoom0" oncontextmenu="return false;">
-    
-    <nav class="panzoom-nav">
-    <button class="panzoom-info panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm169.8-90.7c7.9-22.3 29.1-37.3 52.8-37.3l58.3 0c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24l0-13.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1l-58.3 0c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"></path>
-    </svg>
-</button><button class="panzoom-reset panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"></path>
-    </svg>
-</button><button class="panzoom-max panzoom-button">
-    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M32 32C14.3 32 0 46.3 0 64l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32L32 32zM64 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 32c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM448 352c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96z"></path>
-    </svg>
-</button><button class="panzoom-min panzoom-button panzoom-hidden">
-    <svg class="panzoom-icon" viewBox="0 0 448 512" xmlns="http://www.w3.org/2000/svg">
-        <path d="M160 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 64-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l96 0c17.7 0 32-14.3 32-32l0-96zM32 320c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0 0 64c0 17.7 14.3 32 32 32s32-14.3 32-32l0-96c0-17.7-14.3-32-32-32l-96 0zM352 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32l96 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-64 0 0-64zM320 320c-17.7 0-32 14.3-32 32l0 96c0 17.7 14.3 32 32 32s32-14.3 32-32l0-64 64 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0z"></path>
-    </svg>
-</button>
-    </nav>
-    <pre class="mermaid"><code>graph TB
-    subgraph "Developer Machine"
-        Shell["Developer Shell"]
-        Direnv["direnv&lt;br/&gt;Automatic Environment Loader"]
-        Devenv["devenv&lt;br/&gt;Nix-based Dev Environment"]
-
-        subgraph "Nix Environment"
-            NixStore["Nix Store&lt;br/&gt;/nix/store/*"]
-            Go["Go 1.25.2"]
-            Make["GNU Make"]
-            Lint["golangci-lint"]
-            Vulncheck["govulncheck"]
-            Oras["oras CLI"]
-            CobraCLI["cobra-cli"]
-            GitHooks["Git Hooks&lt;br/&gt;pre-commit"]
-        end
-    end
-
-    subgraph "Configuration Files"
-        EnvRC[".envrc&lt;br/&gt;direnv config"]
-        DevenvNix["devenv.nix&lt;br/&gt;Environment definition"]
-        DevenvYAML["devenv.yaml&lt;br/&gt;Input sources"]
-        DevenvLock["devenv.lock&lt;br/&gt;Dependency locks"]
-    end
-
-    Shell --&gt;|cd into repo| Direnv
-    Direnv --&gt;|reads| EnvRC
-    Direnv --&gt;|activates| Devenv
-    Devenv --&gt;|reads| DevenvNix
-    Devenv --&gt;|reads| DevenvYAML
-    Devenv --&gt;|locked by| DevenvLock
-    Devenv --&gt;|provisions| NixStore
-
-    NixStore --&gt;|provides| Go
-    NixStore --&gt;|provides| Make
-    NixStore --&gt;|provides| Lint
-    NixStore --&gt;|provides| Vulncheck
-    NixStore --&gt;|provides| Oras
-    NixStore --&gt;|provides| CobraCLI
-    NixStore --&gt;|installs| GitHooks</code></pre> 
-    <div class="panzoom-info-box panzoom-info-box-bottom panzoom-hidden">
-Hold "Alt" / "Option" to enable pan &amp; zoom
-</div>
-</div>
-<p><strong>Environment Loading Flow</strong>: When a developer navigates into the repository directory, <code>direnv</code> automatically detects the <code>.envrc</code> file and activates the <code>devenv</code> environment, which provisions all required tools from the Nix store.</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¶</a></h2>
-<p>Before setting up the ARC development environment, ensure the following software is installed on your system:</p>
+<h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">¶</a></h1>
+<h2 id="how-to-provide-feedback">How To Provide Feedback<a class="headerlink" href="#how-to-provide-feedback" title="Permanent link">¶</a></h2>
+<p>Please <a href="https://github.com/opendefensecloud/artifact-conduit/issues">raise an issue in Github</a>.</p>
+<h2 id="code-of-conduct">Code of Conduct<a class="headerlink" href="#code-of-conduct" title="Permanent link">¶</a></h2>
+<p>See <a href="../CODE_OF_CONDUCT/">Code of Conduct</a>.</p>
+<h2 id="community-meetings-monthly">Community Meetings (monthly)<a class="headerlink" href="#community-meetings-monthly" title="Permanent link">¶</a></h2>
+<p>There are currently no community meetings. Please raise an issue to reach out.</p>
+<h2 id="contributor-meetings-twice-monthly">Contributor Meetings (twice monthly)<a class="headerlink" href="#contributor-meetings-twice-monthly" title="Permanent link">¶</a></h2>
+<p>There are currently no public contributor meetings. Please raise an issue to reach out.</p>
+<h2 id="slack">Slack<a class="headerlink" href="#slack" title="Permanent link">¶</a></h2>
+<p>There is currently no public Slack. Please raise an issue to reach out.</p>
+<h2 id="how-to-contribute">How To Contribute<a class="headerlink" href="#how-to-contribute" title="Permanent link">¶</a></h2>
+<p>We're always looking for contributors.</p>
+<h3 id="authoring-prs">Authoring PRs<a class="headerlink" href="#authoring-prs" title="Permanent link">¶</a></h3>
+<ul>
+<li>Documentation - something missing or unclear? Please submit a pull request according to our <a href="../developer-guide/documentation-changes/">docs contribution guide</a>!</li>
+<li>Code contribution - investigate a <a href="https://github.com/opendefensecloud/artifact-conduit/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22">good first issue</a>, <a href="#triaging-bugs">high priority bugs</a>, or anything not assigned.</li>
+<li>You can work on an issue without being assigned.</li>
+</ul>
+<h4 id="running-locally">Running Locally<a class="headerlink" href="#running-locally" title="Permanent link">¶</a></h4>
+<p>To run ARC locally for development: <a href="../developer-guide/developing-locally/">running locally</a>.</p>
+<h4 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">¶</a></h4>
+<p>Dependencies increase the risk of security issues and have on-going maintenance costs.</p>
+<p>The dependency must pass these test:</p>
+<ul>
+<li>A strong use case.</li>
+<li>It has an acceptable license (e.g. MIT).</li>
+<li>It is actively maintained.</li>
+<li>It has no security issues.</li>
+</ul>
+<p>Example, should we add <code>fasttemplate</code>, <a href="https://snyk.io/advisor/golang/github.com/valyala/fasttemplate">view the Snyk report</a>:</p>
 <table>
 <thead>
 <tr>
-<th>Requirement</th>
-<th>Purpose</th>
-<th>Minimum Version</th>
+<th>Test</th>
+<th>Outcome</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Nix Package Manager</strong></td>
-<td>Provides reproducible package management</td>
-<td>2.3+</td>
+<td>A strong use case.</td>
+<td>❌ Fail. We can use <code>text/template</code>.</td>
 </tr>
 <tr>
-<td><strong>direnv</strong></td>
-<td>Automatically loads environment when entering directory</td>
-<td>2.20+</td>
+<td>It has an acceptable license (e.g. MIT)</td>
+<td>✅ Pass. MIT license.</td>
 </tr>
 <tr>
-<td><strong>Git</strong></td>
-<td>Version control (provided by Nix if needed)</td>
-<td>2.0+</td>
+<td>It is actively maintained.</td>
+<td>❌ Fail. Project is inactive.</td>
+</tr>
+<tr>
+<td>It has no security issues.</td>
+<td>✅ Pass. No known security issues.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="development-workflow-overview">Development Workflow Overview<a class="headerlink" href="#development-workflow-overview" title="Permanent link">¶</a></h2>
-<p>ARC follows a <strong>code-generation-heavy pattern</strong> typical in Kubernetes ecosystem projects. Changes to API types trigger code regeneration, which produces client libraries, OpenAPI specifications, and CRD manifests.</p>
-<hr>
-<h2 id="build-system">Build System<a class="headerlink" href="#build-system" title="Permanent link">¶</a></h2>
-<p>The ARC build system uses a Makefile to orchestrate various tools, designed for reproducibility. All required tools are provided in the <code>bin/</code> directory.</p>
-<table>
-<thead>
-<tr>
-<th>Target</th>
-<th>Purpose</th>
-<th>Key Tools Used</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>make codegen</code></td>
-<td>Generate client-go libraries &amp; OpenAPI</td>
-<td><code>openapi-gen</code>, <code>kube_codegen.sh</code></td>
-</tr>
-<tr>
-<td><code>make manifests</code></td>
-<td>Generate CRDs and RBAC manifests</td>
-<td><code>controller-gen</code></td>
-</tr>
-<tr>
-<td><code>make fmt</code></td>
-<td>Format code, add license headers</td>
-<td><code>addlicense</code>, <code>go fmt</code></td>
-</tr>
-<tr>
-<td><code>make lint</code></td>
-<td>Run linters and checks</td>
-<td><code>golangci-lint</code>, <code>shellcheck</code>, <code>addlicense</code></td>
-</tr>
-<tr>
-<td><code>make test</code></td>
-<td>Run all tests with coverage</td>
-<td><code>ginkgo</code>, <code>setup-envtest</code></td>
-</tr>
-<tr>
-<td><code>make clean</code></td>
-<td>Remove generated binaries</td>
-<td>-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="tool-versions">Tool Versions<a class="headerlink" href="#tool-versions" title="Permanent link">¶</a></h3>
-<p>The system <strong>pins specific tool versions</strong> for reproducibility:</p>
+<p>No, we should not add that dependency.</p>
+<h4 id="test-policy">Test Policy<a class="headerlink" href="#test-policy" title="Permanent link">¶</a></h4>
+<p>Changes without either unit or e2e tests are unlikely to be accepted.
+See <a href="https://github.com/opendefensecloud/artifact-conduit/blob/main/.github/pull_request_template.md">the pull request template</a>.</p>
+<h3 id="other-contributions">Other Contributions<a class="headerlink" href="#other-contributions" title="Permanent link">¶</a></h3>
 <ul>
-<li>BDD testing framework: <code>v2.27.2</code></li>
-<li>Go linter: <code>v2.5.0</code></li>
-<li>CRD/RBAC generator: <code>v0.19.0</code></li>
-<li>Kubernetes test API server: <code>release-0.22</code></li>
-<li>K8s for integration tests: <code>1.34.1</code></li>
+<li><a href="#reviewing-prs">Reviewing PRs</a></li>
+<li>Responding to questions in the <a href="#slack">Slack</a> channels</li>
+<li>Responding to questions in <a href="https://github.com/opendefensecloud/artifact-conduit/discussions">Github Discussions</a></li>
+<li><a href="#triaging-bugs">Triaging new bugs</a></li>
 </ul>
-<hr>
-<h2 id="codebase-organization">Codebase Organization<a class="headerlink" href="#codebase-organization" title="Permanent link">¶</a></h2>
-<p>ARC codebase follows standard Kubernetes project conventions:</p>
-<table>
-<thead>
-<tr>
-<th>Directory</th>
-<th>Purpose</th>
-<th>Generated/Manual</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>api/arc/v1alpha1/</code></td>
-<td>Custom resource type definitions</td>
-<td>Manual</td>
-</tr>
-<tr>
-<td><code>client-go/</code></td>
-<td>Client libraries for ARC resources</td>
-<td>Generated</td>
-</tr>
-<tr>
-<td><code>pkg/apiserver/</code></td>
-<td>Extension API server implementation</td>
-<td>Manual</td>
-</tr>
-<tr>
-<td><code>pkg/controller/</code></td>
-<td>Controller reconciliation logic</td>
-<td>Manual</td>
-</tr>
-<tr>
-<td><code>pkg/registry/</code></td>
-<td>Storage strategies for custom resources</td>
-<td>Manual</td>
-</tr>
-<tr>
-<td><code>config/</code></td>
-<td>Kubernetes manifests (CRDs, RBAC)</td>
-<td>Generated</td>
-</tr>
-<tr>
-<td><code>hack/</code></td>
-<td>Build and code generation scripts</td>
-<td>Manual</td>
-</tr>
-</tbody>
-</table>
-<hr>
-<h2 id="code-generation-process">Code Generation Process<a class="headerlink" href="#code-generation-process" title="Permanent link">¶</a></h2>
-<p>ARC uses the Kubernetes code-generator to produce client libraries and OpenAPI specs.</p>
-<ul>
-<li><code>make codegen</code> triggers <code>hack/update-codegen.sh</code></li>
-<li>Generates:</li>
-<li>Client-go libraries in <code>client-go/</code></li>
-<li>OpenAPI specs</li>
-<li>CRD manifests</li>
-</ul>
-<p>See Client Libraries section for usage details.</p>
-<hr>
-<h2 id="testing-strategy">Testing Strategy<a class="headerlink" href="#testing-strategy" title="Permanent link">¶</a></h2>
-<p>ARC uses a multi-layered testing strategy:</p>
-<ul>
-<li><strong>Unit Tests</strong></li>
-<li><strong>Integration Tests</strong> (uses <code>ENVTEST_K8S_VERSION=1.34.1</code>)</li>
-<li><strong>Controller Tests</strong> via envtest</li>
-</ul>
-<p>Run all tests and generate coverage:</p>
-<div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span>
-</code></pre></div>
-<p>Setup environment for integration tests:</p>
-<div class="highlight"><pre><span></span><code>setup-envtest
-<span class="nb">export</span><span class="w"> </span><span class="nv">ENVTEST_K8S_VERSION</span><span class="o">=</span><span class="m">1</span>.34.1
-</code></pre></div>
-<p>Test coverage is tracked using Coveralls.</p>
-<hr>
-<h2 id="continuous-integration-ci-pipeline">Continuous Integration (CI) Pipeline<a class="headerlink" href="#continuous-integration-ci-pipeline" title="Permanent link">¶</a></h2>
-<p>Pipeline runs on every push and pull request, enforcing code quality and test coverage.</p>
-<ul>
-<li><strong>Lint Job</strong></li>
-<li><code>addlicense</code></li>
-<li><code>shellcheck</code></li>
-<li><code>golangci-lint</code></li>
-<li><strong>Test Job</strong> (runs after Lint)</li>
-<li><code>make test</code></li>
-</ul>
-<p>For customization details, see <code>.github/workflows/golang.yaml</code>.</p>
-<hr>
-<h2 id="adding-a-new-custom-resource">Adding a New Custom Resource<a class="headerlink" href="#adding-a-new-custom-resource" title="Permanent link">¶</a></h2>
-<p>To introduce a new CRD:</p>
-<ol>
-<li><strong>Create type definition</strong> in <code>api/arc/v1alpha1/</code></li>
-<li><strong>Add OpenAPI model name</strong></li>
-<li><strong>Regenerate code</strong> via <code>make codegen</code></li>
-<li><strong>Implement storage</strong> in <code>pkg/registry/</code></li>
-<li><strong>Add controller logic</strong> in <code>pkg/controller/</code> if reconciliation is needed</li>
-</ol>
-<p>See <code>hack/update-codegen.sh</code> for implementation details.</p>
-<hr>
-<h2 id="modifying-existing-api-types">Modifying Existing API Types<a class="headerlink" href="#modifying-existing-api-types" title="Permanent link">¶</a></h2>
-<p>Typical steps:</p>
-<ol>
-<li>Edit types in <code>api/arc/v1alpha1/</code></li>
-<li>Run <code>make codegen</code></li>
-<li>Run <code>make manifests</code></li>
-<li>Run <code>make test</code></li>
-</ol>
-<blockquote>
-<p><strong>Note:</strong> Breaking changes may affect existing clients. Follow semantic versioning and provide migration paths.</p>
-</blockquote>
-<hr>
-<h2 id="code-quality-linting">Code Quality &amp; Linting<a class="headerlink" href="#code-quality-linting" title="Permanent link">¶</a></h2>
-<p>Lint and license checks before committing:</p>
-<ul>
-<li><code>addlicense</code> for Apache 2.0 headers</li>
-<li><code>shellcheck</code> for scripts in <code>hack/</code></li>
-<li><code>golangci-lint</code> for Go linting</li>
-</ul>
-<p>Fix issues with:</p>
-<div class="highlight"><pre><span></span><code>make<span class="w"> </span>fmt
-make<span class="w"> </span>lint
-</code></pre></div>
-<hr>
+<h4 id="reviewing-prs">Reviewing PRs<a class="headerlink" href="#reviewing-prs" title="Permanent link">¶</a></h4>
+<p>Anybody can review a PR.
+If you are in a <a href="#roles">designated role</a>, add yourself as an "Assignee" to a PR if you plan to lead the review.
+If you are a Reviewer or below, then once you have approved a PR, request a review from one or more Approvers and above.</p>
+<h4 id="timeliness">Timeliness<a class="headerlink" href="#timeliness" title="Permanent link">¶</a></h4>
+<p>We encourage PR authors and reviewers to respond to change requests in a reasonable time frame.
+If you're on vacation or will be unavailable, please let others know on the PR.</p>
+<h5 id="pr-author-timeliness">PR Author Timeliness<a class="headerlink" href="#pr-author-timeliness" title="Permanent link">¶</a></h5>
+<p>If a PR hasn't seen activity from the author for 10 business days, someone else may ask to take it over.
+We suggest commenting on the original PR and tagging the author to check on their plans.
+Maintainers can reassign PRs to new contributors if the original author doesn't respond with a plan.
+For PRs that have been inactive for 3 months, the takeover process can happen immediately.
+<strong>IMPORTANT:</strong> If a PR is taken over and uses any code from the previous PR, the original author <em>must</em> be credited using <code>Co-authored-by</code> on the commits.</p>
+<h4 id="triaging-bugs">Triaging Bugs<a class="headerlink" href="#triaging-bugs" title="Permanent link">¶</a></h4>
+<p>New bugs need to be triaged to identify the highest priority ones.</p>
 
 
 

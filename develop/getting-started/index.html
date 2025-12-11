@@ -588,10 +588,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-arc" class="md-nav__link">
+  <a href="#install-arc-via-helm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install ARC
+        Install ARC via Helm
       
     </span>
   </a>
@@ -599,21 +599,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#kustomize" class="md-nav__link">
+  <a href="#checkout-the-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Kustomize
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#submit-an-example-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Submit an example order
+        Checkout the examples
       
     </span>
   </a>
@@ -1034,14 +1023,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../operator-manual/workflow-config/" class="md-nav__link">
+      <a href="../operator-manual/understanding-workflows/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Workflow Config
+    Understanding Workflows
   
 
     
@@ -1195,6 +1184,8 @@
       
         
       
+        
+      
     
     
     
@@ -1252,7 +1243,7 @@
   <span class="md-ellipsis">
     
   
-    Contributor Covenant Code of Conduct
+    Code of Conduct
   
 
     
@@ -1280,7 +1271,7 @@
   <span class="md-ellipsis">
     
   
-    Artifact Conduit (ARC) Developer Guide
+    Contributing
   
 
     
@@ -1329,14 +1320,42 @@
   
   
     <li class="md-nav__item">
-      <a href="../developer-guide/working-with-docs/" class="md-nav__link">
+      <a href="../developer-guide/developing-locally/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Documentation Setup
+    Developing locally
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer-guide/documentation-changes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Changes
   
 
     
@@ -1406,10 +1425,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_6">
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_7">
         
           
-          <label class="md-nav__link" for="__nav_5_6" id="__nav_5_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_5_7" id="__nav_5_7_label" tabindex="0">
             
   
   
@@ -1427,8 +1446,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_6">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1452,7 +1471,7 @@
   <span class="md-ellipsis">
     
   
-    Find a Common Way to Document Architectural Design Decsisions
+    Find a Common Way to Document Architectural Design Decisions
   
 
     
@@ -1631,10 +1650,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#install-arc" class="md-nav__link">
+  <a href="#install-arc-via-helm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Install ARC
+        Install ARC via Helm
       
     </span>
   </a>
@@ -1642,21 +1661,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#kustomize" class="md-nav__link">
+  <a href="#checkout-the-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Kustomize
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#submit-an-example-order" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Submit an example order
+        Checkout the examples
       
     </span>
   </a>
@@ -1703,26 +1711,35 @@
 For quick testing, you can use a local cluster with <a href="https://kind.sigs.k8s.io/">kind</a> or similar tools.</p>
 <p>ARC has the following CNCF projects as dependencies:</p>
 <ul>
-<li><a href="https://argo-workflows.readthedocs.io/en/stable/installation/">Argo Workflows</a></li>
-<li><a href="https://cert-manager.io/docs/installation/">cert-manager</a></li>
+<li><a href="https://argo-workflows.readthedocs.io/en/stable/installation/">Argo Workflows</a> is used as workflow engine by ARC.</li>
+<li><a href="https://cert-manager.io/docs/installation/">cert-manager</a> provides the certificates for the extension apiserver and etcd.</li>
 </ul>
 <p>Please make sure you have these dependencies installed before you proceed.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>These instructions are intended to help you get started quickly. They are not suitable for production. For production installs, please refer to the <a href="../operator-manual/installation/">installation documentation</a>.</p>
 </div>
-<h2 id="install-arc">Install ARC<a class="headerlink" href="#install-arc" title="Permanent link">¶</a></h2>
-<h2 id="kustomize">Kustomize<a class="headerlink" href="#kustomize" title="Permanent link">¶</a></h2>
+<h2 id="install-arc-via-helm">Install ARC via Helm<a class="headerlink" href="#install-arc-via-helm" title="Permanent link">¶</a></h2>
 <p>First, specify the version you want to install in an environment variable. Modify the command below:</p>
-<div class="codehilite"><pre><span></span><code>ARC_VERSION="main"
+<div class="codehilite"><pre><span></span><code><span class="k">export</span><span class="w"> </span><span class="n">ARC_VERSION</span><span class="o">=</span><span class="s2">"vX.X.X"</span>
 </code></pre></div>
 
-<p>Then, copy the commands below to apply the kustomization:</p>
-<div class="codehilite"><pre><span></span><code>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span>"https://github.com/opendefensecloud/artifact-conduit/examples/deployment?ref=<span class="cp">${</span><span class="n">ARC_VERSION</span><span class="cp">}</span>"
+<p>You can also retrieve the latest version from the GitHub API:</p>
+<div class="codehilite"><pre><span></span><code><span class="w"> </span><span class="k">export</span><span class="w"> </span><span class="n">ARC_VERSION</span><span class="o">=</span><span class="s2">"$(curl -s https://api.github.com/repos/opendefensecloud/artifact-conduit/releases/latest | jq -r '.tag_name')"</span>
 </code></pre></div>
 
-<h2 id="submit-an-example-order">Submit an example order<a class="headerlink" href="#submit-an-example-order" title="Permanent link">¶</a></h2>
-<p>// TODO</p>
+<p>Then, copy the commands below to install ARC with <code>helm</code>:</p>
+<div class="codehilite"><pre><span></span><code>helm install \
+  arc oci://ghcr.io/opendefensecloud/charts/arc \
+  --version $ARC_VERSION \
+  --namespace arc-system \
+  --create-namespace \
+  --set fullnameOverride=arc
+</code></pre></div>
+
+<h2 id="checkout-the-examples">Checkout the examples<a class="headerlink" href="#checkout-the-examples" title="Permanent link">¶</a></h2>
+<p>Keep in mind that multiple resources have to be created to be able to run workflows for your orders, so the best place to start is the <a href="../examples/">examples</a>.</p>
+<p>For an <code>Order</code> to complete you need to define <code>ArtifactType</code> or <code>ClusterArtifactType</code> for your desired artifact types, which in turn reference the workflow templates.</p>
 
 
 
