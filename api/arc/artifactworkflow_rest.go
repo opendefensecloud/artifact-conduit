@@ -20,6 +20,7 @@ var _ resource.Object = &ArtifactWorkflow{}
 var _ resource.ObjectWithStatusSubResource = &ArtifactWorkflow{}
 var _ rest.Validater = &ArtifactWorkflow{}
 var _ rest.ValidateUpdater = &ArtifactWorkflow{}
+var _ rest.TableConverter = &ArtifactWorkflow{}
 
 func (o *ArtifactWorkflow) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -82,4 +83,27 @@ func (o *ArtifactWorkflow) ValidateUpdate(ctx context.Context, old runtime.Objec
 	}
 
 	return allErrs
+}
+
+func (o *ArtifactWorkflow) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	table := &metav1.Table{
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{Name: "Name", Type: "string", Description: "Name of the ArtifactWorkflow"},
+			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+			{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactWorkflow"},
+			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactWorkflow"},
+		},
+		Rows: []metav1.TableRow{
+			{
+				Cells: []interface{}{
+					o.Name,
+					o.CreationTimestamp,
+					o.Status.Phase,
+					o.Status.Message,
+				},
+				Object: runtime.RawExtension{Object: o},
+			},
+		},
+	}
+	return table, nil
 }
