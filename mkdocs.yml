@@ -106,16 +106,17 @@ nav:
       - operator-manual/upgrading.md
       # - operator-manual/new-features.md
       # - operator-manual/security.md
-      - operator-manual/workflow-config.md
+      - operator-manual/understanding-workflows.md
       - operator-manual/extending-artifact-types.md
       - operator-manual/force-reconciliation.md
       - operator-manual/debugging.md
       - operator-manual/ttl-based-cleanup.md
   - Developer Guide:
-      - CODE_OF_CONDUCT.md
+      - Code of Conduct: CODE_OF_CONDUCT.md
       - CONTRIBUTING.md
       - developer-guide/architecture.md
-      - developer-guide/working-with-docs.md
+      - developer-guide/developing-locally.md
+      - developer-guide/documentation-changes.md
       - developer-guide/workflow-execution.md
       - ADRs:
           - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md

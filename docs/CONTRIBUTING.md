@@ -1,207 +1,92 @@
-# Artifact Conduit (ARC) Developer Guide
+# Contributing
 
-This guide provides technical information for developers contributing to the Artifact Conduit (ARC) project. It covers the development workflow, build system, code organization, and common development tasks. For detailed information about specific topics, see the referenced sections.
+## How To Provide Feedback
 
-## Development Environment Architecture
+Please [raise an issue in Github](https://github.com/opendefensecloud/artifact-conduit/issues).
 
-The ARC project uses a declarative, reproducible development environment based on Nix. This approach ensures that all developers work with identical tool versions and configurations, eliminating "works on my machine" issues.
+## Code of Conduct
 
-```mermaid
-graph TB
-    subgraph "Developer Machine"
-        Shell["Developer Shell"]
-        Direnv["direnv<br/>Automatic Environment Loader"]
-        Devenv["devenv<br/>Nix-based Dev Environment"]
-        
-        subgraph "Nix Environment"
-            NixStore["Nix Store<br/>/nix/store/*"]
-            Go["Go 1.25.2"]
-            Make["GNU Make"]
-            Lint["golangci-lint"]
-            Vulncheck["govulncheck"]
-            Oras["oras CLI"]
-            CobraCLI["cobra-cli"]
-            GitHooks["Git Hooks<br/>pre-commit"]
-        end
-    end
-    
-    subgraph "Configuration Files"
-        EnvRC[".envrc<br/>direnv config"]
-        DevenvNix["devenv.nix<br/>Environment definition"]
-        DevenvYAML["devenv.yaml<br/>Input sources"]
-        DevenvLock["devenv.lock<br/>Dependency locks"]
-    end
-    
-    Shell -->|cd into repo| Direnv
-    Direnv -->|reads| EnvRC
-    Direnv -->|activates| Devenv
-    Devenv -->|reads| DevenvNix
-    Devenv -->|reads| DevenvYAML
-    Devenv -->|locked by| DevenvLock
-    Devenv -->|provisions| NixStore
-    
-    NixStore -->|provides| Go
-    NixStore -->|provides| Make
-    NixStore -->|provides| Lint
-    NixStore -->|provides| Vulncheck
-    NixStore -->|provides| Oras
-    NixStore -->|provides| CobraCLI
-    NixStore -->|installs| GitHooks
-```
+See [Code of Conduct](./CODE_OF_CONDUCT.md).
 
-**Environment Loading Flow**: When a developer navigates into the repository directory, `direnv` automatically detects the `.envrc` file and activates the `devenv` environment, which provisions all required tools from the Nix store.
+## Community Meetings (monthly)
 
-## Prerequisites
+There are currently no community meetings. Please raise an issue to reach out.
 
-Before setting up the ARC development environment, ensure the following software is installed on your system:
+## Contributor Meetings (twice monthly)
 
-| Requirement             | Purpose                                                 | Minimum Version |
-| ----------------------- | ------------------------------------------------------- | --------------- |
-| **Nix Package Manager** | Provides reproducible package management                | 2.3+            |
-| **direnv**              | Automatically loads environment when entering directory | 2.20+           |
-| **Git**                 | Version control (provided by Nix if needed)             | 2.0+            |
+There are currently no public contributor meetings. Please raise an issue to reach out.
 
-## Development Workflow Overview
+## Slack
 
-ARC follows a **code-generation-heavy pattern** typical in Kubernetes ecosystem projects. Changes to API types trigger code regeneration, which produces client libraries, OpenAPI specifications, and CRD manifests.
+There is currently no public Slack. Please raise an issue to reach out.
 
-***
+## How To Contribute
 
-## Build System
+We're always looking for contributors.
 
-The ARC build system uses a Makefile to orchestrate various tools, designed for reproducibility. All required tools are provided in the `bin/` directory.
+### Authoring PRs
 
-| Target           | Purpose                                | Key Tools Used                              |
-| ---------------- | -------------------------------------- | ------------------------------------------- |
-| `make codegen`   | Generate client-go libraries & OpenAPI | `openapi-gen`, `kube_codegen.sh`            |
-| `make manifests` | Generate CRDs and RBAC manifests       | `controller-gen`                            |
-| `make fmt`       | Format code, add license headers       | `addlicense`, `go fmt`                      |
-| `make lint`      | Run linters and checks                 | `golangci-lint`, `shellcheck`, `addlicense` |
-| `make test`      | Run all tests with coverage            | `ginkgo`, `setup-envtest`                   |
-| `make clean`     | Remove generated binaries              | -                                           |
+* Documentation - something missing or unclear? Please submit a pull request according to our [docs contribution guide](./developer-guide/documentation-changes.md)!
+* Code contribution - investigate a [good first issue](https://github.com/opendefensecloud/artifact-conduit/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22), [high priority bugs](#triaging-bugs), or anything not assigned.
+* You can work on an issue without being assigned.
 
-### Tool Versions
+#### Running Locally
 
-The system **pins specific tool versions** for reproducibility:
+To run ARC locally for development: [running locally](./developer-guide/developing-locally.md).
 
-- BDD testing framework: `v2.27.2`
-- Go linter: `v2.5.0`
-- CRD/RBAC generator: `v0.19.0`
-- Kubernetes test API server: `release-0.22`
-- K8s for integration tests: `1.34.1`
+#### Dependencies
 
-***
+Dependencies increase the risk of security issues and have on-going maintenance costs.
 
-## Codebase Organization
+The dependency must pass these test:
 
-ARC codebase follows standard Kubernetes project conventions:
+* A strong use case.
+* It has an acceptable license (e.g. MIT).
+* It is actively maintained.
+* It has no security issues.
 
-| Directory           | Purpose                                 | Generated/Manual |
-| ------------------- | --------------------------------------- | ---------------- |
-| `api/arc/v1alpha1/` | Custom resource type definitions        | Manual           |
-| `client-go/`        | Client libraries for ARC resources      | Generated        |
-| `pkg/apiserver/`    | Extension API server implementation     | Manual           |
-| `pkg/controller/`   | Controller reconciliation logic         | Manual           |
-| `pkg/registry/`     | Storage strategies for custom resources | Manual           |
-| `config/`           | Kubernetes manifests (CRDs, RBAC)       | Generated        |
-| `hack/`             | Build and code generation scripts       | Manual           |
+Example, should we add `fasttemplate`, [view the Snyk report](https://snyk.io/advisor/golang/github.com/valyala/fasttemplate):
 
-***
+| Test                                    | Outcome                             |
+|-----------------------------------------|-------------------------------------|
+| A strong use case.                      | ❌ Fail. We can use `text/template`. |
+| It has an acceptable license (e.g. MIT) | ✅ Pass. MIT license.               |
+| It is actively maintained.              | ❌ Fail. Project is inactive.        |
+| It has no security issues.              | ✅ Pass. No known security issues.  |
 
-## Code Generation Process
+No, we should not add that dependency.
 
-ARC uses the Kubernetes code-generator to produce client libraries and OpenAPI specs.
+#### Test Policy
 
-- `make codegen` triggers `hack/update-codegen.sh`
-- Generates:
-  - Client-go libraries in `client-go/`
-  - OpenAPI specs
-  - CRD manifests
+Changes without either unit or e2e tests are unlikely to be accepted.
+See [the pull request template](https://github.com/opendefensecloud/artifact-conduit/blob/main/.github/pull_request_template.md).
 
-See Client Libraries section for usage details.
+### Other Contributions
 
-***
+* [Reviewing PRs](#reviewing-prs)
+* Responding to questions in the [Slack](#slack) channels
+* Responding to questions in [Github Discussions](https://github.com/opendefensecloud/artifact-conduit/discussions)
+* [Triaging new bugs](#triaging-bugs)
 
-## Testing Strategy
+#### Reviewing PRs
 
-ARC uses a multi-layered testing strategy:
+Anybody can review a PR.
+If you are in a [designated role](#roles), add yourself as an "Assignee" to a PR if you plan to lead the review.
+If you are a Reviewer or below, then once you have approved a PR, request a review from one or more Approvers and above.
 
-- **Unit Tests**
-- **Integration Tests** (uses `ENVTEST_K8S_VERSION=1.34.1`)
-- **Controller Tests** via envtest
+#### Timeliness
 
-Run all tests and generate coverage:
+We encourage PR authors and reviewers to respond to change requests in a reasonable time frame.
+If you're on vacation or will be unavailable, please let others know on the PR.
 
-```sh
-make test
-```
+##### PR Author Timeliness
 
-Setup environment for integration tests:
+If a PR hasn't seen activity from the author for 10 business days, someone else may ask to take it over.
+We suggest commenting on the original PR and tagging the author to check on their plans.
+Maintainers can reassign PRs to new contributors if the original author doesn't respond with a plan.
+For PRs that have been inactive for 3 months, the takeover process can happen immediately.
+**IMPORTANT:** If a PR is taken over and uses any code from the previous PR, the original author *must* be credited using `Co-authored-by` on the commits.
 
-```sh
-setup-envtest
-export ENVTEST_K8S_VERSION=1.34.1
-```
+#### Triaging Bugs
 
-Test coverage is tracked using Coveralls.
-
-***
-
-## Continuous Integration (CI) Pipeline
-
-Pipeline runs on every push and pull request, enforcing code quality and test coverage.
-
-- **Lint Job**
-  - `addlicense`
-  - `shellcheck`
-  - `golangci-lint`
-- **Test Job** (runs after Lint)
-  - `make test`
-
-For customization details, see `.github/workflows/golang.yaml`.
-
-***
-
-## Adding a New Custom Resource
-
-To introduce a new CRD:
-
-1. **Create type definition** in `api/arc/v1alpha1/`
-2. **Add OpenAPI model name**
-3. **Regenerate code** via `make codegen`
-4. **Implement storage** in `pkg/registry/`
-5. **Add controller logic** in `pkg/controller/` if reconciliation is needed
-
-See `hack/update-codegen.sh` for implementation details.
-
-***
-
-## Modifying Existing API Types
-
-Typical steps:
-
-1. Edit types in `api/arc/v1alpha1/`
-2. Run `make codegen`
-3. Run `make manifests`
-4. Run `make test`
-
-> **Note:** Breaking changes may affect existing clients. Follow semantic versioning and provide migration paths.
-
-***
-
-## Code Quality & Linting
-
-Lint and license checks before committing:
-
-- `addlicense` for Apache 2.0 headers
-- `shellcheck` for scripts in `hack/`
-- `golangci-lint` for Go linting
-
-Fix issues with:
-
-```sh
-make fmt
-make lint
-```
-
-***
+New bugs need to be triaged to identify the highest priority ones.
