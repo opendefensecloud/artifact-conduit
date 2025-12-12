@@ -7,6 +7,28 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ArtifactTypePhase is an enum tracking in which phase an ArtifactType can be.
+// +enum
+type ArtifactTypePhase string
+
+const ( // analog to Argo Workflows
+	ArtifactTypeUnknown   ArtifactTypePhase = ""
+	ArtifactTypePending   ArtifactTypePhase = "Pending"
+	ArtifactTypeRunning   ArtifactTypePhase = "Running"
+	ArtifactTypeSucceeded ArtifactTypePhase = "Succeeded"
+	ArtifactTypeFailed    ArtifactTypePhase = "Failed"
+	ArtifactTypeError     ArtifactTypePhase = "Error"
+)
+
+func (p ArtifactTypePhase) Completed() bool {
+	switch p {
+	case ArtifactTypeSucceeded, ArtifactTypeFailed, ArtifactTypeError:
+		return true
+	default:
+		return false
+	}
+}
+
 // ArtifactTypeRules is a set of rules to be used for this type of artifact.
 type ArtifactTypeRules struct {
 	// SrcTypes is a list of Endpoint types, that are supported as source.
@@ -38,7 +60,7 @@ type ArtifactTypeSpec struct {
 // ArtifactTypeStatus defines the observed state of ArtifactType
 type ArtifactTypeStatus struct {
 	// Phase tracks which phase the corresponding artifact is in
-	Phase WorkflowPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=WorkflowPhase"`
+	Phase ArtifactTypePhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=ArtifactTypePhase"`
 	// A human readable message describing the current condition of the artifact
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
 	// CompletionTime is the time when the workflow finished

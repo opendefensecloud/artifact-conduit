@@ -421,8 +421,8 @@ var _ = Describe("ArtifactType Strategy", func() {
 				Expect(row.Cells).To(HaveLen(4))
 				Expect(row.Cells[0]).To(Equal("test-type"))
 				Expect(row.Cells[1]).To(Equal(artifactType.CreationTimestamp))
-				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("Active")))
-				Expect(row.Cells[3]).To(Equal("Running successfully"))
+				Expect(row.Cells[2]).To(Equal(arc.ArtifactTypePhase("Running")))
+				Expect(row.Cells[3]).To(Equal("Workflow executing"))
 
 				// Verify resource version
 				Expect(table.ResourceVersion).To(Equal("12345"))
@@ -447,7 +447,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 				Expect(table.Rows).To(HaveLen(1))
 
 				row := table.Rows[0]
-				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("")))
+				Expect(row.Cells[2]).To(Equal(arc.ArtifactTypePhase("")))
 				Expect(row.Cells[3]).To(Equal(""))
 			})
 		})
@@ -498,7 +498,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 				row := table.Rows[0]
 				Expect(row.Cells[0]).To(Equal("type-1"))
 				Expect(row.Cells[1]).To(Equal(creationTime))
-				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("Pending")))
+				Expect(row.Cells[2]).To(Equal(arc.ArtifactTypePhase("Pending")))
 				Expect(row.Cells[3]).To(Equal("Initializing"))
 
 				Expect(table.ResourceVersion).To(Equal("200"))
@@ -559,17 +559,17 @@ var _ = Describe("ArtifactType Strategy", func() {
 
 				// Verify first row
 				Expect(table.Rows[0].Cells[0]).To(Equal("type-1"))
-				Expect(table.Rows[0].Cells[2]).To(Equal(arc.WorkflowPhase("Running")))
+				Expect(table.Rows[0].Cells[2]).To(Equal(arc.ArtifactTypePhase("Running")))
 				Expect(table.Rows[0].Cells[3]).To(Equal("Workflow executing"))
 
 				// Verify second row
 				Expect(table.Rows[1].Cells[0]).To(Equal("type-2"))
-				Expect(table.Rows[1].Cells[2]).To(Equal(arc.WorkflowPhase("Failed")))
+				Expect(table.Rows[1].Cells[2]).To(Equal(arc.ArtifactTypePhase("Failed")))
 				Expect(table.Rows[1].Cells[3]).To(Equal("Workflow failed"))
 
 				// Verify third row
 				Expect(table.Rows[2].Cells[0]).To(Equal("type-3"))
-				Expect(table.Rows[2].Cells[2]).To(Equal(arc.WorkflowPhase("Succeeded")))
+				Expect(table.Rows[2].Cells[2]).To(Equal(arc.ArtifactTypePhase("Succeeded")))
 				Expect(table.Rows[2].Cells[3]).To(Equal("Workflow completed"))
 
 				// Verify metadata
@@ -599,6 +599,38 @@ var _ = Describe("ArtifactType Strategy", func() {
 				Expect(table).ToNot(BeNil())
 				Expect(table.RemainingItemCount).ToNot(BeNil())
 				Expect(*table.RemainingItemCount).To(Equal(int64(50)))
+			})
+		})
+	})
+
+	Describe("ArtifactTypePhase", func() {
+		Context("constants", func() {
+			It("should have correct phase values", func() {
+				Expect(arc.ArtifactTypeUnknown).To(Equal(arc.ArtifactTypePhase("")))
+				Expect(arc.ArtifactTypePending).To(Equal(arc.ArtifactTypePhase("Pending")))
+				Expect(arc.ArtifactTypeRunning).To(Equal(arc.ArtifactTypePhase("Running")))
+				Expect(arc.ArtifactTypeSucceeded).To(Equal(arc.ArtifactTypePhase("Succeeded")))
+				Expect(arc.ArtifactTypeFailed).To(Equal(arc.ArtifactTypePhase("Failed")))
+				Expect(arc.ArtifactTypeError).To(Equal(arc.ArtifactTypePhase("Error")))
+			})
+		})
+
+		Context("Completed", func() {
+			It("should return true for completed phases", func() {
+				Expect(arc.ArtifactTypeSucceeded.Completed()).To(BeTrue())
+				Expect(arc.ArtifactTypeFailed.Completed()).To(BeTrue())
+				Expect(arc.ArtifactTypeError.Completed()).To(BeTrue())
+			})
+
+			It("should return false for non-completed phases", func() {
+				Expect(arc.ArtifactTypeUnknown.Completed()).To(BeFalse())
+				Expect(arc.ArtifactTypePending.Completed()).To(BeFalse())
+				Expect(arc.ArtifactTypeRunning.Completed()).To(BeFalse())
+			})
+
+			It("should return false for custom unknown phase", func() {
+				customPhase := arc.ArtifactTypePhase("CustomPhase")
+				Expect(customPhase.Completed()).To(BeFalse())
 			})
 		})
 	})
