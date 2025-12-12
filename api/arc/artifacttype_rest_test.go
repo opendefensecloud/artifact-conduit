@@ -383,6 +383,226 @@ var _ = Describe("ArtifactType Strategy", func() {
 		})
 	})
 
+	Describe("ConvertToTable", func() {
+		Context("for single ArtifactType", func() {
+			It("should convert ArtifactType to table with correct columns", func() {
+				artifactType := &arc.ArtifactType{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "test-type",
+						Namespace:         "default",
+						ResourceVersion:   "12345",
+						CreationTimestamp: metav1.Now(),
+					},
+					Spec: arc.ArtifactTypeSpec{
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
+							Name: "test-template",
+						},
+					},
+					Status: arc.ArtifactTypeStatus{
+						Phase:   "Active",
+						Message: "Running successfully",
+					},
+				}
+
+				table, err := artifactType.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+
+				// Verify column definitions
+				Expect(table.ColumnDefinitions).To(HaveLen(4))
+				Expect(table.ColumnDefinitions[0].Name).To(Equal("Name"))
+				Expect(table.ColumnDefinitions[1].Name).To(Equal("Created At"))
+				Expect(table.ColumnDefinitions[2].Name).To(Equal("Phase"))
+				Expect(table.ColumnDefinitions[3].Name).To(Equal("Message"))
+
+				// Verify rows
+				Expect(table.Rows).To(HaveLen(1))
+				row := table.Rows[0]
+				Expect(row.Cells).To(HaveLen(4))
+				Expect(row.Cells[0]).To(Equal("test-type"))
+				Expect(row.Cells[1]).To(Equal(artifactType.CreationTimestamp))
+				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("Active")))
+				Expect(row.Cells[3]).To(Equal("Running successfully"))
+
+				// Verify resource version
+				Expect(table.ResourceVersion).To(Equal("12345"))
+			})
+
+			It("should convert ArtifactType with empty status", func() {
+				artifactType := &arc.ArtifactType{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-type",
+						Namespace: "default",
+					},
+					Spec: arc.ArtifactTypeSpec{
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
+							Name: "test-template",
+						},
+					},
+				}
+
+				table, err := artifactType.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("")))
+				Expect(row.Cells[3]).To(Equal(""))
+			})
+		})
+
+		Context("for ArtifactTypeList", func() {
+			It("should convert empty list to table", func() {
+				list := &arc.ArtifactTypeList{
+					ListMeta: metav1.ListMeta{
+						ResourceVersion: "100",
+					},
+					Items: []arc.ArtifactType{},
+				}
+
+				table, err := list.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.ColumnDefinitions).To(HaveLen(4))
+				Expect(table.Rows).To(BeEmpty())
+				Expect(table.ResourceVersion).To(Equal("100"))
+			})
+
+			It("should convert list with single item to table", func() {
+				creationTime := metav1.Now()
+				list := &arc.ArtifactTypeList{
+					ListMeta: metav1.ListMeta{
+						ResourceVersion: "200",
+					},
+					Items: []arc.ArtifactType{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:              "type-1",
+								Namespace:         "default",
+								CreationTimestamp: creationTime,
+							},
+							Status: arc.ArtifactTypeStatus{
+								Phase:   "Pending",
+								Message: "Initializing",
+							},
+						},
+					},
+				}
+
+				table, err := list.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[0]).To(Equal("type-1"))
+				Expect(row.Cells[1]).To(Equal(creationTime))
+				Expect(row.Cells[2]).To(Equal(arc.WorkflowPhase("Pending")))
+				Expect(row.Cells[3]).To(Equal("Initializing"))
+
+				Expect(table.ResourceVersion).To(Equal("200"))
+			})
+
+			It("should convert list with multiple items to table", func() {
+				list := &arc.ArtifactTypeList{
+					ListMeta: metav1.ListMeta{
+						ResourceVersion: "300",
+						Continue:        "next-token",
+					},
+					Items: []arc.ArtifactType{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:              "type-1",
+								Namespace:         "default",
+								CreationTimestamp: metav1.Now(),
+							},
+							Status: arc.ArtifactTypeStatus{
+								Phase:   "Active",
+								Message: "Running",
+							},
+						},
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:              "type-2",
+								Namespace:         "default",
+								CreationTimestamp: metav1.Now(),
+							},
+							Status: arc.ArtifactTypeStatus{
+								Phase:   "Failed",
+								Message: "Error occurred",
+							},
+						},
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:              "type-3",
+								Namespace:         "other-ns",
+								CreationTimestamp: metav1.Now(),
+							},
+							Status: arc.ArtifactTypeStatus{
+								Phase:   "Succeeded",
+								Message: "Completed successfully",
+							},
+						},
+					},
+				}
+
+				table, err := list.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+
+				// Verify column definitions
+				Expect(table.ColumnDefinitions).To(HaveLen(4))
+
+				// Verify all rows are present
+				Expect(table.Rows).To(HaveLen(3))
+
+				// Verify first row
+				Expect(table.Rows[0].Cells[0]).To(Equal("type-1"))
+				Expect(table.Rows[0].Cells[2]).To(Equal(arc.WorkflowPhase("Active")))
+				Expect(table.Rows[0].Cells[3]).To(Equal("Running"))
+
+				// Verify second row
+				Expect(table.Rows[1].Cells[0]).To(Equal("type-2"))
+				Expect(table.Rows[1].Cells[2]).To(Equal(arc.WorkflowPhase("Failed")))
+				Expect(table.Rows[1].Cells[3]).To(Equal("Error occurred"))
+
+				// Verify third row
+				Expect(table.Rows[2].Cells[0]).To(Equal("type-3"))
+				Expect(table.Rows[2].Cells[2]).To(Equal(arc.WorkflowPhase("Succeeded")))
+				Expect(table.Rows[2].Cells[3]).To(Equal("Completed successfully"))
+
+				// Verify metadata
+				Expect(table.ResourceVersion).To(Equal("300"))
+				Expect(table.Continue).To(Equal("next-token"))
+			})
+
+			It("should handle RemainingItemCount in pagination", func() {
+				remainingItems := int64(50)
+				list := &arc.ArtifactTypeList{
+					ListMeta: metav1.ListMeta{
+						ResourceVersion:    "400",
+						RemainingItemCount: &remainingItems,
+					},
+					Items: []arc.ArtifactType{
+						{
+							ObjectMeta: metav1.ObjectMeta{
+								Name:      "type-page-1",
+								Namespace: "default",
+							},
+						},
+					},
+				}
+
+				table, err := list.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.RemainingItemCount).ToNot(BeNil())
+				Expect(*table.RemainingItemCount).To(Equal(int64(50)))
+			})
+		})
+	})
+
 	Describe("ClusterArtifactType Strategy", func() {
 		Describe("Validate", func() {
 			It("should accept ClusterArtifactType with no parameters", func() {

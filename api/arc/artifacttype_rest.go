@@ -16,9 +16,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
+var artifactTypeColumnDefinitions = []metav1.TableColumnDefinition{
+	{Name: "Name", Type: "string", Description: "Name of the ArtifactType"},
+	{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+	{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactType"},
+	{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactType"},
+}
+
 var _ resource.Object = &ArtifactType{}
 var _ rest.Validater = &ArtifactType{}
 var _ rest.ValidateUpdater = &ArtifactType{}
+var _ rest.TableConverter = &ArtifactType{}
+var _ rest.TableConverter = &ArtifactTypeList{}
 
 func (o *ArtifactType) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -73,6 +82,28 @@ func (o *ArtifactType) ValidateUpdate(ctx context.Context, old runtime.Object) f
 	}
 
 	return allErrs
+}
+
+func (o *ArtifactType) IntoTableRow() metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []any{
+			o.Name,
+			o.CreationTimestamp,
+			o.Status.Phase,
+			o.Status.Message,
+		},
+		Object: runtime.RawExtension{Object: o},
+	}
+}
+func (o *ArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	table := &metav1.Table{
+		ColumnDefinitions: artifactTypeColumnDefinitions,
+		Rows: []metav1.TableRow{
+			o.IntoTableRow(),
+		},
+	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
 }
 
 var _ resource.Object = &ClusterArtifactType{}
@@ -153,4 +184,19 @@ func (o *ClusterArtifactType) ValidateUpdate(ctx context.Context, old runtime.Ob
 		allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
 	}
 	return allErrs
+}
+func (ol *ArtifactTypeList) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	rows := make([]metav1.TableRow, 0, len(ol.Items))
+	for _, o := range ol.Items {
+		rows = append(rows, o.IntoTableRow())
+	}
+
+	table := &metav1.Table{
+		ColumnDefinitions: artifactTypeColumnDefinitions,
+		Rows:              rows,
+	}
+	table.ResourceVersion = ol.GetResourceVersion()
+	table.Continue = ol.GetContinue()
+	table.RemainingItemCount = ol.GetRemainingItemCount()
+	return table, nil
 }
