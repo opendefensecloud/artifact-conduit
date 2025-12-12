@@ -484,7 +484,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Status: arc.ArtifactTypeStatus{
 								Phase:   "Pending",
-								Message: "Workflow initializing",
+								Message: "Initializing",
 							},
 						},
 					},
