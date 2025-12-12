@@ -399,8 +399,8 @@ var _ = Describe("ArtifactType Strategy", func() {
 						},
 					},
 					Status: arc.ArtifactTypeStatus{
-						Phase:   "Active",
-						Message: "Running successfully",
+						Phase:   "Running",
+						Message: "Workflow executing",
 					},
 				}
 
@@ -484,7 +484,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Status: arc.ArtifactTypeStatus{
 								Phase:   "Pending",
-								Message: "Initializing",
+								Message: "Workflow initializing",
 							},
 						},
 					},
@@ -508,7 +508,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 				list := &arc.ArtifactTypeList{
 					ListMeta: metav1.ListMeta{
 						ResourceVersion: "300",
-						Continue:        "next-token",
+						Continue:        "eyJyZXNvdXJjZVZlcnNpb24iOiIzMDAifQ",
 					},
 					Items: []arc.ArtifactType{
 						{
@@ -518,8 +518,8 @@ var _ = Describe("ArtifactType Strategy", func() {
 								CreationTimestamp: metav1.Now(),
 							},
 							Status: arc.ArtifactTypeStatus{
-								Phase:   "Active",
-								Message: "Running",
+								Phase:   "Running",
+								Message: "Workflow executing",
 							},
 						},
 						{
@@ -530,18 +530,18 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Status: arc.ArtifactTypeStatus{
 								Phase:   "Failed",
-								Message: "Error occurred",
+								Message: "Workflow failed",
 							},
 						},
 						{
 							ObjectMeta: metav1.ObjectMeta{
 								Name:              "type-3",
-								Namespace:         "other-ns",
+								Namespace:         "production",
 								CreationTimestamp: metav1.Now(),
 							},
 							Status: arc.ArtifactTypeStatus{
 								Phase:   "Succeeded",
-								Message: "Completed successfully",
+								Message: "Workflow completed",
 							},
 						},
 					},
@@ -559,22 +559,22 @@ var _ = Describe("ArtifactType Strategy", func() {
 
 				// Verify first row
 				Expect(table.Rows[0].Cells[0]).To(Equal("type-1"))
-				Expect(table.Rows[0].Cells[2]).To(Equal(arc.WorkflowPhase("Active")))
-				Expect(table.Rows[0].Cells[3]).To(Equal("Running"))
+				Expect(table.Rows[0].Cells[2]).To(Equal(arc.WorkflowPhase("Running")))
+				Expect(table.Rows[0].Cells[3]).To(Equal("Workflow executing"))
 
 				// Verify second row
 				Expect(table.Rows[1].Cells[0]).To(Equal("type-2"))
 				Expect(table.Rows[1].Cells[2]).To(Equal(arc.WorkflowPhase("Failed")))
-				Expect(table.Rows[1].Cells[3]).To(Equal("Error occurred"))
+				Expect(table.Rows[1].Cells[3]).To(Equal("Workflow failed"))
 
 				// Verify third row
 				Expect(table.Rows[2].Cells[0]).To(Equal("type-3"))
 				Expect(table.Rows[2].Cells[2]).To(Equal(arc.WorkflowPhase("Succeeded")))
-				Expect(table.Rows[2].Cells[3]).To(Equal("Completed successfully"))
+				Expect(table.Rows[2].Cells[3]).To(Equal("Workflow completed"))
 
 				// Verify metadata
 				Expect(table.ResourceVersion).To(Equal("300"))
-				Expect(table.Continue).To(Equal("next-token"))
+				Expect(table.Continue).To(Equal("eyJyZXNvdXJjZVZlcnNpb24iOiIzMDAifQ"))
 			})
 
 			It("should handle RemainingItemCount in pagination", func() {
