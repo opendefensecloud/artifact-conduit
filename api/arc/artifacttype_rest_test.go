@@ -27,7 +27,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ArtifactType with no parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "http-to-s3.converter",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -37,7 +37,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 						},
 						Parameters: []arc.ArtifactWorkflowParameter{},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "artifact-processing.v2",
+							Name: "test-template",
 						},
 					},
 				}
@@ -49,7 +49,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ArtifactType with unique parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "oci-image-converter.v1",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -58,12 +58,12 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"s3"},
 						},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "max_retries", Value: "3"},
-							{Name: "timeout.seconds", Value: "300"},
-							{Name: "enable_cache", Value: "true"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param2", Value: "value2"},
+							{Name: "param3", Value: "value3"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "workflow-template-v1.2",
+							Name: "test-template",
 						},
 					},
 				}
@@ -75,16 +75,16 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject ArtifactType with empty parameter name", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "artifact-type-with.empty",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "", Value: "https://example.com/path?query=1"},
+							{Name: "", Value: "value1"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "validation-workflow",
+							Name: "test-template",
 						},
 					},
 				}
@@ -98,17 +98,17 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject ArtifactType with two duplicate parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "duplicate.param-test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "storage_backend", Value: "s3://bucket1"},
-							{Name: "storage_backend", Value: "s3://bucket2"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param1", Value: "value2"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "storage.workflow-v2",
+							Name: "test-template",
 						},
 					},
 				}
@@ -122,19 +122,19 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject ArtifactType with multiple different duplicate parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "multiple-duplicates-test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "api.endpoint", Value: "https://api1.example.com"},
-							{Name: "retry_count", Value: "5"},
-							{Name: "api.endpoint", Value: "https://api2.example.com"},
-							{Name: "retry_count", Value: "10"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param2", Value: "value2"},
+							{Name: "param1", Value: "value3"},
+							{Name: "param2", Value: "value4"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "api-workflow.template",
+							Name: "test-template",
 						},
 					},
 				}
@@ -157,18 +157,18 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject ArtifactType with empty and duplicate parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "empty-and-duplicate.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "", Value: "some_value"},
-							{Name: "compression.type", Value: "gzip"},
-							{Name: "compression.type", Value: "bzip2"},
+							{Name: "", Value: "value1"},
+							{Name: "param1", Value: "value2"},
+							{Name: "param1", Value: "value3"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "compression-workflow",
+							Name: "test-template",
 						},
 					},
 				}
@@ -192,12 +192,12 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ArtifactType with minimal spec", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "minimal.spec-type",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "minimal-workflow.v1",
+							Name: "test-template",
 						},
 					},
 				}
@@ -209,7 +209,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ArtifactType with complete spec", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "complete-spec-type.v2",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -218,10 +218,10 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"s3", "oci"},
 						},
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "request.timeout_ms", Value: "30000"},
+							{Name: "timeout", Value: "300"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name:         "cluster-workflow-template",
+							Name:         "test-template",
 							ClusterScope: true,
 						},
 					},
@@ -238,7 +238,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject update when spec is modified", func() {
 				oldArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "update-test.artifact",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -246,14 +246,14 @@ var _ = Describe("ArtifactType Strategy", func() {
 							SrcTypes: []string{"http"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "legacy.workflow-v1",
+							Name: "old-template",
 						},
 					},
 				}
 
 				newArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "update-test.artifact",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -261,7 +261,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							SrcTypes: []string{"oci"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "modern.workflow-v2",
+							Name: "new-template",
 						},
 					},
 				}
@@ -275,7 +275,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept update when spec is unchanged", func() {
 				oldArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unchanged-spec.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -283,14 +283,14 @@ var _ = Describe("ArtifactType Strategy", func() {
 							SrcTypes: []string{"http"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "stable.workflow",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "unchanged-spec.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -298,7 +298,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							SrcTypes: []string{"http"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "stable.workflow",
+							Name: "test-template",
 						},
 					},
 				}
@@ -310,7 +310,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject update when rules are modified", func() {
 				oldArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "rules-modification.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -319,14 +319,14 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"s3"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "conversion.workflow",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "rules-modification.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
@@ -335,7 +335,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"oci"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "conversion.workflow",
+							Name: "test-template",
 						},
 					},
 				}
@@ -348,30 +348,30 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject update when parameters are modified", func() {
 				oldArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "params-change.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "cache.ttl_seconds", Value: "3600"},
+							{Name: "param1", Value: "value1"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "cache-workflow.v1",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newArtifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "params-change.test",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "cache.ttl_seconds", Value: "7200"},
+							{Name: "param1", Value: "new-value"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "cache-workflow.v1",
+							Name: "test-template",
 						},
 					},
 				}
@@ -388,18 +388,18 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should convert ArtifactType to table with correct columns", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:              "table-conversion.type-test",
+						Name:              "test-type",
 						Namespace:         "default",
 						ResourceVersion:   "12345",
 						CreationTimestamp: metav1.Now(),
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "auth.api_key", Value: "sk-1234567890abcdef"},
-							{Name: "storage.region", Value: "us-west-2"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param2", Value: "value2"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "table.workflow-v3",
+							Name: "test-template",
 						},
 					},
 				}
@@ -417,10 +417,10 @@ var _ = Describe("ArtifactType Strategy", func() {
 				Expect(table.Rows).To(HaveLen(1))
 				row := table.Rows[0]
 				Expect(row.Cells).To(HaveLen(4))
-				Expect(row.Cells[0]).To(Equal("table-conversion.type-test"))
+				Expect(row.Cells[0]).To(Equal("test-type"))
 				Expect(row.Cells[1]).To(Equal(artifactType.CreationTimestamp))
-				Expect(row.Cells[2]).To(Equal(2))                   // Parameter count
-				Expect(row.Cells[3]).To(Equal("table.workflow-v3")) // Workflow name
+				Expect(row.Cells[2]).To(Equal(2))               // Parameter count
+				Expect(row.Cells[3]).To(Equal("test-template")) // Workflow name
 
 				// Verify resource version
 				Expect(table.ResourceVersion).To(Equal("12345"))
@@ -429,12 +429,12 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should convert ArtifactType with no parameters", func() {
 				artifactType := &arc.ArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name:      "no-params-artifact",
+						Name:      "test-type",
 						Namespace: "default",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "simple.workflow",
+							Name: "test-template",
 						},
 					},
 				}
@@ -445,8 +445,8 @@ var _ = Describe("ArtifactType Strategy", func() {
 				Expect(table.Rows).To(HaveLen(1))
 
 				row := table.Rows[0]
-				Expect(row.Cells[2]).To(Equal(0))                 // Parameter count
-				Expect(row.Cells[3]).To(Equal("simple.workflow")) // Workflow name
+				Expect(row.Cells[2]).To(Equal(0))               // Parameter count
+				Expect(row.Cells[3]).To(Equal("test-template")) // Workflow name
 			})
 		})
 
@@ -482,10 +482,10 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Spec: arc.ArtifactTypeSpec{
 								Parameters: []arc.ArtifactWorkflowParameter{
-									{Name: "log.level", Value: "debug"},
+									{Name: "param1", Value: "value1"},
 								},
 								WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-									Name: "logging-workflow.alpha",
+									Name: "workflow-1",
 								},
 							},
 						},
@@ -500,8 +500,8 @@ var _ = Describe("ArtifactType Strategy", func() {
 				row := table.Rows[0]
 				Expect(row.Cells[0]).To(Equal("type-1"))
 				Expect(row.Cells[1]).To(Equal(creationTime))
-				Expect(row.Cells[2]).To(Equal(1))                        // Parameter count
-				Expect(row.Cells[3]).To(Equal("logging-workflow.alpha")) // Workflow name
+				Expect(row.Cells[2]).To(Equal(1))            // Parameter count
+				Expect(row.Cells[3]).To(Equal("workflow-1")) // Workflow name
 
 				Expect(table.ResourceVersion).To(Equal("200"))
 			})
@@ -521,7 +521,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Spec: arc.ArtifactTypeSpec{
 								WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-									Name: "batch.workflow-1",
+									Name: "workflow-1",
 								},
 							},
 						},
@@ -533,11 +533,11 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Spec: arc.ArtifactTypeSpec{
 								Parameters: []arc.ArtifactWorkflowParameter{
-									{Name: "concurrency.max", Value: "10"},
-									{Name: "batch.size", Value: "100"},
+									{Name: "param1", Value: "value1"},
+									{Name: "param2", Value: "value2"},
 								},
 								WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-									Name: "batch.workflow-2",
+									Name: "workflow-2",
 								},
 							},
 						},
@@ -549,12 +549,12 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Spec: arc.ArtifactTypeSpec{
 								Parameters: []arc.ArtifactWorkflowParameter{
-									{Name: "connection.timeout_ms", Value: "30000"},
-									{Name: "max_retries", Value: "5"},
-									{Name: "processing.mode", Value: "async"},
+									{Name: "timeout", Value: "300"},
+									{Name: "retries", Value: "3"},
+									{Name: "mode", Value: "fast"},
 								},
 								WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-									Name: "batch.workflow-3",
+									Name: "workflow-3",
 								},
 							},
 						},
@@ -600,7 +600,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							},
 							Spec: arc.ArtifactTypeSpec{
 								WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-									Name: "paginated-workflow.test",
+									Name: "workflow-page",
 								},
 							},
 						},
@@ -653,12 +653,12 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ClusterArtifactType with no parameters", func() {
 				clusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "cluster-artifact-no.params",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name:         "cluster.workflow-global",
+							Name:         "test-template",
 							ClusterScope: true,
 						},
 					},
@@ -671,15 +671,15 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should accept ClusterArtifactType with valid parameters", func() {
 				clusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "cluster-artifact.type-valid",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "registry.url", Value: "https://registry.example.com:5000"},
-							{Name: "auth.token_expiry", Value: "3600"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param2", Value: "value2"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "registry.workflow-template",
+							Name: "test-template",
 						},
 					},
 				}
@@ -691,15 +691,15 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should reject ClusterArtifactType with duplicate parameters", func() {
 				clusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "duplicate.cluster-type",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "image.tag", Value: "v1.0.0"},
-							{Name: "image.tag", Value: "v2.0.0"},
+							{Name: "param1", Value: "value1"},
+							{Name: "param1", Value: "value2"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "image-workflow.template",
+							Name: "test-template",
 						},
 					},
 				}
@@ -715,7 +715,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should validate src and dst types cannot be empty", func() {
 				oldClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "empty-types-validation.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{
@@ -723,14 +723,14 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"s3"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "validation.workflow-cluster",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "empty-types-validation.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Rules: arc.ArtifactTypeRules{
@@ -738,7 +738,7 @@ var _ = Describe("ArtifactType Strategy", func() {
 							DstTypes: []string{"s3", ""},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "validation.workflow-cluster",
+							Name: "test-template",
 						},
 					},
 				}
@@ -754,29 +754,29 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should validate parameters in update", func() {
 				oldClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "params-update-validation.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "webhook.url", Value: "https://webhook.example.com/notify"},
+							{Name: "param1", Value: "value1"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "notification.workflow-template",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "params-update-validation.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						Parameters: []arc.ArtifactWorkflowParameter{
-							{Name: "", Value: "oci://registry.io/repo:tag"},
-							{Name: "destination.path", Value: "/var/artifacts/"},
+							{Name: "", Value: "value1"},
+							{Name: "param1", Value: "value1"},
 						},
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "notification.workflow-template",
+							Name: "test-template",
 						},
 					},
 				}
@@ -788,18 +788,18 @@ var _ = Describe("ArtifactType Strategy", func() {
 			It("should require workflow template reference name", func() {
 				oldClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "template-ref-required.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
-							Name: "existing.workflow-ref",
+							Name: "test-template",
 						},
 					},
 				}
 
 				newClusterArtifactType := &arc.ClusterArtifactType{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "template-ref-required.test",
+						Name: "test-type",
 					},
 					Spec: arc.ArtifactTypeSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
