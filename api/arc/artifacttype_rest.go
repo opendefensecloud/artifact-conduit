@@ -19,8 +19,8 @@ import (
 var artifactTypeColumnDefinitions = []metav1.TableColumnDefinition{
 	{Name: "Name", Type: "string", Description: "Name of the ArtifactType"},
 	{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
-	{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactType"},
-	{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactType"},
+	{Name: "Parameter Count", Type: "integer", Description: "Number of parameters defined in the ArtifactType"},
+	{Name: "Workflow", Type: "string", Description: "Name of the Workflow"},
 }
 
 var _ resource.Object = &ArtifactType{}
@@ -89,8 +89,8 @@ func (o *ArtifactType) IntoTableRow() metav1.TableRow {
 		Cells: []any{
 			o.Name,
 			o.CreationTimestamp,
-			o.Status.Phase,
-			o.Status.Message,
+			len(o.Spec.Parameters),
+			o.Spec.WorkflowTemplateRef.Name,
 		},
 		Object: runtime.RawExtension{Object: o},
 	}
