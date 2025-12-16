@@ -11,10 +11,20 @@ import (
 )
 
 // Funcs returns the fuzzer functions for the apps api group.
-var Funcs = func(codecs runtimeserializer.CodecFactory) []interface{} {
-	return []interface{}{
+var Funcs = func(codecs runtimeserializer.CodecFactory) []any {
+	return []any{
 		func(s *arc.OrderSpec, c randfill.Continue) {
 			c.FillNoCustom(s) // fuzz self without calling this function again
+		},
+		func(s *arc.ArtifactType, c randfill.Continue) {
+			c.FillNoCustom(s) // fuzz self without calling this function again
+			// v1alpha1 doesn't have Status fields yet, so clear them for roundtrip testing
+			s.Status = arc.ArtifactTypeStatus{}
+		},
+		func(s *arc.ClusterArtifactType, c randfill.Continue) {
+			c.FillNoCustom(s) // fuzz self without calling this function again
+			// v1alpha1 doesn't have Status fields yet, so clear them for roundtrip testing
+			s.Status = arc.ArtifactTypeStatus{}
 		},
 	}
 }
