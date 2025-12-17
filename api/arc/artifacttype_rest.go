@@ -86,7 +86,7 @@ func (o *ArtifactType) ValidateUpdate(ctx context.Context, old runtime.Object) f
 func (o *ArtifactType) IntoTableRow() metav1.TableRow {
 	workflow := o.Spec.WorkflowTemplateRef.Name
 	if o.Spec.WorkflowTemplateRef.ClusterScope {
-		workflow = workflow + " (cluster scoped)"
+		workflow += " (cluster scoped)"
 	}
 	return metav1.TableRow{
 		Cells: []any{
