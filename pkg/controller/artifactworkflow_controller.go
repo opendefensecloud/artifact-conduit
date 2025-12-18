@@ -130,13 +130,8 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 }
 
 func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	wf := wfv1alpha1.Workflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: aw.Namespace,
-			Name:      aw.Name,
-		},
-	}
-	if err := r.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
+	wf := NewWorkflowBuilderWithName(aw.Namespace, aw.Name).Build()
+	if err := r.Delete(ctx, wf); client.IgnoreNotFound(err) != nil {
 		r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
 		return errLogAndWrap(log, err, "workflow deletion failed")
 	}
@@ -168,10 +163,10 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	}
 
 	if err := r.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
-		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.Name, err))
+		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.GetName(), err))
 		return errLogAndWrap(log, err, "failed to create argo workflow")
 	}
-	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.Name))
+	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.GetName()))
 
 	aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := r.Status().Update(ctx, aw); err != nil {
@@ -180,7 +175,7 @@ func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log
 	return nil
 }
 
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) client.Object {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -217,9 +212,9 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 		})
 	}
 
-	wf := &wfv1alpha1.Workflow{
-		ObjectMeta: workflowObjectMeta(aw),
-		Spec: wfv1alpha1.WorkflowSpec{
+	wf := NewWorkflowBuilder(
+		WithObjectMeta(workflowObjectMeta(aw)),
+		WithWorkflowSpec(wfv1alpha1.WorkflowSpec{
 			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
 				Name:         aw.Spec.WorkflowTemplateRef.Name,
 				ClusterScope: aw.Spec.WorkflowTemplateRef.ClusterScope,
@@ -231,13 +226,45 @@ func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.Artifac
 			Arguments: wfv1alpha1.Arguments{
 				Parameters: parameters,
 			},
-		},
-	}
+		}),
+		WithCron(aw.Spec.Cron),
+	).Build()
 
 	return wf
 }
 
+func (r *ArtifactWorkflowReconciler) checkArgoCronWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
+	wf := wfv1alpha1.CronWorkflow{}
+	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
+		return errLogAndWrap(log, err, "failed to get workflow")
+	}
+	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
+		return nil // nothing updated
+	}
+	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
+
+	if aw.Status.Phase == arcv1alpha1.WorkflowStopped {
+		aw.Status.CompletionTime = metav1.Now()
+	}
+
+	// TODO: implement for different status objects
+	// if wf.Status.Failed > 1 {
+	// r.generateWorkflowStatusMessage(ctx, wf, log, aw)
+	// }
+
+	if err := r.Status().Update(ctx, aw); err != nil {
+		return errLogAndWrap(log, err, "failed to update status")
+	}
+
+	return nil
+}
+
 func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
+	isCron := aw.Spec.Cron != nil
+	if isCron {
+		return r.checkArgoCronWorkflow(ctx, log, aw)
+	}
+
 	wf := wfv1alpha1.Workflow{}
 	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
 		return errLogAndWrap(log, err, "failed to get workflow")
@@ -325,5 +352,6 @@ func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.ArtifactWorkflow{}).
 		Owns(&wfv1alpha1.Workflow{}).
+		Owns(&wfv1alpha1.CronWorkflow{}).
 		Complete(r)
 }

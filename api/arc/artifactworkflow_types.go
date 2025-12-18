@@ -19,6 +19,8 @@ const ( // analog to Argo Workflows
 	WorkflowSucceeded WorkflowPhase = "Succeeded"
 	WorkflowFailed    WorkflowPhase = "Failed"
 	WorkflowError     WorkflowPhase = "Error"
+	WorkflowActive    WorkflowPhase = "Active"
+	WorkflowStopped   WorkflowPhase = "Stopped"
 )
 
 func (p WorkflowPhase) Completed() bool {

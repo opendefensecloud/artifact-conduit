@@ -750,10 +750,10 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 				Properties: map[string]spec.Schema{
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+							Enum:        []interface{}{"", "Active", "Error", "Failed", "Pending", "Running", "Stopped", "Succeeded"},
 						},
 					},
 					"message": {
@@ -1210,11 +1210,11 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+							Enum:        []interface{}{"", "Active", "Error", "Failed", "Pending", "Running", "Stopped", "Succeeded"},
 						},
 					},
 					"message": {

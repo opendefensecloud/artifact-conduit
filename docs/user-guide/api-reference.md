@@ -451,5 +451,7 @@ _Appears in:_
 | `Succeeded` |  |
 | `Failed` |  |
 | `Error` |  |
+| `Active` |  |
+| `Stopped` |  |
 
 
