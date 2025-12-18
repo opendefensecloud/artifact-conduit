@@ -40,6 +40,9 @@ type ArtifactWorkflowSpec struct {
 	SrcSecretRef corev1.LocalObjectReference `json:"srcSecretRef"`
 	// DstSecretRef references the secret containing credentials for the destination.
 	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
+	// Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).
+	// +optional
+	Cron Cron `json:"cron"`
 }
 
 // ArtifactWorkflowParameter represents a single key-value parameter pair.

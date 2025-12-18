@@ -2,7 +2,7 @@ API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeRules,SrcTypes
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactTypeSpec,Parameters
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,ArtifactWorkflowSpec,Parameters
-API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,OrderCron,Schedules
+API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,Cron,Schedules
 API rule violation: list_type_missing,go.opendefense.cloud/arc/api/arc/v1alpha1,OrderSpec,Artifacts
 API rule violation: names_match,go.opendefense.cloud/arc/api/arc/v1alpha1,OrderSpec,TTLSecondsAfterCompletion
 API rule violation: names_match,k8s.io/api/core/v1,AzureDiskVolumeSource,DataDiskURI

@@ -16,6 +16,7 @@ type ArtifactWorkflowSpecApplyConfiguration struct {
 	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
 	SrcSecretRef        *v1.LocalObjectReference                      `json:"srcSecretRef,omitempty"`
 	DstSecretRef        *v1.LocalObjectReference                      `json:"dstSecretRef,omitempty"`
+	Cron                *CronApplyConfiguration                       `json:"cron,omitempty"`
 }
 
 // ArtifactWorkflowSpecApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowSpec type for use with
@@ -58,5 +59,13 @@ func (b *ArtifactWorkflowSpecApplyConfiguration) WithSrcSecretRef(value v1.Local
 // If called multiple times, the DstSecretRef field is set to the value of the last call.
 func (b *ArtifactWorkflowSpecApplyConfiguration) WithDstSecretRef(value v1.LocalObjectReference) *ArtifactWorkflowSpecApplyConfiguration {
 	b.DstSecretRef = &value
+	return b
+}
+
+// WithCron sets the Cron field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Cron field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithCron(value *CronApplyConfiguration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.Cron = value
 	return b
 }

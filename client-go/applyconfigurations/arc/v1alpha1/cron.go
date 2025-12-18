@@ -9,9 +9,9 @@ import (
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
-// OrderCronApplyConfiguration represents a declarative configuration of the OrderCron type for use
+// CronApplyConfiguration represents a declarative configuration of the Cron type for use
 // with apply.
-type OrderCronApplyConfiguration struct {
+type CronApplyConfiguration struct {
 	Timezone                *string                        `json:"timezone,omitempty"`
 	ConcurrencyPolicy       *arcv1alpha1.ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
 	StartingDeadlineSeconds *int64                         `json:"startingDeadlineSeconds,omitempty"`
@@ -19,16 +19,16 @@ type OrderCronApplyConfiguration struct {
 	When                    *string                        `json:"when,omitempty"`
 }
 
-// OrderCronApplyConfiguration constructs a declarative configuration of the OrderCron type for use with
+// CronApplyConfiguration constructs a declarative configuration of the Cron type for use with
 // apply.
-func OrderCron() *OrderCronApplyConfiguration {
-	return &OrderCronApplyConfiguration{}
+func Cron() *CronApplyConfiguration {
+	return &CronApplyConfiguration{}
 }
 
 // WithTimezone sets the Timezone field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Timezone field is set to the value of the last call.
-func (b *OrderCronApplyConfiguration) WithTimezone(value string) *OrderCronApplyConfiguration {
+func (b *CronApplyConfiguration) WithTimezone(value string) *CronApplyConfiguration {
 	b.Timezone = &value
 	return b
 }
@@ -36,7 +36,7 @@ func (b *OrderCronApplyConfiguration) WithTimezone(value string) *OrderCronApply
 // WithConcurrencyPolicy sets the ConcurrencyPolicy field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ConcurrencyPolicy field is set to the value of the last call.
-func (b *OrderCronApplyConfiguration) WithConcurrencyPolicy(value arcv1alpha1.ConcurrencyPolicy) *OrderCronApplyConfiguration {
+func (b *CronApplyConfiguration) WithConcurrencyPolicy(value arcv1alpha1.ConcurrencyPolicy) *CronApplyConfiguration {
 	b.ConcurrencyPolicy = &value
 	return b
 }
@@ -44,7 +44,7 @@ func (b *OrderCronApplyConfiguration) WithConcurrencyPolicy(value arcv1alpha1.Co
 // WithStartingDeadlineSeconds sets the StartingDeadlineSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the StartingDeadlineSeconds field is set to the value of the last call.
-func (b *OrderCronApplyConfiguration) WithStartingDeadlineSeconds(value int64) *OrderCronApplyConfiguration {
+func (b *CronApplyConfiguration) WithStartingDeadlineSeconds(value int64) *CronApplyConfiguration {
 	b.StartingDeadlineSeconds = &value
 	return b
 }
@@ -52,7 +52,7 @@ func (b *OrderCronApplyConfiguration) WithStartingDeadlineSeconds(value int64) *
 // WithSchedules adds the given value to the Schedules field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Schedules field.
-func (b *OrderCronApplyConfiguration) WithSchedules(values ...string) *OrderCronApplyConfiguration {
+func (b *CronApplyConfiguration) WithSchedules(values ...string) *CronApplyConfiguration {
 	for i := range values {
 		b.Schedules = append(b.Schedules, values[i])
 	}
@@ -62,7 +62,7 @@ func (b *OrderCronApplyConfiguration) WithSchedules(values ...string) *OrderCron
 // WithWhen sets the When field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the When field is set to the value of the last call.
-func (b *OrderCronApplyConfiguration) WithWhen(value string) *OrderCronApplyConfiguration {
+func (b *CronApplyConfiguration) WithWhen(value string) *CronApplyConfiguration {
 	b.When = &value
 	return b
 }

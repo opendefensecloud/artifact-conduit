@@ -12,9 +12,9 @@ import (
 // OrderDefaultsApplyConfiguration represents a declarative configuration of the OrderDefaults type for use
 // with apply.
 type OrderDefaultsApplyConfiguration struct {
-	SrcRef *v1.LocalObjectReference     `json:"srcRef,omitempty"`
-	DstRef *v1.LocalObjectReference     `json:"dstRef,omitempty"`
-	Cron   *OrderCronApplyConfiguration `json:"cron,omitempty"`
+	SrcRef *v1.LocalObjectReference `json:"srcRef,omitempty"`
+	DstRef *v1.LocalObjectReference `json:"dstRef,omitempty"`
+	Cron   *CronApplyConfiguration  `json:"cron,omitempty"`
 }
 
 // OrderDefaultsApplyConfiguration constructs a declarative configuration of the OrderDefaults type for use with
@@ -42,7 +42,7 @@ func (b *OrderDefaultsApplyConfiguration) WithDstRef(value v1.LocalObjectReferen
 // WithCron sets the Cron field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Cron field is set to the value of the last call.
-func (b *OrderDefaultsApplyConfiguration) WithCron(value *OrderCronApplyConfiguration) *OrderDefaultsApplyConfiguration {
+func (b *OrderDefaultsApplyConfiguration) WithCron(value *CronApplyConfiguration) *OrderDefaultsApplyConfiguration {
 	b.Cron = value
 	return b
 }
