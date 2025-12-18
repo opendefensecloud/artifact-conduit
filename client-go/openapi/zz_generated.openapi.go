@@ -39,6 +39,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.Order{}.OpenAPIModelName():                              schema_arc_api_arc_v1alpha1_Order(ref),
 		v1alpha1.OrderArtifact{}.OpenAPIModelName():                      schema_arc_api_arc_v1alpha1_OrderArtifact(ref),
 		v1alpha1.OrderArtifactWorkflowStatus{}.OpenAPIModelName():        schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref),
+		v1alpha1.OrderCron{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderCron(ref),
 		v1alpha1.OrderDefaults{}.OpenAPIModelName():                      schema_arc_api_arc_v1alpha1_OrderDefaults(ref),
 		v1alpha1.OrderList{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderList(ref),
 		v1alpha1.OrderSpec{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderSpec(ref),
@@ -1115,12 +1116,19 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
+					"cron": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).",
+							Default:     map[string]interface{}{},
+							Ref:         ref(v1alpha1.OrderCron{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"type"},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			v1alpha1.OrderCron{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
 	}
 }
 
@@ -1169,6 +1177,63 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 	}
 }
 
+func schema_arc_api_arc_v1alpha1_OrderCron(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "OrderCron represents an order's cron schedule.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"timezone": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Timezone is the timezone against which the cron schedule will be calculated, e.g. \"Asia/Tokyo\". Default is machine's local time.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"concurrencyPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConcurrencyPolicy is the K8s-style concurrency policy that will be used",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"startingDeadlineSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its original scheduled time if it is missed.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"schedules": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Schedules is a list of schedules to run the Order in Cron format",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"when": {
+						SchemaProps: spec.SchemaProps{
+							Description: "When is an expression that determines if a run should be scheduled.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"schedules"},
+			},
+		},
+	}
+}
+
 func schema_arc_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -1190,11 +1255,18 @@ func schema_arc_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) com
 							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
+					"cron": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cron specifies options which determine when the order should be scheduled.",
+							Default:     map[string]interface{}{},
+							Ref:         ref(v1alpha1.OrderCron{}.OpenAPIModelName()),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.OrderCron{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 

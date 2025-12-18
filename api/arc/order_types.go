@@ -9,6 +9,33 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// +kubebuilder:validation:Enum=Allow;Forbid;Replace
+type ConcurrencyPolicy string
+
+const (
+	AllowConcurrent   ConcurrencyPolicy = "Allow"
+	ForbidConcurrent  ConcurrencyPolicy = "Forbid"
+	ReplaceConcurrent ConcurrencyPolicy = "Replace"
+)
+
+// OrderCron represents an order's cron schedule.
+type OrderCron struct {
+	// Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time.
+	Timezone string `json:"timezone,omitempty"`
+	// ConcurrencyPolicy is the K8s-style concurrency policy that will be used
+	ConcurrencyPolicy ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
+	// StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its
+	// original scheduled time if it is missed.
+	// +kubebuilder:validation:Minimum=0
+	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
+	// Schedules is a list of schedules to run the Order in Cron format
+	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:items:Pattern=`^(@(yearly|annually|monthly|weekly|daily|midnight|hourly)|@every\s+([0-9]+(ns|us|µs|ms|s|m|h))+|([0-9*,/?-]+\s+){4}[0-9*,/?-]+)$`
+	Schedules []string `json:"schedules"`
+	// When is an expression that determines if a run should be scheduled.
+	When string `json:"when,omitempty"`
+}
+
 type OrderDefaults struct {
 	// SrcRef defines which Endpoint object is used as fallback source by all artifacts.
 	// +optional
@@ -16,6 +43,9 @@ type OrderDefaults struct {
 	// DstRef defines which Endpoint object is used as fallback destination by all artifacts.
 	// +optional
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled.
+	// +optional
+	Cron OrderCron `json:"cron"`
 }
 
 // OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow
@@ -30,6 +60,9 @@ type OrderArtifact struct {
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 	// Spec specifies parameters used by the underlying Workflow.
 	Spec runtime.RawExtension `json:"spec,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).
+	// +optional
+	Cron OrderCron `json:"cron"`
 }
 
 // OrderSpec defines the desired state of Order

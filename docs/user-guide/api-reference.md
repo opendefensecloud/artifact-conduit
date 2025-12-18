@@ -201,6 +201,25 @@ _Appears in:_
 
 
 
+#### ConcurrencyPolicy
+
+_Underlying type:_ _string_
+
+
+
+_Validation:_
+- Enum: [Allow Forbid Replace]
+
+_Appears in:_
+- [OrderCron](#ordercron)
+
+| Field | Description |
+| --- | --- |
+| `Allow` |  |
+| `Forbid` |  |
+| `Replace` |  |
+
+
 #### Endpoint
 
 
@@ -310,6 +329,7 @@ _Appears in:_
 | `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults). |  |  |
 | `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults). |  |  |
 | `spec` _[RawExtension](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#rawextension-runtime-pkg)_ | Spec specifies parameters used by the underlying Workflow. |  |  |
+| `cron` _[OrderCron](#ordercron)_ | Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults). |  |  |
 
 
 #### OrderArtifactWorkflowStatus
@@ -331,6 +351,27 @@ _Appears in:_
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 
 
+#### OrderCron
+
+
+
+OrderCron represents an order's cron schedule.
+
+
+
+_Appears in:_
+- [OrderArtifact](#orderartifact)
+- [OrderDefaults](#orderdefaults)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `timezone` _string_ | Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time. |  |  |
+| `concurrencyPolicy` _[ConcurrencyPolicy](#concurrencypolicy)_ | ConcurrencyPolicy is the K8s-style concurrency policy that will be used |  | Enum: [Allow Forbid Replace] <br /> |
+| `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
+| `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: ^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$ <br /> |
+| `when` _string_ | When is an expression that determines if a run should be scheduled. |  |  |
+
+
 #### OrderDefaults
 
 
@@ -346,6 +387,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as fallback source by all artifacts. |  |  |
 | `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as fallback destination by all artifacts. |  |  |
+| `cron` _[OrderCron](#ordercron)_ | Cron specifies options which determine when the order should be scheduled. |  |  |
 
 
 

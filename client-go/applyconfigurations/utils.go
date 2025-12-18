@@ -47,6 +47,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.OrderArtifactApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifactWorkflowStatus"):
 		return &arcv1alpha1.OrderArtifactWorkflowStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("OrderCron"):
+		return &arcv1alpha1.OrderCronApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderDefaults"):
 		return &arcv1alpha1.OrderDefaultsApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderSpec"):

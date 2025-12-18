@@ -13,10 +13,11 @@ import (
 // OrderArtifactApplyConfiguration represents a declarative configuration of the OrderArtifact type for use
 // with apply.
 type OrderArtifactApplyConfiguration struct {
-	Type   *string                  `json:"type,omitempty"`
-	SrcRef *v1.LocalObjectReference `json:"srcRef,omitempty"`
-	DstRef *v1.LocalObjectReference `json:"dstRef,omitempty"`
-	Spec   *runtime.RawExtension    `json:"spec,omitempty"`
+	Type   *string                      `json:"type,omitempty"`
+	SrcRef *v1.LocalObjectReference     `json:"srcRef,omitempty"`
+	DstRef *v1.LocalObjectReference     `json:"dstRef,omitempty"`
+	Spec   *runtime.RawExtension        `json:"spec,omitempty"`
+	Cron   *OrderCronApplyConfiguration `json:"cron,omitempty"`
 }
 
 // OrderArtifactApplyConfiguration constructs a declarative configuration of the OrderArtifact type for use with
@@ -54,5 +55,13 @@ func (b *OrderArtifactApplyConfiguration) WithDstRef(value v1.LocalObjectReferen
 // If called multiple times, the Spec field is set to the value of the last call.
 func (b *OrderArtifactApplyConfiguration) WithSpec(value runtime.RawExtension) *OrderArtifactApplyConfiguration {
 	b.Spec = &value
+	return b
+}
+
+// WithCron sets the Cron field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Cron field is set to the value of the last call.
+func (b *OrderArtifactApplyConfiguration) WithCron(value *OrderCronApplyConfiguration) *OrderArtifactApplyConfiguration {
+	b.Cron = value
 	return b
 }

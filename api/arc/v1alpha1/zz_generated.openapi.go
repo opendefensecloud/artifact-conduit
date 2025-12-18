@@ -109,6 +109,11 @@ func (in OrderArtifactWorkflowStatus) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in OrderCron) OpenAPIModelName() string {
+	return "cloud.opendefense.arc.v1alpha1.OrderCron"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderDefaults) OpenAPIModelName() string {
 	return "cloud.opendefense.arc.v1alpha1.OrderDefaults"
 }
