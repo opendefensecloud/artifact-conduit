@@ -729,7 +729,6 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 					"cron": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Cron specifies options which determine when the order should be scheduled.",
-							Default:     map[string]interface{}{},
 							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
 						},
 					},
@@ -1183,7 +1182,6 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 					"cron": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).",
-							Default:     map[string]interface{}{},
 							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
 						},
 					},
@@ -1265,7 +1263,6 @@ func schema_arc_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) com
 					"cron": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Cron specifies options which determine when the order should be scheduled.",
-							Default:     map[string]interface{}{},
 							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
 						},
 					},

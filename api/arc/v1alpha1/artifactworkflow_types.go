@@ -51,7 +51,7 @@ type ArtifactWorkflowSpec struct {
 	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
 	// Cron specifies options which determine when the order should be scheduled.
 	// +optional
-	Cron Cron `json:"cron,omitempty"`
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // ArtifactWorkflowParameter represents a single key-value parameter pair.

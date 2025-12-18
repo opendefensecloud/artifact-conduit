@@ -507,9 +507,7 @@ func autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *A
 	out.Parameters = *(*[]arc.ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.SrcSecretRef = in.SrcSecretRef
 	out.DstSecretRef = in.DstSecretRef
-	if err := Convert_v1alpha1_Cron_To_arc_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 
@@ -525,9 +523,7 @@ func autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *a
 	out.Parameters = *(*[]ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
 	out.SrcSecretRef = in.SrcSecretRef
 	out.DstSecretRef = in.DstSecretRef
-	if err := Convert_arc_Cron_To_v1alpha1_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 
@@ -781,9 +777,7 @@ func autoConvert_v1alpha1_OrderArtifact_To_arc_OrderArtifact(in *OrderArtifact, 
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
 	out.Spec = in.Spec
-	if err := Convert_v1alpha1_Cron_To_arc_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 
@@ -797,9 +791,7 @@ func autoConvert_arc_OrderArtifact_To_v1alpha1_OrderArtifact(in *arc.OrderArtifa
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
 	out.Spec = in.Spec
-	if err := Convert_arc_Cron_To_v1alpha1_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 
@@ -837,9 +829,7 @@ func Convert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkflowSt
 func autoConvert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(in *OrderDefaults, out *arc.OrderDefaults, s conversion.Scope) error {
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
-	if err := Convert_v1alpha1_Cron_To_arc_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 
@@ -851,9 +841,7 @@ func Convert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(in *OrderDefaults, out 
 func autoConvert_arc_OrderDefaults_To_v1alpha1_OrderDefaults(in *arc.OrderDefaults, out *OrderDefaults, s conversion.Scope) error {
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
-	if err := Convert_arc_Cron_To_v1alpha1_Cron(&in.Cron, &out.Cron, s); err != nil {
-		return err
-	}
+	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
 	return nil
 }
 

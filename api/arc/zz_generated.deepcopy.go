@@ -242,7 +242,11 @@ func (in *ArtifactWorkflowSpec) DeepCopyInto(out *ArtifactWorkflowSpec) {
 	}
 	out.SrcSecretRef = in.SrcSecretRef
 	out.DstSecretRef = in.DstSecretRef
-	in.Cron.DeepCopyInto(&out.Cron)
+	if in.Cron != nil {
+		in, out := &in.Cron, &out.Cron
+		*out = new(Cron)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
@@ -490,7 +494,11 @@ func (in *OrderArtifact) DeepCopyInto(out *OrderArtifact) {
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
 	in.Spec.DeepCopyInto(&out.Spec)
-	in.Cron.DeepCopyInto(&out.Cron)
+	if in.Cron != nil {
+		in, out := &in.Cron, &out.Cron
+		*out = new(Cron)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
@@ -526,7 +534,11 @@ func (in *OrderDefaults) DeepCopyInto(out *OrderDefaults) {
 	*out = *in
 	out.SrcRef = in.SrcRef
 	out.DstRef = in.DstRef
-	in.Cron.DeepCopyInto(&out.Cron)
+	if in.Cron != nil {
+		in, out := &in.Cron, &out.Cron
+		*out = new(Cron)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 

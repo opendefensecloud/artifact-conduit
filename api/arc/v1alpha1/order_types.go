@@ -19,7 +19,7 @@ type OrderDefaults struct {
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 	// Cron specifies options which determine when the order should be scheduled.
 	// +optional
-	Cron Cron `json:"cron,omitempty"`
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow
@@ -36,7 +36,7 @@ type OrderArtifact struct {
 	Spec runtime.RawExtension `json:"spec,omitempty"`
 	// Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).
 	// +optional
-	Cron Cron `json:"cron,omitempty"`
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // OrderSpec defines the desired state of Order

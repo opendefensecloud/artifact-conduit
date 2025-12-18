@@ -45,6 +45,7 @@ type desiredAW struct {
 	srcSecret   *corev1.Secret
 	dstSecret   *corev1.Secret
 	sha         string
+	cron        *arcv1alpha1.Cron
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
@@ -360,6 +361,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if dstRefName == "" {
 		dstRefName = order.Spec.Defaults.DstRef.Name
 	}
+
 	srcEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
@@ -435,6 +437,12 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		}
 	}
 
+	// Cron schedule if any
+	cron := artifact.Cron
+	if cron == nil {
+		cron = order.Spec.Defaults.Cron
+	}
+
 	// Create a hash based on all related data for idempotency and compute the workflow name
 	h := sha256.New()
 	data := []any{
@@ -443,6 +451,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		srcEndpoint.Name,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
+		cron,
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -463,6 +472,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		srcSecret:   srcSecret,
 		dstSecret:   dstSecret,
 		sha:         sha,
+		cron:        cron,
 	}, nil
 }
 
