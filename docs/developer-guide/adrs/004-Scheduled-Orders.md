@@ -14,17 +14,14 @@ As of now, we only support one-shot `Order` requests. This ADR documents the arc
 ### New Kind `CronOrder`
 
 To have a clear separation for end-users between one-shot and scheduled orders, we need to introduce a new kind of order: `CronOrder`.
-In addition to the fields already present on an `Order` resource, we add:
-
-- `.spec.defaults.cron`: A cron expression that defines when the order should be executed.
-- `.spec.artifacts.[].cron`: A cron expression that defines when the single artifact should be executed. This overrides the default cron expression for the entire `Order` resource.
+In addition to the fields already present on an `Order` resource, we add all options a cron workflow of argo workflows are possible, see <https://argo-workflows.readthedocs.io/en/latest/cron-workflows/#cronworkflow-options>.
 
 ### Extend existing Kind `Order`
 
 Instead of creating a new kind, we can extend the existing `Order` kind to support scheduled orders. We add:
 
-- `.spec.defaults.cron`: A cron expression that defines when the order should be executed.
-- `.spec.artifacts.[].cron`: A cron expression that defines when the single artifact should be executed. This overrides the default cron expression for the entire `Order` resource.
+- `.spec.defaults.cron`: All options a cron workflow of argo workflows are possible, see <https://argo-workflows.readthedocs.io/en/latest/cron-workflows/#cronworkflow-options>.
+- `.spec.artifacts.[].cron`: Same as in defaults, but only overrides the defaults.
 
 Operators of ARC need to adapt their workflow templates and `.spec.artifacts.[].spec` to allow their workflows according to their needs if they want to leverage these new functionality.
 
@@ -37,11 +34,17 @@ metadata:
   name: example-helm-order
 spec:
   defaults:
-    cron: */5 * * * * # every 5 minutes
     srcRef:
       name: docker-hub
     dstRef:
       name: internal-registry
+    cron: # used to instantiate cron workflow, (see https://argo-workflows.readthedocs.io/en/latest/cron-workflows/#cron-workflows)
+      schedules:
+        - "0 0 * * *" # every day at 00:00
+        - "0 12 * * *" # every day at 12:00
+      timezone: "Europe/Berlin" # IANA Timezone (see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+      concurrencyPolicy: "Allow" # What to do if multiple Workflows are scheduled at the same time. Allow: allow all, Replace: remove all old before scheduling new, Forbid: do not allow any new while there are old
+      startingDeadlineSeconds: 0 # Seconds after the last scheduled time during which a missed Workflow will still be run.
   artifacts:
     - type: oci
       spec:
@@ -50,13 +53,15 @@ spec:
         override: myteam/test-img
         overrideTag: "{{tag}}-dev" # overrides origin tag
     - type: helm
-      cron: "0 1 * * *" # every day at midnight, overrides default cron
+      cron: {} # disable default for this artifact
       spec:
         repo: jetstack/charts
         chart: cert-manager
         version: ">=v1.19.1"
     - type: helm
-      cron: "" # no cron, overrides default cron
+      cron:
+        schedules:
+          - "0 3 * * *" # every day at 03:00, overrides the default schedules
       srcRef:
         name: helm-examples
       spec:
@@ -67,6 +72,5 @@ spec:
 
 ## Decision Outcome
 
-- We will extend the existing `Order` kind with a new field, `.spec.defaults.cron`, which defines when the order should be executed.
-- We will also add a new field, `.spec.artifacts.[].cron`, which allows for overriding the default cron expression for individual artifacts within an order.
-- Operators of ARC will need to adapt their workflow templates and `.spec.artifacts.[].spec` accordingly if they want to leverage these new functionality.
+- We will extend the existing `Order` kind with a new field, `.spec.defaults.cron`.
+- All options a cron workflow of argo workflows are possible, see <https://argo-workflows.readthedocs.io/en/latest/cron-workflows/#cronworkflow-options>.
