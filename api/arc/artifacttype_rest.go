@@ -83,26 +83,23 @@ func (o *ArtifactType) ValidateUpdate(ctx context.Context, old runtime.Object) f
 	return allErrs
 }
 
-func (o *ArtifactType) IntoTableRow() metav1.TableRow {
+func (o *ArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
 	workflow := o.Spec.WorkflowTemplateRef.Name
 	if o.Spec.WorkflowTemplateRef.ClusterScope {
 		workflow += " (cluster scoped)"
 	}
-	return metav1.TableRow{
-		Cells: []any{
-			o.Name,
-			o.CreationTimestamp,
-			len(o.Spec.Parameters),
-			workflow,
-		},
-		Object: runtime.RawExtension{Object: o},
-	}
-}
-func (o *ArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
 	table := &metav1.Table{
 		ColumnDefinitions: artifactTypeColumnDefinitions,
 		Rows: []metav1.TableRow{
-			o.IntoTableRow(),
+			{
+				Cells: []any{
+					o.Name,
+					o.CreationTimestamp,
+					len(o.Spec.Parameters),
+					workflow,
+				},
+				Object: runtime.RawExtension{Object: o},
+			},
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
@@ -112,6 +109,7 @@ func (o *ArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.
 var _ resource.Object = &ClusterArtifactType{}
 var _ rest.Validater = &ClusterArtifactType{}
 var _ rest.ValidateUpdater = &ClusterArtifactType{}
+var _ rest.TableConverter = &ClusterArtifactType{}
 
 func (o *ClusterArtifactType) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -187,4 +185,24 @@ func (o *ClusterArtifactType) ValidateUpdate(ctx context.Context, old runtime.Ob
 		allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
 	}
 	return allErrs
+}
+
+func (o *ClusterArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	workflow := o.Spec.WorkflowTemplateRef.Name + " (cluster scoped)"
+	table := &metav1.Table{
+		ColumnDefinitions: artifactTypeColumnDefinitions,
+		Rows: []metav1.TableRow{
+			{
+				Cells: []any{
+					o.Name,
+					o.CreationTimestamp,
+					len(o.Spec.Parameters),
+					workflow,
+				},
+				Object: runtime.RawExtension{Object: o},
+			},
+		},
+	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
 }

@@ -16,19 +16,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
-var artifactWorkflowColumnDefinitions = []metav1.TableColumnDefinition{
-	{Name: "Name", Type: "string", Description: "Name of the ArtifactWorkflow"},
-	{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
-	{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactWorkflow"},
-	{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactWorkflow"},
-}
-
 var _ resource.Object = &ArtifactWorkflow{}
 var _ resource.ObjectWithStatusSubResource = &ArtifactWorkflow{}
 var _ rest.Validater = &ArtifactWorkflow{}
 var _ rest.ValidateUpdater = &ArtifactWorkflow{}
 var _ rest.TableConverter = &ArtifactWorkflow{}
-var _ rest.TableConverter = &ArtifactWorkflowList{}
 
 func (o *ArtifactWorkflow) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -107,27 +99,16 @@ func (o *ArtifactWorkflow) IntoTableRow() metav1.TableRow {
 
 func (o *ArtifactWorkflow) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
 	table := &metav1.Table{
-		ColumnDefinitions: artifactWorkflowColumnDefinitions,
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{Name: "Name", Type: "string", Description: "Name of the ArtifactWorkflow"},
+			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+			{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactWorkflow"},
+			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactWorkflow"},
+		},
 		Rows: []metav1.TableRow{
 			o.IntoTableRow(),
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
-	return table, nil
-}
-
-func (ol *ArtifactWorkflowList) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
-	rows := make([]metav1.TableRow, 0, len(ol.Items))
-	for _, o := range ol.Items {
-		rows = append(rows, o.IntoTableRow())
-	}
-
-	table := &metav1.Table{
-		ColumnDefinitions: artifactWorkflowColumnDefinitions,
-		Rows:              rows,
-	}
-	table.ResourceVersion = ol.GetResourceVersion()
-	table.Continue = ol.GetContinue()
-	table.RemainingItemCount = ol.GetRemainingItemCount()
 	return table, nil
 }
