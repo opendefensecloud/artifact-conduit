@@ -18,6 +18,7 @@ var _ resource.Object = &Order{}
 var _ resource.ObjectWithStatusSubResource = &Order{}
 var _ rest.Validater = &Order{}
 var _ rest.ValidateUpdater = &Order{}
+var _ rest.TableConverter = &Order{}
 
 func (o *Order) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -71,4 +72,54 @@ func validateOrder(o *Order) field.ErrorList {
 	}
 
 	return allErrs
+}
+
+func (o *Order) IntoTableRow() metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []any{
+			o.Name,
+			o.CreationTimestamp,
+			getOrderPhase(o.Status),
+			o.Status.Message,
+		},
+		Object: runtime.RawExtension{Object: o},
+	}
+}
+
+func (o *Order) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	table := &metav1.Table{
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{Name: "Name", Type: "string", Description: "Name of the Order"},
+			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+			{Name: "Phase", Type: "string", Description: "Current phase of the Order"},
+			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the Order"},
+		},
+		Rows: []metav1.TableRow{
+			o.IntoTableRow(),
+		},
+	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
+}
+
+// getOrderPhase determines the phase of an Order based on its status
+func getOrderPhase(status OrderStatus) string {
+	if status.Message == "" {
+		return "Pending"
+	}
+	// Check if any artifact workflows have completed
+	if len(status.ArtifactWorkflows) > 0 {
+		allCompleted := true
+		for _, aw := range status.ArtifactWorkflows {
+			if aw.Phase != WorkflowSucceeded && aw.Phase != WorkflowFailed && aw.Phase != WorkflowError {
+				allCompleted = false
+				break
+			}
+		}
+		if allCompleted {
+			return "Completed"
+		}
+		return "Running"
+	}
+	return "Pending"
 }

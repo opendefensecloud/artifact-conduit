@@ -383,6 +383,102 @@ var _ = Describe("ArtifactType Strategy", func() {
 		})
 	})
 
+	Describe("ConvertToTable", func() {
+		Context("for single ArtifactType", func() {
+			It("should convert ArtifactType to table with correct columns", func() {
+				artifactType := &arc.ArtifactType{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "test-type",
+						Namespace:         "default",
+						ResourceVersion:   "12345",
+						CreationTimestamp: metav1.Now(),
+					},
+					Spec: arc.ArtifactTypeSpec{
+						Parameters: []arc.ArtifactWorkflowParameter{
+							{Name: "param1", Value: "value1"},
+							{Name: "param2", Value: "value2"},
+						},
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
+							Name: "test-template",
+						},
+					},
+				}
+
+				table, err := artifactType.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+
+				// Verify column definitions
+				Expect(table.ColumnDefinitions).To(HaveLen(4))
+				Expect(table.ColumnDefinitions[0].Name).To(Equal("Name"))
+				Expect(table.ColumnDefinitions[1].Name).To(Equal("Created At"))
+
+				// Verify rows
+				Expect(table.Rows).To(HaveLen(1))
+				row := table.Rows[0]
+				Expect(row.Cells).To(HaveLen(4))
+				Expect(row.Cells[0]).To(Equal("test-type"))
+				Expect(row.Cells[1]).To(Equal(artifactType.CreationTimestamp))
+				Expect(row.Cells[2]).To(Equal(2))               // Parameter count
+				Expect(row.Cells[3]).To(Equal("test-template")) // Workflow name
+
+				// Verify resource version
+				Expect(table.ResourceVersion).To(Equal("12345"))
+			})
+
+			It("should convert ArtifactType with no parameters", func() {
+				artifactType := &arc.ArtifactType{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-type",
+						Namespace: "default",
+					},
+					Spec: arc.ArtifactTypeSpec{
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
+							Name: "test-template",
+						},
+					},
+				}
+
+				table, err := artifactType.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[2]).To(Equal(0))               // Parameter count
+				Expect(row.Cells[3]).To(Equal("test-template")) // Workflow name
+			})
+
+			It("should convert ArtifactType with cluster-scoped workflow template", func() {
+				artifactType := &arc.ArtifactType{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-type",
+						Namespace: "default",
+					},
+					Spec: arc.ArtifactTypeSpec{
+						Parameters: []arc.ArtifactWorkflowParameter{
+							{Name: "param1", Value: "value1"},
+						},
+						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{
+							Name:         "cluster-template",
+							ClusterScope: true,
+						},
+					},
+				}
+
+				table, err := artifactType.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[0]).To(Equal("test-type"))
+				Expect(row.Cells[2]).To(Equal(1))                                   // Parameter count
+				Expect(row.Cells[3]).To(Equal("cluster-template (cluster scoped)")) // Workflow name with cluster scope indicator
+			})
+		})
+	})
+
 	Describe("ClusterArtifactType Strategy", func() {
 		Describe("Validate", func() {
 			It("should accept ClusterArtifactType with no parameters", func() {
