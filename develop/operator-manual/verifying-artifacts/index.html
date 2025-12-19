@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1814,30 +1814,30 @@
 </div>
 <h2 id="container-images">Container images<a class="headerlink" href="#container-images" title="Permanent link">¶</a></h2>
 <h3 id="checking-signatures">Checking signatures<a class="headerlink" href="#checking-signatures" title="Permanent link">¶</a></h3>
-<div class="highlight"><pre><span></span><code>cosign<span class="w"> </span>verify<span class="w"> </span>--certificate-identity<span class="o">=</span><span class="s2">"https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/pull/137/merge"</span><span class="w"> </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">"https://token.actions.githubusercontent.com"</span><span class="w"> </span>ghcr.io/opendefensecloud/arc-controller-manager:pr-137
+<div class="highlight"><pre><span></span><code>cosign<span class="w"> </span>verify<span class="w"> </span>--certificate-identity<span class="o">=</span><span class="s2">"https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/tags/v0.1.4"</span><span class="w"> </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">"https://token.actions.githubusercontent.com"</span><span class="w"> </span>ghcr.io/opendefensecloud/arc-controller-manager:v0.1.4
 </code></pre></div>
 <h3 id="checking-attestations">Checking attestations<a class="headerlink" href="#checking-attestations" title="Permanent link">¶</a></h3>
 <div class="highlight"><pre><span></span><code><span class="c1"># CycloneDX BOM/SBOM</span>
 cosign<span class="w"> </span>verify-attestation<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--certificate-identity<span class="w"> </span>https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/pull/137/merge<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certificate-identity<span class="w"> </span>https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/tags/v0.1.4<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--certificate-oidc-issuer<span class="w"> </span>https://token.actions.githubusercontent.com<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--new-bundle-format<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--type<span class="o">=</span>https://cyclonedx.org/bom<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>ghcr.io/opendefensecloud/arc-controller-manager:pr-137<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.payload | @base64d | fromjson'</span>
+<span class="w">  </span>ghcr.io/opendefensecloud/arc-controller-manager:v0.1.4<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.payload | @base64d | fromjson'</span>
 <span class="c1"># SLSA provenance</span>
 cosign<span class="w"> </span>verify-attestation<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--certificate-identity<span class="w"> </span>https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/pull/137/merge<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certificate-identity<span class="w"> </span>https://github.com/opendefensecloud/artifact-conduit/.github/workflows/docker.yaml@refs/tags/v0.1.4<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--certificate-oidc-issuer<span class="w"> </span>https://token.actions.githubusercontent.com<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--new-bundle-format<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--type<span class="o">=</span>https://slsa.dev/provenance/v1<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>ghcr.io/opendefensecloud/arc-controller-manager:pr-137<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.payload | @base64d | fromjson'</span>
+<span class="w">  </span>ghcr.io/opendefensecloud/arc-controller-manager:v0.1.4<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">'.payload | @base64d | fromjson'</span>
 </code></pre></div>
 <h2 id="helm-charts">Helm charts<a class="headerlink" href="#helm-charts" title="Permanent link">¶</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The signatures are expected to work with flux as illustrated <a href="https://fluxcd.io/blog/2022/11/verify-the-integrity-of-the-helm-charts-stored-as-oci-artifacts-before-reconciling-them-with-flux/">here</a>.</p>
 </div>
-<div class="highlight"><pre><span></span><code>cosign<span class="w"> </span>verify<span class="w"> </span>--certificate-identity<span class="o">=</span><span class="s2">"https://github.com/opendefensecloud/artifact-conduit/.github/workflows/helm-publish.yaml@refs/pull/137/merge"</span><span class="w"> </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">"https://token.actions.githubusercontent.com"</span><span class="w"> </span>ghcr.io/opendefensecloud/charts/arc:0.0.0-pr.137.17e6ee1
+<div class="highlight"><pre><span></span><code>cosign<span class="w"> </span>verify<span class="w"> </span>--certificate-identity<span class="o">=</span><span class="s2">"https://github.com/opendefensecloud/artifact-conduit/.github/workflows/helm-publish.yaml@refs/tags/v0.1.4"</span><span class="w"> </span>--certificate-oidc-issuer<span class="o">=</span><span class="s2">"https://token.actions.githubusercontent.com"</span><span class="w"> </span>ghcr.io/opendefensecloud/charts/arc:0.1.4
 </code></pre></div>
 
 
