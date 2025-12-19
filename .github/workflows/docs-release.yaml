@@ -20,7 +20,7 @@ jobs:
           pip install mkdocs-material
           pip install mkdocs-glightbox
           pip install mkdocs-include-markdown-plugin
-          pip install mkdocs-mermaid-zoom
+          pip install mkdocs-panzoom-plugin
           pip install pillow cairosvg mike
       - name: Setup Docs Deploy
         run: |
