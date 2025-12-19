@@ -28,6 +28,8 @@ jobs:
           - name: arc-apiserver
             target: apiserver
     permissions:
+      actions: read
+      contents: write
       contents: read
       packages: write # Push to ghcr.io
       id-token: write # Needed to create an OIDC token for keyless signing
