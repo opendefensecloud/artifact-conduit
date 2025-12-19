@@ -22,7 +22,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 const (
@@ -59,6 +58,15 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
 	}
 
+	// Two different behaviors are implemented depending on whether we have
+	// a "one-shot" order or cron order, so let's instantiate the corresponding handler:
+	var handler WorkflowHandler
+	if aw.Spec.Cron != nil {
+		handler = NewCronWorkflowHandler(r, log, aw)
+	} else {
+		handler = NewSingleWorkflowHandler(r, log, aw)
+	}
+
 	// Update last reconcile time
 	aw.Status.LastReconcileAt = metav1.Now()
 
@@ -66,7 +74,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if !aw.DeletionTimestamp.IsZero() {
 		log.V(1).Info("ArtifactWorkflow is being deleted")
 		// Cleanup workflow, if exists
-		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
+		if err := handler.DeleteArgoResources(ctx); err != nil {
 			return ctrlResult, errLogAndWrap(log, err, "workflow deletion failed")
 		}
 
@@ -105,7 +113,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		log.V(1).Info("Force reconcile requested")
 		r.Recorder.Event(aw, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
 		// Delete existing workflow, if any
-		if err := r.deleteArgoWorkflow(ctx, log, aw); err != nil {
+		if err := handler.DeleteArgoResources(ctx); err != nil {
 			return ctrlResult, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
 		}
 		// Reset phase so workflow gets recreated, and update last force time
@@ -119,180 +127,14 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	if aw.Status.Phase == arcv1alpha1.WorkflowUnknown {
-		return ctrlResult, r.createArgoWorkflow(ctx, log, aw)
+		return ctrlResult, handler.CreateArgoResources(ctx)
 	}
 
 	if aw.Status.Phase.InProgress() {
-		return ctrlResult, r.checkArgoWorkflow(ctx, log, aw)
+		return ctrlResult, handler.CheckArgoResources(ctx)
 	}
 
 	return ctrlResult, nil
-}
-
-func (r *ArtifactWorkflowReconciler) deleteArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	wf := NewWorkflowBuilderWithName(aw.Namespace, aw.Name).Build()
-	if err := r.Delete(ctx, wf); client.IgnoreNotFound(err) != nil {
-		r.Recorder.Event(aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", aw.Name, err))
-		return errLogAndWrap(log, err, "workflow deletion failed")
-	}
-	r.Recorder.Event(aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted workflow '%s'", aw.Name))
-	return nil
-}
-
-func (r *ArtifactWorkflowReconciler) createArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	srcSecret := corev1.Secret{}
-	if aw.Spec.SrcSecretRef.Name != "" {
-		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
-			return errLogAndWrap(log, err, "failed to fetch secret for source")
-		}
-	}
-
-	dstSecret := corev1.Secret{}
-	if aw.Spec.DstSecretRef.Name != "" {
-		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
-			return errLogAndWrap(log, err, "failed to fetch secret for destination")
-		}
-	}
-
-	wf := r.hydrateArgoWorkflow(aw, &srcSecret, &dstSecret)
-
-	if err := controllerutil.SetControllerReference(aw, wf, r.Scheme); err != nil {
-		return errLogAndWrap(log, err, "failed to set controller reference")
-	}
-
-	if err := r.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
-		r.Recorder.Event(aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.GetName(), err))
-		return errLogAndWrap(log, err, "failed to create argo workflow")
-	}
-	r.Recorder.Event(aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.GetName()))
-
-	aw.Status.Phase = arcv1alpha1.WorkflowPending
-	if err := r.Status().Update(ctx, aw); err != nil {
-		return errLogAndWrap(log, err, "failed to update status")
-	}
-	return nil
-}
-
-func (r *ArtifactWorkflowReconciler) hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) client.Object {
-	srcVolume := corev1.Volume{
-		Name: "src-secret-vol",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	}
-	if srcSecret.Name != "" {
-		srcVolume.VolumeSource = corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: srcSecret.Name,
-			},
-		}
-	}
-
-	dstVolume := corev1.Volume{
-		Name: "dst-secret-vol",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	}
-	if dstSecret.Name != "" {
-		dstVolume.VolumeSource = corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
-				SecretName: dstSecret.Name,
-			},
-		}
-	}
-
-	parameters := []wfv1alpha1.Parameter{}
-	for _, p := range aw.Spec.Parameters {
-		parameters = append(parameters, wfv1alpha1.Parameter{
-			Name:  p.Name,
-			Value: (*wfv1alpha1.AnyString)(&p.Value),
-		})
-	}
-
-	wf := NewWorkflowBuilder(
-		WithObjectMeta(workflowObjectMeta(aw)),
-		WithWorkflowSpec(wfv1alpha1.WorkflowSpec{
-			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
-				Name:         aw.Spec.WorkflowTemplateRef.Name,
-				ClusterScope: aw.Spec.WorkflowTemplateRef.ClusterScope,
-			},
-			Volumes: []corev1.Volume{
-				srcVolume,
-				dstVolume,
-			},
-			Arguments: wfv1alpha1.Arguments{
-				Parameters: parameters,
-			},
-		}),
-		WithCron(aw.Spec.Cron),
-	).Build()
-
-	return wf
-}
-
-func (r *ArtifactWorkflowReconciler) checkArgoCronWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	wf := wfv1alpha1.CronWorkflow{}
-	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
-		return errLogAndWrap(log, err, "failed to get workflow")
-	}
-	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return nil // nothing updated
-	}
-	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
-
-	if aw.Status.Phase == arcv1alpha1.WorkflowStopped {
-		aw.Status.CompletionTime = metav1.Now()
-	}
-
-	// TODO: implement for different status objects
-	// if wf.Status.Failed > 1 {
-	// r.generateWorkflowStatusMessage(ctx, wf, log, aw)
-	// }
-
-	if err := r.Status().Update(ctx, aw); err != nil {
-		return errLogAndWrap(log, err, "failed to update status")
-	}
-
-	return nil
-}
-
-func (r *ArtifactWorkflowReconciler) checkArgoWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) error {
-	isCron := aw.Spec.Cron != nil
-	if isCron {
-		return r.checkArgoCronWorkflow(ctx, log, aw)
-	}
-
-	wf := wfv1alpha1.Workflow{}
-	if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Name), &wf); err != nil {
-		return errLogAndWrap(log, err, "failed to get workflow")
-	}
-	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return nil // nothing updated
-	}
-	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
-
-	switch aw.Status.Phase {
-	case arcv1alpha1.WorkflowSucceeded:
-		aw.Status.CompletionTime = metav1.Now()
-	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
-		// If workflow has errored or failed, fetch logs and update status message
-		switch aw.Status.Phase {
-		case arcv1alpha1.WorkflowFailed:
-			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
-		case arcv1alpha1.WorkflowError:
-			// TODO: Properly show why the workflow errored
-			aw.Status.Message = wf.Status.Message
-		}
-	}
-
-	if err := r.Status().Update(ctx, aw); err != nil {
-		return errLogAndWrap(log, err, "failed to update status")
-	}
-
-	return nil
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
