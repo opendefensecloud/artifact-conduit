@@ -29,7 +29,7 @@ jobs:
             target: apiserver
     permissions:
       actions: read
-      contents: write
+      contents: read
       packages: write # Push to ghcr.io
       id-token: write # Needed to create an OIDC token for keyless signing
       attestations: write # Write attestations to GitHub API as well
@@ -110,6 +110,7 @@ jobs:
           image: ${{ steps.first-tag.outputs.tag }}
           format: 'cyclonedx-json'
           output-file: 'sbom.cyclonedx.json'
+          upload-release-assets: false # we use immutable releases
       - name: Attest SBOM
         uses: actions/attest-sbom@v3
         with:
