@@ -314,4 +314,125 @@ var _ = Describe("Endpoint Strategy", func() {
 			})
 		})
 	})
+
+	Describe("ConvertToTable", func() {
+		Context("for single Endpoint", func() {
+			It("should convert Endpoint to table with correct columns", func() {
+				endpoint := &arc.Endpoint{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "test-endpoint",
+						Namespace:         "default",
+						ResourceVersion:   "12345",
+						CreationTimestamp: metav1.Now(),
+					},
+					Spec: arc.EndpointSpec{
+						RemoteURL: "https://example.com/api",
+						Type:      "http",
+						Usage:     "push",
+						SecretRef: corev1.LocalObjectReference{
+							Name: "my-secret",
+						},
+					},
+				}
+
+				table, err := endpoint.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+
+				// Verify column definitions
+				Expect(table.ColumnDefinitions).To(HaveLen(5))
+				Expect(table.ColumnDefinitions[0].Name).To(Equal("Name"))
+				Expect(table.ColumnDefinitions[1].Name).To(Equal("Created At"))
+				Expect(table.ColumnDefinitions[2].Name).To(Equal("Remote URL"))
+				Expect(table.ColumnDefinitions[3].Name).To(Equal("Usage"))
+				Expect(table.ColumnDefinitions[4].Name).To(Equal("Secret"))
+
+				// Verify rows
+				Expect(table.Rows).To(HaveLen(1))
+				row := table.Rows[0]
+				Expect(row.Cells).To(HaveLen(5))
+				Expect(row.Cells[0]).To(Equal("test-endpoint"))
+				Expect(row.Cells[1]).To(Equal(endpoint.CreationTimestamp))
+				Expect(row.Cells[2]).To(Equal("https://example.com/api"))
+				Expect(row.Cells[3]).To(Equal(arc.EndpointUsage("push")))
+				Expect(row.Cells[4]).To(Equal("my-secret"))
+
+				// Verify resource version
+				Expect(table.ResourceVersion).To(Equal("12345"))
+			})
+
+			It("should convert Endpoint with minimal fields", func() {
+				endpoint := &arc.Endpoint{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-endpoint",
+						Namespace: "default",
+					},
+					Spec: arc.EndpointSpec{
+						RemoteURL: "https://example.com",
+					},
+				}
+
+				table, err := endpoint.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[0]).To(Equal("test-endpoint"))
+				Expect(row.Cells[2]).To(Equal("https://example.com"))
+				Expect(row.Cells[3]).To(Equal(arc.EndpointUsage(""))) // Empty usage
+				Expect(row.Cells[4]).To(Equal(""))                    // Empty secret name
+			})
+
+			It("should convert Endpoint with only usage", func() {
+				endpoint := &arc.Endpoint{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-endpoint",
+						Namespace: "default",
+					},
+					Spec: arc.EndpointSpec{
+						RemoteURL: "oci://registry.example.com/repo",
+						Usage:     "pull",
+					},
+				}
+
+				table, err := endpoint.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[0]).To(Equal("test-endpoint"))
+				Expect(row.Cells[2]).To(Equal("oci://registry.example.com/repo"))
+				Expect(row.Cells[3]).To(Equal(arc.EndpointUsage("pull")))
+				Expect(row.Cells[4]).To(Equal("")) // Empty secret name
+			})
+
+			It("should convert Endpoint with only secret", func() {
+				endpoint := &arc.Endpoint{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-endpoint",
+						Namespace: "default",
+					},
+					Spec: arc.EndpointSpec{
+						RemoteURL: "s3://bucket-name/path",
+						SecretRef: corev1.LocalObjectReference{
+							Name: "credentials",
+						},
+					},
+				}
+
+				table, err := endpoint.ConvertToTable(ctx, nil)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(table).ToNot(BeNil())
+				Expect(table.Rows).To(HaveLen(1))
+
+				row := table.Rows[0]
+				Expect(row.Cells[0]).To(Equal("test-endpoint"))
+				Expect(row.Cells[2]).To(Equal("s3://bucket-name/path"))
+				Expect(row.Cells[3]).To(Equal(arc.EndpointUsage(""))) // Empty usage
+				Expect(row.Cells[4]).To(Equal("credentials"))
+			})
+		})
+	})
 })
