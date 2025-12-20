@@ -148,9 +148,40 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 		return nil
 	}
 
+	if h.aw.Status.ActiveWorkflowRef.Name != "" {
+		wf := wfv1alpha1.Workflow{}
+		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Status.ActiveWorkflowRef.Name), &wf); err != nil {
+			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
+		}
+
+		if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
+			return nil // nothing updated
+		}
+
+		if h.aw.Status.Phase.Completed() {
+			h.aw.Status.ActiveWorkflowRef.Name = ""
+		}
+
+		if err := h.Status().Update(ctx, h.aw); err != nil {
+			return errLogAndWrap(h.log, err, "failed to update status")
+		}
+
+		return nil
+	}
+
 	cwf := wfv1alpha1.CronWorkflow{}
 	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
 		return errLogAndWrap(h.log, err, "failed to get cron workflow")
+	}
+
+	if cwf.Status.Phase == wfv1alpha1.StoppedPhase {
+		h.aw.Status.Phase = arcv1alpha1.WorkflowStopped
+
+		if err := h.Status().Update(ctx, h.aw); err != nil {
+			return errLogAndWrap(h.log, err, "failed to update status")
+		}
+
+		return nil
 	}
 
 	if len(cwf.Status.Active) > 0 {
@@ -161,15 +192,15 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
 		}
 
-		if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
-			return nil // nothing updated
+		h.aw.Status.ActiveWorkflowRef = corev1.LocalObjectReference{
+			Name: wf.Name,
 		}
+		h.aw.Status.Message = ""
 
 		if err := h.Status().Update(ctx, h.aw); err != nil {
 			return errLogAndWrap(h.log, err, "failed to update status")
 		}
 	}
-	// TODO
 
 	return nil
 }

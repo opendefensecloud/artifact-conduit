@@ -538,6 +538,7 @@ func autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(i
 	out.CompletionTime = in.CompletionTime
 	out.LastReconcileAt = in.LastReconcileAt
 	out.LastForceAt = in.LastForceAt
+	out.ActiveWorkflowRef = in.ActiveWorkflowRef
 	return nil
 }
 
@@ -552,6 +553,7 @@ func autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(i
 	out.CompletionTime = in.CompletionTime
 	out.LastReconcileAt = in.LastReconcileAt
 	out.LastForceAt = in.LastForceAt
+	out.ActiveWorkflowRef = in.ActiveWorkflowRef
 	return nil
 }
 

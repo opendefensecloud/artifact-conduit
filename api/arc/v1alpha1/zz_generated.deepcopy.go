@@ -266,6 +266,7 @@ func (in *ArtifactWorkflowStatus) DeepCopyInto(out *ArtifactWorkflowStatus) {
 	in.CompletionTime.DeepCopyInto(&out.CompletionTime)
 	in.LastReconcileAt.DeepCopyInto(&out.LastReconcileAt)
 	in.LastForceAt.DeepCopyInto(&out.LastForceAt)
+	out.ActiveWorkflowRef = in.ActiveWorkflowRef
 	return
 }
 

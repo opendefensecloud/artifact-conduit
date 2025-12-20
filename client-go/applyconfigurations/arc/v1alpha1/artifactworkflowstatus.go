@@ -7,17 +7,19 @@ package v1alpha1
 
 import (
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the ArtifactWorkflowStatus type for use
 // with apply.
 type ArtifactWorkflowStatusApplyConfiguration struct {
-	Phase           *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
-	Message         *string                    `json:"message,omitempty"`
-	CompletionTime  *v1.Time                   `json:"completionTime,omitempty"`
-	LastReconcileAt *v1.Time                   `json:"lastReconcileAt,omitempty"`
-	LastForceAt     *v1.Time                   `json:"lastForceAt,omitempty"`
+	Phase             *arcv1alpha1.WorkflowPhase   `json:"phase,omitempty"`
+	Message           *string                      `json:"message,omitempty"`
+	CompletionTime    *v1.Time                     `json:"completionTime,omitempty"`
+	LastReconcileAt   *v1.Time                     `json:"lastReconcileAt,omitempty"`
+	LastForceAt       *v1.Time                     `json:"lastForceAt,omitempty"`
+	ActiveWorkflowRef *corev1.LocalObjectReference `json:"activeWorkflowRef,omitempty"`
 }
 
 // ArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowStatus type for use with
@@ -63,5 +65,13 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithLastReconcileAt(value v1.
 // If called multiple times, the LastForceAt field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithLastForceAt(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
 	b.LastForceAt = &value
+	return b
+}
+
+// WithActiveWorkflowRef sets the ActiveWorkflowRef field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ActiveWorkflowRef field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithActiveWorkflowRef(value corev1.LocalObjectReference) *ArtifactWorkflowStatusApplyConfiguration {
+	b.ActiveWorkflowRef = &value
 	return b
 }

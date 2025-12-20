@@ -178,6 +178,7 @@ _Appears in:_
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished or in case of a<br />cron workflow, the last time the workflow completed. |  |  |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
 | `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
+| `activeWorkflowRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br />It resets after a successful or failed run. |  |  |
 
 
 #### ClusterArtifactType

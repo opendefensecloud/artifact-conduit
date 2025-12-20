@@ -150,6 +150,7 @@ dev-cluster: setup-dev-cluster ## Install all necessary components into local Ki
 	$(KUBECTL) wait deployment.apps/trust-manager --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f  \
 		test/fixtures/trustmanager.yaml
+	$(KUBECTL) label  --context kind-$(KIND_CLUSTER_DEV) namespace default trust=enabled --overwrite
 
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
