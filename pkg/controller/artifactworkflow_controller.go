@@ -189,6 +189,26 @@ func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace
 	return buf.String(), nil
 }
 
+func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *arcv1alpha1.ArtifactWorkflow) (*corev1.Secret, *corev1.Secret, error) {
+	srcSecret := corev1.Secret{}
+	if aw.Spec.SrcSecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			return nil, nil, fmt.Errorf("failed to fetch secret for source: %w", err)
+		}
+	}
+
+	dstSecret := corev1.Secret{}
+	if aw.Spec.DstSecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
+			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			return nil, nil, fmt.Errorf("failed to fetch secret for destination: %w", err)
+		}
+	}
+
+	return &srcSecret, &dstSecret, nil
+}
+
 // SetupWithManager sets up the controller with the Manager.
 func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).

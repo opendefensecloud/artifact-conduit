@@ -50,23 +50,12 @@ func (h *SingleWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 }
 
 func (h *SingleWorkflowHandler) CreateArgoResources(ctx context.Context) error {
-	srcSecret := corev1.Secret{}
-	if h.aw.Spec.SrcSecretRef.Name != "" {
-		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", h.aw.Spec.SrcSecretRef.Name, err))
-			return errLogAndWrap(h.log, err, "failed to fetch secret for source")
-		}
+	srcSecret, dstSecret, err := h.retrieveSecrets(ctx, h.aw)
+	if err != nil {
+		return errLogAndWrap(h.log, err, "failed to fetch secrets for artifact workflow")
 	}
 
-	dstSecret := corev1.Secret{}
-	if h.aw.Spec.DstSecretRef.Name != "" {
-		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", h.aw.Spec.DstSecretRef.Name, err))
-			return errLogAndWrap(h.log, err, "failed to fetch secret for destination")
-		}
-	}
-
-	wf := hydrateArgoWorkflow(h.aw, &srcSecret, &dstSecret)
+	wf := hydrateArgoWorkflow(h.aw, srcSecret, dstSecret)
 
 	if err := controllerutil.SetControllerReference(h.aw, wf, h.Scheme); err != nil {
 		return errLogAndWrap(h.log, err, "failed to set controller reference")
@@ -186,38 +175,27 @@ func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *
 }
 
 func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
-	wf := wfv1alpha1.Workflow{
+	wf := wfv1alpha1.CronWorkflow{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: h.aw.Namespace,
 			Name:      h.aw.Name,
 		},
 	}
 	if err := h.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.aw.Name, err))
-		return errLogAndWrap(h.log, err, "workflow deletion failed")
+		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
+		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
 	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted workflow '%s'", h.aw.Name))
+	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
 	return nil
 }
 
 func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
-	srcSecret := corev1.Secret{}
-	if h.aw.Spec.SrcSecretRef.Name != "" {
-		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", h.aw.Spec.SrcSecretRef.Name, err))
-			return errLogAndWrap(h.log, err, "failed to fetch secret for source")
-		}
+	srcSecret, dstSecret, err := h.retrieveSecrets(ctx, h.aw)
+	if err != nil {
+		return errLogAndWrap(h.log, err, "failed to fetch secrets for artifact workflow")
 	}
 
-	dstSecret := corev1.Secret{}
-	if h.aw.Spec.DstSecretRef.Name != "" {
-		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", h.aw.Spec.DstSecretRef.Name, err))
-			return errLogAndWrap(h.log, err, "failed to fetch secret for destination")
-		}
-	}
-
-	wf := hydrateArgoWorkflow(h.aw, &srcSecret, &dstSecret)
+	wf := hydrateArgoWorkflow(h.aw, srcSecret, dstSecret)
 
 	if err := controllerutil.SetControllerReference(h.aw, wf, h.Scheme); err != nil {
 		return errLogAndWrap(h.log, err, "failed to set controller reference")
