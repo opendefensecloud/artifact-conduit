@@ -105,7 +105,70 @@ func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 	return nil
 }
 
-func hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+var _ WorkflowHandler = &CronWorkflowHandler{}
+
+type CronWorkflowHandler struct {
+	*ArtifactWorkflowReconciler
+	log logr.Logger
+	aw  *arcv1alpha1.ArtifactWorkflow
+}
+
+func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) *CronWorkflowHandler {
+	return &CronWorkflowHandler{r, log, aw}
+}
+
+func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
+	cwf := wfv1alpha1.CronWorkflow{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: h.aw.Namespace,
+			Name:      h.aw.Name,
+		},
+	}
+	if err := h.Delete(ctx, &cwf); client.IgnoreNotFound(err) != nil {
+		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
+		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
+	}
+	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
+	return nil
+}
+
+func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
+	srcSecret, dstSecret, err := h.retrieveSecrets(ctx, h.aw)
+	if err != nil {
+		return errLogAndWrap(h.log, err, "failed to fetch secrets for artifact workflow")
+	}
+
+	cwf := hydrateArgoCronWorkflow(h.aw, srcSecret, dstSecret)
+
+	if err := controllerutil.SetControllerReference(h.aw, cwf, h.Scheme); err != nil {
+		return errLogAndWrap(h.log, err, "failed to set controller reference")
+	}
+
+	if err := h.Create(ctx, cwf); client.IgnoreAlreadyExists(err) != nil {
+		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create cron workflow '%s': %v", cwf.GetName(), err))
+		return errLogAndWrap(h.log, err, "failed to create argo cron workflow")
+	}
+	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created cron workflow '%s'", cwf.GetName()))
+
+	h.aw.Status.Phase = arcv1alpha1.WorkflowPending
+	if err := h.Status().Update(ctx, h.aw); err != nil {
+		return errLogAndWrap(h.log, err, "failed to update status")
+	}
+	return nil
+}
+
+func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
+	cwf := wfv1alpha1.CronWorkflow{}
+	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
+		return errLogAndWrap(h.log, err, "failed to get cron workflow")
+	}
+
+	// TODO
+
+	return nil
+}
+
+func hydrateArgoWorkflowSpec(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) wfv1alpha1.WorkflowSpec {
 	srcVolume := corev1.Volume{
 		Name: "src-secret-vol",
 		VolumeSource: corev1.VolumeSource{
@@ -142,105 +205,40 @@ func hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Sec
 		})
 	}
 
-	wf := &wfv1alpha1.Workflow{
+	return wfv1alpha1.WorkflowSpec{
+		WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
+			Name:         aw.Spec.WorkflowTemplateRef.Name,
+			ClusterScope: aw.Spec.WorkflowTemplateRef.ClusterScope,
+		},
+		Volumes: []corev1.Volume{
+			srcVolume,
+			dstVolume,
+		},
+		Arguments: wfv1alpha1.Arguments{
+			Parameters: parameters,
+		},
+	}
+}
+
+func hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
+	return &wfv1alpha1.Workflow{
 		ObjectMeta: workflowObjectMeta(aw),
-		Spec: wfv1alpha1.WorkflowSpec{
-			WorkflowTemplateRef: &wfv1alpha1.WorkflowTemplateRef{
-				Name:         aw.Spec.WorkflowTemplateRef.Name,
-				ClusterScope: aw.Spec.WorkflowTemplateRef.ClusterScope,
-			},
-			Volumes: []corev1.Volume{
-				srcVolume,
-				dstVolume,
-			},
-			Arguments: wfv1alpha1.Arguments{
-				Parameters: parameters,
-			},
+		Spec:       hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
+	}
+}
+
+func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.CronWorkflow {
+	wf := &wfv1alpha1.CronWorkflow{
+		ObjectMeta: workflowObjectMeta(aw),
+		Spec: wfv1alpha1.CronWorkflowSpec{
+			WorkflowSpec:            hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
+			Schedules:               aw.Spec.Cron.Schedules,
+			ConcurrencyPolicy:       wfv1alpha1.ConcurrencyPolicy(aw.Spec.Cron.ConcurrencyPolicy),
+			StartingDeadlineSeconds: aw.Spec.Cron.StartingDeadlineSeconds,
+			Timezone:                aw.Spec.Cron.Timezone,
+			When:                    aw.Spec.Cron.When,
 		},
 	}
 
 	return wf
-}
-
-var _ WorkflowHandler = &CronWorkflowHandler{}
-
-type CronWorkflowHandler struct {
-	*ArtifactWorkflowReconciler
-	log logr.Logger
-	aw  *arcv1alpha1.ArtifactWorkflow
-}
-
-func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) *CronWorkflowHandler {
-	return &CronWorkflowHandler{r, log, aw}
-}
-
-func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
-	wf := wfv1alpha1.CronWorkflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: h.aw.Namespace,
-			Name:      h.aw.Name,
-		},
-	}
-	if err := h.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
-		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
-	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
-	return nil
-}
-
-func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
-	srcSecret, dstSecret, err := h.retrieveSecrets(ctx, h.aw)
-	if err != nil {
-		return errLogAndWrap(h.log, err, "failed to fetch secrets for artifact workflow")
-	}
-
-	wf := hydrateArgoWorkflow(h.aw, srcSecret, dstSecret)
-
-	if err := controllerutil.SetControllerReference(h.aw, wf, h.Scheme); err != nil {
-		return errLogAndWrap(h.log, err, "failed to set controller reference")
-	}
-
-	if err := h.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.GetName(), err))
-		return errLogAndWrap(h.log, err, "failed to create argo workflow")
-	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.GetName()))
-
-	h.aw.Status.Phase = arcv1alpha1.WorkflowPending
-	if err := h.Status().Update(ctx, h.aw); err != nil {
-		return errLogAndWrap(h.log, err, "failed to update status")
-	}
-	return nil
-}
-
-func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
-	wf := wfv1alpha1.Workflow{}
-	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &wf); err != nil {
-		return errLogAndWrap(h.log, err, "failed to get workflow")
-	}
-	if h.aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return nil // nothing updated
-	}
-	h.aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
-
-	switch h.aw.Status.Phase {
-	case arcv1alpha1.WorkflowSucceeded:
-		h.aw.Status.CompletionTime = metav1.Now()
-	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
-		// If workflow has errored or failed, fetch logs and update status message
-		switch h.aw.Status.Phase {
-		case arcv1alpha1.WorkflowFailed:
-			h.generateWorkflowStatusMessage(ctx, wf, h.log, h.aw)
-		case arcv1alpha1.WorkflowError:
-			// TODO: Properly show why the workflow errored
-			h.aw.Status.Message = wf.Status.Message
-		}
-	}
-
-	if err := h.Status().Update(ctx, h.aw); err != nil {
-		return errLogAndWrap(h.log, err, "failed to update status")
-	}
-
-	return nil
 }
