@@ -175,7 +175,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
-| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished or in case of a<br />cron workflow, the last time the workflow completed. |  |  |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
 | `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
 
@@ -202,25 +202,6 @@ _Appears in:_
 
 
 
-#### ConcurrencyPolicy
-
-_Underlying type:_ _string_
-
-
-
-_Validation:_
-- Enum: [Allow Forbid Replace]
-
-_Appears in:_
-- [Cron](#cron)
-
-| Field | Description |
-| --- | --- |
-| `Allow` |  |
-| `Forbid` |  |
-| `Replace` |  |
-
-
 #### Cron
 
 
@@ -237,7 +218,6 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `timezone` _string_ | Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time. |  |  |
-| `concurrencyPolicy` _[ConcurrencyPolicy](#concurrencypolicy)_ | ConcurrencyPolicy is the K8s-style concurrency policy that will be used |  | Enum: [Allow Forbid Replace] <br /> |
 | `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
 | `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: ^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$ <br /> |
 | `when` _string_ | When is an expression that determines if a run should be scheduled. |  |  |

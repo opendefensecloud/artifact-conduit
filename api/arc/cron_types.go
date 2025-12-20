@@ -3,21 +3,10 @@
 
 package arc
 
-// +kubebuilder:validation:Enum=Allow;Forbid;Replace
-type ConcurrencyPolicy string
-
-const (
-	AllowConcurrent   ConcurrencyPolicy = "Allow"
-	ForbidConcurrent  ConcurrencyPolicy = "Forbid"
-	ReplaceConcurrent ConcurrencyPolicy = "Replace"
-)
-
 // Cron represents an order's cron schedule.
 type Cron struct {
 	// Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time.
 	Timezone string `json:"timezone,omitempty"`
-	// ConcurrencyPolicy is the K8s-style concurrency policy that will be used
-	ConcurrencyPolicy ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
 	// StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its
 	// original scheduled time if it is missed.
 	// +kubebuilder:validation:Minimum=0

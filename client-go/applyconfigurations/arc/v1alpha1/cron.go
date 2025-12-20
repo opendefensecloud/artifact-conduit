@@ -5,18 +5,13 @@
 
 package v1alpha1
 
-import (
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-)
-
 // CronApplyConfiguration represents a declarative configuration of the Cron type for use
 // with apply.
 type CronApplyConfiguration struct {
-	Timezone                *string                        `json:"timezone,omitempty"`
-	ConcurrencyPolicy       *arcv1alpha1.ConcurrencyPolicy `json:"concurrencyPolicy,omitempty"`
-	StartingDeadlineSeconds *int64                         `json:"startingDeadlineSeconds,omitempty"`
-	Schedules               []string                       `json:"schedules,omitempty"`
-	When                    *string                        `json:"when,omitempty"`
+	Timezone                *string  `json:"timezone,omitempty"`
+	StartingDeadlineSeconds *int64   `json:"startingDeadlineSeconds,omitempty"`
+	Schedules               []string `json:"schedules,omitempty"`
+	When                    *string  `json:"when,omitempty"`
 }
 
 // CronApplyConfiguration constructs a declarative configuration of the Cron type for use with
@@ -30,14 +25,6 @@ func Cron() *CronApplyConfiguration {
 // If called multiple times, the Timezone field is set to the value of the last call.
 func (b *CronApplyConfiguration) WithTimezone(value string) *CronApplyConfiguration {
 	b.Timezone = &value
-	return b
-}
-
-// WithConcurrencyPolicy sets the ConcurrencyPolicy field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ConcurrencyPolicy field is set to the value of the last call.
-func (b *CronApplyConfiguration) WithConcurrencyPolicy(value arcv1alpha1.ConcurrencyPolicy) *CronApplyConfiguration {
-	b.ConcurrencyPolicy = &value
 	return b
 }
 

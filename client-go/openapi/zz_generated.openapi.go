@@ -765,7 +765,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 					},
 					"completionTime": {
 						SchemaProps: spec.SchemaProps{
-							Description: "CompletionTime is the time when the workflow finished",
+							Description: "CompletionTime is the time when the workflow finished or in case of a cron workflow, the last time the workflow completed.",
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
@@ -895,13 +895,6 @@ func schema_arc_api_arc_v1alpha1_Cron(ref common.ReferenceCallback) common.OpenA
 					"timezone": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Timezone is the timezone against which the cron schedule will be calculated, e.g. \"Asia/Tokyo\". Default is machine's local time.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"concurrencyPolicy": {
-						SchemaProps: spec.SchemaProps{
-							Description: "ConcurrencyPolicy is the K8s-style concurrency policy that will be used",
 							Type:        []string{"string"},
 							Format:      "",
 						},

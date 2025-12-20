@@ -70,7 +70,8 @@ type ArtifactWorkflowStatus struct {
 	Phase WorkflowPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=WorkflowPhase"`
 	// A human readable message describing the current condition of the artifact workflow.
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
-	// CompletionTime is the time when the workflow finished
+	// CompletionTime is the time when the workflow finished or in case of a
+	// cron workflow, the last time the workflow completed.
 	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 	// LastReconcileAt is the last time the Order was reconciled
 	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`

@@ -79,23 +79,9 @@ func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &wf); err != nil {
 		return errLogAndWrap(h.log, err, "failed to get workflow")
 	}
-	if h.aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return nil // nothing updated
-	}
-	h.aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
-	switch h.aw.Status.Phase {
-	case arcv1alpha1.WorkflowSucceeded:
-		h.aw.Status.CompletionTime = metav1.Now()
-	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
-		// If workflow has errored or failed, fetch logs and update status message
-		switch h.aw.Status.Phase {
-		case arcv1alpha1.WorkflowFailed:
-			h.generateWorkflowStatusMessage(ctx, wf, h.log, h.aw)
-		case arcv1alpha1.WorkflowError:
-			// TODO: Properly show why the workflow errored
-			h.aw.Status.Message = wf.Status.Message
-		}
+	if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
+		return nil // nothing updated
 	}
 
 	if err := h.Status().Update(ctx, h.aw); err != nil {
@@ -158,11 +144,31 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 }
 
 func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
+	if h.aw.Status.Phase == arcv1alpha1.WorkflowStopped {
+		return nil
+	}
+
 	cwf := wfv1alpha1.CronWorkflow{}
 	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
 		return errLogAndWrap(h.log, err, "failed to get cron workflow")
 	}
 
+	if len(cwf.Status.Active) > 0 {
+		// Should only contain a single element at most
+		ref := cwf.Status.Active[0]
+		wf := wfv1alpha1.Workflow{}
+		if err := h.Get(ctx, namespacedName(ref.Namespace, ref.Name), &wf); err != nil {
+			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
+		}
+
+		if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
+			return nil // nothing updated
+		}
+
+		if err := h.Status().Update(ctx, h.aw); err != nil {
+			return errLogAndWrap(h.log, err, "failed to update status")
+		}
+	}
 	// TODO
 
 	return nil
@@ -233,7 +239,7 @@ func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1
 		Spec: wfv1alpha1.CronWorkflowSpec{
 			WorkflowSpec:            hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
 			Schedules:               aw.Spec.Cron.Schedules,
-			ConcurrencyPolicy:       wfv1alpha1.ConcurrencyPolicy(aw.Spec.Cron.ConcurrencyPolicy),
+			ConcurrencyPolicy:       wfv1alpha1.ReplaceConcurrent,
 			StartingDeadlineSeconds: aw.Spec.Cron.StartingDeadlineSeconds,
 			Timezone:                aw.Spec.Cron.Timezone,
 			When:                    aw.Spec.Cron.When,

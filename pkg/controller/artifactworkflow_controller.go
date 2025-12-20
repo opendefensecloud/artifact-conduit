@@ -137,7 +137,29 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return ctrlResult, nil
 }
 
-func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
+func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, wf *wfv1alpha1.Workflow) bool {
+	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
+		return false // nothing updated
+	}
+	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
+
+	switch aw.Status.Phase {
+	case arcv1alpha1.WorkflowSucceeded:
+		aw.Status.CompletionTime = metav1.Now()
+	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
+		// If workflow has errored or failed, fetch logs and update status message
+		switch aw.Status.Phase {
+		case arcv1alpha1.WorkflowFailed:
+			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
+		case arcv1alpha1.WorkflowError:
+			// TODO: Properly show why the workflow errored
+			aw.Status.Message = wf.Status.Message
+		}
+	}
+	return true
+}
+
+func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf *wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
 	failedNodes := []struct {
 		Name    string
 		Pod     string

@@ -616,7 +616,6 @@ func Convert_arc_ClusterArtifactTypeList_To_v1alpha1_ClusterArtifactTypeList(in 
 
 func autoConvert_v1alpha1_Cron_To_arc_Cron(in *Cron, out *arc.Cron, s conversion.Scope) error {
 	out.Timezone = in.Timezone
-	out.ConcurrencyPolicy = arc.ConcurrencyPolicy(in.ConcurrencyPolicy)
 	out.StartingDeadlineSeconds = (*int64)(unsafe.Pointer(in.StartingDeadlineSeconds))
 	out.Schedules = *(*[]string)(unsafe.Pointer(&in.Schedules))
 	out.When = in.When
@@ -630,7 +629,6 @@ func Convert_v1alpha1_Cron_To_arc_Cron(in *Cron, out *arc.Cron, s conversion.Sco
 
 func autoConvert_arc_Cron_To_v1alpha1_Cron(in *arc.Cron, out *Cron, s conversion.Scope) error {
 	out.Timezone = in.Timezone
-	out.ConcurrencyPolicy = ConcurrencyPolicy(in.ConcurrencyPolicy)
 	out.StartingDeadlineSeconds = (*int64)(unsafe.Pointer(in.StartingDeadlineSeconds))
 	out.Schedules = *(*[]string)(unsafe.Pointer(&in.Schedules))
 	out.When = in.When
