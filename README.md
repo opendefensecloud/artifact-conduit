@@ -18,14 +18,14 @@ ARC (Artifact Conduit) is an open-source system that acts as a gateway for procu
 
 **Out of Scope:** ARC does not replace existing registry solutions or artifact repositories. It functions as an orchestration layer that coordinates artifact transfer and validation between existing infrastructure components.
 
-For detailed information have a look at [`/docs`](docs) or the live documentation on [ARC Docs](https://arc.opendefense.cloud/develop).
+For detailed information have a look at [`/docs`](docs) or the live documentation on [ARC Docs](https://arc.opendefense.cloud/).
 
 ## To start developing
 
 > ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/developer-guide/contributing.md)
 
 Please see our documentation in the [`/docs`](docs) folder for more details.
-The hosted version of the documentation can be found at <https://arc.opendefense.cloud/develop/>.
+The hosted version of the documentation can be found at <https://arc.opendefense.cloud/>.
 
 ## Contributing
 
