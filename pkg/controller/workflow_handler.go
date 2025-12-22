@@ -9,6 +9,7 @@ import (
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
+	"github.com/jastBytes/sprint"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -130,11 +131,14 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "failed to set controller reference")
 	}
 
-	if err := h.Create(ctx, cwf); client.IgnoreAlreadyExists(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create cron workflow '%s': %v", cwf.GetName(), err))
-		return errLogAndWrap(h.log, err, "failed to create argo cron workflow")
+	if err := h.Create(ctx, cwf); err != nil {
+		if client.IgnoreAlreadyExists(err) != nil {
+			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create cron workflow '%s': %v", cwf.GetName(), err))
+			return errLogAndWrap(h.log, err, "failed to create argo cron workflow")
+		}
+	} else {
+		h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created cron workflow '%s'", cwf.GetName()))
 	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created cron workflow '%s'", cwf.GetName()))
 
 	h.aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := h.Status().Update(ctx, h.aw); err != nil {
@@ -144,10 +148,46 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 }
 
 func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
-	if h.aw.Status.Phase == arcv1alpha1.WorkflowStopped {
-		return nil
+	cwf := wfv1alpha1.CronWorkflow{}
+	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
+		return errLogAndWrap(h.log, err, "failed to get cron workflow")
 	}
 
+	h.aw.Status.LastScheduled = cwf.Status.LastScheduledTime
+	h.aw.Status.Failed = cwf.Status.Failed
+	h.aw.Status.Succeeded = cwf.Status.Succeeded
+
+	// If the active workflow is not the same as the current one, update the reference
+	if len(cwf.Status.Active) > 0 {
+		// Should only contain a single element at most
+		ref := cwf.Status.Active[len(cwf.Status.Active)-1]
+
+		if h.aw.Status.ActiveWorkflowRef.Name != ref.Name {
+			h.log.V(1).Info("Updating reference for cron workflow", "cronWorkflow", cwf.Name, "activeWorkflow", ref.Name)
+
+			// Get the active workflow
+			wf := wfv1alpha1.Workflow{}
+			if err := h.Get(ctx, namespacedName(ref.Namespace, ref.Name), &wf); err != nil {
+				return errLogAndWrap(h.log, err, "failed to fetch active workflow")
+			}
+
+			h.aw.Status.ActiveWorkflowRef = corev1.LocalObjectReference{
+				Name: wf.Name,
+			}
+			h.aw.Status.Message = ""
+			h.aw.Status.Phase = arcv1alpha1.WorkflowActive
+
+			if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
+				return nil // nothing updated
+			}
+
+			if err := h.Status().Update(ctx, h.aw); err != nil {
+				return errLogAndWrap(h.log, err, "failed to update status")
+			}
+		}
+	}
+
+	// If there is an active workflow, check its status
 	if h.aw.Status.ActiveWorkflowRef.Name != "" {
 		wf := wfv1alpha1.Workflow{}
 		if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Status.ActiveWorkflowRef.Name), &wf); err != nil {
@@ -158,47 +198,7 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			return nil // nothing updated
 		}
 
-		if h.aw.Status.Phase.Completed() {
-			h.aw.Status.ActiveWorkflowRef.Name = ""
-		}
-
-		if err := h.Status().Update(ctx, h.aw); err != nil {
-			return errLogAndWrap(h.log, err, "failed to update status")
-		}
-
-		if !h.aw.Status.Phase.Completed() {
-			return nil
-		}
-	}
-
-	cwf := wfv1alpha1.CronWorkflow{}
-	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
-		return errLogAndWrap(h.log, err, "failed to get cron workflow")
-	}
-
-	if cwf.Status.Phase == wfv1alpha1.StoppedPhase {
-		h.aw.Status.Phase = arcv1alpha1.WorkflowStopped
-
-		if err := h.Status().Update(ctx, h.aw); err != nil {
-			return errLogAndWrap(h.log, err, "failed to update status")
-		}
-
-		return nil
-	}
-
-	if len(cwf.Status.Active) > 0 {
-		// Should only contain a single element at most
-		ref := cwf.Status.Active[0]
-		wf := wfv1alpha1.Workflow{}
-		if err := h.Get(ctx, namespacedName(ref.Namespace, ref.Name), &wf); err != nil {
-			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
-		}
-
-		h.aw.Status.ActiveWorkflowRef = corev1.LocalObjectReference{
-			Name: wf.Name,
-		}
-		h.aw.Status.Message = ""
-
+		h.log.V(1).Info("Updating status from active workflow", "cronWorkflow", cwf.Name, "activeWorkflow", wf.Name)
 		if err := h.Status().Update(ctx, h.aw); err != nil {
 			return errLogAndWrap(h.log, err, "failed to update status")
 		}
@@ -267,15 +267,19 @@ func hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Sec
 }
 
 func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.CronWorkflow {
+	om := workflowObjectMeta(aw)
 	wf := &wfv1alpha1.CronWorkflow{
-		ObjectMeta: workflowObjectMeta(aw),
+		ObjectMeta: om,
 		Spec: wfv1alpha1.CronWorkflowSpec{
-			WorkflowSpec:            hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
-			Schedules:               aw.Spec.Cron.Schedules,
-			ConcurrencyPolicy:       wfv1alpha1.ReplaceConcurrent,
-			StartingDeadlineSeconds: aw.Spec.Cron.StartingDeadlineSeconds,
-			Timezone:                aw.Spec.Cron.Timezone,
-			When:                    aw.Spec.Cron.When,
+			WorkflowSpec:               hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
+			Schedules:                  aw.Spec.Cron.Schedules,
+			ConcurrencyPolicy:          wfv1alpha1.ReplaceConcurrent,
+			StartingDeadlineSeconds:    aw.Spec.Cron.StartingDeadlineSeconds,
+			Timezone:                   aw.Spec.Cron.Timezone,
+			When:                       aw.Spec.Cron.When,
+			SuccessfulJobsHistoryLimit: sprint.ToPointer(int32(1)),
+			FailedJobsHistoryLimit:     sprint.ToPointer(int32(1)),
+			WorkflowMetadata:           &om,
 		},
 	}
 

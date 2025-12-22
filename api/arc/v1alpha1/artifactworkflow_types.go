@@ -34,7 +34,7 @@ func (p WorkflowPhase) Completed() bool {
 
 func (p WorkflowPhase) InProgress() bool {
 	switch p {
-	case WorkflowPending, WorkflowRunning:
+	case WorkflowPending, WorkflowRunning, WorkflowActive:
 		return true
 	default:
 		return false
@@ -72,7 +72,7 @@ type WorkflowStatus struct {
 	// CompletionTime is the time when the workflow finished
 	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 	// LastScheduled is the last time the workflow was scheduled via cron
-	LastScheduled metav1.Time `json:"lastScheduled,omitempty"`
+	LastScheduled *metav1.Time `json:"lastScheduled,omitempty"`
 	// Succeeded counts how many times child workflows succeeded
 	// +optional
 	Succeeded int64 `json:"succeeded" protobuf:"varint,4,rep,name=succeeded"`

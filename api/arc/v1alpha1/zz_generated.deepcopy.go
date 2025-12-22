@@ -644,7 +644,10 @@ func (in *OrderStatus) DeepCopy() *OrderStatus {
 func (in *WorkflowStatus) DeepCopyInto(out *WorkflowStatus) {
 	*out = *in
 	in.CompletionTime.DeepCopyInto(&out.CompletionTime)
-	in.LastScheduled.DeepCopyInto(&out.LastScheduled)
+	if in.LastScheduled != nil {
+		in, out := &in.LastScheduled, &out.LastScheduled
+		*out = (*in).DeepCopy()
+	}
 	return
 }
 

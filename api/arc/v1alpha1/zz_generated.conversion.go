@@ -12,6 +12,7 @@ import (
 	unsafe "unsafe"
 
 	arc "go.opendefense.cloud/arc/api/arc"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -940,7 +941,7 @@ func autoConvert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(in *WorkflowStatu
 	out.Phase = arc.WorkflowPhase(in.Phase)
 	out.Message = in.Message
 	out.CompletionTime = in.CompletionTime
-	out.LastScheduled = in.LastScheduled
+	out.LastScheduled = (*v1.Time)(unsafe.Pointer(in.LastScheduled))
 	out.Succeeded = in.Succeeded
 	out.Failed = in.Failed
 	return nil
@@ -955,7 +956,7 @@ func autoConvert_arc_WorkflowStatus_To_v1alpha1_WorkflowStatus(in *arc.WorkflowS
 	out.Phase = WorkflowPhase(in.Phase)
 	out.Message = in.Message
 	out.CompletionTime = in.CompletionTime
-	out.LastScheduled = in.LastScheduled
+	out.LastScheduled = (*v1.Time)(unsafe.Pointer(in.LastScheduled))
 	out.Succeeded = in.Succeeded
 	out.Failed = in.Failed
 	return nil

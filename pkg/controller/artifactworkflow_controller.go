@@ -17,11 +17,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 const (
@@ -131,7 +138,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrlResult, handler.CreateArgoResources(ctx)
 	}
 
-	if aw.Status.Phase.InProgress() {
+	if aw.Status.Phase.InProgress() || aw.Spec.Cron != nil {
 		return ctrlResult, handler.CheckArgoResources(ctx)
 	}
 
@@ -145,17 +152,11 @@ func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, 
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
 	switch aw.Status.Phase {
-	case arcv1alpha1.WorkflowSucceeded:
+	case arcv1alpha1.WorkflowSucceeded, arcv1alpha1.WorkflowStopped:
 		aw.Status.CompletionTime = metav1.Now()
 	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
-		// If workflow has errored or failed, fetch logs and update status message
-		switch aw.Status.Phase {
-		case arcv1alpha1.WorkflowFailed:
-			r.generateWorkflowStatusMessage(ctx, wf, log, aw)
-		case arcv1alpha1.WorkflowError:
-			// TODO: Properly show why the workflow errored
-			aw.Status.Message = wf.Status.Message
-		}
+		aw.Status.Message = wf.Status.Message
+		r.generateWorkflowStatusMessage(ctx, wf, log, aw)
 	}
 	return true
 }
@@ -167,7 +168,7 @@ func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.C
 		Message string
 	}{}
 	for _, node := range wf.Status.Nodes {
-		if node.Phase == wfv1alpha1.NodeFailed && node.Type == wfv1alpha1.NodeTypePod {
+		if (node.Phase == wfv1alpha1.NodeFailed || node.Phase == wfv1alpha1.NodeError) && node.Type == wfv1alpha1.NodeTypePod {
 			nr := struct {
 				Name    string
 				Pod     string
@@ -185,6 +186,7 @@ func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.C
 		logs, err := r.fetchPodLogs(ctx, aw.Namespace, nr.Pod)
 		if err != nil {
 			log.V(1).Info("failed to fetch pod logs", "pod", nr.Pod, "error", err)
+			aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\n\n", nr.Name, nr.Message)
 			continue
 		}
 		aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\nLogs:\n%s\n\n", nr.Name, nr.Message, logs)
@@ -238,5 +240,35 @@ func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&arcv1alpha1.ArtifactWorkflow{}).
 		Owns(&wfv1alpha1.Workflow{}).
 		Owns(&wfv1alpha1.CronWorkflow{}).
+		Watches(
+			&wfv1alpha1.Workflow{},
+			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForObjectFunc(".status.artifactWorkflowRef.name")),
+			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
+		).
 		Complete(r)
+}
+
+func (r *ArtifactWorkflowReconciler) generateReconcileRequestsForObjectFunc(specField string) func(context.Context, client.Object) []ctrl.Request {
+	return func(ctx context.Context, obj client.Object) []ctrl.Request {
+		referencingResourcesList := &unstructured.UnstructuredList{}
+		listOps := &client.ListOptions{
+			FieldSelector: fields.OneTermEqualSelector(specField, obj.GetName()),
+			Namespace:     obj.GetNamespace(),
+		}
+		err := r.List(context.Background(), referencingResourcesList, listOps)
+		if err != nil {
+			return []reconcile.Request{}
+		}
+
+		requests := make([]reconcile.Request, len(referencingResourcesList.Items))
+		for i, item := range referencingResourcesList.Items {
+			requests[i] = reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name:      item.GetName(),
+					Namespace: item.GetNamespace(),
+				},
+			}
+		}
+		return requests
+	}
 }
