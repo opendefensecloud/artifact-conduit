@@ -17,8 +17,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -242,33 +240,61 @@ func (r *ArtifactWorkflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&wfv1alpha1.CronWorkflow{}).
 		Watches(
 			&wfv1alpha1.Workflow{},
-			handler.EnqueueRequestsFromMapFunc(r.generateReconcileRequestsForObjectFunc(".status.artifactWorkflowRef.name")),
+			handler.EnqueueRequestsFromMapFunc(r.findArtifactWorkflowsForWorkflowOwnedByCronWorkflow()),
 			builder.WithPredicates(predicate.ResourceVersionChangedPredicate{}),
 		).
 		Complete(r)
 }
 
-func (r *ArtifactWorkflowReconciler) generateReconcileRequestsForObjectFunc(specField string) func(context.Context, client.Object) []ctrl.Request {
-	return func(ctx context.Context, obj client.Object) []ctrl.Request {
-		referencingResourcesList := &unstructured.UnstructuredList{}
-		listOps := &client.ListOptions{
-			FieldSelector: fields.OneTermEqualSelector(specField, obj.GetName()),
-			Namespace:     obj.GetNamespace(),
+// findArtifactWorkflowsForWorkflowOwnedByCronWorkflow returns a function that finds ArtifactWorkflows
+// that own CronWorkflows that own the given Workflow. This handles the ownership chain:
+// ArtifactWorkflow -> CronWorkflow -> Workflow
+func (r *ArtifactWorkflowReconciler) findArtifactWorkflowsForWorkflowOwnedByCronWorkflow() func(context.Context, client.Object) []ctrl.Request {
+	return func(ctx context.Context, wf client.Object) []ctrl.Request {
+		// Find the CronWorkflow that owns this Workflow
+		ownerReferences := wf.GetOwnerReferences()
+		var cronWorkflowName, cronWorkflowNamespace string
+
+		for _, owner := range ownerReferences {
+			if owner.Kind == "CronWorkflow" && owner.APIVersion == wfv1alpha1.SchemeGroupVersion.String() {
+				cronWorkflowName = owner.Name
+				cronWorkflowNamespace = wf.GetNamespace() // Owner is in same namespace
+				break
+			}
 		}
-		err := r.List(context.Background(), referencingResourcesList, listOps)
-		if err != nil {
+
+		if cronWorkflowName == "" {
+			// Workflow is not owned by a CronWorkflow
 			return []reconcile.Request{}
 		}
 
-		requests := make([]reconcile.Request, len(referencingResourcesList.Items))
-		for i, item := range referencingResourcesList.Items {
-			requests[i] = reconcile.Request{
-				NamespacedName: types.NamespacedName{
-					Name:      item.GetName(),
-					Namespace: item.GetNamespace(),
-				},
+		// Find the ArtifactWorkflow that owns this CronWorkflow
+		cwf := &wfv1alpha1.CronWorkflow{}
+		if err := r.Get(ctx, types.NamespacedName{Name: cronWorkflowName, Namespace: cronWorkflowNamespace}, cwf); err != nil {
+			// CronWorkflow not found or error occurred
+			return []reconcile.Request{}
+		}
+
+		var artifactWorkflowName string
+		for _, owner := range cwf.GetOwnerReferences() {
+			if owner.Kind == "ArtifactWorkflow" && owner.APIVersion == arcv1alpha1.SchemeGroupVersion.String() {
+				artifactWorkflowName = owner.Name
+				break
 			}
 		}
-		return requests
+
+		if artifactWorkflowName == "" {
+			// CronWorkflow is not owned by an ArtifactWorkflow
+			return []reconcile.Request{}
+		}
+
+		return []reconcile.Request{
+			{
+				NamespacedName: types.NamespacedName{
+					Name:      artifactWorkflowName,
+					Namespace: cronWorkflowNamespace,
+				},
+			},
+		}
 	}
 }
