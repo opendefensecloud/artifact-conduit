@@ -166,7 +166,9 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			return errLogAndWrap(h.log, err, "failed to update status")
 		}
 
-		return nil
+		if !h.aw.Status.Phase.Completed() {
+			return nil
+		}
 	}
 
 	cwf := wfv1alpha1.CronWorkflow{}
