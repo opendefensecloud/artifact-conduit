@@ -250,7 +250,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Update status
 		order.Status.ArtifactWorkflows[sha] = arcv1alpha1.OrderArtifactWorkflowStatus{
 			ArtifactIndex: daw.index,
-			Phase:         arcv1alpha1.WorkflowUnknown,
+			WorkflowStatus: arcv1alpha1.WorkflowStatus{
+				Phase: arcv1alpha1.WorkflowUnknown,
+			},
 		}
 	}
 
@@ -304,10 +306,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
-			awStatus := order.Status.ArtifactWorkflows[sha]
-			awStatus.Phase = aw.Status.Phase
-			awStatus.CompletionTime = aw.Status.CompletionTime
-			order.Status.ArtifactWorkflows[sha] = awStatus
+			orderAwStatus := order.Status.ArtifactWorkflows[sha]
+			orderAwStatus.WorkflowStatus = aw.Status.WorkflowStatus
+			order.Status.ArtifactWorkflows[sha] = orderAwStatus
 			anyPhaseChanged = true
 		}
 	}

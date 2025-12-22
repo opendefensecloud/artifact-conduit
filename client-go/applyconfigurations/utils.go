@@ -55,6 +55,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.OrderSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderStatus"):
 		return &arcv1alpha1.OrderStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("WorkflowStatus"):
+		return &arcv1alpha1.WorkflowStatusApplyConfiguration{}
 
 	}
 	return nil

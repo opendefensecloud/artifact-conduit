@@ -175,7 +175,10 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
-| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished or in case of a<br />cron workflow, the last time the workflow completed. |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
 | `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
 | `activeWorkflowRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br />It resets after a successful or failed run. |  |  |
@@ -349,10 +352,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
+| `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 
 
 #### OrderDefaults
@@ -423,6 +429,7 @@ WorkflowPhase is an enum tracking in which phase a Workflow can be.
 _Appears in:_
 - [ArtifactWorkflowStatus](#artifactworkflowstatus)
 - [OrderArtifactWorkflowStatus](#orderartifactworkflowstatus)
+- [WorkflowStatus](#workflowstatus)
 
 | Field | Description |
 | --- | --- |
@@ -434,5 +441,27 @@ _Appears in:_
 | `Error` |  |
 | `Active` |  |
 | `Stopped` |  |
+
+
+#### WorkflowStatus
+
+
+
+
+
+
+
+_Appears in:_
+- [ArtifactWorkflowStatus](#artifactworkflowstatus)
+- [OrderArtifactWorkflowStatus](#orderartifactworkflowstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
+| `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
 
 

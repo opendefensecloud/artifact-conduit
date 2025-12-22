@@ -66,14 +66,9 @@ type OrderStatus struct {
 }
 
 type OrderArtifactWorkflowStatus struct {
+	WorkflowStatus `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex int `json:"artifactIndex"`
-	// Phase tracks which phase the corresponding Workflow is in
-	Phase WorkflowPhase `json:"phase"`
-	// A human readable message describing the current condition of the artifact workflow.
-	Message string `json:"message,omitempty"`
-	// CompletionTime is the time when the workflow finished
-	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 }
 
 // +genclient

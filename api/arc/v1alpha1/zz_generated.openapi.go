@@ -132,3 +132,8 @@ func (in OrderSpec) OpenAPIModelName() string {
 func (in OrderStatus) OpenAPIModelName() string {
 	return "cloud.opendefense.arc.v1alpha1.OrderStatus"
 }
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in WorkflowStatus) OpenAPIModelName() string {
+	return "cloud.opendefense.arc.v1alpha1.WorkflowStatus"
+}
