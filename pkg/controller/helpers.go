@@ -58,6 +58,7 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 	params["dstRemoteURL"] = daw.dstEndpoint.Spec.RemoteURL
 	params["srcSecret"] = fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != "")
 	params["dstSecret"] = fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != "")
+	params["cron"] = fmt.Sprintf("%v", daw.cron != nil)
 
 	// Add parameters coming from artifact spec
 	spec := map[string]any{}
