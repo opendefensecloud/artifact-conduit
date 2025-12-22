@@ -13,6 +13,8 @@ import (
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 var _ = Describe("ArtifactWorkflowController", func() {
@@ -331,6 +333,72 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				}
 				return string(wf.UID), nil
 			}).ShouldNot(Equal(originalUID))
+		})
+
+		It("should support cron schedules", Label("cron"), func() {
+			awName := "cron-schedule"
+			aw := arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					Cron: &arcv1alpha1.Cron{
+						Schedules: []string{"*/5 * * * *"},
+					},
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, &aw)).To(Succeed())
+
+			cwf := wfv1alpha1.CronWorkflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &cwf)
+			}).Should(Succeed())
+
+			// Create the Workflow BEFORE updating CronWorkflow status
+			// so it's available when the controller tries to fetch it
+			wf := wfv1alpha1.Workflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: wfv1alpha1.WorkflowSpec{
+					WorkflowTemplateRef: cwf.Spec.WorkflowSpec.WorkflowTemplateRef,
+				},
+				Status: wfv1alpha1.WorkflowStatus{
+					Phase: wfv1alpha1.WorkflowPending,
+				},
+			}
+			Expect(controllerutil.SetControllerReference(&cwf, &wf, scheme.Scheme)).To(Succeed())
+			Expect(k8sClient.Create(ctx, &wf)).To(Succeed())
+
+			// Now update the CronWorkflow status to trigger the controller reconciliation
+			cwf.Status.Active = []corev1.ObjectReference{
+				{
+					Name:      awName,
+					Namespace: ns.Name,
+				},
+			}
+			now := metav1.Now()
+			cwf.Status.LastScheduledTime = &now
+			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
+
+			Eventually(func() string {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
+				return aw.Status.ActiveWorkflowRef.Name
+			}).To(Equal(awName))
+
+			wf.Status.Phase = wfv1alpha1.WorkflowFailed
+			Expect(k8sClient.Update(ctx, &wf)).To(Succeed())
+
+			Eventually(func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
+				return aw.Status.Phase
+			}).To(Equal(arcv1alpha1.WorkflowFailed))
 		})
 	})
 })
