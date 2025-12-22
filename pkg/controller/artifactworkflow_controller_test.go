@@ -399,6 +399,28 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowFailed))
+
+			cwf.Status.Failed += 1
+			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
+
+			Eventually(func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
+				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
+				return aw.Status.Failed
+			}).To(Equal(cwf.Status.Failed))
+
+			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			Expect(k8sClient.Update(ctx, &wf)).To(Succeed())
+
+			cwf.Status.Succeeded += 1
+			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
+
+			Eventually(func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
+				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
+				Expect(aw.Status.Phase).To(Equal(arcv1alpha1.WorkflowSucceeded))
+				return aw.Status.Succeeded
+			}).To(Equal(cwf.Status.Succeeded))
 		})
 	})
 })

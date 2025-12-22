@@ -153,13 +153,24 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "failed to get cron workflow")
 	}
 
-	h.aw.Status.LastScheduled = cwf.Status.LastScheduledTime
-	h.aw.Status.Failed = cwf.Status.Failed
-	h.aw.Status.Succeeded = cwf.Status.Succeeded
+	updated := false
+
+	if !h.aw.Status.LastScheduled.Equal(cwf.Status.LastScheduledTime) {
+		h.aw.Status.LastScheduled = cwf.Status.LastScheduledTime
+		updated = true
+	}
+	if h.aw.Status.Failed != cwf.Status.Failed {
+		h.aw.Status.Failed = cwf.Status.Failed
+		updated = true
+	}
+	if h.aw.Status.Succeeded != cwf.Status.Succeeded {
+		h.aw.Status.Succeeded = cwf.Status.Succeeded
+		updated = true
+	}
 
 	// If the active workflow is not the same as the current one, update the reference
 	if len(cwf.Status.Active) > 0 {
-		// Should only contain a single element at most
+		// Should only contain a single element at most (expected to be in the same namespace!)
 		ref := cwf.Status.Active[len(cwf.Status.Active)-1]
 
 		if h.aw.Status.ActiveWorkflowRef.Name != ref.Name {
@@ -167,7 +178,7 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 
 			// Get the active workflow
 			wf := wfv1alpha1.Workflow{}
-			if err := h.Get(ctx, namespacedName(ref.Namespace, ref.Name), &wf); err != nil {
+			if err := h.Get(ctx, namespacedName(h.aw.Namespace, ref.Name), &wf); err != nil {
 				return errLogAndWrap(h.log, err, "failed to fetch active workflow")
 			}
 
@@ -177,13 +188,7 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			h.aw.Status.Message = ""
 			h.aw.Status.Phase = arcv1alpha1.WorkflowActive
 
-			if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
-				return nil // nothing updated
-			}
-
-			if err := h.Status().Update(ctx, h.aw); err != nil {
-				return errLogAndWrap(h.log, err, "failed to update status")
-			}
+			updated = updated || h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
 		}
 	}
 
@@ -194,14 +199,22 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
 		}
 
-		if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
-			return nil // nothing updated
-		}
+		updated = updated || h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
 
-		h.log.V(1).Info("Updating status from active workflow", "cronWorkflow", cwf.Name, "activeWorkflow", wf.Name)
-		if err := h.Status().Update(ctx, h.aw); err != nil {
-			return errLogAndWrap(h.log, err, "failed to update status")
+		if wf.Status.Phase.Completed() {
+			h.aw.Status.ActiveWorkflowRef.Name = ""
+			updated = true
 		}
+	}
+
+	if !updated {
+		return nil
+	}
+
+	h.log.V(1).Info("Updating status from active workflow", "cronWorkflow", cwf.Name)
+
+	if err := h.Status().Update(ctx, h.aw); err != nil {
+		return errLogAndWrap(h.log, err, "failed to update status")
 	}
 
 	return nil
