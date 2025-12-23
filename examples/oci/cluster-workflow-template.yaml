@@ -42,8 +42,10 @@ spec:
       - name: dstType
       - name: dstRemoteURL
       - name: dstSecret
-      - name: specImage # The source image path (e.g., library/alpine:3.18)
-      - name: specOverride # The target image path (e.g., myteam/alpine:3.18-dev)
+      - name: specRepository # The source image repository (e.g. library/alpine)
+      - name: specTag # The source image tag or semver pattern, e.g. 3.18 or >3.18.0 < 3.19.0
+      - name: specOverride # Defines how destination repository:tag is overriden, supports go templates
+        default: ""
       - name: scanSeverity # Additional parameter coming from ArtifactType
 
   entrypoint: oci-pipeline
@@ -55,28 +57,51 @@ spec:
         - - name: authenticate-registries
             template: authenticate-registries
 
-        - - name: check-availability
-            template: check-availability
+        - - name: check-src-availability
+            template: check-src-availability
+
+        # If source is unavailable we assume it is a constraint, so let's find the latest semver
+        - - name: retrieve-tags
+            template: retrieve-tags
+            when: "{{ steps.check-src-availability.outputs.result }} == 'unavailable'"
+
+        - - name: filter-tags
+            template: filter-tags
+            when: "{{ steps.check-src-availability.outputs.result }} == 'unavailable'"
+
+        - - name: compute-images
+            template: compute-images
+
+        - - name: check-dst-availability
+            template: check-dst-availability
 
         - - name: pull-image
             template: pull-image
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+            when: "{{ steps.check-dst-availability.outputs.result }} == 'unavailable'"
 
         - - name: scan-image
             template: scan-image
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+            when: "{{ steps.check-dst-availability.outputs.result }} == 'unavailable'"
 
         - - name: push-image
             template: push-image
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+            when: "{{ steps.check-dst-availability.outputs.result }} == 'unavailable'"
 
         - - name: attest-scan
             template: attest-scan-results
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+            when: "{{ steps.check-dst-availability.outputs.result }} == 'unavailable'"
+            arguments:
+              parameters:
+              - name: dst
+                value: "{{steps.compute-images.outputs.parameters.dst}}"
 
         - - name: sign-image
             template: sign-image
-            when: "{{ steps.check-availability.outputs.result }} == 'unavailable'"
+            when: "{{ steps.check-dst-availability.outputs.result }} == 'unavailable'"
+            arguments:
+              parameters:
+              - name: dst
+                value: "{{steps.compute-images.outputs.parameters.dst}}"
 
     # --- Authenticate (Skopeo) ---
     - name: authenticate-registries
@@ -104,6 +129,28 @@ spec:
             value: /data/.docker
           - name: REGISTRY_AUTH_FILE
             value: /data/.docker/config.json
+          # Argo Workflows is considering disallowing accessing parameters in the body of the script,
+          # so let's explicitly pass them in as variables:
+          - name: SRC_TYPE
+            value: "{{workflow.parameters.srcType}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+          - name: DST_TYPE
+            value: "{{workflow.parameters.dstType}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+          - name: DST_SECRET
+            value: "{{workflow.parameters.dstSecret}}"
+          - name: SPEC_REPOSITORY
+            value: "{{workflow.parameters.specRepository}}"
+          - name: SPEC_TAG
+            value: "{{workflow.parameters.specTag}}"
+          - name: SPEC_OVERRIDE
+            value: "{{workflow.parameters.specOverride}}"
+          - name: SCAN_SEVERITY
+            value: "{{workflow.parameters.scanSeverity}}"
 
         source: |
           set -euo pipefail
@@ -120,8 +167,113 @@ spec:
               cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
-    # --- Check Availability (Skopeo) ---
-    - name: check-availability
+    # --- Check Source Availability (Skopeo) ---
+    - name: check-src-availability
+      retryStrategy:
+        limit: "2"
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+        env: *env
+
+        source: |
+          skopeo inspect "docker://$SRC_REMOTE_URL/$SPEC_REPOSITORY:$SPEC_TAG" >/dev/null 2>&1
+
+          EXIT_CODE=$?
+
+          if [ "$EXIT_CODE" -eq 0 ]; then
+              echo "$SPEC_TAG" > /data/tag.txt
+              echo "available"
+          else
+              # Image does not exist
+              echo "unavailable"
+          fi
+          exit 0
+
+    # --- Retrieve Tags (Skopeo) ---
+    - name: retrieve-tags
+      retryStrategy:
+        limit: "2"
+      script:
+        image: quay.io/skopeo/stable:latest
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+        env: *env
+
+        source: |
+          set -euo pipefail
+
+          skopeo list-tags "docker://$DST_REMOTE_URL/$SPEC_REPOSITORY" >/data/list-tags.json 2>&1
+
+    # --- Filter Tags (semver) ---
+    - name: filter-tags
+      retryStrategy:
+        limit: "2"
+      script:
+        image: ghcr.io/trevex/semver:latest
+        command: [bash, -c]
+        volumeMounts: *volumeMounts
+        env: *env
+
+        source: |
+          set -euo pipefail
+
+          cat /data/list-tags.json | jq -r '.Tags[]' | semver filter "$SPEC_TAG" -i | semver latest > /data/tag.txt
+
+    # --- Compute Images
+    - name: compute-images
+      retryStrategy:
+        limit: "2"
+      outputs:
+        parameters:
+        - name: src
+          valueFrom:
+            path: /tmp/src.txt
+        - name: dst
+          valueFrom:
+            path: /tmp/dst.txt
+      script:
+        image: hairyhenderson/gomplate:alpine
+        command: [sh, -c]
+        volumeMounts: *volumeMounts
+        env: *env
+        source: |
+          set -euo pipefail
+
+          cat > /tmp/images.tpl <<EOF
+          <<- \$srcRemoteURL := "$SRC_REMOTE_URL" >>
+          <<- \$dstRemoteURL := "$DST_REMOTE_URL" >>
+          <<- \$repository := "$SPEC_REPOSITORY" >>
+          <<- \$override := "$SPEC_OVERRIDE" >>
+          <<- \$tag := "$(cat /data/tag.txt)" >>
+          <<- \$values := dict "tag" \$tag "repository" \$repository >>
+          << \$srcRemoteURL >>/<< \$repository >>:<< \$tag >>
+          <<- if \$override >>
+          <<- \$repoTag := tmpl.Inline \$override \$values >>
+          << \$dstRemoteURL >>/<< \$repoTag >>
+          <<- else >>
+          << \$dstRemoteURL >>/<< \$repository >>:<< \$tag >>
+          <<- end >>
+          EOF
+
+          cat /tmp/images.tpl
+          sed -i 's/<</{{/g' /tmp/images.tpl
+          sed -i 's/>>/}}/g' /tmp/images.tpl
+          cat /tmp/images.tpl
+
+          cat /tmp/images.tpl | gomplate --out - > /data/gomplate.txt
+
+          sed -i '/^[[:space:]]*$/d' /data/gomplate.txt
+          cat /data/gomplate.txt
+
+          head -1 /data/gomplate.txt > /data/src.txt
+          cp /data/src.txt /tmp/src.txt
+          head -2 /data/gomplate.txt | tail -1 > /data/dst.txt
+          cp /data/dst.txt /tmp/dst.txt
+
+    # --- Check Destination Availability (Skopeo) ---
+    - name: check-dst-availability
       retryStrategy:
         limit: "2"
 
@@ -132,7 +284,7 @@ spec:
         env: *env
 
         source: |
-          skopeo inspect "docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}" >/dev/null 2>&1
+          skopeo inspect "docker://$(cat /data/dst.txt)" >/dev/null 2>&1
 
           EXIT_CODE=$?
 
@@ -158,10 +310,10 @@ spec:
         source: |
           set -euo pipefail
 
-          echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"
+          echo "Pulling image from $(cat /data/src.txt)"
           mkdir -p /data/image-storage
 
-          skopeo copy --preserve-digests --multi-arch all docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}} "oci:/data/image-storage/scanned-image"
+          skopeo copy --preserve-digests --multi-arch all "docker://$(cat /data/src.txt)" "oci:/data/image-storage/scanned-image"
 
     - name: scan-image
       script:
@@ -204,12 +356,15 @@ spec:
         source: |
           set -euo pipefail
 
-          echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
-          skopeo copy --dest-precompute-digests --preserve-digests "oci:/data/image-storage/scanned-image" "docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+          echo "Pushing image to $(cat /data/dst.txt)"
+          skopeo copy --dest-precompute-digests --preserve-digests "oci:/data/image-storage/scanned-image" "docker://$(cat /data/dst.txt)"
         env: *env
 
     # --- Attest Scan Results (Cosign) ---
     - name: attest-scan-results
+      inputs:
+        parameters:
+        - name: dst
       container:
         image: cgr.dev/chainguard/cosign:latest
         command: [cosign, attest]
@@ -222,13 +377,16 @@ spec:
             "/data/scan-results.json",
             "--type",
             "vuln",
-            "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
+            "{{inputs.parameters.dst}}",
           ]
         env: *env
         volumeMounts: *volumeMounts
 
     # --- Sign the image (Cosign) ---
     - name: sign-image
+      inputs:
+        parameters:
+        - name: dst
       container:
         image: cgr.dev/chainguard/cosign:latest
         command: [cosign, sign]
@@ -238,7 +396,7 @@ spec:
             "--allow-http-registry=true",
             "--key",
             "k8s://{{workflow.namespace}}/cosign-key",
-            "{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}",
+            "{{inputs.parameters.dst}}",
           ]
         env: *env
         volumeMounts: *volumeMounts

@@ -31,5 +31,6 @@ spec:
   artifacts:
     - type: oci # Artifact Type!
       spec:
-        image: distroless/static:nonroot
-        override: myteam/alpine:3.18-dev # default alpine:3.18
+        repository: distroless/static
+        tag: nonroot
+        override: "myteam/static:{{.tag}}-dev" # supports go templates
