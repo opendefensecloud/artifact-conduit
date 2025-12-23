@@ -158,6 +158,8 @@ dev-cluster: setup-dev-cluster ## Install all necessary components into local Ki
 		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/secret.yaml
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
+		test/fixtures/service-account.yaml
 
 	@echo -e "\nSETTING UP MINIO:\n"
 	$(HELM) upgrade --install --create-namespace --namespace=minio --repo=https://charts.min.io -f test/fixtures/dst-minio.yaml dst minio

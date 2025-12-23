@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //go:build e2e
-// +build e2e
 
 package e2e
 
@@ -183,7 +182,7 @@ var _ = Describe("ARC", Ordered, func() {
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "service-account.yaml"))
+			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "service-account.yaml"))
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 		})
