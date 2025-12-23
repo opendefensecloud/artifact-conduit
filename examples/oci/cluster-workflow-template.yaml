@@ -45,7 +45,7 @@ spec:
       - name: specRepository # The source image repository (e.g. library/alpine)
       - name: specTag # The source image tag or semver pattern, e.g. 3.18 or >3.18.0 < 3.19.0
       - name: specOverride # Defines how destination repository:tag is overriden, supports go templates
-        default: ""
+        value: ""
       - name: scanSeverity # Additional parameter coming from ArtifactType
 
   entrypoint: oci-pipeline
@@ -204,7 +204,7 @@ spec:
         source: |
           set -euo pipefail
 
-          skopeo list-tags "docker://$DST_REMOTE_URL/$SPEC_REPOSITORY" >/data/list-tags.json 2>&1
+          skopeo list-tags "docker://$SRC_REMOTE_URL/$SPEC_REPOSITORY" > /data/list-tags.json
 
     # --- Filter Tags (semver) ---
     - name: filter-tags
@@ -241,6 +241,7 @@ spec:
         source: |
           set -euo pipefail
 
+          # escaping go templates sucks, so let's just not...
           cat > /tmp/images.tpl <<EOF
           <<- \$srcRemoteURL := "$SRC_REMOTE_URL" >>
           <<- \$dstRemoteURL := "$DST_REMOTE_URL" >>
@@ -257,7 +258,6 @@ spec:
           <<- end >>
           EOF
 
-          cat /tmp/images.tpl
           sed -i 's/<</{{/g' /tmp/images.tpl
           sed -i 's/>>/}}/g' /tmp/images.tpl
           cat /tmp/images.tpl
@@ -322,19 +322,19 @@ spec:
         volumeMounts: *volumeMounts
 
         source: |
-          echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"
+          echo "Scanning image for severities: $SCAN_SEVERITY"
 
           # Trivy scan in a directory mode
           trivy image \
             --cache-dir /data/.trivy/cache \
             --exit-code 1 \
-            --severity "{{workflow.parameters.scanSeverity}}" \
+            --severity "$SCAN_SEVERITY" \
             --format json \
             --output /data/scan-results.json \
             --input /data/image-storage/scanned-image
 
           if [ $? -eq 0 ]; then
-              echo "✅ Scan successful and no vulnerabilities found above severity: {{workflow.parameters.scanSeverity}}"
+              echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"
           else
               echo "❌ Scan failed!"
               exit 1
