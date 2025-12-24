@@ -103,7 +103,7 @@ var _ = Describe("ARC", Ordered, func() {
 		}
 	})
 
-	SetDefaultEventuallyTimeout(20 * time.Minute)
+	SetDefaultEventuallyTimeout(10 * time.Minute)
 	SetDefaultEventuallyPollingInterval(2 * time.Second)
 
 	Context("Extension API server and Controller Manager", func() {
@@ -240,7 +240,21 @@ var _ = Describe("ARC", Ordered, func() {
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-oci-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("Succeeded"))
+				g.Expect(output).To(Equal("SucceededSucceeded"))
+			}
+			Eventually(verifyOrderSuccessful).Should(Succeed())
+		})
+
+		It("should run workflows of oci order successfully", func() {
+			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+
+			verifyOrderSuccessful := func(g Gomega) {
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
+				output, err := run(cmd)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(output).To(Equal("1"))
 			}
 			Eventually(verifyOrderSuccessful).Should(Succeed())
 		})

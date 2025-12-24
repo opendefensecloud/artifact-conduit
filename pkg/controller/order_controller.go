@@ -204,6 +204,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			continue
 		}
 
+		// Do not clean up ArtifactWorkflows with cron specified
+		if daw, ok := desiredAWs[sha]; ok && daw.cron != nil {
+			continue
+		}
+
 		// If TTL is set, check if it has expired
 		if order.Spec.TTLSecondsAfterCompletion != nil && *order.Spec.TTLSecondsAfterCompletion > 0 {
 			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TTLSecondsAfterCompletion)*time.Second {
@@ -292,8 +297,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// If it was just created we skip the update
 			continue
 		}
-		if order.Status.ArtifactWorkflows[sha].Phase.Completed() {
-			// We do not need to check for updates if the workflow is completed
+		if daw.cron == nil && order.Status.ArtifactWorkflows[sha].Phase.Completed() {
+			// We do not need to check for updates if the workflow is completed and is NOT cron
 			continue
 		}
 		aw := arcv1alpha1.ArtifactWorkflow{}
@@ -305,10 +310,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			}
 			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
-		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
-			orderAwStatus := order.Status.ArtifactWorkflows[sha]
-			orderAwStatus.WorkflowStatus = aw.Status.WorkflowStatus
-			order.Status.ArtifactWorkflows[sha] = orderAwStatus
+		orderAWStatus := order.Status.ArtifactWorkflows[sha]
+		if orderAWStatus.Phase != aw.Status.Phase ||
+			orderAWStatus.Succeeded != aw.Status.Succeeded ||
+			orderAWStatus.Failed != aw.Status.Failed ||
+			!orderAWStatus.LastScheduled.Equal(aw.Status.LastScheduled) {
+			orderAWStatus.WorkflowStatus = aw.Status.WorkflowStatus
+			order.Status.ArtifactWorkflows[sha] = orderAWStatus
 			anyPhaseChanged = true
 		}
 	}
@@ -344,6 +352,7 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 			Parameters:          params,
 			SrcSecretRef:        daw.srcEndpoint.Spec.SecretRef,
 			DstSecretRef:        daw.dstEndpoint.Spec.SecretRef,
+			Cron:                daw.cron,
 		},
 	}
 

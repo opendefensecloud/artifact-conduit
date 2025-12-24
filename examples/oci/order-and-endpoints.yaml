@@ -46,6 +46,13 @@ spec:
     - type: oci
       srcRef:
         name: dockerio
+      # tag can be a version constraint!
+      # See Masterminds/semver documentation for details:
+      # https://github.com/Masterminds/semver?tab=readme-ov-file#checking-version-constraints
+      # This is particularly useful in combination with cron orders, e.g. by adding:
+      # cron:
+      #   schedules:
+      #   - "0 1 * * *" # every night at 01:00
       spec:
         repository: alpine
         tag: "^3.23"
