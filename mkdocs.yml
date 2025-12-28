@@ -111,6 +111,7 @@ nav:
       - operator-manual/force-reconciliation.md
       - operator-manual/debugging.md
       - operator-manual/ttl-based-cleanup.md
+      - operator-manual/cron-orders.md
       - operator-manual/verifying-artifacts.md
   - Developer Guide:
       - Code of Conduct: CODE_OF_CONDUCT.md

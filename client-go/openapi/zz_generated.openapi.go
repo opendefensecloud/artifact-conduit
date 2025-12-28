@@ -32,6 +32,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref),
 		v1alpha1.ClusterArtifactType{}.OpenAPIModelName():                schema_arc_api_arc_v1alpha1_ClusterArtifactType(ref),
 		v1alpha1.ClusterArtifactTypeList{}.OpenAPIModelName():            schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref),
+		v1alpha1.Cron{}.OpenAPIModelName():                               schema_arc_api_arc_v1alpha1_Cron(ref),
 		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
 		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointList(ref),
 		v1alpha1.EndpointSpec{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointSpec(ref),
@@ -43,6 +44,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.OrderList{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderList(ref),
 		v1alpha1.OrderSpec{}.OpenAPIModelName():                          schema_arc_api_arc_v1alpha1_OrderSpec(ref),
 		v1alpha1.OrderStatus{}.OpenAPIModelName():                        schema_arc_api_arc_v1alpha1_OrderStatus(ref),
+		v1alpha1.WorkflowStatus{}.OpenAPIModelName():                     schema_arc_api_arc_v1alpha1_WorkflowStatus(ref),
 		"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource":            schema_k8sio_api_core_v1_AWSElasticBlockStoreVolumeSource(ref),
 		"k8s.io/api/core/v1.Affinity":                                    schema_k8sio_api_core_v1_Affinity(ref),
 		"k8s.io/api/core/v1.AppArmorProfile":                             schema_k8sio_api_core_v1_AppArmorProfile(ref),
@@ -725,12 +727,18 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
+					"cron": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cron specifies options which determine when the order should be scheduled.",
+							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"workflowTemplateRef", "srcSecretRef", "dstSecretRef"},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), v1alpha1.Cron{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
@@ -743,10 +751,10 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 				Properties: map[string]spec.Schema{
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+							Enum:        []interface{}{"", "Active", "Error", "Failed", "Pending", "Running", "Stopped", "Succeeded"},
 						},
 					},
 					"message": {
@@ -762,6 +770,28 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
+					"lastScheduled": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastScheduled is the last time the workflow was scheduled via cron",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"succeeded": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Succeeded counts how many times child workflows succeeded",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"failed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Failed counts how many times child workflows failed",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 					"lastReconcileAt": {
 						SchemaProps: spec.SchemaProps{
 							Description: "LastReconcileAt is the last time the Order was reconciled",
@@ -774,11 +804,19 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
+					"activeWorkflowRef": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ActiveWorkflowRef tracks the currently spawned workflow, if cron is used. It resets after a successful or failed run.",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
 				},
+				Required: []string{"activeWorkflowRef"},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+			"k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 
@@ -875,6 +913,56 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref common.ReferenceCal
 		},
 		Dependencies: []string{
 			v1alpha1.ClusterArtifactType{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_Cron(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Cron represents an order's cron schedule.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"timezone": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Timezone is the timezone against which the cron schedule will be calculated, e.g. \"Asia/Tokyo\". Default is machine's local time.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"startingDeadlineSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its original scheduled time if it is missed.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"schedules": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Schedules is a list of schedules to run the Order in Cron format",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"when": {
+						SchemaProps: spec.SchemaProps{
+							Description: "When is an expression that determines if a run should be scheduled.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"schedules"},
+			},
+		},
 	}
 }
 
@@ -1115,12 +1203,18 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
+					"cron": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).",
+							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
+						},
+					},
 				},
 				Required: []string{"type"},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
+			v1alpha1.Cron{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference", "k8s.io/apimachinery/pkg/runtime.RawExtension"},
 	}
 }
 
@@ -1130,21 +1224,12 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"artifactIndex": {
-						SchemaProps: spec.SchemaProps{
-							Description: "ArtifactIndex references back the index the corresponding artifact has in the .Spec",
-							Default:     0,
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Succeeded\"`",
-							Default:     "",
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
 							Type:        []string{"string"},
 							Format:      "",
-							Enum:        []interface{}{"", "Error", "Failed", "Pending", "Running", "Succeeded"},
+							Enum:        []interface{}{"", "Active", "Error", "Failed", "Pending", "Running", "Stopped", "Succeeded"},
 						},
 					},
 					"message": {
@@ -1160,8 +1245,38 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
+					"lastScheduled": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastScheduled is the last time the workflow was scheduled via cron",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"succeeded": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Succeeded counts how many times child workflows succeeded",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"failed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Failed counts how many times child workflows failed",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"artifactIndex": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ArtifactIndex references back the index the corresponding artifact has in the .Spec",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
 				},
-				Required: []string{"artifactIndex", "phase"},
+				Required: []string{"artifactIndex"},
 			},
 		},
 		Dependencies: []string{
@@ -1190,11 +1305,17 @@ func schema_arc_api_arc_v1alpha1_OrderDefaults(ref common.ReferenceCallback) com
 							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
 						},
 					},
+					"cron": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cron specifies options which determine when the order should be scheduled.",
+							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"k8s.io/api/core/v1.LocalObjectReference"},
+			v1alpha1.Cron{}.OpenAPIModelName(), "k8s.io/api/core/v1.LocalObjectReference"},
 	}
 }
 
@@ -1336,6 +1457,63 @@ func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) commo
 		},
 		Dependencies: []string{
 			v1alpha1.OrderArtifactWorkflowStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_WorkflowStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
+							Type:        []string{"string"},
+							Format:      "",
+							Enum:        []interface{}{"", "Active", "Error", "Failed", "Pending", "Running", "Stopped", "Succeeded"},
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A human readable message describing the current condition of the artifact workflow.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"completionTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "CompletionTime is the time when the workflow finished",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"lastScheduled": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastScheduled is the last time the workflow was scheduled via cron",
+							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"succeeded": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Succeeded counts how many times child workflows succeeded",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"failed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Failed counts how many times child workflows failed",
+							Default:     0,
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
 	}
 }
 

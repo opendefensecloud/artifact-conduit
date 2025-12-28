@@ -73,6 +73,7 @@ rules:
 - apiGroups:
   - argoproj.io
   resources:
+  - cronworkflows
   - workflows
   verbs:
   - create

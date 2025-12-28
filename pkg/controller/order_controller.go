@@ -45,6 +45,7 @@ type desiredAW struct {
 	srcSecret   *corev1.Secret
 	dstSecret   *corev1.Secret
 	sha         string
+	cron        *arcv1alpha1.Cron
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
@@ -203,6 +204,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			continue
 		}
 
+		// Do not clean up ArtifactWorkflows with cron specified
+		if daw, ok := desiredAWs[sha]; ok && daw.cron != nil {
+			continue
+		}
+
 		// If TTL is set, check if it has expired
 		if order.Spec.TTLSecondsAfterCompletion != nil && *order.Spec.TTLSecondsAfterCompletion > 0 {
 			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TTLSecondsAfterCompletion)*time.Second {
@@ -249,7 +255,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Update status
 		order.Status.ArtifactWorkflows[sha] = arcv1alpha1.OrderArtifactWorkflowStatus{
 			ArtifactIndex: daw.index,
-			Phase:         arcv1alpha1.WorkflowUnknown,
+			WorkflowStatus: arcv1alpha1.WorkflowStatus{
+				Phase: arcv1alpha1.WorkflowUnknown,
+			},
 		}
 	}
 
@@ -289,8 +297,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// If it was just created we skip the update
 			continue
 		}
-		if order.Status.ArtifactWorkflows[sha].Phase.Completed() {
-			// We do not need to check for updates if the workflow is completed
+		if daw.cron == nil && order.Status.ArtifactWorkflows[sha].Phase.Completed() {
+			// We do not need to check for updates if the workflow is completed and is NOT cron
 			continue
 		}
 		aw := arcv1alpha1.ArtifactWorkflow{}
@@ -302,11 +310,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			}
 			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
-		if order.Status.ArtifactWorkflows[sha].Phase != aw.Status.Phase {
-			awStatus := order.Status.ArtifactWorkflows[sha]
-			awStatus.Phase = aw.Status.Phase
-			awStatus.CompletionTime = aw.Status.CompletionTime
-			order.Status.ArtifactWorkflows[sha] = awStatus
+		orderAWStatus := order.Status.ArtifactWorkflows[sha]
+		if orderAWStatus.Phase != aw.Status.Phase ||
+			orderAWStatus.Succeeded != aw.Status.Succeeded ||
+			orderAWStatus.Failed != aw.Status.Failed ||
+			!orderAWStatus.LastScheduled.Equal(aw.Status.LastScheduled) {
+			orderAWStatus.WorkflowStatus = aw.Status.WorkflowStatus
+			order.Status.ArtifactWorkflows[sha] = orderAWStatus
 			anyPhaseChanged = true
 		}
 	}
@@ -342,6 +352,7 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 			Parameters:          params,
 			SrcSecretRef:        daw.srcEndpoint.Spec.SecretRef,
 			DstSecretRef:        daw.dstEndpoint.Spec.SecretRef,
+			Cron:                daw.cron,
 		},
 	}
 
@@ -360,6 +371,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if dstRefName == "" {
 		dstRefName = order.Spec.Defaults.DstRef.Name
 	}
+
 	srcEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
@@ -435,6 +447,12 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		}
 	}
 
+	// Cron schedule if any
+	cron := artifact.Cron
+	if cron == nil {
+		cron = order.Spec.Defaults.Cron
+	}
+
 	// Create a hash based on all related data for idempotency and compute the workflow name
 	h := sha256.New()
 	data := []any{
@@ -443,6 +461,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		srcEndpoint.Name,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
+		cron,
 	}
 	jsonData, err := json.Marshal(data)
 	if err != nil {
@@ -463,6 +482,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		srcSecret:   srcSecret,
 		dstSecret:   dstSecret,
 		sha:         sha,
+		cron:        cron,
 	}, nil
 }
 

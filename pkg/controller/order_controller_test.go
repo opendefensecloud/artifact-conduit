@@ -138,6 +138,10 @@ var _ = Describe("OrderController", func() {
 						Name:  "specKey",
 						Value: "value-" + suffix,
 					},
+					{
+						Name:  "cron",
+						Value: "false",
+					},
 					{ // Added by ArtifactType
 						Name:  atValue,
 						Value: atValue,
@@ -540,6 +544,10 @@ var _ = Describe("OrderController", func() {
 				{
 					Name:  "specKey",
 					Value: "value",
+				},
+				{
+					Name:  "cron",
+					Value: "false",
 				},
 				{ // Added by ArtifactType
 					Name:  atValue,

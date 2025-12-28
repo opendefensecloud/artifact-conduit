@@ -1,0 +1,19 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: test-oci-cron-order
+spec:
+  defaults:
+    srcRef:
+      name: gcrio
+    dstRef:
+      name: internal
+  artifacts:
+    - type: oci # Artifact Type!
+      cron:
+        schedules:
+        - "*/2 * * * *" # every two minutes
+      spec: # should be quick as it should be cached
+        repository: distroless/static
+        tag: nonroot
+        override: "myteam/static:{{.tag}}-dev" # supports go templates

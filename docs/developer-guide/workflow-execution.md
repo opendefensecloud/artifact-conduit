@@ -148,7 +148,7 @@ The `srcSecret` and `dstSecret` parameters are boolean flags (string `"true"` or
 This allows workflow templates to use conditional logic:
 
 ```yaml
-# From workflow-template-oci.yaml
+# See examples/oci/cluster-workflow-template.yaml for a more detailed example
 CREDS_FLAG=""
 if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
     CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"

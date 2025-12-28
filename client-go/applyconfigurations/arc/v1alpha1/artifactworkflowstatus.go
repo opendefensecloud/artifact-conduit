@@ -7,17 +7,17 @@ package v1alpha1
 
 import (
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the ArtifactWorkflowStatus type for use
 // with apply.
 type ArtifactWorkflowStatusApplyConfiguration struct {
-	Phase           *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
-	Message         *string                    `json:"message,omitempty"`
-	CompletionTime  *v1.Time                   `json:"completionTime,omitempty"`
-	LastReconcileAt *v1.Time                   `json:"lastReconcileAt,omitempty"`
-	LastForceAt     *v1.Time                   `json:"lastForceAt,omitempty"`
+	WorkflowStatusApplyConfiguration `json:",inline"`
+	LastReconcileAt                  *v1.Time                     `json:"lastReconcileAt,omitempty"`
+	LastForceAt                      *v1.Time                     `json:"lastForceAt,omitempty"`
+	ActiveWorkflowRef                *corev1.LocalObjectReference `json:"activeWorkflowRef,omitempty"`
 }
 
 // ArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowStatus type for use with
@@ -30,7 +30,7 @@ func ArtifactWorkflowStatus() *ArtifactWorkflowStatusApplyConfiguration {
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Phase field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alpha1.WorkflowPhase) *ArtifactWorkflowStatusApplyConfiguration {
-	b.Phase = &value
+	b.WorkflowStatusApplyConfiguration.Phase = &value
 	return b
 }
 
@@ -38,7 +38,7 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alpha1.W
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Message field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithMessage(value string) *ArtifactWorkflowStatusApplyConfiguration {
-	b.Message = &value
+	b.WorkflowStatusApplyConfiguration.Message = &value
 	return b
 }
 
@@ -46,7 +46,31 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithMessage(value string) *Ar
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CompletionTime field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithCompletionTime(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
-	b.CompletionTime = &value
+	b.WorkflowStatusApplyConfiguration.CompletionTime = &value
+	return b
+}
+
+// WithLastScheduled sets the LastScheduled field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the LastScheduled field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithLastScheduled(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.LastScheduled = &value
+	return b
+}
+
+// WithSucceeded sets the Succeeded field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Succeeded field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithSucceeded(value int64) *ArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.Succeeded = &value
+	return b
+}
+
+// WithFailed sets the Failed field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Failed field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithFailed(value int64) *ArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.Failed = &value
 	return b
 }
 
@@ -63,5 +87,13 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithLastReconcileAt(value v1.
 // If called multiple times, the LastForceAt field is set to the value of the last call.
 func (b *ArtifactWorkflowStatusApplyConfiguration) WithLastForceAt(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
 	b.LastForceAt = &value
+	return b
+}
+
+// WithActiveWorkflowRef sets the ActiveWorkflowRef field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ActiveWorkflowRef field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithActiveWorkflowRef(value corev1.LocalObjectReference) *ArtifactWorkflowStatusApplyConfiguration {
+	b.ActiveWorkflowRef = &value
 	return b
 }

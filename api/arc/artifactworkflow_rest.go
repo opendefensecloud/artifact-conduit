@@ -7,12 +7,14 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"time"
 
 	"go.opendefense.cloud/kit/apiserver/resource"
 	"go.opendefense.cloud/kit/apiserver/rest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/duration"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -86,12 +88,16 @@ func (o *ArtifactWorkflow) ValidateUpdate(ctx context.Context, old runtime.Objec
 }
 
 func (o *ArtifactWorkflow) IntoTableRow() metav1.TableRow {
+	completionTime := ""
+	if !o.CreationTimestamp.Time.IsZero() {
+		completionTime = o.Status.CompletionTime.Format(time.DateTime)
+	}
 	return metav1.TableRow{
 		Cells: []any{
 			o.Name,
-			o.CreationTimestamp,
 			o.Status.Phase,
-			o.Status.Message,
+			completionTime,
+			duration.HumanDuration(metav1.Now().Sub(o.CreationTimestamp.Time)),
 		},
 		Object: runtime.RawExtension{Object: o},
 	}
@@ -101,9 +107,9 @@ func (o *ArtifactWorkflow) ConvertToTable(ctx context.Context, tableOptions runt
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "Name", Type: "string", Description: "Name of the ArtifactWorkflow"},
-			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
 			{Name: "Phase", Type: "string", Description: "Current phase of the ArtifactWorkflow"},
-			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the ArtifactWorkflow"},
+			{Name: "Completion Time", Type: "string", Description: "Time the Order was completed"},
+			{Name: "Age", Type: "string", Description: "Time since creation of the ArtifactWorkflow"},
 		},
 		Rows: []metav1.TableRow{
 			o.IntoTableRow(),

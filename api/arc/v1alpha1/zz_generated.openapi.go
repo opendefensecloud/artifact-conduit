@@ -74,6 +74,11 @@ func (in ClusterArtifactTypeList) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in Cron) OpenAPIModelName() string {
+	return "cloud.opendefense.arc.v1alpha1.Cron"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in Endpoint) OpenAPIModelName() string {
 	return "cloud.opendefense.arc.v1alpha1.Endpoint"
 }
@@ -126,4 +131,9 @@ func (in OrderSpec) OpenAPIModelName() string {
 // OpenAPIModelName returns the OpenAPI model name for this type.
 func (in OrderStatus) OpenAPIModelName() string {
 	return "cloud.opendefense.arc.v1alpha1.OrderStatus"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
+func (in WorkflowStatus) OpenAPIModelName() string {
+	return "cloud.opendefense.arc.v1alpha1.WorkflowStatus"
 }

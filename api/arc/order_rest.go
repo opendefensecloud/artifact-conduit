@@ -11,6 +11,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/duration"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
@@ -78,9 +79,8 @@ func (o *Order) IntoTableRow() metav1.TableRow {
 	return metav1.TableRow{
 		Cells: []any{
 			o.Name,
-			o.CreationTimestamp,
 			getOrderPhase(o.Status),
-			o.Status.Message,
+			duration.HumanDuration(metav1.Now().Sub(o.CreationTimestamp.Time)),
 		},
 		Object: runtime.RawExtension{Object: o},
 	}
@@ -90,9 +90,8 @@ func (o *Order) ConvertToTable(ctx context.Context, tableOptions runtime.Object)
 	table := &metav1.Table{
 		ColumnDefinitions: []metav1.TableColumnDefinition{
 			{Name: "Name", Type: "string", Description: "Name of the Order"},
-			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
 			{Name: "Phase", Type: "string", Description: "Current phase of the Order"},
-			{Name: "Message", Type: "string", Description: "Status message describing the current condition of the Order"},
+			{Name: "Age", Type: "string", Description: "Time since creation of the Order"},
 		},
 		Rows: []metav1.TableRow{
 			o.IntoTableRow(),
@@ -104,9 +103,6 @@ func (o *Order) ConvertToTable(ctx context.Context, tableOptions runtime.Object)
 
 // getOrderPhase determines the phase of an Order based on its status
 func getOrderPhase(status OrderStatus) string {
-	if status.Message == "" {
-		return "Pending"
-	}
 	// Check if any artifact workflows have completed
 	if len(status.ArtifactWorkflows) > 0 {
 		allCompleted := true

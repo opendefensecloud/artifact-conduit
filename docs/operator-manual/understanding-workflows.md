@@ -115,7 +115,7 @@ However the source and destination secrets are mounted at `/secret/src/` and `/s
 The following template is an example for a workflow that uses the `oci` source and destination. It can be used as a starting point to create your own workflows.
 
 ```yaml
-{% include "../../examples/workflow-template-oci.yaml" %}
+{% include "../../examples/oci/cluster-workflow-template.yaml" %}
 ```
 
 ### Secrets
@@ -123,7 +123,7 @@ The following template is an example for a workflow that uses the `oci` source a
 These are the example secrets for pulling and pushing.
 
 ```yaml
-{% include "../../examples/workflow-secrets.yaml" %}
+{% include "../../test/fixtures/secret.yaml" %}
 ```
 
 ### Workflow Example

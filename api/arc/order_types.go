@@ -16,6 +16,9 @@ type OrderDefaults struct {
 	// DstRef defines which Endpoint object is used as fallback destination by all artifacts.
 	// +optional
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled.
+	// +optional
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow
@@ -30,6 +33,9 @@ type OrderArtifact struct {
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 	// Spec specifies parameters used by the underlying Workflow.
 	Spec runtime.RawExtension `json:"spec,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).
+	// +optional
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // OrderSpec defines the desired state of Order
@@ -59,14 +65,9 @@ type OrderStatus struct {
 }
 
 type OrderArtifactWorkflowStatus struct {
+	WorkflowStatus `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex int `json:"artifactIndex"`
-	// Phase tracks which phase the corresponding Workflow is in
-	Phase WorkflowPhase `json:"phase"`
-	// A human readable message describing the current condition of the artifact workflow.
-	Message string `json:"message,omitempty"`
-	// CompletionTime is the time when the workflow finished
-	CompletionTime metav1.Time `json:"completionTime,omitempty"`
 }
 
 // +genclient

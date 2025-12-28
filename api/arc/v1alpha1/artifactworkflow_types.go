@@ -19,6 +19,8 @@ const ( // analog to Argo Workflows
 	WorkflowSucceeded WorkflowPhase = "Succeeded"
 	WorkflowFailed    WorkflowPhase = "Failed"
 	WorkflowError     WorkflowPhase = "Error"
+	WorkflowActive    WorkflowPhase = "Active"
+	WorkflowStopped   WorkflowPhase = "Stopped"
 )
 
 func (p WorkflowPhase) Completed() bool {
@@ -32,7 +34,7 @@ func (p WorkflowPhase) Completed() bool {
 
 func (p WorkflowPhase) InProgress() bool {
 	switch p {
-	case WorkflowPending, WorkflowRunning:
+	case WorkflowPending, WorkflowRunning, WorkflowActive:
 		return true
 	default:
 		return false
@@ -49,6 +51,9 @@ type ArtifactWorkflowSpec struct {
 	SrcSecretRef corev1.LocalObjectReference `json:"srcSecretRef"`
 	// DstSecretRef references the secret containing credentials for the destination.
 	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
+	// Cron specifies options which determine when the order should be scheduled.
+	// +optional
+	Cron *Cron `json:"cron,omitempty"`
 }
 
 // ArtifactWorkflowParameter represents a single key-value parameter pair.
@@ -59,18 +64,33 @@ type ArtifactWorkflowParameter struct {
 	Value string `json:"value"`
 }
 
-// ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
-type ArtifactWorkflowStatus struct {
+type WorkflowStatus struct {
 	// Phase tracks which phase the corresponding Workflow is in
 	Phase WorkflowPhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=WorkflowPhase"`
 	// A human readable message describing the current condition of the artifact workflow.
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
 	// CompletionTime is the time when the workflow finished
 	CompletionTime metav1.Time `json:"completionTime,omitempty"`
+	// LastScheduled is the last time the workflow was scheduled via cron
+	LastScheduled *metav1.Time `json:"lastScheduled,omitempty"`
+	// Succeeded counts how many times child workflows succeeded
+	// +optional
+	Succeeded int64 `json:"succeeded" protobuf:"varint,4,rep,name=succeeded"`
+	// Failed counts how many times child workflows failed
+	// +optional
+	Failed int64 `json:"failed" protobuf:"varint,5,rep,name=failed"`
+}
+
+// ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
+type ArtifactWorkflowStatus struct {
+	WorkflowStatus `json:",inline"`
 	// LastReconcileAt is the last time the Order was reconciled
 	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`
 	// LastForceAt is the last time a force reconciliation was requested
 	LastForceAt metav1.Time `json:"lastForceAt,omitempty"`
+	// ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.
+	// It resets after a successful or failed run.
+	ActiveWorkflowRef corev1.LocalObjectReference `json:"activeWorkflowRef"`
 }
 
 // +genclient

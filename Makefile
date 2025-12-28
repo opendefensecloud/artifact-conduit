@@ -111,7 +111,7 @@ setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
 
 .PHONY: test-e2e
 test-e2e: setup-test-e2e manifests ## Run the e2e tests. Expected an isolated environment using Kind.
-	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -ginkgo.v
+	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
 	$(MAKE) cleanup-test-e2e
 
 
@@ -150,6 +150,7 @@ dev-cluster: setup-dev-cluster ## Install all necessary components into local Ki
 	$(KUBECTL) wait deployment.apps/trust-manager --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f  \
 		test/fixtures/trustmanager.yaml
+	$(KUBECTL) label  --context kind-$(KIND_CLUSTER_DEV) namespace default trust=enabled --overwrite
 
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
@@ -157,6 +158,8 @@ dev-cluster: setup-dev-cluster ## Install all necessary components into local Ki
 		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/secret.yaml
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
+		test/fixtures/service-account.yaml
 
 	@echo -e "\nSETTING UP MINIO:\n"
 	$(HELM) upgrade --install --create-namespace --namespace=minio --repo=https://charts.min.io -f test/fixtures/dst-minio.yaml dst minio

@@ -10,6 +10,15 @@ spec:
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
+  name: dockerio
+spec:
+  type: oci # Endpoint Type!
+  remoteURL: docker.io
+  usage: PullOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
   name: internal
 spec:
   type: oci # Endpoint Type!
@@ -31,5 +40,19 @@ spec:
   artifacts:
     - type: oci # Artifact Type!
       spec:
-        image: distroless/static:nonroot
-        override: myteam/alpine:3.18-dev # default alpine:3.18
+        repository: distroless/static
+        tag: nonroot
+        override: "myteam/static:{{.tag}}-dev" # supports go templates
+    - type: oci
+      srcRef:
+        name: dockerio
+      # tag can be a version constraint!
+      # See Masterminds/semver documentation for details:
+      # https://github.com/Masterminds/semver?tab=readme-ov-file#checking-version-constraints
+      # This is particularly useful in combination with cron orders, e.g. by adding:
+      # cron:
+      #   schedules:
+      #   - "0 1 * * *" # every night at 01:00
+      spec:
+        repository: alpine
+        tag: "^3.23"

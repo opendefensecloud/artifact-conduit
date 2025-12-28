@@ -157,6 +157,7 @@ _Appears in:_
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled. |  |  |
 
 
 #### ArtifactWorkflowStatus
@@ -175,8 +176,12 @@ _Appears in:_
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
 | `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
+| `activeWorkflowRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br />It resets after a successful or failed run. |  |  |
 
 
 #### ClusterArtifactType
@@ -199,6 +204,27 @@ _Appears in:_
 | `status` _[ArtifactTypeStatus](#artifacttypestatus)_ |  |  |  |
 
 
+
+
+#### Cron
+
+
+
+Cron represents an order's cron schedule.
+
+
+
+_Appears in:_
+- [ArtifactWorkflowSpec](#artifactworkflowspec)
+- [OrderArtifact](#orderartifact)
+- [OrderDefaults](#orderdefaults)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `timezone` _string_ | Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time. |  |  |
+| `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
+| `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: ^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$ <br /> |
+| `when` _string_ | When is an expression that determines if a run should be scheduled. |  |  |
 
 
 #### Endpoint
@@ -310,6 +336,7 @@ _Appears in:_
 | `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults). |  |  |
 | `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults). |  |  |
 | `spec` _[RawExtension](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#rawextension-runtime-pkg)_ | Spec specifies parameters used by the underlying Workflow. |  |  |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults). |  |  |
 
 
 #### OrderArtifactWorkflowStatus
@@ -325,10 +352,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
+| `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 
 
 #### OrderDefaults
@@ -346,6 +376,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as fallback source by all artifacts. |  |  |
 | `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as fallback destination by all artifacts. |  |  |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled. |  |  |
 
 
 
@@ -398,6 +429,7 @@ WorkflowPhase is an enum tracking in which phase a Workflow can be.
 _Appears in:_
 - [ArtifactWorkflowStatus](#artifactworkflowstatus)
 - [OrderArtifactWorkflowStatus](#orderartifactworkflowstatus)
+- [WorkflowStatus](#workflowstatus)
 
 | Field | Description |
 | --- | --- |
@@ -407,5 +439,29 @@ _Appears in:_
 | `Succeeded` |  |
 | `Failed` |  |
 | `Error` |  |
+| `Active` |  |
+| `Stopped` |  |
+
+
+#### WorkflowStatus
+
+
+
+
+
+
+
+_Appears in:_
+- [ArtifactWorkflowStatus](#artifactworkflowstatus)
+- [OrderArtifactWorkflowStatus](#orderartifactworkflowstatus)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
+| `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
+| `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
+| `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
 
 

@@ -13,10 +13,8 @@ import (
 // OrderArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the OrderArtifactWorkflowStatus type for use
 // with apply.
 type OrderArtifactWorkflowStatusApplyConfiguration struct {
-	ArtifactIndex  *int                       `json:"artifactIndex,omitempty"`
-	Phase          *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
-	Message        *string                    `json:"message,omitempty"`
-	CompletionTime *v1.Time                   `json:"completionTime,omitempty"`
+	WorkflowStatusApplyConfiguration `json:",inline"`
+	ArtifactIndex                    *int `json:"artifactIndex,omitempty"`
 }
 
 // OrderArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the OrderArtifactWorkflowStatus type for use with
@@ -25,19 +23,11 @@ func OrderArtifactWorkflowStatus() *OrderArtifactWorkflowStatusApplyConfiguratio
 	return &OrderArtifactWorkflowStatusApplyConfiguration{}
 }
 
-// WithArtifactIndex sets the ArtifactIndex field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ArtifactIndex field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithArtifactIndex(value int) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.ArtifactIndex = &value
-	return b
-}
-
 // WithPhase sets the Phase field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Phase field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alpha1.WorkflowPhase) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.Phase = &value
+	b.WorkflowStatusApplyConfiguration.Phase = &value
 	return b
 }
 
@@ -45,7 +35,7 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithPhase(value arcv1alp
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Message field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithMessage(value string) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.Message = &value
+	b.WorkflowStatusApplyConfiguration.Message = &value
 	return b
 }
 
@@ -53,6 +43,38 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithMessage(value string
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CompletionTime field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithCompletionTime(value v1.Time) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.CompletionTime = &value
+	b.WorkflowStatusApplyConfiguration.CompletionTime = &value
+	return b
+}
+
+// WithLastScheduled sets the LastScheduled field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the LastScheduled field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithLastScheduled(value v1.Time) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.LastScheduled = &value
+	return b
+}
+
+// WithSucceeded sets the Succeeded field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Succeeded field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithSucceeded(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.Succeeded = &value
+	return b
+}
+
+// WithFailed sets the Failed field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Failed field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithFailed(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.Failed = &value
+	return b
+}
+
+// WithArtifactIndex sets the ArtifactIndex field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ArtifactIndex field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithArtifactIndex(value int) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.ArtifactIndex = &value
 	return b
 }
