@@ -125,3 +125,4 @@ nav:
           - developer-guide/adrs/001-ARC-Architecture.md
           - developer-guide/adrs/002-ARC-API.md
           - developer-guide/adrs/003-Branch-Naming.md
+          - developer-guide/adrs/004-Scheduled-Orders.md

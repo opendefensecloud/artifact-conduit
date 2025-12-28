@@ -28,6 +28,7 @@ jobs:
           - name: arc-apiserver
             target: apiserver
     permissions:
+      actions: read
       contents: read
       packages: write # Push to ghcr.io
       id-token: write # Needed to create an OIDC token for keyless signing
@@ -109,6 +110,7 @@ jobs:
           image: ${{ steps.first-tag.outputs.tag }}
           format: 'cyclonedx-json'
           output-file: 'sbom.cyclonedx.json'
+          upload-release-assets: false # we use immutable releases
       - name: Attest SBOM
         uses: actions/attest-sbom@v3
         with:

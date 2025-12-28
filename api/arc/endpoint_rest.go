@@ -55,3 +55,33 @@ func validateEndpoint(o *Endpoint) field.ErrorList {
 
 	return allErrs
 }
+
+func (o *Endpoint) IntoTableRow() metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []any{
+			o.Name,
+			o.CreationTimestamp,
+			o.Spec.RemoteURL,
+			o.Spec.Usage,
+			o.Spec.SecretRef.Name,
+		},
+		Object: runtime.RawExtension{Object: o},
+	}
+}
+
+func (o *Endpoint) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	table := &metav1.Table{
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{Name: "Name", Type: "string", Description: "Name of the ArtifactType"},
+			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+			{Name: "Remote URL", Type: "string", Description: "Remote location for the Endpoint"},
+			{Name: "Usage", Type: "string", Description: "Usage of the Endpoint"},
+			{Name: "Secret", Type: "string", Description: "Name of the Secret of the Endpoint"},
+		},
+		Rows: []metav1.TableRow{
+			o.IntoTableRow(),
+		},
+	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
+}
