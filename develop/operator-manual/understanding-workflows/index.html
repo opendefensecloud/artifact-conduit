@@ -718,6 +718,8 @@
       
         
       
+        
+      
     
     
     
@@ -1197,6 +1199,34 @@
     
   
     TTL-Based Cleanup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cron-orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron-Scheduled Orders
   
 
     
@@ -2036,10 +2066,19 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <h3 id="workflowtemplate">WorkflowTemplate<a class="headerlink" href="#workflowtemplate" title="Permanent link">¶</a></h3>
 <p>The following template is an example for a workflow that uses the <code>oci</code> source and destination. It can be used as a starting point to create your own workflows.</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">argoproj.io/v1alpha1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WorkflowTemplate</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterWorkflowTemplate</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline-flexible</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-image-pipeline</span>
 <span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">retryPolicy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OnError</span>
+<span class="w">    </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="w">  </span><span class="nt">serviceAccountName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc-workflow</span>
+<span class="w">  </span><span class="nt">securityContext</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">fsGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">65532</span>
+<span class="w">    </span><span class="nt">runAsUser</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">65532</span>
+
 <span class="w">  </span><span class="c1"># Define the PVC template for inter-step data sharing</span>
 <span class="w">  </span><span class="nt">volumeClaimTemplates</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">metadata</span><span class="p">:</span>
@@ -2050,6 +2089,17 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">          </span><span class="nt">requests</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">storage</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10Gi</span>
 
+<span class="w">  </span><span class="c1"># Mount certificate bundle</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-certificates</span>
+<span class="w">      </span><span class="nt">configMap</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"root-bundle"</span>
+<span class="w">        </span><span class="nt">defaultMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0644</span>
+<span class="w">        </span><span class="nt">optional</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">items</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust-bundle.pem</span>
+<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust-bundle.pem</span>
+
 <span class="w">  </span><span class="c1"># --- Input Parameters ---</span>
 <span class="w">  </span><span class="nt">arguments</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">parameters</span><span class="p">:</span>
@@ -2059,10 +2109,11 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstType</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstRemoteURL</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstSecret</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specImage</span><span class="w"> </span><span class="c1"># The source image path (e.g., library/alpine:3.18)</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span><span class="w"> </span><span class="c1"># The target image path (e.g., myteam/alpine:3.18-dev)</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span>
-<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">HIGH,CRITICAL</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specRepository</span><span class="w"> </span><span class="c1"># The source image repository (e.g. library/alpine)</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specTag</span><span class="w"> </span><span class="c1"># The source image tag or semver pattern, e.g. 3.18 or &gt;3.18.0 &lt; 3.19.0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span><span class="w"> </span><span class="c1"># Defines how destination repository:tag is overriden, supports go templates</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span><span class="w"> </span><span class="c1"># Additional parameter coming from ArtifactType</span>
 
 <span class="w">  </span><span class="nt">entrypoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-pipeline</span>
 
@@ -2070,133 +2121,370 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">    </span><span class="c1"># --- Main Pipeline Entrypoint ---</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci-pipeline</span>
 <span class="w">      </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">authenticate-registries</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">authenticate-registries</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-src-availability</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-src-availability</span>
+
+<span class="w">        </span><span class="c1"># If source is unavailable we assume it is a constraint, so let's find the latest semver</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">retrieve-tags</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">retrieve-tags</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-src-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter-tags</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter-tags</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-src-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compute-images</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compute-images</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-dst-availability</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-dst-availability</span>
+
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
-<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
 <span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-dst-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
 
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
-<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
 <span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-dst-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
 
 <span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
-<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">oci"</span>
 <span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-dst-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
 
-<span class="w">    </span><span class="c1"># --- 1. Pull Image (Skopeo) ---</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attest-scan</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attest-scan-results</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-dst-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
+<span class="w">            </span><span class="nt">arguments</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst</span>
+<span class="w">                </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{steps.compute-images.outputs.parameters.dst}}"</span>
+
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sign-image</span>
+<span class="w">            </span><span class="nt">template</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sign-image</span>
+<span class="w">            </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"{{</span><span class="nv"> </span><span class="s">steps.check-dst-availability.outputs.result</span><span class="nv"> </span><span class="s">}}</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'unavailable'"</span>
+<span class="w">            </span><span class="nt">arguments</span><span class="p">:</span>
+<span class="w">              </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst</span>
+<span class="w">                </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{steps.compute-images.outputs.parameters.dst}}"</span>
+
+<span class="w">    </span><span class="c1"># --- Authenticate (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">authenticate-registries</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
-<span class="w">        </span><span class="c1"># Mount the secret volume to a temporary directory</span>
-<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
+
+<span class="w">        </span><span class="c1"># Mount the volumes</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;volumeMounts</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-secret-vol</span>
 <span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/src-creds</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/secrets/src</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-secret-vol</span>
+<span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/secrets/dst</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
 <span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
-<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<span class="w">          </span><span class="no">echo "Pulling image from {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"</span>
-<span class="w">          </span><span class="no">mkdir -p /data/image-storage</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/ssl/certs/</span>
+<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-certificates</span>
+<span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
-<span class="w">          </span><span class="no"># Conditionally set credentials flag for Skopeo</span>
-<span class="w">          </span><span class="no">CREDS_FLAG=""</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;env</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DOCKER_CONFIG</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/.docker</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_FILE</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/.docker/config.json</span>
+<span class="w">          </span><span class="c1"># Argo Workflows is considering disallowing accessing parameters in the body of the script,</span>
+<span class="w">          </span><span class="c1"># so let's explicitly pass them in as variables:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SRC_TYPE</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcType}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SRC_REMOTE_URL</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcRemoteURL}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SRC_SECRET</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.srcSecret}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DST_TYPE</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.dstType}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DST_REMOTE_URL</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.dstRemoteURL}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DST_SECRET</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.dstSecret}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_REPOSITORY</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specRepository}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_TAG</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specTag}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_OVERRIDE</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specOverride}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SCAN_SEVERITY</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.scanSeverity}}"</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
+
+<span class="w">          </span><span class="no"># Conditionally login to source registry</span>
 <span class="w">          </span><span class="no">if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then</span>
-<span class="w">              </span><span class="no"># Skopeo uses the docker config JSON file (mounted from the secret)</span>
-<span class="w">              </span><span class="no">CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"</span>
+<span class="w">              </span><span class="no">echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."</span>
+<span class="w">              </span><span class="no">cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
 <span class="w">          </span><span class="no">fi</span>
 
-<span class="w">          </span><span class="no"># Construct the full source image path</span>
-<span class="w">          </span><span class="no">SOURCE_IMAGE="docker://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specImage}}"</span>
+<span class="w">          </span><span class="no"># Conditionally login to destination registry</span>
+<span class="w">          </span><span class="no">if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then</span>
+<span class="w">              </span><span class="no">echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."</span>
+<span class="w">              </span><span class="no">cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
+<span class="w">          </span><span class="no">fi</span>
 
-<span class="w">          </span><span class="no"># Skopeo copy command</span>
-<span class="w">          </span><span class="no">skopeo copy --multi-arch all $CREDS_FLAG $SOURCE_IMAGE "oci:/data/image-storage/scanned-image"</span>
+<span class="w">    </span><span class="c1"># --- Check Source Availability (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-src-availability</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
 
-<span class="w">    </span><span class="c1"># --- 2. Scan Image (Trivy) ---</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">skopeo inspect "docker://$SRC_REMOTE_URL/$SPEC_REPOSITORY:$SPEC_TAG" &gt;/dev/null 2&gt;&amp;1</span>
 
+<span class="w">          </span><span class="no">EXIT_CODE=$?</span>
+
+<span class="w">          </span><span class="no">if [ "$EXIT_CODE" -eq 0 ]; then</span>
+<span class="w">              </span><span class="no">echo "$SPEC_TAG" &gt; /data/tag.txt</span>
+<span class="w">              </span><span class="no">echo "available"</span>
+<span class="w">          </span><span class="no">else</span>
+<span class="w">              </span><span class="no"># Image does not exist</span>
+<span class="w">              </span><span class="no">echo "unavailable"</span>
+<span class="w">          </span><span class="no">fi</span>
+<span class="w">          </span><span class="no">exit 0</span>
+
+<span class="w">    </span><span class="c1"># --- Retrieve Tags (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">retrieve-tags</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
+
+<span class="w">          </span><span class="no">skopeo list-tags "docker://$SRC_REMOTE_URL/$SPEC_REPOSITORY" &gt; /data/list-tags.json</span>
+
+<span class="w">    </span><span class="c1"># --- Filter Tags (semver) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">filter-tags</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/trevex/semver:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">bash</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
+
+<span class="w">          </span><span class="no">cat /data/list-tags.json | jq -r '.Tags[]' | semver filter "$SPEC_TAG" -i | semver latest &gt; /data/tag.txt</span>
+
+<span class="w">    </span><span class="c1"># --- Compute Images</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compute-images</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 <span class="w">      </span><span class="nt">outputs</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">artifacts</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-result</span><span class="w"> </span><span class="c1"># name of output parameter</span>
-<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/scan-results.json</span>
+<span class="w">        </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src</span>
+<span class="w">          </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/src.txt</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst</span>
+<span class="w">          </span><span class="nt">valueFrom</span><span class="p">:</span>
+<span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/dst.txt</span>
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hairyhenderson/gomplate:alpine</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
 
+<span class="w">          </span><span class="no"># escaping go templates sucks, so let's just not...</span>
+<span class="w">          </span><span class="no">cat &gt; /tmp/images.tpl &lt;&lt;EOF</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$srcRemoteURL := "$SRC_REMOTE_URL" &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$dstRemoteURL := "$DST_REMOTE_URL" &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$repository := "$SPEC_REPOSITORY" &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$override := "$SPEC_OVERRIDE" &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$tag := "$(cat /data/tag.txt)" &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$values := dict "tag" \$tag "repository" \$repository &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt; \$srcRemoteURL &gt;&gt;/&lt;&lt; \$repository &gt;&gt;:&lt;&lt; \$tag &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- if \$override &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- \$repoTag := tmpl.Inline \$override \$values &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt; \$dstRemoteURL &gt;&gt;/&lt;&lt; \$repoTag &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- else &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt; \$dstRemoteURL &gt;&gt;/&lt;&lt; \$repository &gt;&gt;:&lt;&lt; \$tag &gt;&gt;</span>
+<span class="w">          </span><span class="no">&lt;&lt;- end &gt;&gt;</span>
+<span class="w">          </span><span class="no">EOF</span>
+
+<span class="w">          </span><span class="no">sed -i 's/&lt;&lt;/{{/g' /tmp/images.tpl</span>
+<span class="w">          </span><span class="no">sed -i 's/&gt;&gt;/}}/g' /tmp/images.tpl</span>
+<span class="w">          </span><span class="no">cat /tmp/images.tpl</span>
+
+<span class="w">          </span><span class="no">cat /tmp/images.tpl | gomplate --out - &gt; /data/gomplate.txt</span>
+
+<span class="w">          </span><span class="no">sed -i '/^[[:space:]]*$/d' /data/gomplate.txt</span>
+<span class="w">          </span><span class="no">cat /data/gomplate.txt</span>
+
+<span class="w">          </span><span class="no">head -1 /data/gomplate.txt &gt; /data/src.txt</span>
+<span class="w">          </span><span class="no">cp /data/src.txt /tmp/src.txt</span>
+<span class="w">          </span><span class="no">head -2 /data/gomplate.txt | tail -1 &gt; /data/dst.txt</span>
+<span class="w">          </span><span class="no">cp /data/dst.txt /tmp/dst.txt</span>
+
+<span class="w">    </span><span class="c1"># --- Check Destination Availability (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">check-dst-availability</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
+
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">skopeo inspect "docker://$(cat /data/dst.txt)" &gt;/dev/null 2&gt;&amp;1</span>
+
+<span class="w">          </span><span class="no">EXIT_CODE=$?</span>
+
+<span class="w">          </span><span class="no">if [ "$EXIT_CODE" -eq 0 ]; then</span>
+<span class="w">              </span><span class="no">echo "available"</span>
+<span class="w">          </span><span class="no">else</span>
+<span class="w">              </span><span class="no"># Image does not exist</span>
+<span class="w">              </span><span class="no">echo "unavailable"</span>
+<span class="w">          </span><span class="no">fi</span>
+<span class="w">          </span><span class="no">exit 0</span>
+
+<span class="w">    </span><span class="c1"># --- Pull Image (Skopeo) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pull-image</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
+
+<span class="w">      </span><span class="nt">script</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+
+<span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
+
+<span class="w">          </span><span class="no">echo "Pulling image from $(cat /data/src.txt)"</span>
+<span class="w">          </span><span class="no">mkdir -p /data/image-storage</span>
+
+<span class="w">          </span><span class="no">skopeo copy --preserve-digests --multi-arch all "docker://$(cat /data/src.txt)" "oci:/data/image-storage/scanned-image"</span>
+
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aquasec/trivy:latest</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
-<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
-<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 
 <span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<span class="w">          </span><span class="no">echo "Scanning image for severities: {{workflow.parameters.scanSeverity}}"</span>
+<span class="w">          </span><span class="no">echo "Scanning image for severities: $SCAN_SEVERITY"</span>
 
 <span class="w">          </span><span class="no"># Trivy scan in a directory mode</span>
 <span class="w">          </span><span class="no">trivy image \</span>
+<span class="w">            </span><span class="no">--cache-dir /data/.trivy/cache \</span>
 <span class="w">            </span><span class="no">--exit-code 1 \</span>
-<span class="w">            </span><span class="no">--severity "{{workflow.parameters.scanSeverity}}" \</span>
+<span class="w">            </span><span class="no">--severity "$SCAN_SEVERITY" \</span>
 <span class="w">            </span><span class="no">--format json \</span>
 <span class="w">            </span><span class="no">--output /data/scan-results.json \</span>
 <span class="w">            </span><span class="no">--input /data/image-storage/scanned-image</span>
 
 <span class="w">          </span><span class="no">if [ $? -eq 0 ]; then</span>
-<span class="w">              </span><span class="no">echo "✅ Scan successful and no vulnerabilities found above severity: {{workflow.parameters.scanSeverity}}"</span>
+<span class="w">              </span><span class="no">echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"</span>
 <span class="w">          </span><span class="no">else</span>
 <span class="w">              </span><span class="no">echo "❌ Scan failed!"</span>
 <span class="w">              </span><span class="no">exit 1</span>
 <span class="w">          </span><span class="no">fi</span>
-<span class="w">        </span><span class="nt">env</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PATH</span>
-<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
 
-<span class="w">    </span><span class="c1"># --- 3. Push Image (Skopeo) ---</span>
+<span class="w">    </span><span class="c1"># --- Push Image (Skopeo) ---</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">push-image</span>
+<span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 
 <span class="w">        </span><span class="c1"># Mount the secret volume to a temporary directory</span>
-<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-secret-vol</span>
-<span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/dst-creds</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">work-volume</span>
-<span class="w">            </span><span class="nt">mountPath</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 
 <span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
-<span class="w">          </span><span class="no">echo "Pushing image to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"</span>
+<span class="w">          </span><span class="no">set -euo pipefail</span>
 
-<span class="w">          </span><span class="no"># Conditionally set credentials flag for Skopeo</span>
-<span class="w">          </span><span class="no">CREDS_FLAG=""</span>
-<span class="w">          </span><span class="no">if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then</span>
-<span class="w">              </span><span class="no">CREDS_FLAG="--dest-authfile /tmp/dst-creds/.dockerconfigjson"</span>
-<span class="w">          </span><span class="no">fi</span>
+<span class="w">          </span><span class="no">echo "Pushing image to $(cat /data/dst.txt)"</span>
+<span class="w">          </span><span class="no">skopeo copy --dest-precompute-digests --preserve-digests "oci:/data/image-storage/scanned-image" "docker://$(cat /data/dst.txt)"</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
 
-<span class="w">          </span><span class="no"># Construct the full destination image path</span>
-<span class="w">          </span><span class="no">DEST_IMAGE="docker://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"</span>
+<span class="w">    </span><span class="c1"># --- Attest Scan Results (Cosign) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attest-scan-results</span>
+<span class="w">      </span><span class="nt">inputs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst</span>
+<span class="w">      </span><span class="nt">container</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cgr.dev/chainguard/cosign:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cosign</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">attest</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">[</span>
+<span class="w">            </span><span class="s">"--allow-http-registry=true"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"--key"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"k8s://{{workflow.namespace}}/cosign-key"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"--predicate"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"/data/scan-results.json"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"--type"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"vuln"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"{{inputs.parameters.dst}}"</span><span class="p p-Indicator">,</span>
+<span class="w">          </span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 
-<span class="w">          </span><span class="no"># Skopeo copy command</span>
-<span class="w">          </span><span class="no">skopeo copy --dest-tls-verify=false $CREDS_FLAG "oci:/data/image-storage/scanned-image" $DEST_IMAGE</span>
+<span class="w">    </span><span class="c1"># --- Sign the image (Cosign) ---</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sign-image</span>
+<span class="w">      </span><span class="nt">inputs</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">parameters</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst</span>
+<span class="w">      </span><span class="nt">container</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cgr.dev/chainguard/cosign:latest</span>
+<span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">cosign</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">sign</span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">[</span>
+<span class="w">            </span><span class="s">"--yes"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"--allow-http-registry=true"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"--key"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"k8s://{{workflow.namespace}}/cosign-key"</span><span class="p p-Indicator">,</span>
+<span class="w">            </span><span class="s">"{{inputs.parameters.dst}}"</span><span class="p p-Indicator">,</span>
+<span class="w">          </span><span class="p p-Indicator">]</span>
+<span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
+<span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 </code></pre></div>
 <h3 id="secrets">Secrets<a class="headerlink" href="#secrets" title="Permanent link">¶</a></h3>
 <p>These are the example secrets for pulling and pushing.</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># Example Source Secret (src-reg-secret)</span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
-<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
-<span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">src-reg-secret</span>
-<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/dockerconfigjson</span>
-<span class="nt">data</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">.dockerconfigjson</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;BASE64_ENCODED_AUTH_DATA_FOR_DOCKER.IO&gt;</span>
-<span class="nn">---</span>
-<span class="c1"># Example Destination Secret (dst-reg-secret)</span>
-<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dst-reg-secret</span>
-<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes.io/dockerconfigjson</span>
 <span class="nt">data</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">.dockerconfigjson</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;BASE64_ENCODED_AUTH_DATA_FOR_GHCR.IO&gt;</span>
+<span class="w">  </span><span class="nt">username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YWRtaW4=</span>
+<span class="w">  </span><span class="nt">password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YWRtaW4=</span>
+<span class="nn">---</span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
+<span class="nt">data</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">AWS_ACCESS_KEY_ID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YWRtaW4=</span>
+<span class="w">  </span><span class="nt">AWS_SECRET_ACCESS_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">YWRtaW5hZG1pbg==</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">s3-secret</span>
 </code></pre></div>
 <h3 id="workflow-example">Workflow Example<a class="headerlink" href="#workflow-example" title="Permanent link">¶</a></h3>
 <p>There are many example below <a href="https://github.com/opendefensecloud/artifact-conduit/tree/main/examples">examples</a> for different usecases.

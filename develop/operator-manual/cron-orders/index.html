@@ -5,13 +5,13 @@
       
       
       
-        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/ttl-based-cleanup/">
+        <link rel="canonical" href="https://arc.opendefense.cloud/develop/operator-manual/cron-orders/">
       
       
-        <link rel="prev" href="../debugging/">
+        <link rel="prev" href="../ttl-based-cleanup/">
       
       
-        <link rel="next" href="../cron-orders/">
+        <link rel="next" href="../verifying-artifacts/">
       
       
         
@@ -22,7 +22,7 @@
     
     
       
-        <title>TTL-Based Cleanup - Artifact Conduit</title>
+        <title>Cron-Scheduled Orders - Artifact Conduit</title>
       
     
     
@@ -86,7 +86,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#ttl-based-cleanup" class="md-skip">
+        <a href="#cron-scheduled-orders" class="md-skip">
           Skip to content
         </a>
       
@@ -137,7 +137,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              TTL-Based Cleanup
+              Cron-Scheduled Orders
             
           </span>
         </div>
@@ -1058,6 +1058,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../ttl-based-cleanup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TTL-Based Cleanup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1077,7 +1105,7 @@
   <span class="md-ellipsis">
     
   
-    TTL-Based Cleanup
+    Cron-Scheduled Orders
   
 
     
@@ -1095,7 +1123,7 @@
   <span class="md-ellipsis">
     
   
-    TTL-Based Cleanup
+    Cron-Scheduled Orders
   
 
     
@@ -1121,10 +1149,193 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#cleanup-behavior" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cleanup Behavior
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-default-schedule-for-all-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Default Schedule for All Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-per-artifact-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Per-Artifact Schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cron-schedule-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron Schedule Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cron Schedule Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-cron-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard Cron Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predefined-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predefined Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duration-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duration Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timezone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timezone
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#starting-deadline-seconds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Deadline Seconds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-schedules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Schedules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-sensitive-scanning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time-Sensitive Scanning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
       
     </span>
   </a>
@@ -1135,34 +1346,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cron-orders/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cron-Scheduled Orders
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -1716,10 +1899,193 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#cleanup-behavior" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Cleanup Behavior
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-default-schedule-for-all-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Default Schedule for All Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-per-artifact-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Per-Artifact Schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cron-schedule-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron Schedule Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cron Schedule Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-cron-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard Cron Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predefined-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predefined Expressions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duration-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duration Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Options
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timezone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timezone
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#starting-deadline-seconds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting Deadline Seconds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#conditional-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conditional Execution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-schedules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Schedules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-sensitive-scanning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time-Sensitive Scanning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices
       
     </span>
   </a>
@@ -1743,7 +2109,7 @@
 
 
   
-    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/ttl-based-cleanup.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/edit/main/docs/operator-manual/cron-orders.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"></path></svg>
     </a>
@@ -1752,39 +2118,200 @@
     
       
     
-    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/ttl-based-cleanup.md" title="View source of this page" class="md-content__button md-icon">
+    <a href="https://github.com/opendefensecloud/artifact-conduit/raw/main/docs/operator-manual/cron-orders.md" title="View source of this page" class="md-content__button md-icon">
       
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.2 8.2 0 0 1-1.23-2"></path></svg>
     </a>
   
 
 
-<h1 id="ttl-based-cleanup">TTL-Based Cleanup<a class="headerlink" href="#ttl-based-cleanup" title="Permanent link">¶</a></h1>
-<p>The <code>Order.spec.TTLSecondsAfterCompletion</code> field controls automatic cleanup of completed <code>ArtifactWorkflow</code> resources. Understanding this mechanism is important for status visibility.</p>
-<h2 id="cleanup-behavior">Cleanup Behavior<a class="headerlink" href="#cleanup-behavior" title="Permanent link">¶</a></h2>
-<table>
-<thead>
-<tr>
-<th>TTL Value</th>
-<th>Behavior</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Not set (nil)</td>
-<td>ArtifactWorkflows deleted immediately after reaching <code>Succeeded</code> phase</td>
-</tr>
-<tr>
-<td><code>0</code></td>
-<td>ArtifactWorkflows deleted immediately after reaching <code>Succeeded</code> phase</td>
-</tr>
-<tr>
-<td><code>&gt; 0</code></td>
-<td>ArtifactWorkflows retained for specified seconds after completion, then deleted</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Note:</strong> Only <code>Succeeded</code> workflows are subject to TTL cleanup. <code>Failed</code> and <code>Error</code> workflows are retained indefinitely for troubleshooting unless explicitly deleted.</p>
+<h1 id="cron-scheduled-orders">Cron-Scheduled Orders<a class="headerlink" href="#cron-scheduled-orders" title="Permanent link">¶</a></h1>
+<p>Artifact Conduit supports scheduling Orders to run automatically on a recurring schedule using cron expressions. This feature enables you to process artifacts on a regular basis without manual intervention.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¶</a></h2>
+<p>Instead of creating an Order once and running it immediately, you can define a cron schedule that automatically creates and executes ArtifactWorkflows at specified times. This is useful for:</p>
+<ul>
+<li><strong>Periodic scanning</strong>: Run security scans on artifacts at regular intervals</li>
+<li><strong>Scheduled backups</strong>: Process and store artifacts on a schedule</li>
+<li><strong>Recurring transformations</strong>: Apply transformations to artifacts at set times</li>
+<li><strong>Compliance workflows</strong>: Execute compliance-related artifact processing on a schedule</li>
+</ul>
+<h2 id="how-it-works">How it Works<a class="headerlink" href="#how-it-works" title="Permanent link">¶</a></h2>
+<p>When you define a cron schedule in an Order, Artifact Conduit:</p>
+<ol>
+<li>Creates a CronWorkflow that represents the schedule</li>
+<li>The CronWorkflow automatically creates Workflows at the scheduled times</li>
+<li>Each Workflow processes your artifacts according to the Order specification</li>
+<li>The status of each run is tracked in the Order (pay attention the <code>failed</code> and <code>succeeded</code> counts)</li>
+</ol>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">¶</a></h2>
+<p>Cron scheduling in Orders can be configured at two levels:</p>
+<h3 id="1-default-schedule-for-all-artifacts">1. Default Schedule for All Artifacts<a class="headerlink" href="#1-default-schedule-for-all-artifacts" title="Permanent link">¶</a></h3>
+<p>Define a schedule that applies to all artifacts in the Order using <code>spec.defaults.cron</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scheduled-scan</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srcRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker-registry</span>
+<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
+<span class="w">    </span><span class="nt">cron</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span><span class="w">  </span><span class="c1"># Run daily at 2 AM</span>
+<span class="w">      </span><span class="nt">timezone</span><span class="p">:</span><span class="w"> </span><span class="s">"UTC"</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">"my-app:latest"</span>
+</code></pre></div>
+<h3 id="2-per-artifact-schedule">2. Per-Artifact Schedule<a class="headerlink" href="#2-per-artifact-schedule" title="Permanent link">¶</a></h3>
+<p>Override the default schedule for specific artifacts using <code>spec.artifacts[].cron</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mixed-schedules</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srcRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker-registry</span>
+<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal-registry</span>
+<span class="w">    </span><span class="nt">cron</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span><span class="w">  </span><span class="c1"># Default: daily at 2 AM</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">"app-a:latest"</span>
+<span class="w">      </span><span class="c1"># Uses default schedule from spec.defaults.cron</span>
+
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">      </span><span class="nt">spec</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="s">"app-b:latest"</span>
+<span class="w">      </span><span class="nt">cron</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">3</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">0"</span><span class="w">  </span><span class="c1"># Override: weekly on Sunday at 3 AM</span>
+<span class="w">        </span><span class="nt">timezone</span><span class="p">:</span><span class="w"> </span><span class="s">"Europe/Berlin"</span>
+</code></pre></div>
+<h2 id="cron-schedule-format">Cron Schedule Format<a class="headerlink" href="#cron-schedule-format" title="Permanent link">¶</a></h2>
+<p>The cron schedule supports standard cron expressions with the following formats:</p>
+<h3 id="standard-cron-format">Standard Cron Format<a class="headerlink" href="#standard-cron-format" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code>minute hour day month weekday
+</code></pre></div>
+<p>Examples:
+- <code>"0 2 * * *"</code> - Daily at 2:00 AM
+- <code>"0 */4 * * *"</code> - Every 4 hours
+- <code>"0 9 * * 1-5"</code> - Weekdays at 9:00 AM
+- <code>"0 0 1 * *"</code> - First day of each month at midnight
+- <code>"0 12 * * 0"</code> - Every Sunday at noon</p>
+<h3 id="predefined-expressions">Predefined Expressions<a class="headerlink" href="#predefined-expressions" title="Permanent link">¶</a></h3>
+<ul>
+<li><code>"@yearly"</code> or <code>"@annually"</code> - January 1 at 00:00</li>
+<li><code>"@monthly"</code> - First day of month at 00:00</li>
+<li><code>"@weekly"</code> - Sunday at 00:00</li>
+<li><code>"@daily"</code> or <code>"@midnight"</code> - Daily at 00:00</li>
+<li><code>"@hourly"</code> - Every hour at :00</li>
+</ul>
+<h3 id="duration-format">Duration Format<a class="headerlink" href="#duration-format" title="Permanent link">¶</a></h3>
+<ul>
+<li><code>"@every 1h30m"</code> - Every 1 hour 30 minutes</li>
+<li><code>"@every 5m"</code> - Every 5 minutes</li>
+</ul>
+<h2 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">¶</a></h2>
+<h3 id="timezone">Timezone<a class="headerlink" href="#timezone" title="Permanent link">¶</a></h3>
+<p>Specify the timezone for schedule calculations:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">cron</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span>
+<span class="w">  </span><span class="nt">timezone</span><span class="p">:</span><span class="w"> </span><span class="s">"America/New_York"</span><span class="w">  </span><span class="c1"># Use America/New_York timezone</span>
+</code></pre></div>
+<p>Supported timezone formats follow IANA timezone identifiers (e.g., <code>UTC</code>, <code>Europe/Berlin</code>, <code>Asia/Tokyo</code>).</p>
+<p><strong>Default</strong>: System's local timezone if not specified.</p>
+<h3 id="starting-deadline-seconds">Starting Deadline Seconds<a class="headerlink" href="#starting-deadline-seconds" title="Permanent link">¶</a></h3>
+<p>Limit how long a scheduled run can be delayed if it misses its scheduled time:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">cron</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span>
+<span class="w">  </span><span class="nt">startingDeadlineSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3600</span><span class="w">  </span><span class="c1"># Allow up to 1 hour delay</span>
+</code></pre></div>
+<p>This is useful if your cluster experiences temporary unavailability. If a run is missed, it will only execute if the deadline hasn't passed.</p>
+<p><strong>Default</strong>: No deadline (run will execute whenever the cluster is available).</p>
+<h3 id="conditional-execution">Conditional Execution<a class="headerlink" href="#conditional-execution" title="Permanent link">¶</a></h3>
+<p>Execute the schedule only when a specific condition is met:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">cron</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*"</span>
+<span class="w">  </span><span class="nt">when</span><span class="p">:</span><span class="w"> </span><span class="s">"some.condition</span><span class="nv"> </span><span class="s">==</span><span class="nv"> </span><span class="s">'true'"</span><span class="w">  </span><span class="c1"># Pseudo-code</span>
+</code></pre></div>
+<h3 id="multiple-schedules">Multiple Schedules<a class="headerlink" href="#multiple-schedules" title="Permanent link">¶</a></h3>
+<p>Run the same artifacts on multiple schedules:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">multi-schedule-scan</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srcRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry</span>
+<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">storage</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sbom</span>
+<span class="w">      </span><span class="nt">cron</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">1"</span><span class="w">     </span><span class="c1"># Monday at 2 AM</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">4"</span><span class="w">     </span><span class="c1"># Thursday at 2 AM</span>
+<span class="w">        </span><span class="nt">timezone</span><span class="p">:</span><span class="w"> </span><span class="s">"UTC"</span>
+</code></pre></div>
+<h3 id="time-sensitive-scanning">Time-Sensitive Scanning<a class="headerlink" href="#time-sensitive-scanning" title="Permanent link">¶</a></h3>
+<p>Scan frequently during business hours, less often outside:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
+<span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">business-hours-scan</span>
+<span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+<span class="nt">spec</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">defaults</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">srcRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry</span>
+<span class="w">    </span><span class="nt">dstRef</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reports</span>
+<span class="w">  </span><span class="nt">artifacts</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compliance-check</span>
+<span class="w">      </span><span class="nt">cron</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">schedules</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"0</span><span class="nv"> </span><span class="s">*/2</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">*</span><span class="nv"> </span><span class="s">1-5"</span><span class="w">  </span><span class="c1"># Every 2 hours on weekdays</span>
+</code></pre></div>
+<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">¶</a></h2>
+<ol>
+<li>
+<p><strong>Use UTC Timezone</strong>: For consistency across teams, use UTC timezone unless you have a specific reason not to.</p>
+</li>
+<li>
+<p><strong>Avoid Peak Hours</strong>: Schedule resource-intensive operations outside peak business hours to avoid cluster congestion.</p>
+</li>
+<li>
+<p><strong>Set Appropriate Deadlines</strong>: Use <code>startingDeadlineSeconds</code> for important schedules to ensure they eventually run.</p>
+</li>
+<li>
+<p><strong>Monitor Long Runs</strong>: For Orders that might take a long time, be aware that the next scheduled run might start before the previous one completes.</p>
+</li>
+<li>
+<p><strong>Test Schedules</strong>: Before deploying to production, test your cron expressions to ensure they match your expectations.</p>
+</li>
+<li>
+<p><strong>Document Your Schedules</strong>: Use annotations to document why a particular schedule was chosen:
+   </p><div class="highlight"><pre><span></span><code><span class="nt">metadata</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">annotations</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">schedule-reason</span><span class="p">:</span><span class="w"> </span><span class="s">"Daily</span><span class="nv"> </span><span class="s">compliance</span><span class="nv"> </span><span class="s">check</span><span class="nv"> </span><span class="s">at</span><span class="nv"> </span><span class="s">2</span><span class="nv"> </span><span class="s">AM</span><span class="nv"> </span><span class="s">UTC"</span>
+</code></pre></div><p></p>
+</li>
+</ol>
 
 
 

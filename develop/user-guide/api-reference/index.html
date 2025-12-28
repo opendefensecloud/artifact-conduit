@@ -857,6 +857,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#cron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#endpoint" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -977,6 +988,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#workflowstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1006,6 +1028,8 @@
   
     
     
+      
+        
       
         
       
@@ -1371,6 +1395,34 @@
     
   
     TTL-Based Cleanup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operator-manual/cron-orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron-Scheduled Orders
   
 
     
@@ -2065,6 +2117,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#cron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#endpoint" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2179,6 +2242,17 @@
     <span class="md-ellipsis">
       
         WorkflowPhase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflowstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowStatus
       
     </span>
   </a>
@@ -2486,6 +2560,12 @@
 <td></td>
 <td></td>
 </tr>
+<tr>
+<td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
+<td>Cron specifies options which determine when the order should be scheduled.</td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h4 id="artifactworkflowstatus">ArtifactWorkflowStatus<a class="headerlink" href="#artifactworkflowstatus" title="Permanent link">¶</a></h4>
@@ -2521,6 +2601,24 @@
 <td></td>
 </tr>
 <tr>
+<td><code>lastScheduled</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>LastScheduled is the last time the workflow was scheduled via cron</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>succeeded</code> <em>integer</em></td>
+<td>Succeeded counts how many times child workflows succeeded</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>failed</code> <em>integer</em></td>
+<td>Failed counts how many times child workflows failed</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>lastReconcileAt</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>LastReconcileAt is the last time the Order was reconciled</td>
 <td></td>
@@ -2529,6 +2627,12 @@
 <tr>
 <td><code>lastForceAt</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>LastForceAt is the last time a force reconciliation was requested</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>activeWorkflowRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
+<td>ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br>It resets after a successful or failed run.</td>
 <td></td>
 <td></td>
 </tr>
@@ -2575,6 +2679,48 @@
 <tr>
 <td><code>status</code> <em><a href="#artifacttypestatus">ArtifactTypeStatus</a></em></td>
 <td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="cron">Cron<a class="headerlink" href="#cron" title="Permanent link">¶</a></h4>
+<p>Cron represents an order's cron schedule.</p>
+<p><em>Appears in:</em>
+- <a href="#artifactworkflowspec">ArtifactWorkflowSpec</a>
+- <a href="#orderartifact">OrderArtifact</a>
+- <a href="#orderdefaults">OrderDefaults</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timezone</code> <em>string</em></td>
+<td>Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>startingDeadlineSeconds</code> <em>integer</em></td>
+<td>StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br>original scheduled time if it is missed.</td>
+<td></td>
+<td>Minimum: 0 <br></td>
+</tr>
+<tr>
+<td><code>schedules</code> <em>string array</em></td>
+<td>Schedules is a list of schedules to run the Order in Cron format</td>
+<td></td>
+<td>MinItems: 1 <br>items:Pattern: ^(@(yearly|annually|monthly|weekly|daily|midnight|hourly)|@every\s+([0-9]+(ns|us|µs|ms|s|m|h))+|([0-9<em>,/?-]+\s+){4}[0-9</em>,/?-]+)$ <br></td>
+</tr>
+<tr>
+<td><code>when</code> <em>string</em></td>
+<td>When is an expression that determines if a run should be scheduled.</td>
 <td></td>
 <td></td>
 </tr>
@@ -2781,6 +2927,12 @@
 <td></td>
 <td></td>
 </tr>
+<tr>
+<td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
+<td>Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).</td>
+<td></td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h4 id="orderartifactworkflowstatus">OrderArtifactWorkflowStatus<a class="headerlink" href="#orderartifactworkflowstatus" title="Permanent link">¶</a></h4>
@@ -2797,12 +2949,6 @@
 </thead>
 <tbody>
 <tr>
-<td><code>artifactIndex</code> <em>integer</em></td>
-<td>ArtifactIndex references back the index the corresponding artifact has in the .Spec</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
 <td><code>phase</code> <em><a href="#workflowphase">WorkflowPhase</a></em></td>
 <td>Phase tracks which phase the corresponding Workflow is in</td>
 <td></td>
@@ -2817,6 +2963,30 @@
 <tr>
 <td><code>completionTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>CompletionTime is the time when the workflow finished</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>lastScheduled</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>LastScheduled is the last time the workflow was scheduled via cron</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>succeeded</code> <em>integer</em></td>
+<td>Succeeded counts how many times child workflows succeeded</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>failed</code> <em>integer</em></td>
+<td>Failed counts how many times child workflows failed</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>artifactIndex</code> <em>integer</em></td>
+<td>ArtifactIndex references back the index the corresponding artifact has in the .Spec</td>
 <td></td>
 <td></td>
 </tr>
@@ -2845,6 +3015,12 @@
 <tr>
 <td><code>dstRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>DstRef defines which Endpoint object is used as fallback destination by all artifacts.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
+<td>Cron specifies options which determine when the order should be scheduled.</td>
 <td></td>
 <td></td>
 </tr>
@@ -2929,7 +3105,8 @@
 <p>WorkflowPhase is an enum tracking in which phase a Workflow can be.</p>
 <p><em>Appears in:</em>
 - <a href="#artifactworkflowstatus">ArtifactWorkflowStatus</a>
-- <a href="#orderartifactworkflowstatus">OrderArtifactWorkflowStatus</a></p>
+- <a href="#orderartifactworkflowstatus">OrderArtifactWorkflowStatus</a>
+- <a href="#workflowstatus">WorkflowStatus</a></p>
 <table>
 <thead>
 <tr>
@@ -2960,6 +3137,66 @@
 </tr>
 <tr>
 <td><code>Error</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Active</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Stopped</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="workflowstatus">WorkflowStatus<a class="headerlink" href="#workflowstatus" title="Permanent link">¶</a></h4>
+<p><em>Appears in:</em>
+- <a href="#artifactworkflowstatus">ArtifactWorkflowStatus</a>
+- <a href="#orderartifactworkflowstatus">OrderArtifactWorkflowStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phase</code> <em><a href="#workflowphase">WorkflowPhase</a></em></td>
+<td>Phase tracks which phase the corresponding Workflow is in</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>message</code> <em>string</em></td>
+<td>A human readable message describing the current condition of the artifact workflow.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>completionTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>CompletionTime is the time when the workflow finished</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>lastScheduled</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>LastScheduled is the last time the workflow was scheduled via cron</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>succeeded</code> <em>integer</em></td>
+<td>Succeeded counts how many times child workflows succeeded</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>failed</code> <em>integer</em></td>
+<td>Failed counts how many times child workflows failed</td>
+<td></td>
 <td></td>
 </tr>
 </tbody>

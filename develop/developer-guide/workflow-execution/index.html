@@ -714,6 +714,8 @@
       
         
       
+        
+      
     
     
     
@@ -1060,6 +1062,34 @@
     
   
     TTL-Based Cleanup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operator-manual/cron-orders/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cron-Scheduled Orders
   
 
     
@@ -2165,7 +2195,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 </tbody>
 </table>
 <p>This allows workflow templates to use conditional logic:</p>
-<div class="highlight"><pre><span></span><code><span class="c1"># From workflow-template-oci.yaml</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># See examples/oci/cluster-workflow-template.yaml for a more detailed example</span>
 <span class="l l-Scalar l-Scalar-Plain">CREDS_FLAG=""</span>
 <span class="l l-Scalar l-Scalar-Plain">if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then</span>
 <span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">CREDS_FLAG="--src-authfile /tmp/src-creds/.dockerconfigjson"</span>
