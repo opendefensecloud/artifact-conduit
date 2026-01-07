@@ -11,6 +11,6 @@ spec:
       - oci
   parameters:
     - name: scanSeverity
-      value: HIGH,CRITICAL
+      value: CRITICAL # NOTE only CRITICAL as the helm hello-world example contains HIGH vulnerabilities
   workflowTemplateRef: # argo.Workflow
     name: helm-chart-pipeline

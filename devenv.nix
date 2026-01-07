@@ -9,6 +9,7 @@
 {
   # https://devenv.sh/packages/
   packages = [
+    # required by make target
     pkgs.gnumake
     pkgs.jq
     pkgs.shellcheck
@@ -16,7 +17,9 @@
     pkgs.kind
     pkgs.kubectl
     pkgs.kubernetes-helm
+    # for local testing of workflows etc.
     pkgs.cosign
+    pkgs.trivy
   ];
 
   # https://devenv.sh/languages/
