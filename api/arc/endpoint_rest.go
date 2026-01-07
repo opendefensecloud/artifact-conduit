@@ -17,6 +17,7 @@ import (
 var _ resource.Object = &Endpoint{}
 var _ rest.Validater = &Endpoint{}
 var _ rest.ValidateUpdater = &Endpoint{}
+var _ rest.TableConverter = &Endpoint{}
 
 func (o *Endpoint) GetObjectMeta() *metav1.ObjectMeta {
 	return &o.ObjectMeta
@@ -77,6 +78,79 @@ func (o *Endpoint) ConvertToTable(ctx context.Context, tableOptions runtime.Obje
 			{Name: "Remote URL", Type: "string", Description: "Remote location for the Endpoint"},
 			{Name: "Usage", Type: "string", Description: "Usage of the Endpoint"},
 			{Name: "Secret", Type: "string", Description: "Name of the Secret of the Endpoint"},
+		},
+		Rows: []metav1.TableRow{
+			o.IntoTableRow(),
+		},
+	}
+	table.ResourceVersion = o.GetResourceVersion()
+	return table, nil
+}
+
+var _ resource.Object = &ClusterEndpoint{}
+var _ rest.Validater = &ClusterEndpoint{}
+var _ rest.ValidateUpdater = &ClusterEndpoint{}
+var _ rest.TableConverter = &ClusterEndpoint{}
+
+func (o *ClusterEndpoint) GetObjectMeta() *metav1.ObjectMeta {
+	return &o.ObjectMeta
+}
+
+func (o *ClusterEndpoint) NamespaceScoped() bool {
+	return false
+}
+
+func (o *ClusterEndpoint) New() runtime.Object {
+	return &ClusterEndpoint{}
+}
+
+func (o *ClusterEndpoint) NewList() runtime.Object {
+	return &ClusterEndpointList{}
+}
+
+func (o *ClusterEndpoint) GetGroupResource() schema.GroupResource {
+	return SchemeGroupVersion.WithResource("clusterendpoints").GroupResource()
+}
+
+func (o *ClusterEndpoint) Validate(ctx context.Context) field.ErrorList {
+	return validateClusterEndpoint(o)
+}
+
+func (o *ClusterEndpoint) ValidateUpdate(ctx context.Context, old runtime.Object) field.ErrorList {
+	return validateClusterEndpoint(o)
+}
+
+func validateClusterEndpoint(o *ClusterEndpoint) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if o.Spec.RemoteURL == "" {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec", "remoteURL"), "remoteURL is required"))
+	}
+
+	return allErrs
+}
+
+func (o *ClusterEndpoint) IntoTableRow() metav1.TableRow {
+	return metav1.TableRow{
+		Cells: []any{
+			o.Name,
+			o.CreationTimestamp,
+			o.Spec.RemoteURL,
+			o.Spec.Usage,
+			o.Spec.SecretRef.Name,
+		},
+		Object: runtime.RawExtension{Object: o},
+	}
+}
+
+func (o *ClusterEndpoint) ConvertToTable(ctx context.Context, tableOptions runtime.Object) (*metav1.Table, error) {
+	table := &metav1.Table{
+		ColumnDefinitions: []metav1.TableColumnDefinition{
+			{Name: "Name", Type: "string", Description: "Name of the ArtifactType"},
+			{Name: "Created At", Type: "date", Description: "CreationTimestamp is a timestamp representing the server time when this object was created"},
+			{Name: "Remote URL", Type: "string", Description: "Remote location for the ClusterEndpoint"},
+			{Name: "Usage", Type: "string", Description: "Usage of the ClusterEndpoint"},
+			{Name: "Secret", Type: "string", Description: "Name of the Secret of the ClusterEndpoint"},
 		},
 		Rows: []metav1.TableRow{
 			o.IntoTableRow(),

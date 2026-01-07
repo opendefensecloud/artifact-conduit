@@ -25,6 +25,10 @@ type ArtifactWorkflowNamespaceListerExpansion interface{}
 // ClusterArtifactTypeLister.
 type ClusterArtifactTypeListerExpansion interface{}
 
+// ClusterEndpointListerExpansion allows custom methods to be added to
+// ClusterEndpointLister.
+type ClusterEndpointListerExpansion interface{}
+
 // EndpointListerExpansion allows custom methods to be added to
 // EndpointLister.
 type EndpointListerExpansion interface{}

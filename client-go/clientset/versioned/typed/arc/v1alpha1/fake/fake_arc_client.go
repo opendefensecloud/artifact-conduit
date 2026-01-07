@@ -27,6 +27,10 @@ func (c *FakeArcV1alpha1) ClusterArtifactTypes() v1alpha1.ClusterArtifactTypeInt
 	return newFakeClusterArtifactTypes(c)
 }
 
+func (c *FakeArcV1alpha1) ClusterEndpoints() v1alpha1.ClusterEndpointInterface {
+	return newFakeClusterEndpoints(c)
+}
+
 func (c *FakeArcV1alpha1) Endpoints(namespace string) v1alpha1.EndpointInterface {
 	return newFakeEndpoints(c, namespace)
 }

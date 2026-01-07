@@ -22,6 +22,8 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 	scheme.AddTypeDefaultingFunc(&ArtifactWorkflowList{}, func(obj interface{}) { SetObjectDefaults_ArtifactWorkflowList(obj.(*ArtifactWorkflowList)) })
 	scheme.AddTypeDefaultingFunc(&ClusterArtifactType{}, func(obj interface{}) { SetObjectDefaults_ClusterArtifactType(obj.(*ClusterArtifactType)) })
 	scheme.AddTypeDefaultingFunc(&ClusterArtifactTypeList{}, func(obj interface{}) { SetObjectDefaults_ClusterArtifactTypeList(obj.(*ClusterArtifactTypeList)) })
+	scheme.AddTypeDefaultingFunc(&ClusterEndpoint{}, func(obj interface{}) { SetObjectDefaults_ClusterEndpoint(obj.(*ClusterEndpoint)) })
+	scheme.AddTypeDefaultingFunc(&ClusterEndpointList{}, func(obj interface{}) { SetObjectDefaults_ClusterEndpointList(obj.(*ClusterEndpointList)) })
 	scheme.AddTypeDefaultingFunc(&Endpoint{}, func(obj interface{}) { SetObjectDefaults_Endpoint(obj.(*Endpoint)) })
 	scheme.AddTypeDefaultingFunc(&EndpointList{}, func(obj interface{}) { SetObjectDefaults_EndpointList(obj.(*EndpointList)) })
 	scheme.AddTypeDefaultingFunc(&Order{}, func(obj interface{}) { SetObjectDefaults_Order(obj.(*Order)) })
@@ -59,6 +61,17 @@ func SetObjectDefaults_ClusterArtifactTypeList(in *ClusterArtifactTypeList) {
 	for i := range in.Items {
 		a := &in.Items[i]
 		SetObjectDefaults_ClusterArtifactType(a)
+	}
+}
+
+func SetObjectDefaults_ClusterEndpoint(in *ClusterEndpoint) {
+	SetDefaults_EndpointSpec(&in.Spec)
+}
+
+func SetObjectDefaults_ClusterEndpointList(in *ClusterEndpointList) {
+	for i := range in.Items {
+		a := &in.Items[i]
+		SetObjectDefaults_ClusterEndpoint(a)
 	}
 }
 

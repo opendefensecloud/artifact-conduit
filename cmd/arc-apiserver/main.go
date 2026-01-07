@@ -61,6 +61,7 @@ func main() {
 		With(apiserver.Resource(&arc.Order{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.ArtifactWorkflow{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.Endpoint{}, arcv1alpha1.SchemeGroupVersion)).
+		With(apiserver.Resource(&arc.ClusterEndpoint{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.ArtifactType{}, arcv1alpha1.SchemeGroupVersion)).
 		With(apiserver.Resource(&arc.ClusterArtifactType{}, arcv1alpha1.SchemeGroupVersion)).
 		Execute()

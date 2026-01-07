@@ -11,6 +11,8 @@ type ArtifactWorkflowExpansion interface{}
 
 type ClusterArtifactTypeExpansion interface{}
 
+type ClusterEndpointExpansion interface{}
+
 type EndpointExpansion interface{}
 
 type OrderExpansion interface{}

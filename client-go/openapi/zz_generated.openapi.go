@@ -32,6 +32,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		v1alpha1.ArtifactWorkflowStatus{}.OpenAPIModelName():             schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref),
 		v1alpha1.ClusterArtifactType{}.OpenAPIModelName():                schema_arc_api_arc_v1alpha1_ClusterArtifactType(ref),
 		v1alpha1.ClusterArtifactTypeList{}.OpenAPIModelName():            schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref),
+		v1alpha1.ClusterEndpoint{}.OpenAPIModelName():                    schema_arc_api_arc_v1alpha1_ClusterEndpoint(ref),
+		v1alpha1.ClusterEndpointList{}.OpenAPIModelName():                schema_arc_api_arc_v1alpha1_ClusterEndpointList(ref),
 		v1alpha1.Cron{}.OpenAPIModelName():                               schema_arc_api_arc_v1alpha1_Cron(ref),
 		v1alpha1.Endpoint{}.OpenAPIModelName():                           schema_arc_api_arc_v1alpha1_Endpoint(ref),
 		v1alpha1.EndpointList{}.OpenAPIModelName():                       schema_arc_api_arc_v1alpha1_EndpointList(ref),
@@ -913,6 +915,102 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref common.ReferenceCal
 		},
 		Dependencies: []string{
 			v1alpha1.ClusterArtifactType{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_ClusterEndpoint(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ClusterEndpoint is the Schema for the endpoints API",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1alpha1.EndpointSpec{}.OpenAPIModelName()),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref(v1alpha1.EndpointStatus{}.OpenAPIModelName()),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			v1alpha1.EndpointSpec{}.OpenAPIModelName(), v1alpha1.EndpointStatus{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_arc_api_arc_v1alpha1_ClusterEndpointList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "ClusterEndpointList is a list of Endpoint objects.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Default: map[string]interface{}{},
+							Ref:     ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(v1alpha1.ClusterEndpoint{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"items"},
+			},
+		},
+		Dependencies: []string{
+			v1alpha1.ClusterEndpoint{}.OpenAPIModelName(), "k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"},
 	}
 }
 

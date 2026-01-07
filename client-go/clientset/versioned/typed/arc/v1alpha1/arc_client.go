@@ -18,6 +18,7 @@ type ArcV1alpha1Interface interface {
 	ArtifactTypesGetter
 	ArtifactWorkflowsGetter
 	ClusterArtifactTypesGetter
+	ClusterEndpointsGetter
 	EndpointsGetter
 	OrdersGetter
 }
@@ -37,6 +38,10 @@ func (c *ArcV1alpha1Client) ArtifactWorkflows(namespace string) ArtifactWorkflow
 
 func (c *ArcV1alpha1Client) ClusterArtifactTypes() ClusterArtifactTypeInterface {
 	return newClusterArtifactTypes(c)
+}
+
+func (c *ArcV1alpha1Client) ClusterEndpoints() ClusterEndpointInterface {
+	return newClusterEndpoints(c)
 }
 
 func (c *ArcV1alpha1Client) Endpoints(namespace string) EndpointInterface {

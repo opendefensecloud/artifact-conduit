@@ -17,6 +17,8 @@ type Interface interface {
 	ArtifactWorkflows() ArtifactWorkflowInformer
 	// ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
 	ClusterArtifactTypes() ClusterArtifactTypeInformer
+	// ClusterEndpoints returns a ClusterEndpointInformer.
+	ClusterEndpoints() ClusterEndpointInformer
 	// Endpoints returns a EndpointInformer.
 	Endpoints() EndpointInformer
 	// Orders returns a OrderInformer.
@@ -47,6 +49,11 @@ func (v *version) ArtifactWorkflows() ArtifactWorkflowInformer {
 // ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
 func (v *version) ClusterArtifactTypes() ClusterArtifactTypeInformer {
 	return &clusterArtifactTypeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// ClusterEndpoints returns a ClusterEndpointInformer.
+func (v *version) ClusterEndpoints() ClusterEndpointInformer {
+	return &clusterEndpointInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // Endpoints returns a EndpointInformer.
