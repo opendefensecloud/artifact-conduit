@@ -40,6 +40,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&ArtifactWorkflowList{},
 		&Endpoint{},
 		&EndpointList{},
+		&ClusterEndpoint{},
+		&ClusterEndpointList{},
 		&ArtifactType{},
 		&ArtifactTypeList{},
 		&ClusterArtifactType{},
