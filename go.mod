@@ -3,12 +3,15 @@ module go.opendefense.cloud/arc
 go 1.25.2
 
 require (
+	github.com/adhocore/gronx v1.19.6
 	github.com/argoproj/argo-workflows/v3 v3.7.6
 	github.com/go-logr/logr v1.4.3
 	github.com/jastBytes/sprint v0.0.3
 	github.com/onsi/ginkgo/v2 v2.27.3
 	github.com/onsi/gomega v1.38.3
-	go.opendefense.cloud/kit v0.1.3
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/spf13/pflag v1.0.10
+	go.opendefense.cloud/kit v0.1.5
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
 	k8s.io/apiserver v0.34.3
@@ -84,7 +87,6 @@ require (
 	github.com/prometheus/procfs v0.19.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/cobra v1.10.2 // indirect
-	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.etcd.io/etcd/api/v3 v3.6.4 // indirect

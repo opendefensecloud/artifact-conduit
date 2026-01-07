@@ -5,6 +5,7 @@ package arc_test
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -593,6 +594,86 @@ var _ = Describe("Order Strategy", func() {
 					Expect(err.Field).To(ContainSubstring("spec.artifacts[1]"))
 				}
 			})
+		})
+
+		Context("when validating artifacts with cron schedules", func() {
+			It("should accept artifact with valid cron schedule", func() {
+				order := &arc.Order{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-order",
+						Namespace: "default",
+					},
+					Spec: arc.OrderSpec{
+						Defaults: arc.OrderDefaults{
+							SrcRef: corev1.LocalObjectReference{
+								Name: "default-src-endpoint",
+							},
+							Cron: &arc.Cron{
+								Schedules: []string{"@every 1h30m"},
+							},
+						},
+						Artifacts: []arc.OrderArtifact{
+							{
+								Type: "container-image",
+								DstRef: corev1.LocalObjectReference{
+									Name: "registry-endpoint",
+								},
+								Cron: &arc.Cron{
+									Schedules: []string{
+										"5 4 * * *",
+										"@daily",
+									},
+								},
+							},
+						},
+					},
+				}
+
+				errs := order.Validate(ctx)
+				Expect(errs).To(BeEmpty())
+			})
+
+			everyMinuteOrder := &arc.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order",
+					Namespace: "default",
+				},
+				Spec: arc.OrderSpec{
+					Defaults: arc.OrderDefaults{
+						SrcRef: corev1.LocalObjectReference{
+							Name: "default-src-endpoint",
+						},
+						Cron: &arc.Cron{
+							Schedules: []string{"@every 1m"},
+						},
+					},
+					Artifacts: []arc.OrderArtifact{
+						{
+							Type: "container-image",
+							DstRef: corev1.LocalObjectReference{
+								Name: "registry-endpoint",
+							},
+							Cron: &arc.Cron{
+								Schedules: []string{
+									"1/1 * * * *",
+								},
+							},
+						},
+					},
+				},
+			}
+
+			It("should reject artifact with invalid cron schedules", func() {
+				errs := everyMinuteOrder.Validate(ctx)
+				Expect(errs).To(HaveLen(2))
+			})
+
+			It("should accept previously rejected artifact after adapting parameters", func() {
+				arc.CronMinScheduleInterval = 1 * time.Second
+				errs := everyMinuteOrder.Validate(ctx)
+				Expect(errs).To(BeEmpty())
+			})
+
 		})
 	})
 })

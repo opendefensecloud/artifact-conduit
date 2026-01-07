@@ -6,6 +6,7 @@ package main
 import (
 	"os"
 
+	"github.com/spf13/pflag"
 	"go.opendefense.cloud/arc/api/arc"
 	"go.opendefense.cloud/arc/api/arc/install"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -49,6 +50,9 @@ func init() {
 func main() {
 	code := apiserver.NewBuilder(scheme).
 		WithComponentName(componentName).
+		WithFlags(func(flag *pflag.FlagSet) {
+			flag.DurationVar(&arc.CronMinScheduleInterval, "cron-min-schedule-interval", arc.DefaultCronMinScheduleInterval, "Minimal schedule interval allowed for cron expressions of workflows.")
+		}).
 		WithOpenAPIDefinitions(componentName, "v0.1.0", openapi.GetOpenAPIDefinitions).
 		WithExtraAdmissionInitializers(func(c *server.RecommendedConfig) (apiserver.SharedInformerFactory, []admission.PluginInitializer, error) {
 			client, err := clientset.NewForConfig(c.LoopbackClientConfig)
