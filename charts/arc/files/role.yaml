@@ -36,6 +36,7 @@ rules:
   resources:
   - artifacttypes
   - clusterartifacttypes
+  - clusterendpoints
   - endpoints
   verbs:
   - get

@@ -220,18 +220,14 @@ var _ = Describe("Helper Functions", func() {
 	Describe("dawToParameters", func() {
 		It("should generate parameters from desiredAW", func() {
 			daw := &desiredAW{
-				srcEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{
-						Type:      "oci",
-						RemoteURL: "https://src.example.com",
-						SecretRef: corev1.LocalObjectReference{Name: "src-secret"},
-					},
+				srcEndpointSpec: &arcv1alpha1.EndpointSpec{
+					Type:      "oci",
+					RemoteURL: "https://src.example.com",
+					SecretRef: corev1.LocalObjectReference{Name: "src-secret"},
 				},
-				dstEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{
-						Type:      "helm",
-						RemoteURL: "https://dst.example.com",
-					},
+				dstEndpointSpec: &arcv1alpha1.EndpointSpec{
+					Type:      "helm",
+					RemoteURL: "https://dst.example.com",
 				},
 				artifact: &arcv1alpha1.OrderArtifact{
 					Spec: runtime.RawExtension{},
@@ -257,12 +253,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should include parameters from artifact spec", func() {
 			daw := &desiredAW{
-				srcEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
-				dstEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
+				srcEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
+				dstEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
 				artifact: &arcv1alpha1.OrderArtifact{
 					Spec: runtime.RawExtension{
 						Raw: []byte(`{"imageName": "nginx", "tag": "latest"}`),
@@ -285,12 +277,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should allow type parameters to override artifact spec", func() {
 			daw := &desiredAW{
-				srcEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
-				dstEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
+				srcEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
+				dstEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
 				artifact: &arcv1alpha1.OrderArtifact{
 					Spec: runtime.RawExtension{
 						Raw: []byte(`{"imageName": "nginx"}`),
@@ -318,12 +306,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should return error for invalid JSON in artifact spec", func() {
 			daw := &desiredAW{
-				srcEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
-				dstEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
+				srcEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
+				dstEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
 				artifact: &arcv1alpha1.OrderArtifact{
 					Spec: runtime.RawExtension{
 						Raw: []byte(`{invalid json`),
@@ -338,12 +322,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should handle empty artifact spec", func() {
 			daw := &desiredAW{
-				srcEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
-				dstEndpoint: &arcv1alpha1.Endpoint{
-					Spec: arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
-				},
+				srcEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
+				dstEndpointSpec: &arcv1alpha1.EndpointSpec{Type: "oci", RemoteURL: "https://example.com"},
 				artifact: &arcv1alpha1.OrderArtifact{
 					Spec: runtime.RawExtension{Raw: nil},
 				},

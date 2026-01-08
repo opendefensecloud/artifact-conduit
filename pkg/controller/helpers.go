@@ -52,12 +52,12 @@ func workflowObjectMeta(aw *arcv1alpha1.ArtifactWorkflow) metav1.ObjectMeta {
 func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
 	// Add permanent parameters
 	params := map[string]string{}
-	params["srcType"] = daw.srcEndpoint.Spec.Type
-	params["srcRemoteURL"] = daw.srcEndpoint.Spec.RemoteURL
-	params["dstType"] = daw.dstEndpoint.Spec.Type
-	params["dstRemoteURL"] = daw.dstEndpoint.Spec.RemoteURL
-	params["srcSecret"] = fmt.Sprintf("%v", daw.srcEndpoint.Spec.SecretRef.Name != "")
-	params["dstSecret"] = fmt.Sprintf("%v", daw.dstEndpoint.Spec.SecretRef.Name != "")
+	params["srcType"] = daw.srcEndpointSpec.Type
+	params["srcRemoteURL"] = daw.srcEndpointSpec.RemoteURL
+	params["dstType"] = daw.dstEndpointSpec.Type
+	params["dstRemoteURL"] = daw.dstEndpointSpec.RemoteURL
+	params["srcSecret"] = fmt.Sprintf("%v", daw.srcEndpointSpec.SecretRef.Name != "")
+	params["dstSecret"] = fmt.Sprintf("%v", daw.dstEndpointSpec.SecretRef.Name != "")
 	params["cron"] = fmt.Sprintf("%v", daw.cron != nil)
 
 	// Add parameters coming from artifact spec

@@ -36,19 +36,20 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index       int
-	objectMeta  metav1.ObjectMeta
-	artifact    *arcv1alpha1.OrderArtifact
-	typeSpec    *arcv1alpha1.ArtifactTypeSpec
-	srcEndpoint *arcv1alpha1.Endpoint
-	dstEndpoint *arcv1alpha1.Endpoint
-	srcSecret   *corev1.Secret
-	dstSecret   *corev1.Secret
-	sha         string
-	cron        *arcv1alpha1.Cron
+	index           int
+	objectMeta      metav1.ObjectMeta
+	artifact        *arcv1alpha1.OrderArtifact
+	typeSpec        *arcv1alpha1.ArtifactTypeSpec
+	srcEndpointSpec *arcv1alpha1.EndpointSpec
+	dstEndpointSpec *arcv1alpha1.EndpointSpec
+	srcSecret       *corev1.Secret
+	dstSecret       *corev1.Secret
+	sha             string
+	cron            *arcv1alpha1.Cron
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
+//+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=clusterendpoints,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=clusterartifacttypes,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=artifactworkflows,verbs=get;list;watch;create;update;patch;delete
@@ -350,8 +351,8 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
 			WorkflowTemplateRef: daw.typeSpec.WorkflowTemplateRef,
 			Parameters:          params,
-			SrcSecretRef:        daw.srcEndpoint.Spec.SecretRef,
-			DstSecretRef:        daw.dstEndpoint.Spec.SecretRef,
+			SrcSecretRef:        daw.srcEndpointSpec.SecretRef,
+			DstSecretRef:        daw.dstEndpointSpec.SecretRef,
 			Cron:                daw.cron,
 		},
 	}
@@ -372,26 +373,27 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstRefName = order.Spec.Defaults.DstRef.Name
 	}
 
-	srcEndpoint := &arcv1alpha1.Endpoint{}
-	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
+	srcEPMeta, srcEPSpec, err := r.GetAnyEndpoint(ctx, order.Namespace, srcRefName)
+	if err != nil {
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for source")
 	}
-	dstEndpoint := &arcv1alpha1.Endpoint{}
-	if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
+
+	dstEPMeta, dstEPSpec, err := r.GetAnyEndpoint(ctx, order.Namespace, dstRefName)
+	if err != nil {
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch destination endpoint '%s': %v", dstRefName, err)
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 	}
 
 	// Validate that the endpoint usage is correct
-	if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
-		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+	if srcEPSpec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEPSpec.Usage != arcv1alpha1.EndpointUsageAll {
+		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEPMeta.Name, srcEPSpec.Usage)
+		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEPMeta.Name, srcEPSpec.Usage)
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
-	if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
-		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+	if dstEPSpec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEPSpec.Usage != arcv1alpha1.EndpointUsageAll {
+		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEPMeta.Name, dstEPSpec.Usage)
+		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEPMeta.Name, dstEPSpec.Usage)
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 
@@ -419,30 +421,30 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		artifactTypeGen = artifactType.Generation
 	}
 
-	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
-		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
+	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEPSpec.Type) {
+		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEPSpec.Type)
+		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEPSpec.Type, artifact.Type)
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
-	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
-		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
+	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEPSpec.Type) {
+		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEPSpec.Type)
+		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEPSpec.Type, artifact.Type)
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 
 	// Next, we need the secret contents
 	srcSecret := &corev1.Secret{}
-	if srcEndpoint.Spec.SecretRef.Name != "" {
-		if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err)
+	if srcEPSpec.SecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(order.Namespace, srcEPSpec.SecretRef.Name), srcSecret); err != nil {
+			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch source secret '%s': %v", srcEPSpec.SecretRef.Name, err)
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
 
 	dstSecret := &corev1.Secret{}
-	if dstEndpoint.Spec.SecretRef.Name != "" {
-		if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err)
+	if dstEPSpec.SecretRef.Name != "" {
+		if err := r.Get(ctx, namespacedName(order.Namespace, dstEPSpec.SecretRef.Name), dstSecret); err != nil {
+			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch destination secret '%s': %v", dstEPSpec.SecretRef.Name, err)
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}
@@ -458,8 +460,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	data := []any{
 		order.Namespace,
 		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
-		srcEndpoint.Name,
-		dstEndpoint.Name,
+		srcEPMeta.Name,
+		dstEPMeta.Name,
 		order.Status.LastForceAt,
 		cron,
 	}
@@ -473,17 +475,38 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// We gave all the information to further process this artifact workflow.
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
-		index:       i,
-		objectMeta:  awObjectMeta(order, sha),
-		artifact:    artifact,
-		typeSpec:    artifactTypeSpec,
-		srcEndpoint: srcEndpoint,
-		dstEndpoint: dstEndpoint,
-		srcSecret:   srcSecret,
-		dstSecret:   dstSecret,
-		sha:         sha,
-		cron:        cron,
+		index:           i,
+		objectMeta:      awObjectMeta(order, sha),
+		artifact:        artifact,
+		typeSpec:        artifactTypeSpec,
+		srcEndpointSpec: srcEPSpec,
+		dstEndpointSpec: dstEPSpec,
+		srcSecret:       srcSecret,
+		dstSecret:       dstSecret,
+		sha:             sha,
+		cron:            cron,
 	}, nil
+}
+
+func (r *OrderReconciler) GetAnyEndpoint(ctx context.Context, namespace, name string) (*metav1.ObjectMeta, *arcv1alpha1.EndpointSpec, error) {
+	nsEndpoint := &arcv1alpha1.Endpoint{}
+
+	err := r.Get(ctx, namespacedName(namespace, name), nsEndpoint)
+	if client.IgnoreNotFound(err) != nil {
+		return nil, nil, fmt.Errorf("failed to fetch namespaced endpoint '%s': %w", name, err)
+	}
+
+	if apierrors.IsNotFound(err) {
+		clusterEndpoint := &arcv1alpha1.ClusterEndpoint{}
+
+		if err := r.Get(ctx, namespacedName("", name), clusterEndpoint); err != nil {
+			return nil, nil, fmt.Errorf("failed to fetch cluster or namespaced endpoint '%s': %w", name, err)
+		}
+
+		return &clusterEndpoint.ObjectMeta, &clusterEndpoint.Spec, nil
+
+	}
+	return &nsEndpoint.ObjectMeta, &nsEndpoint.Spec, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

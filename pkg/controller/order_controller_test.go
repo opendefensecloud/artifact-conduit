@@ -987,5 +987,62 @@ var _ = Describe("OrderController", func() {
 				return string(awList.Items[0].UID)
 			}).ShouldNot(Equal(originalUID))
 		})
+
+		// It("should work with cluster endpoints", func() {
+		// 	createEndpoints("dst-1")
+		// 	secret := corev1.Secret{
+		// 		ObjectMeta: metav1.ObjectMeta{
+		// 			Name:      name,
+		// 			Namespace: ns.Name,
+		// 		},
+		// 		StringData: map[string]string{
+		// 			"testkey": name,
+		// 		},
+		// 	}
+		// 	Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
+		// 	endpoint := arcv1alpha1.Endpoint{
+		// 		ObjectMeta: metav1.ObjectMeta{
+		// 			Name:      name,
+		// 			Namespace: ns.Name,
+		// 		},
+		// 		Spec: arcv1alpha1.EndpointSpec{
+		// 			Type:      t,
+		// 			RemoteURL: name,
+		// 			SecretRef: corev1.LocalObjectReference{
+		// 				Name: name,
+		// 			},
+		// 			Usage: arcv1alpha1.EndpointUsageAll,
+		// 		},
+		// 	}
+		// 	Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+		// 	// Create test Order with multiple artifacts, no defaults
+		// 	order := &arcv1alpha1.Order{
+		// 		ObjectMeta: metav1.ObjectMeta{
+		// 			Name:      "test-order-no-defaults",
+		// 			Namespace: ns.Name,
+		// 		},
+		// 		Spec: arcv1alpha1.OrderSpec{
+		// 			Artifacts: []arcv1alpha1.OrderArtifact{
+		// 				{
+		// 					Type:   at.Name,
+		// 					SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+		// 					DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+		// 					Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+		// 				},
+		// 			},
+		// 		},
+		// 	}
+		// 	Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+		// 	// Verify artifact workflows were created
+		// 	awList := &arcv1alpha1.ArtifactWorkflowList{}
+		// 	Eventually(func() int {
+		// 		err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+		// 		if err != nil {
+		// 			return 0
+		// 		}
+		// 		return len(awList.Items)
+		// 	}).Should(Equal(1))
+		// })
 	})
 })
