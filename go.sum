@@ -10,8 +10,8 @@ github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMo
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
-github.com/argoproj/argo-workflows/v3 v3.7.6 h1:w38ykeCH2QH6/n77sx3BmhZyai2tB+rD2qCZfFPRHyQ=
-github.com/argoproj/argo-workflows/v3 v3.7.6/go.mod h1:HUXLqW1LfpRC75GpNxr/R8GKGUEFE+8Z1MqJc3h070I=
+github.com/argoproj/argo-workflows/v3 v3.7.7 h1:TPLNrQFrj+c59bM0w/eMcHxxBN+8zy5cgbLtbx7twR0=
+github.com/argoproj/argo-workflows/v3 v3.7.7/go.mod h1:hYxx/FzVdVjPBkEbqXo29SGQgL9SPDnZzoH5KPXAdwA=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
