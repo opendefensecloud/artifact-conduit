@@ -6,7 +6,7 @@ require (
 	github.com/argoproj/argo-workflows/v3 v3.7.6
 	github.com/go-logr/logr v1.4.3
 	github.com/jastBytes/sprint v0.0.3
-	github.com/onsi/ginkgo/v2 v2.27.3
+	github.com/onsi/ginkgo/v2 v2.27.4
 	github.com/onsi/gomega v1.38.3
 	go.opendefense.cloud/kit v0.1.3
 	k8s.io/api v0.34.3
