@@ -33,6 +33,8 @@ type OrderReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
+
+	AllowWorkflowOverride bool
 }
 
 type desiredAW struct {
@@ -175,27 +177,27 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	order.Status.Message = "" // Clear any previous error message
 
 	// List missing artifact workflows
-	createAWs := []string{}
+	var createAWs []string
 	for sha := range desiredAWs {
-		_, exists := order.Status.ArtifactWorkflows[sha]
-		if exists {
+		if _, exists := order.Status.ArtifactWorkflows[sha]; exists {
 			continue
 		}
+
 		createAWs = append(createAWs, sha)
 	}
 
 	// Find obsolete artifact workflows
-	deleteAWs := []string{}
+	var deleteAWs []string
 	for sha := range order.Status.ArtifactWorkflows {
-		_, exists := desiredAWs[sha]
-		if exists {
+		if _, exists := desiredAWs[sha]; exists {
 			continue
 		}
+
 		deleteAWs = append(deleteAWs, sha)
 	}
 
 	// Find finished artifact workflows to clean up
-	finishedAWs := []string{}
+	var finishedAWs []string
 	for sha := range order.Status.ArtifactWorkflows {
 		awStatus := order.Status.ArtifactWorkflows[sha]
 
@@ -412,11 +414,15 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
 		artifactTypeGen = clusterArtifactType.Generation
-		// NOTE: ClusterArtifactTypes can only referes ClusterWorkflowTemplates, so we enforce this here:
+		// NOTE: ClusterArtifactTypes can only reference ClusterWorkflowTemplates, so we enforce this here:
 		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
 	} else {
 		artifactTypeSpec = &artifactType.Spec
 		artifactTypeGen = artifactType.Generation
+	}
+
+	if overrideWorkflowName := r.GetWorkflowOverride(order); overrideWorkflowName != "" {
+		artifactTypeSpec.WorkflowTemplateRef.Name = overrideWorkflowName
 	}
 
 	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
@@ -457,6 +463,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	h := sha256.New()
 	data := []any{
 		order.Namespace,
+		artifactTypeSpec.WorkflowTemplateRef.Name,
+		artifactTypeSpec.WorkflowTemplateRef.ClusterScope,
 		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
 		srcEndpoint.Name,
 		dstEndpoint.Name,

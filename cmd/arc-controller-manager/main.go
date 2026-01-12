@@ -43,18 +43,15 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var secureMetrics bool
-	var metricsCertPath, metricsCertName, metricsCertKey string
-	var enableHTTP2 bool
-	var enableLeaderElection bool
-	var probeAddr string
-	var pprofAddr string
-	var prefixAllocationTimeout time.Duration
-	var volumeBindTimeout time.Duration
-	var virtualIPBindTimeout time.Duration
-	var networkInterfaceBindTimeout time.Duration
-	var tlsOpts []func(*tls.Config)
+	var (
+		metricsAddr, metricsCertPath, metricsCertName, metricsCertKey           string
+		secureMetrics, enableHTTP2, enableLeaderElection, allowWorkflowOverride bool
+		probeAddr, pprofAddr                                                    string
+		prefixAllocationTimeout, volumeBindTimeout, virtualIPBindTimeout        time.Duration
+		networkInterfaceBindTimeout                                             time.Duration
+		tlsOpts                                                                 []func(*tls.Config)
+	)
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.BoolVar(&secureMetrics, "metrics-secure", true,
@@ -70,6 +67,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.BoolVar(&allowWorkflowOverride, "allow-workflow-override", false, "Allow workflow overrides via annotations")
 	flag.DurationVar(&prefixAllocationTimeout, "prefix-allocation-timeout", 1*time.Second, "Time to wait until considering a pending allocation failed.")
 	flag.DurationVar(&volumeBindTimeout, "volume-bind-timeout", 10*time.Second, "Time to wait until considering a volume bind to be failed.")
 	flag.DurationVar(&virtualIPBindTimeout, "virtual-ip-bind-timeout", 10*time.Second, "Time to wait until considering a virtual ip bind to be failed.")
@@ -185,9 +183,10 @@ func main() {
 
 	// Register controllers
 	if err := (&controller.OrderReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("order-controller"),
+		Client:                mgr.GetClient(),
+		Scheme:                mgr.GetScheme(),
+		Recorder:              mgr.GetEventRecorderFor("order-controller"),
+		AllowWorkflowOverride: allowWorkflowOverride,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Order")
 		os.Exit(1)
