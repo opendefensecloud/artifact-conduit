@@ -12,7 +12,6 @@ import (
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -123,25 +122,4 @@ func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
 		return forceAtTime, nil
 	}
 	return time.Time{}, nil
-}
-
-// GetWorkflowOverride returns the value of AnnotationOverrideWorkflow or an empty string, if not present.
-// Might return an error, if an override was found but is not allowed (see allow-workflow-override flag)
-func (r *OrderReconciler) GetWorkflowOverride(o *arcv1alpha1.Order) (newWorkflowName string) {
-	annotations := o.GetAnnotations()
-	if annotations == nil {
-		return ""
-	}
-
-	name, found := annotations[AnnotationOverrideWorkflow]
-	if !found {
-		return ""
-	}
-
-	if !r.AllowWorkflowOverride {
-		r.Recorder.Eventf(o, corev1.EventTypeWarning, "WorkflowOverrideNotAllowed", "Workflow override '%s' is not allowed", name)
-		return ""
-	}
-
-	return name
 }

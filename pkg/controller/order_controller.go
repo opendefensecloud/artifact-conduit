@@ -421,10 +421,6 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		artifactTypeGen = artifactType.Generation
 	}
 
-	if overrideWorkflowName := r.GetWorkflowOverride(order); overrideWorkflowName != "" {
-		artifactTypeSpec.WorkflowTemplateRef.Name = overrideWorkflowName
-	}
-
 	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
 		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
@@ -463,19 +459,19 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	h := sha256.New()
 	data := []any{
 		order.Namespace,
-		artifactTypeSpec.WorkflowTemplateRef.Name,
-		artifactTypeSpec.WorkflowTemplateRef.ClusterScope,
-		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
+		artifact.Type,
+		artifact.Spec.Raw,
+		artifactTypeGen,
 		srcEndpoint.Name,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
 	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
+
+	if err := json.NewEncoder(h).Encode(data); err != nil {
 		return nil, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 	}
-	h.Write(jsonData)
+
 	sha := hex.EncodeToString(h.Sum(nil))[:16]
 
 	// We gave all the information to further process this artifact workflow.

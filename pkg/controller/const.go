@@ -3,9 +3,7 @@
 
 package controller
 
-// TODO: use kebab-case?
 const (
-	AnnotationRequestedAt      = "arc.opendefense.cloud/requestedAt"
-	AnnotationForceAt          = "arc.opendefense.cloud/forceAt"
-	AnnotationOverrideWorkflow = "arc.opendefense.cloud/overrideWorkflowTemplate"
+	AnnotationRequestedAt = "arc.opendefense.cloud/requested-at"
+	AnnotationForceAt     = "arc.opendefense.cloud/force-at"
 )
