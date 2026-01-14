@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2404,6 +2404,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">              </span><span class="no">echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"</span>
 <span class="w">          </span><span class="no">else</span>
 <span class="w">              </span><span class="no">echo "❌ Scan failed!"</span>
+<span class="w">              </span><span class="no">cat /data/scan-results.json</span>
 <span class="w">              </span><span class="no">exit 1</span>
 <span class="w">          </span><span class="no">fi</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
