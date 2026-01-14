@@ -33,8 +33,6 @@ type OrderReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
-
-	AllowWorkflowOverride bool
 }
 
 type desiredAW struct {
