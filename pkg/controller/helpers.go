@@ -113,7 +113,7 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 // GetForceAtAnnotationValue returns the time specified in the force reconcile annotation, or zero time if not present.
 func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
 	annotations := o.GetAnnotations()
-	if forceAt, present := annotations[forceAtAnnotation]; present {
+	if forceAt, present := annotations[AnnotationForceAt]; present {
 		i, err := strconv.ParseInt(forceAt, 10, 64)
 		if err != nil {
 			return time.Time{}, fmt.Errorf("invalid force reconcile annotation: %w", err)

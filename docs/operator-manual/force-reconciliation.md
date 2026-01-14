@@ -2,7 +2,7 @@
 
 ## Annotation-Based Debugging
 
-Both `Order` and `ArtifactWorkflow` resources support manual reconciliation triggering via the `arc.opendefense.cloud/forceAt` annotation:
+Both `Order` and `ArtifactWorkflow` resources support manual reconciliation triggering via the `arc.opendefense.cloud/force-at` annotation:
 
 ```yaml
 apiVersion: arc.opendefense.cloud/v1alpha1
@@ -10,7 +10,7 @@ kind: Order
 metadata:
   name: my-order
   annotations:
-    arc.opendefense.cloud/forceAt: "1735689600"  # Unix timestamp
+    arc.opendefense.cloud/force-at: "1735689600"  # Unix timestamp
 spec:
   # ...
 ```
@@ -19,7 +19,7 @@ Set the annotation as follows:
 
 ```bash
 kubectl annotate --overwrite orders.arc.opendefense.cloud/<order-name> \
-"arc.opendefense.cloud/forceAt"="$(date +%s)"
+"arc.opendefense.cloud/force-at"="$(date +%s)"
 ```
 
 ## Force Reconcile Logic

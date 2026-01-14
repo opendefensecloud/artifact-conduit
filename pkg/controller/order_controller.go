@@ -175,27 +175,27 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	order.Status.Message = "" // Clear any previous error message
 
 	// List missing artifact workflows
-	createAWs := []string{}
+	var createAWs []string
 	for sha := range desiredAWs {
-		_, exists := order.Status.ArtifactWorkflows[sha]
-		if exists {
+		if _, exists := order.Status.ArtifactWorkflows[sha]; exists {
 			continue
 		}
+
 		createAWs = append(createAWs, sha)
 	}
 
 	// Find obsolete artifact workflows
-	deleteAWs := []string{}
+	var deleteAWs []string
 	for sha := range order.Status.ArtifactWorkflows {
-		_, exists := desiredAWs[sha]
-		if exists {
+		if _, exists := desiredAWs[sha]; exists {
 			continue
 		}
+
 		deleteAWs = append(deleteAWs, sha)
 	}
 
 	// Find finished artifact workflows to clean up
-	finishedAWs := []string{}
+	var finishedAWs []string
 	for sha := range order.Status.ArtifactWorkflows {
 		awStatus := order.Status.ArtifactWorkflows[sha]
 
@@ -412,7 +412,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
 		artifactTypeGen = clusterArtifactType.Generation
-		// NOTE: ClusterArtifactTypes can only referes ClusterWorkflowTemplates, so we enforce this here:
+		// NOTE: ClusterArtifactTypes can only reference ClusterWorkflowTemplates, so we enforce this here:
 		artifactTypeSpec.WorkflowTemplateRef.ClusterScope = true
 	} else {
 		artifactTypeSpec = &artifactType.Spec
@@ -457,17 +457,19 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	h := sha256.New()
 	data := []any{
 		order.Namespace,
-		artifact.Type, artifact.Spec.Raw, artifactTypeGen,
+		artifact.Type,
+		artifact.Spec.Raw,
+		artifactTypeGen,
 		srcEndpoint.Name,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
 	}
-	jsonData, err := json.Marshal(data)
-	if err != nil {
+
+	if err := json.NewEncoder(h).Encode(data); err != nil {
 		return nil, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 	}
-	h.Write(jsonData)
+
 	sha := hex.EncodeToString(h.Sum(nil))[:16]
 
 	// We gave all the information to further process this artifact workflow.

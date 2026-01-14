@@ -4,6 +4,6 @@
 package controller
 
 const (
-	requestedAtAnnotation = "arc.opendefense.cloud/requestedAt"
-	forceAtAnnotation     = "arc.opendefense.cloud/forceAt"
+	AnnotationRequestedAt = "arc.opendefense.cloud/requested-at"
+	AnnotationForceAt     = "arc.opendefense.cloud/force-at"
 )

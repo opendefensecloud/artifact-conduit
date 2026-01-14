@@ -361,7 +361,7 @@ var _ = Describe("Helper Functions", func() {
 			expectedTime := time.Unix(1700000000, 0)
 			obj := &metav1.ObjectMeta{
 				Annotations: map[string]string{
-					forceAtAnnotation: "1700000000",
+					AnnotationForceAt: "1700000000",
 				},
 			}
 
@@ -391,7 +391,7 @@ var _ = Describe("Helper Functions", func() {
 		It("should return error for invalid annotation value", func() {
 			obj := &metav1.ObjectMeta{
 				Annotations: map[string]string{
-					forceAtAnnotation: "not-a-number",
+					AnnotationForceAt: "not-a-number",
 				},
 			}
 
