@@ -34,7 +34,7 @@ in
     golangci-lint.enable = true;
     osv-scanner = {
       enable = true;
-      name = "OSV-Scanner";
+      name = "osv-scanner";
       entry = "osv-scanner scan -r .";
       files = "\\.(mod|sum)$";
       pass_filenames = false;
