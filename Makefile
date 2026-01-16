@@ -18,6 +18,7 @@ DOCKER ?= docker
 KIND ?= kind
 KUBECTL ?= kubectl
 HELM ?= helm
+OSV_SCANNER ?= osv-scanner
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
@@ -82,6 +83,10 @@ lint: addlicense golangci-lint ## Run linters such as golangci-lint and addlicen
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
 	shellcheck hack/*.sh
 	$(GOLANGCI_LINT) run -v
+
+.PHONY: scan
+scan:
+	$(OSV_SCANNER) scan -r .
 
 .PHONY: test
 test: setup-envtest ginkgo ## Run all tests
