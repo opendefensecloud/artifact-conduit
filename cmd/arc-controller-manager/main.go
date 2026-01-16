@@ -43,18 +43,15 @@ func init() {
 }
 
 func main() {
-	var metricsAddr string
-	var secureMetrics bool
-	var metricsCertPath, metricsCertName, metricsCertKey string
-	var enableHTTP2 bool
-	var enableLeaderElection bool
-	var probeAddr string
-	var pprofAddr string
-	var prefixAllocationTimeout time.Duration
-	var volumeBindTimeout time.Duration
-	var virtualIPBindTimeout time.Duration
-	var networkInterfaceBindTimeout time.Duration
-	var tlsOpts []func(*tls.Config)
+	var (
+		metricsAddr, metricsCertPath, metricsCertName, metricsCertKey    string
+		secureMetrics, enableHTTP2, enableLeaderElection                 bool
+		probeAddr, pprofAddr                                             string
+		prefixAllocationTimeout, volumeBindTimeout, virtualIPBindTimeout time.Duration
+		networkInterfaceBindTimeout                                      time.Duration
+		tlsOpts                                                          []func(*tls.Config)
+	)
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
 	flag.BoolVar(&secureMetrics, "metrics-secure", true,

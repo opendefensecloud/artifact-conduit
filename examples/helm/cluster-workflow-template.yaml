@@ -54,8 +54,8 @@ spec:
             when: "{{workflow.parameters.srcType}} == helm"
             template: pull-chart-helm
 
-        - - name: lint-chart
-            template: lint-chart
+        - - name: scan-chart
+            template: scan-chart
 
         - - name: package-and-push # Always pushes to OCI
             template: package-and-push
@@ -148,6 +148,36 @@ spec:
           fi
 
           echo "✅ Chart Linting successful!"
+
+    # --- 2. Scan Chart (Helm) ---
+    - name: scan-chart
+      script:
+        image: aquasec/trivy:latest
+        command: [sh, -c]
+        volumeMounts:
+          - name: work-volume
+            mountPath: /data
+        source: |
+          export SCAN_SEVERITY="{{workflow.parameters.scanSeverity}}"
+
+          echo "Scanning image for severities: $SCAN_SEVERITY"
+
+          # Trivy scan in a directory mode
+          trivy config \
+            --cache-dir /data/.trivy/cache \
+            --exit-code 1 \
+            --severity "$SCAN_SEVERITY" \
+            --format json \
+            --output /data/scan-results.json \
+            /data/charts/{{workflow.parameters.specChart}}
+
+          if [ $? -eq 0 ]; then
+              echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"
+          else
+              echo "❌ Scan failed!"
+              cat /data/scan-results.json
+              exit 1
+          fi
 
     # --- 3. Package and Push Chart to OCI Destination ---
     - name: package-and-push

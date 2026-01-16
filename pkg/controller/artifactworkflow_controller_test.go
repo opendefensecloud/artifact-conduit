@@ -321,7 +321,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				if order.Annotations == nil {
 					order.Annotations = map[string]string{}
 				}
-				order.Annotations[forceAtAnnotation] = fmt.Sprintf("%v", metav1.Now().Unix())
+				order.Annotations[AnnotationForceAt] = fmt.Sprintf("%v", metav1.Now().Unix())
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 

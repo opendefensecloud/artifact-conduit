@@ -337,6 +337,7 @@ spec:
               echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"
           else
               echo "❌ Scan failed!"
+              cat /data/scan-results.json
               exit 1
           fi
         env: *env
