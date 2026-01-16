@@ -8,6 +8,8 @@ require (
 	github.com/jastBytes/sprint v0.0.3
 	github.com/onsi/ginkgo/v2 v2.27.4
 	github.com/onsi/gomega v1.39.0
+	github.com/robfig/cron/v3 v3.0.1
+	github.com/spf13/pflag v1.0.10
 	go.opendefense.cloud/kit v0.1.5
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
