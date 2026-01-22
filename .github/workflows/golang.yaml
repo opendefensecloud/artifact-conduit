@@ -16,7 +16,7 @@ on:
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
-  GO_VERSION: 1.25.2
+  GO_VERSION: 1.25.5
 
 jobs:
   lint:

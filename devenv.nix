@@ -5,7 +5,9 @@
   inputs,
   ...
 }:
-
+let
+  pkgs-unstable = import inputs.nixpkgs-unstable { system = pkgs.stdenv.system; };
+in
 {
   # https://devenv.sh/packages/
   packages = [
@@ -20,15 +22,23 @@
     # for local testing of workflows etc.
     pkgs.cosign
     pkgs.trivy
+    pkgs.osv-scanner
   ];
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
-  languages.go.package = pkgs.go_1_25;
+  languages.go.package = pkgs-unstable.go;
 
   git-hooks.hooks = {
     gofmt.enable = true;
     golangci-lint.enable = true;
+    osv-scanner = {
+      enable = true;
+      name = "osv-scanner";
+      entry = "osv-scanner scan -r .";
+      files = "\\.(mod|sum)$";
+      pass_filenames = false;
+    };
   };
   # See full reference at https://devenv.sh/reference/options/
 
