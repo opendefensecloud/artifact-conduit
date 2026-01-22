@@ -84,7 +84,7 @@ jobs:
 
               # Update version and appVersion in Chart.yaml
               # Use | as delimiter to avoid issues with / in version strings
-              sed -i "s|^version:.*|version: ${VERSION}|" "${chart}Chart.yaml"
+              sed -i "s|^version:.*|version: v${VERSION}|" "${chart}Chart.yaml"
               sed -i "s|^appVersion:.*|appVersion: \"v${VERSION}\"|" "${chart}Chart.yaml"
 
               echo "Updated Chart.yaml:"
