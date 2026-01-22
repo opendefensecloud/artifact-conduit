@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -952,6 +952,34 @@
     <span class="md-ellipsis">
       
         Helm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cron-minimal-schedule-interval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron Minimal Schedule Interval
       
     </span>
   </a>
@@ -1857,6 +1885,34 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#advanced-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Settings
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Settings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cron-minimal-schedule-interval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cron Minimal Schedule Interval
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1920,6 +1976,15 @@
 
 <h4 id="helm">Helm<a class="headerlink" href="#helm" title="Permanent link">¶</a></h4>
 <p>See <a href="../helm/">Helm installation</a> for more information.</p>
+<h3 id="advanced-settings">Advanced Settings<a class="headerlink" href="#advanced-settings" title="Permanent link">¶</a></h3>
+<p>The ARC's apiserver and controller-manager have some flags to configure behavior.</p>
+<h4 id="cron-minimal-schedule-interval">Cron Minimal Schedule Interval<a class="headerlink" href="#cron-minimal-schedule-interval" title="Permanent link">¶</a></h4>
+<p>Most operators don't want users to spawn workflows every few seconds, so a conservative default of 10 minutes as minimal schedule interval is set. The operator can change this by setting the following flag: <code>--cron-min-schedule-interval</code>.</p>
+<p>This can be overriden through the helm chart by specifying <code>apiserver.extraArgs</code>, e.g.:
+</p><div class="highlight"><pre><span></span><code><span class="nt">apiserver</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">extraArgs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">cron-min-schedule-interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+</code></pre></div><p></p>
 
 
 
