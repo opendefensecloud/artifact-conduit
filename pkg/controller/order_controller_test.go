@@ -987,5 +987,43 @@ var _ = Describe("OrderController", func() {
 				return string(awList.Items[0].UID)
 			}).ShouldNot(Equal(originalUID))
 		})
+
+		It("should work with valid cron expression", Label("cron"), func() {
+			createEndpoints("src-1", "dst-1")
+			// Create test Order with a single artifact
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-force-reconcile",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{
+							Type: at1.Name,
+							Cron: &arcv1alpha1.Cron{
+								Schedules: []string{
+									"5 4 * * *",
+								},
+							},
+							SrcRef: corev1.LocalObjectReference{Name: "src-1"},
+							DstRef: corev1.LocalObjectReference{Name: "dst-1"},
+							Spec:   runtime.RawExtension{Raw: []byte(`{"key":"value-1"}`)},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Verify artifact workflow was created
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				if err != nil {
+					return 0
+				}
+				return len(awList.Items)
+			}).Should(Equal(1))
+		})
+
 	})
 })
