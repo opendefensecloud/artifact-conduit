@@ -7,8 +7,12 @@ package v1alpha1
 
 // ArtifactWorkflowParameterApplyConfiguration represents a declarative configuration of the ArtifactWorkflowParameter type for use
 // with apply.
+//
+// ArtifactWorkflowParameter represents a single key-value parameter pair.
 type ArtifactWorkflowParameterApplyConfiguration struct {
-	Name  *string `json:"name,omitempty"`
+	// Name is the key of the parameter.
+	Name *string `json:"name,omitempty"`
+	// Value is the string value of the parameter.
 	Value *string `json:"value,omitempty"`
 }
 

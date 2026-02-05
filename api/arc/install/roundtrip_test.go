@@ -6,8 +6,9 @@ package install
 import (
 	"testing"
 
-	"go.opendefense.cloud/arc/api/arc/fuzzer"
 	"k8s.io/apimachinery/pkg/api/apitesting/roundtrip"
+
+	"go.opendefense.cloud/arc/api/arc/fuzzer"
 )
 
 func TestRoundTripTypes(t *testing.T) {

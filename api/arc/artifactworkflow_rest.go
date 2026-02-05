@@ -68,6 +68,7 @@ func (o *ArtifactWorkflow) Validate(ctx context.Context) field.ErrorList {
 			seen[param.Name] = i
 		}
 	}
+
 	return allErrs
 }
 
@@ -92,6 +93,7 @@ func (o *ArtifactWorkflow) IntoTableRow() metav1.TableRow {
 	if !o.CreationTimestamp.Time.IsZero() {
 		completionTime = o.Status.CompletionTime.Format(time.DateTime)
 	}
+
 	return metav1.TableRow{
 		Cells: []any{
 			o.Name,
@@ -116,5 +118,6 @@ func (o *ArtifactWorkflow) ConvertToTable(ctx context.Context, tableOptions runt
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
+
 	return table, nil
 }

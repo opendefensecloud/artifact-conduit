@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +21,8 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
 const (
@@ -70,6 +71,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			// Object not found, return. Created objects are automatically garbage collected.
 			return ctrlResult, nil
 		}
+
 		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
 	}
 
@@ -109,6 +111,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
+
 		return ctrlResult, nil
 	}
 
@@ -168,6 +171,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			if err := r.Status().Update(ctx, order); err != nil {
 				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
 			}
+
 			return ctrlResult, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
 		}
 		desiredAWs[daw.sha] = *daw
@@ -217,6 +221,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				// Requeue when the next TTL expires
 				ctrlResult.RequeueAfter = time.Duration((*order.Spec.TTLSecondsAfterCompletion)+1)*time.Second - time.Since(awStatus.CompletionTime.Time)
 			}
+
 			continue
 		}
 
@@ -246,6 +251,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				continue
 			}
 			r.Recorder.Eventf(order, corev1.EventTypeWarning, "CreationFailed", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
+
 			return ctrlResult, errLogAndWrap(log, err, "failed to create artifact workflow")
 		} else {
 			r.Recorder.Eventf(order, corev1.EventTypeNormal, "ArtifactWorkflowCreated", "Created artifact workflow '%s' for artifact index %d", aw.Name, daw.index)
@@ -308,6 +314,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			if err := r.Status().Update(ctx, order); err != nil {
 				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
 			}
+
 			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		orderAWStatus := order.Status.ArtifactWorkflows[sha]
@@ -387,11 +394,13 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 
@@ -422,11 +431,13 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
 		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
+
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
 		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
 		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
+
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 

@@ -28,7 +28,7 @@ OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
 CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
 
 GINKGO_VERSION ?= $(shell go list -json -m -u github.com/onsi/ginkgo/v2 | jq -r '.Version')
-GOLANGCI_LINT_VERSION ?= v2.5.0
+GOLANGCI_LINT_VERSION ?= v2.8.0
 SETUP_ENVTEST_VERSION ?= release-0.22
 ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
@@ -71,6 +71,7 @@ codegen: openapi-gen ## Run code generation, e.g. openapi
 fmt: addlicense ## Add license headers and format code
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only {} +
 	$(GO) fmt ./...
+	$(GOLANGCI_LINT) run --fix
 
 .PHONY: mod
 mod: ## Do go mod tidy, download, verify
@@ -79,10 +80,13 @@ mod: ## Do go mod tidy, download, verify
 	@$(GO) mod verify
 
 .PHONY: lint
-lint: addlicense golangci-lint ## Run linters such as golangci-lint and addlicence checks
+lint: lint-no-golangci golangci-lint ## Run linters such as golangci-lint and addlicence checks
+	$(GOLANGCI_LINT) run -v
+
+.PHONY: lint-no-golangci
+lint-no-golangci: addlicense
 	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
 	shellcheck hack/*.sh
-	$(GOLANGCI_LINT) run -v
 
 .PHONY: scan
 scan:

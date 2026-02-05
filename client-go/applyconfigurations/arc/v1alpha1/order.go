@@ -13,6 +13,8 @@ import (
 
 // OrderApplyConfiguration represents a declarative configuration of the Order type for use
 // with apply.
+//
+// Order is the Schema for the orders API
 type OrderApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -30,6 +32,7 @@ func Order(name, namespace string) *OrderApplyConfiguration {
 	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
+
 func (b OrderApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

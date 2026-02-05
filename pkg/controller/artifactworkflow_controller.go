@@ -13,7 +13,6 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/jastBytes/sprint"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
 const (
@@ -61,6 +62,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 			// Object not found, return.
 			return ctrlResult, nil
 		}
+
 		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
 	}
 
@@ -94,6 +96,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
+
 		return ctrlResult, nil
 	}
 
@@ -155,7 +158,9 @@ func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, 
 	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
 		aw.Status.Message = wf.Status.Message
 		r.generateWorkflowStatusMessage(ctx, wf, log, aw)
+	default:
 	}
+
 	return true
 }
 
@@ -185,6 +190,7 @@ func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.C
 		if err != nil {
 			log.V(1).Info("failed to fetch pod logs", "pod", nr.Pod, "error", err)
 			aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\n\n", nr.Name, nr.Message)
+
 			continue
 		}
 		aw.Status.Message += fmt.Sprintf("Step '%s' failed:\n%s\nLogs:\n%s\n\n", nr.Name, nr.Message, logs)
@@ -209,6 +215,7 @@ func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace
 	if err != nil {
 		return "", err
 	}
+
 	return buf.String(), nil
 }
 
@@ -259,6 +266,7 @@ func (r *ArtifactWorkflowReconciler) findArtifactWorkflowsForWorkflowOwnedByCron
 			if owner.Kind == "CronWorkflow" && owner.APIVersion == wfv1alpha1.SchemeGroupVersion.String() {
 				cronWorkflowName = owner.Name
 				cronWorkflowNamespace = wf.GetNamespace() // Owner is in same namespace
+
 				break
 			}
 		}

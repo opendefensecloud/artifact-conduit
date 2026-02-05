@@ -10,11 +10,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +24,11 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
-	//+kubebuilder:scaffold:imports
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 const (
@@ -108,7 +108,7 @@ var _ = BeforeSuite(func() {
 	}).SetupWithManager(mgr)).To(Succeed())
 	Expect((&ArtifactWorkflowReconciler{
 		Client:    mgr.GetClient(),
-		ClientSet: testclient.NewSimpleClientset(),
+		ClientSet: testclient.NewClientset(),
 		Scheme:    mgr.GetScheme(),
 		Recorder:  fakeRecorder,
 	}).SetupWithManager(mgr)).To(Succeed())

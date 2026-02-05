@@ -112,6 +112,7 @@ func validateCron(path *field.Path, cron *Cron) *field.Error {
 			return field.Invalid(path.Child("schedules").Index(i), expr, fmt.Sprintf("schedule has an interval smaller than configured constraints. Expected value to have larger interval than %s", CronMinScheduleInterval))
 		}
 	}
+
 	return nil
 }
 
@@ -138,6 +139,7 @@ func (o *Order) ConvertToTable(ctx context.Context, tableOptions runtime.Object)
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
+
 	return table, nil
 }
 
@@ -155,7 +157,9 @@ func getOrderPhase(status OrderStatus) string {
 		if allCompleted {
 			return "Completed"
 		}
+
 		return "Running"
 	}
+
 	return "Pending"
 }

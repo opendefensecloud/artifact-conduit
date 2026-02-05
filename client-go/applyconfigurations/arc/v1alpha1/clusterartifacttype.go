@@ -14,6 +14,8 @@ import (
 
 // ClusterArtifactTypeApplyConfiguration represents a declarative configuration of the ClusterArtifactType type for use
 // with apply.
+//
+// ArtifactType is the Schema for the endpoints API
 type ClusterArtifactTypeApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -30,6 +32,7 @@ func ClusterArtifactType(name string) *ClusterArtifactTypeApplyConfiguration {
 	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
+
 func (b ClusterArtifactTypeApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

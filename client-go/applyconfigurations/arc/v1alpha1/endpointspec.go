@@ -12,11 +12,17 @@ import (
 
 // EndpointSpecApplyConfiguration represents a declarative configuration of the EndpointSpec type for use
 // with apply.
+//
+// EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type EndpointSpecApplyConfiguration struct {
-	Type      *string                    `json:"type,omitempty"`
-	RemoteURL *string                    `json:"remoteURL,omitempty"`
-	SecretRef *v1.LocalObjectReference   `json:"secretRef,omitempty"`
-	Usage     *arcv1alpha1.EndpointUsage `json:"usage,omitempty"`
+	// Type specifies which ArtifactType is used to process this artifact.
+	Type *string `json:"type,omitempty"`
+	// RemoteURL defines the URL which is used to interact with the endpoint.
+	RemoteURL *string `json:"remoteURL,omitempty"`
+	// SecretRef specifies the secret containing the relevant credentials for the endpoint.
+	SecretRef *v1.LocalObjectReference `json:"secretRef,omitempty"`
+	// Usage defines how the endpoint is allowed to be used.
+	Usage *arcv1alpha1.EndpointUsage `json:"usage,omitempty"`
 }
 
 // EndpointSpecApplyConfiguration constructs a declarative configuration of the EndpointSpec type for use with

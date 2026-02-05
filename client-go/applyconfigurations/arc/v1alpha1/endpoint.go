@@ -14,6 +14,8 @@ import (
 
 // EndpointApplyConfiguration represents a declarative configuration of the Endpoint type for use
 // with apply.
+//
+// Endpoint is the Schema for the endpoints API
 type EndpointApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -31,6 +33,7 @@ func Endpoint(name, namespace string) *EndpointApplyConfiguration {
 	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
+
 func (b EndpointApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

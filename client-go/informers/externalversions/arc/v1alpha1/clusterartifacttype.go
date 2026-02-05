@@ -43,7 +43,7 @@ func NewClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod tim
 // one. This reduces memory footprint and number of connections to the server.
 func NewFilteredClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
-		&cache.ListWatch{
+		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
@@ -68,7 +68,7 @@ func NewFilteredClusterArtifactTypeInformer(client versioned.Interface, resyncPe
 				}
 				return client.ArcV1alpha1().ClusterArtifactTypes().Watch(ctx, options)
 			},
-		},
+		}, client),
 		&apiarcv1alpha1.ClusterArtifactType{},
 		resyncPeriod,
 		indexers,

@@ -7,8 +7,12 @@ package v1alpha1
 
 // ArtifactTypeRulesApplyConfiguration represents a declarative configuration of the ArtifactTypeRules type for use
 // with apply.
+//
+// ArtifactTypeRules is a set of rules to be used for this type of artifact.
 type ArtifactTypeRulesApplyConfiguration struct {
+	// SrcTypes is a list of Endpoint types, that are supported as source.
 	SrcTypes []string `json:"srcTypes,omitempty"`
+	// DstTypes is a list of Endpoint types, that are supported as destination.
 	DstTypes []string `json:"dstTypes,omitempty"`
 }
 

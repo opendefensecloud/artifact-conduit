@@ -11,9 +11,10 @@ import (
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
 func generatePodNameFromNodeStatus(node wfv1alpha1.NodeStatus) string {
@@ -119,7 +120,9 @@ func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
 			return time.Time{}, fmt.Errorf("invalid force reconcile annotation: %w", err)
 		}
 		forceAtTime := time.Unix(i, 0)
+
 		return forceAtTime, nil
 	}
+
 	return time.Time{}, nil
 }

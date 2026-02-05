@@ -9,14 +9,16 @@ import (
 	"slices"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("OrderController", func() {
@@ -53,6 +55,7 @@ var _ = Describe("OrderController", func() {
 				},
 			}
 			Expect(k8sClient.Create(ctx, &endpoint)).To(Succeed())
+
 			return &endpoint
 		}
 		createEndpoints = func(names ...string) {
@@ -97,6 +100,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(2))
 
@@ -184,6 +188,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(2))
 
@@ -259,6 +264,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(3))
 
@@ -309,6 +315,7 @@ var _ = Describe("OrderController", func() {
 				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
 					return 0
 				}
+
 				return len(order.Status.ArtifactWorkflows)
 			}).Should(Equal(3))
 		})
@@ -383,6 +390,7 @@ var _ = Describe("OrderController", func() {
 			Eventually(func() metav1.Time {
 				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
 				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
+
 				return awStatus.CompletionTime
 			}).ShouldNot(BeZero())
 		})
@@ -416,6 +424,7 @@ var _ = Describe("OrderController", func() {
 					SrcRef: corev1.LocalObjectReference{Name: "src-2"},
 					DstRef: corev1.LocalObjectReference{Name: "dst-2"},
 				})
+
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 			// Eventually two artifact workflows should exist
@@ -456,6 +465,7 @@ var _ = Describe("OrderController", func() {
 					return err
 				}
 				order.Spec.Artifacts = order.Spec.Artifacts[:1]
+
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 			// Eventually only one artifact workflow should exist
@@ -510,6 +520,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(1))
 			aw := awList.Items[0]
@@ -584,6 +595,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(1))
 
@@ -608,6 +620,7 @@ var _ = Describe("OrderController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(order.Namespace, order.Name), order)).To(Succeed())
 				shas := slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))
 				Expect(shas).To(HaveLen(1))
+
 				return order.Status.ArtifactWorkflows[shas[0]].Phase
 			}).To(Equal(arcv1alpha1.WorkflowRunning))
 		})
@@ -653,6 +666,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -713,6 +727,7 @@ var _ = Describe("OrderController", func() {
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -773,6 +788,7 @@ var _ = Describe("OrderController", func() {
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -808,6 +824,7 @@ var _ = Describe("OrderController", func() {
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -843,6 +860,7 @@ var _ = Describe("OrderController", func() {
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -878,6 +896,7 @@ var _ = Describe("OrderController", func() {
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
@@ -923,6 +942,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(1))
 		})
@@ -955,6 +975,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(1))
 
@@ -963,6 +984,7 @@ var _ = Describe("OrderController", func() {
 			Eventually(func() string {
 				Expect(k8sClient.Get(ctx, namespacedName(awList.Items[0].Namespace, awList.Items[0].Name), &awList.Items[0])).To(Succeed())
 				originalUID = string(awList.Items[0].UID)
+
 				return originalUID
 			}).ShouldNot(BeEmpty())
 
@@ -975,6 +997,7 @@ var _ = Describe("OrderController", func() {
 					order.Annotations = map[string]string{}
 				}
 				order.Annotations[AnnotationForceAt] = fmt.Sprintf("%v", metav1.Now().Unix())
+
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 
@@ -984,6 +1007,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil || len(awList.Items) == 0 {
 					return ""
 				}
+
 				return string(awList.Items[0].UID)
 			}).ShouldNot(Equal(originalUID))
 		})
@@ -1021,6 +1045,7 @@ var _ = Describe("OrderController", func() {
 				if err != nil {
 					return 0
 				}
+
 				return len(awList.Items)
 			}).Should(Equal(1))
 		})

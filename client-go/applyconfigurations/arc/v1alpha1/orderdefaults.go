@@ -11,10 +11,15 @@ import (
 
 // OrderDefaultsApplyConfiguration represents a declarative configuration of the OrderDefaults type for use
 // with apply.
+//
+// OrderDefaults is used to set defaults for all other artifacts of an Order.
 type OrderDefaultsApplyConfiguration struct {
+	// SrcRef defines which Endpoint object is used as fallback source by all artifacts.
 	SrcRef *v1.LocalObjectReference `json:"srcRef,omitempty"`
+	// DstRef defines which Endpoint object is used as fallback destination by all artifacts.
 	DstRef *v1.LocalObjectReference `json:"dstRef,omitempty"`
-	Cron   *CronApplyConfiguration  `json:"cron,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled.
+	Cron *CronApplyConfiguration `json:"cron,omitempty"`
 }
 
 // OrderDefaultsApplyConfiguration constructs a declarative configuration of the OrderDefaults type for use with

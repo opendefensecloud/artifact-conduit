@@ -7,6 +7,13 @@ import (
 	"os"
 
 	"github.com/spf13/pflag"
+	"go.opendefense.cloud/kit/apiserver"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apiserver/pkg/admission"
+	"k8s.io/apiserver/pkg/server"
+
 	"go.opendefense.cloud/arc/api/arc"
 	"go.opendefense.cloud/arc/api/arc/install"
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -14,12 +21,6 @@ import (
 	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 	"go.opendefense.cloud/arc/client-go/openapi"
 	"go.opendefense.cloud/arc/pkg/admission/orderinitializer"
-	"go.opendefense.cloud/kit/apiserver"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apiserver/pkg/admission"
-	"k8s.io/apiserver/pkg/server"
 )
 
 const (
@@ -60,6 +61,7 @@ func main() {
 				return nil, nil, err
 			}
 			informerFactory := informers.NewSharedInformerFactory(client, c.LoopbackClientConfig.Timeout)
+
 			return informerFactory, []admission.PluginInitializer{orderinitializer.New(informerFactory)}, nil
 		}).
 		With(apiserver.Resource(&arc.Order{}, arcv1alpha1.SchemeGroupVersion)).

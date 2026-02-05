@@ -7,11 +7,18 @@ package v1alpha1
 
 // CronApplyConfiguration represents a declarative configuration of the Cron type for use
 // with apply.
+//
+// Cron represents an order's cron schedule.
 type CronApplyConfiguration struct {
-	Timezone                *string  `json:"timezone,omitempty"`
-	StartingDeadlineSeconds *int64   `json:"startingDeadlineSeconds,omitempty"`
-	Schedules               []string `json:"schedules,omitempty"`
-	When                    *string  `json:"when,omitempty"`
+	// Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time.
+	Timezone *string `json:"timezone,omitempty"`
+	// StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its
+	// original scheduled time if it is missed.
+	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
+	// Schedules is a list of schedules to run the Order in Cron format
+	Schedules []string `json:"schedules,omitempty"`
+	// When is an expression that determines if a run should be scheduled.
+	When *string `json:"when,omitempty"`
 }
 
 // CronApplyConfiguration constructs a declarative configuration of the Cron type for use with
