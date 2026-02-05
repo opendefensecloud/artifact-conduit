@@ -27,7 +27,7 @@ in
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
-  languages.go.package = pkgs-unstable.go;
+  languages.go.version = "1.25.7";
 
   git-hooks.hooks = {
     gofmt.enable = true;
