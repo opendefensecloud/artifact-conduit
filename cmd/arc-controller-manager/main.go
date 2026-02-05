@@ -181,8 +181,10 @@ func main() {
 
 	// Register controllers
 	if err := (&controller.OrderReconciler{
-		Client:   mgr.GetClient(),
-		Scheme:   mgr.GetScheme(),
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+		// FIXME: GetEventRecorderFor is deprecated, see issue solar#123
+		// nolint:staticcheck
 		Recorder: mgr.GetEventRecorderFor("order-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Order")
@@ -193,7 +195,9 @@ func main() {
 		Client:    mgr.GetClient(),
 		ClientSet: clientset,
 		Scheme:    mgr.GetScheme(),
-		Recorder:  mgr.GetEventRecorderFor("artifact-workflow-controller"),
+		// FIXME: GetEventRecorderFor is deprecated, see issue solar#123
+		// nolint:staticcheck
+		Recorder: mgr.GetEventRecorderFor("artifact-workflow-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
 		os.Exit(1)
