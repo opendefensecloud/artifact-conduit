@@ -10,11 +10,12 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/jastBytes/sprint"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
 type WorkflowHandler interface {
@@ -47,6 +48,7 @@ func (h *SingleWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "workflow deletion failed")
 	}
 	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted workflow '%s'", h.aw.Name))
+
 	return nil
 }
 
@@ -72,6 +74,7 @@ func (h *SingleWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 	if err := h.Status().Update(ctx, h.aw); err != nil {
 		return errLogAndWrap(h.log, err, "failed to update status")
 	}
+
 	return nil
 }
 
@@ -116,6 +119,7 @@ func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
 	}
 	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
+
 	return nil
 }
 
@@ -144,6 +148,7 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 	if err := h.Status().Update(ctx, h.aw); err != nil {
 		return errLogAndWrap(h.log, err, "failed to update status")
 	}
+
 	return nil
 }
 

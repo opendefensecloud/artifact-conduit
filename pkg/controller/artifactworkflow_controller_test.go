@@ -7,14 +7,16 @@ import (
 	"fmt"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+
+	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("ArtifactWorkflowController", func() {
@@ -309,6 +311,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					return err
 				}
 				originalUID = string(wf.UID)
+
 				return nil
 			}).Should(Succeed())
 
@@ -322,6 +325,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 					order.Annotations = map[string]string{}
 				}
 				order.Annotations[AnnotationForceAt] = fmt.Sprintf("%v", metav1.Now().Unix())
+
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 
@@ -331,6 +335,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf); err != nil {
 					return "", err
 				}
+
 				return string(wf.UID), nil
 			}).ShouldNot(Equal(originalUID))
 		})
@@ -406,6 +411,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Eventually(func() int64 {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
+
 				return aw.Status.Failed
 			}).To(Equal(cwf.Status.Failed))
 
@@ -419,6 +425,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
 				Expect(aw.Status.Phase).To(Equal(arcv1alpha1.WorkflowSucceeded))
+
 				return aw.Status.Succeeded
 			}).To(Equal(cwf.Status.Succeeded))
 		})

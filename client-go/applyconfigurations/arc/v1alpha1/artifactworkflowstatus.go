@@ -13,11 +13,17 @@ import (
 
 // ArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the ArtifactWorkflowStatus type for use
 // with apply.
+//
+// ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
 type ArtifactWorkflowStatusApplyConfiguration struct {
 	WorkflowStatusApplyConfiguration `json:",inline"`
-	LastReconcileAt                  *v1.Time                     `json:"lastReconcileAt,omitempty"`
-	LastForceAt                      *v1.Time                     `json:"lastForceAt,omitempty"`
-	ActiveWorkflowRef                *corev1.LocalObjectReference `json:"activeWorkflowRef,omitempty"`
+	// LastReconcileAt is the last time the Order was reconciled
+	LastReconcileAt *v1.Time `json:"lastReconcileAt,omitempty"`
+	// LastForceAt is the last time a force reconciliation was requested
+	LastForceAt *v1.Time `json:"lastForceAt,omitempty"`
+	// ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.
+	// It resets after a successful or failed run.
+	ActiveWorkflowRef *corev1.LocalObjectReference `json:"activeWorkflowRef,omitempty"`
 }
 
 // ArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowStatus type for use with

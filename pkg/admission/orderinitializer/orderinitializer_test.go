@@ -8,10 +8,11 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apiserver/pkg/admission"
+
 	"go.opendefense.cloud/arc/client-go/clientset/versioned/fake"
 	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 	"go.opendefense.cloud/arc/pkg/admission/orderinitializer"
-	"k8s.io/apiserver/pkg/admission"
 )
 
 // TestWantsInternalOrderInformerFactory ensures that the informer factory is injected

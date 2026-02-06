@@ -11,12 +11,19 @@ import (
 
 // ArtifactWorkflowSpecApplyConfiguration represents a declarative configuration of the ArtifactWorkflowSpec type for use
 // with apply.
+//
+// ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpecApplyConfiguration struct {
-	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration    `json:"workflowTemplateRef,omitempty"`
-	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
-	SrcSecretRef        *v1.LocalObjectReference                      `json:"srcSecretRef,omitempty"`
-	DstSecretRef        *v1.LocalObjectReference                      `json:"dstSecretRef,omitempty"`
-	Cron                *CronApplyConfiguration                       `json:"cron,omitempty"`
+	// WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType
+	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
+	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.
+	Parameters []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
+	// SrcSecretRef references the secret containing credentials for the source.
+	SrcSecretRef *v1.LocalObjectReference `json:"srcSecretRef,omitempty"`
+	// DstSecretRef references the secret containing credentials for the destination.
+	DstSecretRef *v1.LocalObjectReference `json:"dstSecretRef,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled.
+	Cron *CronApplyConfiguration `json:"cron,omitempty"`
 }
 
 // ArtifactWorkflowSpecApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowSpec type for use with

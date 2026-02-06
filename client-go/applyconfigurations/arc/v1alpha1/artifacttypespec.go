@@ -7,10 +7,16 @@ package v1alpha1
 
 // ArtifactTypeSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeSpec type for use
 // with apply.
+//
+// ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
 type ArtifactTypeSpecApplyConfiguration struct {
-	Rules               *ArtifactTypeRulesApplyConfiguration          `json:"rules,omitempty"`
-	Parameters          []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
-	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration    `json:"workflowTemplateRef,omitempty"`
+	// Rules defines a set of rules for this type.
+	Rules *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
+	// Parameters defines extra parameters for the Workflow to use.
+	// These parameters will override parameters coming from ArtifactWorkflows.
+	Parameters []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
+	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
+	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
 }
 
 // ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with

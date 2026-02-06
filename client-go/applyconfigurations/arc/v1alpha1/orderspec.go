@@ -7,10 +7,17 @@ package v1alpha1
 
 // OrderSpecApplyConfiguration represents a declarative configuration of the OrderSpec type for use
 // with apply.
+//
+// OrderSpec defines the desired state of Order
 type OrderSpecApplyConfiguration struct {
-	Defaults                  *OrderDefaultsApplyConfiguration  `json:"defaults,omitempty"`
-	Artifacts                 []OrderArtifactApplyConfiguration `json:"artifacts,omitempty"`
-	TTLSecondsAfterCompletion *int64                            `json:"TTLSecondsAfterCompletion,omitempty"`
+	// Defaults sets up defaults for all artifacts.
+	Defaults *OrderDefaultsApplyConfiguration `json:"defaults,omitempty"`
+	// Artifacts lists all artifacts, that will be processed by this Order.
+	Artifacts []OrderArtifactApplyConfiguration `json:"artifacts,omitempty"`
+	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // OrderSpecApplyConfiguration constructs a declarative configuration of the OrderSpec type for use with

@@ -13,12 +13,18 @@ import (
 // WorkflowStatusApplyConfiguration represents a declarative configuration of the WorkflowStatus type for use
 // with apply.
 type WorkflowStatusApplyConfiguration struct {
-	Phase          *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
-	Message        *string                    `json:"message,omitempty"`
-	CompletionTime *v1.Time                   `json:"completionTime,omitempty"`
-	LastScheduled  *v1.Time                   `json:"lastScheduled,omitempty"`
-	Succeeded      *int64                     `json:"succeeded,omitempty"`
-	Failed         *int64                     `json:"failed,omitempty"`
+	// Phase tracks which phase the corresponding Workflow is in
+	Phase *arcv1alpha1.WorkflowPhase `json:"phase,omitempty"`
+	// A human readable message describing the current condition of the artifact workflow.
+	Message *string `json:"message,omitempty"`
+	// CompletionTime is the time when the workflow finished
+	CompletionTime *v1.Time `json:"completionTime,omitempty"`
+	// LastScheduled is the last time the workflow was scheduled via cron
+	LastScheduled *v1.Time `json:"lastScheduled,omitempty"`
+	// Succeeded counts how many times child workflows succeeded
+	Succeeded *int64 `json:"succeeded,omitempty"`
+	// Failed counts how many times child workflows failed
+	Failed *int64 `json:"failed,omitempty"`
 }
 
 // WorkflowStatusApplyConfiguration constructs a declarative configuration of the WorkflowStatus type for use with

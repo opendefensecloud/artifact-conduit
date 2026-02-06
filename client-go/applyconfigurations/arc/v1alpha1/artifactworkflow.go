@@ -13,6 +13,8 @@ import (
 
 // ArtifactWorkflowApplyConfiguration represents a declarative configuration of the ArtifactWorkflow type for use
 // with apply.
+//
+// ArtifactWorkflow is the Schema for the artifact workflows API
 type ArtifactWorkflowApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -30,6 +32,7 @@ func ArtifactWorkflow(name, namespace string) *ArtifactWorkflowApplyConfiguratio
 	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
+
 func (b ArtifactWorkflowApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value

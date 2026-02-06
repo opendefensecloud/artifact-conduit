@@ -12,12 +12,19 @@ import (
 
 // OrderArtifactApplyConfiguration represents a declarative configuration of the OrderArtifact type for use
 // with apply.
+//
+// OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow
 type OrderArtifactApplyConfiguration struct {
-	Type   *string                  `json:"type,omitempty"`
+	// Type specifies which ArtifactType is used to process this artifact.
+	Type *string `json:"type,omitempty"`
+	// SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).
 	SrcRef *v1.LocalObjectReference `json:"srcRef,omitempty"`
+	// SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).
 	DstRef *v1.LocalObjectReference `json:"dstRef,omitempty"`
-	Spec   *runtime.RawExtension    `json:"spec,omitempty"`
-	Cron   *CronApplyConfiguration  `json:"cron,omitempty"`
+	// Spec specifies parameters used by the underlying Workflow.
+	Spec *runtime.RawExtension `json:"spec,omitempty"`
+	// Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).
+	Cron *CronApplyConfiguration `json:"cron,omitempty"`
 }
 
 // OrderArtifactApplyConfiguration constructs a declarative configuration of the OrderArtifact type for use with

@@ -21,10 +21,12 @@ func errLogAndWrap(log logr.Logger, err error, text string) error {
 	case 1:
 		logText := strings.ToUpper(text)
 		log.Error(err, logText)
+
 		return fmt.Errorf(text+": %w", err)
 	default:
 		logText := strings.ToUpper(text[:1]) + text[1:]
 		log.Error(err, logText)
+
 		return fmt.Errorf(text+": %w", err)
 	}
 }

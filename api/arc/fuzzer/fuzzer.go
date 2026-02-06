@@ -4,10 +4,10 @@
 package fuzzer
 
 import (
-	"go.opendefense.cloud/arc/api/arc"
+	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	"sigs.k8s.io/randfill"
 
-	runtimeserializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	"go.opendefense.cloud/arc/api/arc"
 )
 
 // Funcs returns the fuzzer functions for the apps api group.

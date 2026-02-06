@@ -11,11 +11,17 @@ import (
 
 // OrderStatusApplyConfiguration represents a declarative configuration of the OrderStatus type for use
 // with apply.
+//
+// OrderStatus defines the observed state of Order
 type OrderStatusApplyConfiguration struct {
+	// ArtifactWorkflows tracks the created workflows
 	ArtifactWorkflows map[string]OrderArtifactWorkflowStatusApplyConfiguration `json:"artifactWorkflows,omitempty"`
-	Message           *string                                                  `json:"message,omitempty"`
-	LastReconcileAt   *v1.Time                                                 `json:"lastReconcileAt,omitempty"`
-	LastForceAt       *v1.Time                                                 `json:"lastForceAt,omitempty"`
+	// A human readable message describing the current condition of the order.
+	Message *string `json:"message,omitempty"`
+	// LastReconcileAt is the last time the Order was reconciled
+	LastReconcileAt *v1.Time `json:"lastReconcileAt,omitempty"`
+	// LastForceAt is the last time a force reconciliation was requested
+	LastForceAt *v1.Time `json:"lastForceAt,omitempty"`
 }
 
 // OrderStatusApplyConfiguration constructs a declarative configuration of the OrderStatus type for use with

@@ -83,5 +83,6 @@ func (o *Endpoint) ConvertToTable(ctx context.Context, tableOptions runtime.Obje
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
+
 	return table, nil
 }

@@ -103,6 +103,7 @@ func (o *ArtifactType) ConvertToTable(ctx context.Context, tableOptions runtime.
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
+
 	return table, nil
 }
 
@@ -146,6 +147,7 @@ func (o *ClusterArtifactType) Validate(ctx context.Context) field.ErrorList {
 			seenParams[param.Name] = true
 		}
 	}
+
 	return allErrs
 }
 
@@ -184,6 +186,7 @@ func (o *ClusterArtifactType) ValidateUpdate(ctx context.Context, old runtime.Ob
 	if o.Spec.WorkflowTemplateRef.Name == "" {
 		allErrs = append(allErrs, field.Required(templateRefPath.Child("name"), "workflow template reference name is required"))
 	}
+
 	return allErrs
 }
 
@@ -204,5 +207,6 @@ func (o *ClusterArtifactType) ConvertToTable(ctx context.Context, tableOptions r
 		},
 	}
 	table.ResourceVersion = o.GetResourceVersion()
+
 	return table, nil
 }

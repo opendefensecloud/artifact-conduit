@@ -4,8 +4,9 @@
 package orderinitializer
 
 import (
-	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 	"k8s.io/apiserver/pkg/admission"
+
+	informers "go.opendefense.cloud/arc/client-go/informers/externalversions"
 )
 
 type pluginInitializer struct {

@@ -4,10 +4,11 @@
 package install
 
 import (
-	"go.opendefense.cloud/arc/api/arc"
-	"go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+
+	"go.opendefense.cloud/arc/api/arc"
+	"go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
 
 // Install registers the API group and adds types to a scheme

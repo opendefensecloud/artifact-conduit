@@ -14,6 +14,8 @@ import (
 
 // ArtifactTypeApplyConfiguration represents a declarative configuration of the ArtifactType type for use
 // with apply.
+//
+// ArtifactType is the Schema for the endpoints API
 type ArtifactTypeApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
@@ -31,6 +33,7 @@ func ArtifactType(name, namespace string) *ArtifactTypeApplyConfiguration {
 	b.WithAPIVersion("arc.opendefense.cloud/v1alpha1")
 	return b
 }
+
 func (b ArtifactTypeApplyConfiguration) IsApplyConfiguration() {}
 
 // WithKind sets the Kind field in the declarative configuration to the given value
