@@ -8,8 +8,8 @@ THIS_PKG="go.opendefense.cloud/arc"
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_DIR="$SCRIPT_DIR/.."
-# shellcheck disable=SC2269
-OPENAPI_GEN="$OPENAPI_GEN"
+
+(cd "$PROJECT_DIR"; go mod download)
 
 CODEGEN_PKG=$(go list -m -f '{{.Dir}}' k8s.io/code-generator)
 # shellcheck disable=SC1091 # we trust kube_codegen.sh
