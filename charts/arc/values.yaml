@@ -309,7 +309,7 @@ etcd:
     # -- etcd image repository
     repository: quay.io/coreos/etcd
     # -- etcd image tag
-    tag: v3.6.7
+    tag: v3.6.8
     # -- Image pull policy
     pullPolicy: IfNotPresent
 
