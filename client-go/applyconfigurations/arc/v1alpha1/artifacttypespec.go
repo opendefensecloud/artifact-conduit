@@ -17,6 +17,10 @@ type ArtifactTypeSpecApplyConfiguration struct {
 	Parameters []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
+	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with
@@ -51,5 +55,13 @@ func (b *ArtifactTypeSpecApplyConfiguration) WithParameters(values ...*ArtifactW
 // If called multiple times, the WorkflowTemplateRef field is set to the value of the last call.
 func (b *ArtifactTypeSpecApplyConfiguration) WithWorkflowTemplateRef(value *ArtifactTypeTemplateRefApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.WorkflowTemplateRef = value
+	return b
+}
+
+// WithTTLSecondsAfterCompletion sets the TTLSecondsAfterCompletion field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterCompletion field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterCompletion(value int64) *ArtifactTypeSpecApplyConfiguration {
+	b.TTLSecondsAfterCompletion = &value
 	return b
 }

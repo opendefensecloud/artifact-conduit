@@ -66,6 +66,7 @@ _Appears in:_
 | `rules` _[ArtifactTypeRules](#artifacttyperules)_ | Rules defines a set of rules for this type. |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines extra parameters for the Workflow to use.<br />These parameters will override parameters coming from ArtifactWorkflows. |  |  |
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
+| `TTLSecondsAfterCompletion` _integer_ | TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
 
 
 #### ArtifactTypeStatus
@@ -359,6 +360,7 @@ _Appears in:_
 | `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
 | `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
 | `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
+| `TTLSecondsAfterCompletion` _integer_ | TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
 
 
 #### OrderDefaults
@@ -396,7 +398,6 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  |  |
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
-| `TTLSecondsAfterCompletion` _integer_ | TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
 
 
 #### OrderStatus

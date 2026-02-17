@@ -515,6 +515,13 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 							Ref:         ref(v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName()),
 						},
 					},
+					"TTLSecondsAfterCompletion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 				},
 				Required: []string{"rules", "parameters", "workflowTemplateRef"},
 			},
@@ -1278,6 +1285,13 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 							Format:      "int32",
 						},
 					},
+					"TTLSecondsAfterCompletion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
 				},
 				Required: []string{"artifactIndex"},
 			},
@@ -1397,13 +1411,6 @@ func schema_arc_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.
 									},
 								},
 							},
-						},
-					},
-					"TTLSecondsAfterCompletion": {
-						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.",
-							Type:        []string{"integer"},
-							Format:      "int64",
 						},
 					},
 				},

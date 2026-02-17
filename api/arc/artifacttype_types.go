@@ -33,6 +33,11 @@ type ArtifactTypeSpec struct {
 	Parameters []ArtifactWorkflowParameter `json:"parameters"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef ArtifactTypeTemplateRef `json:"workflowTemplateRef"`
+	// +optional
+	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // ArtifactTypeStatus defines the observed state of ArtifactType

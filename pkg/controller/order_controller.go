@@ -37,16 +37,17 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index       int
-	objectMeta  metav1.ObjectMeta
-	artifact    *arcv1alpha1.OrderArtifact
-	typeSpec    *arcv1alpha1.ArtifactTypeSpec
-	srcEndpoint *arcv1alpha1.Endpoint
-	dstEndpoint *arcv1alpha1.Endpoint
-	srcSecret   *corev1.Secret
-	dstSecret   *corev1.Secret
-	sha         string
-	cron        *arcv1alpha1.Cron
+	index                     int
+	objectMeta                metav1.ObjectMeta
+	artifact                  *arcv1alpha1.OrderArtifact
+	typeSpec                  *arcv1alpha1.ArtifactTypeSpec
+	srcEndpoint               *arcv1alpha1.Endpoint
+	dstEndpoint               *arcv1alpha1.Endpoint
+	srcSecret                 *corev1.Secret
+	dstSecret                 *corev1.Secret
+	sha                       string
+	cron                      *arcv1alpha1.Cron
+	ttlSecondsAfterCompletion *int64
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
@@ -214,12 +215,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		}
 
 		// If TTL is set, check if it has expired
-		if order.Spec.TTLSecondsAfterCompletion != nil && *order.Spec.TTLSecondsAfterCompletion > 0 {
-			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*order.Spec.TTLSecondsAfterCompletion)*time.Second {
+		if awStatus.TTLSecondsAfterCompletion != nil && *awStatus.TTLSecondsAfterCompletion > 0 {
+			if time.Since(awStatus.CompletionTime.Time) > time.Duration(*awStatus.TTLSecondsAfterCompletion)*time.Second {
 				finishedAWs = append(finishedAWs, sha)
 			} else {
 				// Requeue when the next TTL expires
-				ctrlResult.RequeueAfter = time.Duration((*order.Spec.TTLSecondsAfterCompletion)+1)*time.Second - time.Since(awStatus.CompletionTime.Time)
+				ctrlResult.RequeueAfter = time.Duration((*awStatus.TTLSecondsAfterCompletion)+1)*time.Second - time.Since(awStatus.CompletionTime.Time)
 			}
 
 			continue
@@ -264,6 +265,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			WorkflowStatus: arcv1alpha1.WorkflowStatus{
 				Phase: arcv1alpha1.WorkflowUnknown,
 			},
+			TTLSecondsAfterCompletion: daw.ttlSecondsAfterCompletion,
 		}
 	}
 
@@ -475,6 +477,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
+		artifactType.Spec.TTLSecondsAfterCompletion,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
@@ -486,16 +489,17 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// We gave all the information to further process this artifact workflow.
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
-		index:       i,
-		objectMeta:  awObjectMeta(order, sha),
-		artifact:    artifact,
-		typeSpec:    artifactTypeSpec,
-		srcEndpoint: srcEndpoint,
-		dstEndpoint: dstEndpoint,
-		srcSecret:   srcSecret,
-		dstSecret:   dstSecret,
-		sha:         sha,
-		cron:        cron,
+		index:                     i,
+		objectMeta:                awObjectMeta(order, sha),
+		artifact:                  artifact,
+		typeSpec:                  artifactTypeSpec,
+		srcEndpoint:               srcEndpoint,
+		dstEndpoint:               dstEndpoint,
+		srcSecret:                 srcSecret,
+		dstSecret:                 dstSecret,
+		sha:                       sha,
+		cron:                      cron,
+		ttlSecondsAfterCompletion: artifactType.Spec.TTLSecondsAfterCompletion,
 	}, nil
 }
 
