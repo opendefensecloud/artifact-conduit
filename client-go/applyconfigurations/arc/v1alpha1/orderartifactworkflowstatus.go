@@ -16,6 +16,10 @@ type OrderArtifactWorkflowStatusApplyConfiguration struct {
 	WorkflowStatusApplyConfiguration `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex *int `json:"artifactIndex,omitempty"`
+	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // OrderArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the OrderArtifactWorkflowStatus type for use with
@@ -77,5 +81,13 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithFailed(value int64) 
 // If called multiple times, the ArtifactIndex field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithArtifactIndex(value int) *OrderArtifactWorkflowStatusApplyConfiguration {
 	b.ArtifactIndex = &value
+	return b
+}
+
+// WithTTLSecondsAfterCompletion sets the TTLSecondsAfterCompletion field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterCompletion field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterCompletion(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.TTLSecondsAfterCompletion = &value
 	return b
 }

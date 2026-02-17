@@ -109,6 +109,11 @@ func (in *ArtifactTypeSpec) DeepCopyInto(out *ArtifactTypeSpec) {
 		copy(*out, *in)
 	}
 	out.WorkflowTemplateRef = in.WorkflowTemplateRef
+	if in.TTLSecondsAfterCompletion != nil {
+		in, out := &in.TTLSecondsAfterCompletion, &out.TTLSecondsAfterCompletion
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
@@ -517,6 +522,11 @@ func (in *OrderArtifact) DeepCopy() *OrderArtifact {
 func (in *OrderArtifactWorkflowStatus) DeepCopyInto(out *OrderArtifactWorkflowStatus) {
 	*out = *in
 	in.WorkflowStatus.DeepCopyInto(&out.WorkflowStatus)
+	if in.TTLSecondsAfterCompletion != nil {
+		in, out := &in.TTLSecondsAfterCompletion, &out.TTLSecondsAfterCompletion
+		*out = new(int64)
+		**out = **in
+	}
 	return
 }
 
@@ -596,11 +606,6 @@ func (in *OrderSpec) DeepCopyInto(out *OrderSpec) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
-	}
-	if in.TTLSecondsAfterCompletion != nil {
-		in, out := &in.TTLSecondsAfterCompletion, &out.TTLSecondsAfterCompletion
-		*out = new(int64)
-		**out = **in
 	}
 	return
 }
