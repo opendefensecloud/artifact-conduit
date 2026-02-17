@@ -12,6 +12,8 @@ github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYW
 github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
 github.com/argoproj/argo-workflows/v3 v3.7.9 h1:h3KPCzhFX04EuzFaLe7w7INB0JMA95S42N55hDZ49lE=
 github.com/argoproj/argo-workflows/v3 v3.7.9/go.mod h1:jLMZSF2HFdOXUHS0j5uZm2cGSsGu67IZrCb/yG2fxg0=
+github.com/argoproj/argo-workflows/v3 v3.7.10 h1:r6B0ZNzeQkAL1WlhvCnEVauk+iEvQjYN9dtIKwi+WWI=
+github.com/argoproj/argo-workflows/v3 v3.7.10/go.mod h1:JARCkLfp0uG/OFrpkk8a8tginrwTgLov4VkC4q7G1l0=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
