@@ -44,9 +44,9 @@ The ARC's apiserver and controller-manager have some flags to configure behavior
 
 Most operators don't want users to spawn workflows every few seconds, so a conservative default of 10 minutes as minimal schedule interval is set. The operator can change this by setting the following flag: `--cron-min-schedule-interval`.
 
-This can be overriden through the helm chart by specifying `apiserver.extraArgs`, e.g.:
+This can be overridden through the helm chart by specifying `apiserver.args.cronMinScheduleInterval`, e.g.:
 ```yaml
 apiserver:
-  extraArgs:
-    cron-min-schedule-interval: 1h
+  args:
+    cronMinScheduleInterval: 1h
 ```

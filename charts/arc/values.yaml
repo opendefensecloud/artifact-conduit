@@ -65,6 +65,8 @@ apiserver:
     auditLogMaxAge: 0
     # -- Audit log max backup
     auditLogMaxBackup: 0
+    # -- Cron minimum schedule interval (leave empty for default)
+    cronMinScheduleInterval: ""
 
   # -- Additional command-line arguments as key-value pairs
   extraArgs: {}

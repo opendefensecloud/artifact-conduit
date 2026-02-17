@@ -60,6 +60,9 @@ spec:
             - --enable-priority-and-fairness={{ .Values.apiserver.args.enablePriorityAndFairness }}
             - --audit-log-maxage={{ .Values.apiserver.args.auditLogMaxAge }}
             - --audit-log-maxbackup={{ .Values.apiserver.args.auditLogMaxBackup }}
+            {{- with .Values.apiserver.args.cronMinScheduleInterval }}
+            - --cron-min-schedule-interval={{ . }}
+            {{- end }}
             {{- range $key, $value := .Values.apiserver.extraArgs }}
             - --{{ $key }}={{ $value }}
             {{- end }}
