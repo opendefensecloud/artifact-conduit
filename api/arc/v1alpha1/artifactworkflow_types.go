@@ -71,6 +71,8 @@ type WorkflowStatus struct {
 	Message string `json:"message,omitempty" protobuf:"bytes,4,opt,name=message"`
 	// CompletionTime is the time when the workflow finished
 	CompletionTime metav1.Time `json:"completionTime,omitempty"`
+	// FailureTime is the time when the workflow finished with a failure status.
+	FailureTime metav1.Time `json:"failureTime,omitempty"`
 	// LastScheduled is the last time the workflow was scheduled via cron
 	LastScheduled *metav1.Time `json:"lastScheduled,omitempty"`
 	// Succeeded counts how many times child workflows succeeded

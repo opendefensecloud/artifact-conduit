@@ -157,6 +157,7 @@ func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, 
 		aw.Status.CompletionTime = metav1.Now()
 	case arcv1alpha1.WorkflowError, arcv1alpha1.WorkflowFailed:
 		aw.Status.Message = wf.Status.Message
+		aw.Status.FailureTime = metav1.Now()
 		r.generateWorkflowStatusMessage(ctx, wf, log, aw)
 	default:
 	}

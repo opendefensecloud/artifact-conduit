@@ -56,6 +56,14 @@ func (b *ArtifactWorkflowStatusApplyConfiguration) WithCompletionTime(value v1.T
 	return b
 }
 
+// WithFailureTime sets the FailureTime field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the FailureTime field is set to the value of the last call.
+func (b *ArtifactWorkflowStatusApplyConfiguration) WithFailureTime(value v1.Time) *ArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.FailureTime = &value
+	return b
+}
+
 // WithLastScheduled sets the LastScheduled field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the LastScheduled field is set to the value of the last call.

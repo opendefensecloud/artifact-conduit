@@ -19,6 +19,8 @@ type WorkflowStatusApplyConfiguration struct {
 	Message *string `json:"message,omitempty"`
 	// CompletionTime is the time when the workflow finished
 	CompletionTime *v1.Time `json:"completionTime,omitempty"`
+	// FailureTime is the time when the workflow finished with a failure status.
+	FailureTime *v1.Time `json:"failureTime,omitempty"`
 	// LastScheduled is the last time the workflow was scheduled via cron
 	LastScheduled *v1.Time `json:"lastScheduled,omitempty"`
 	// Succeeded counts how many times child workflows succeeded
@@ -54,6 +56,14 @@ func (b *WorkflowStatusApplyConfiguration) WithMessage(value string) *WorkflowSt
 // If called multiple times, the CompletionTime field is set to the value of the last call.
 func (b *WorkflowStatusApplyConfiguration) WithCompletionTime(value v1.Time) *WorkflowStatusApplyConfiguration {
 	b.CompletionTime = &value
+	return b
+}
+
+// WithFailureTime sets the FailureTime field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the FailureTime field is set to the value of the last call.
+func (b *WorkflowStatusApplyConfiguration) WithFailureTime(value v1.Time) *WorkflowStatusApplyConfiguration {
+	b.FailureTime = &value
 	return b
 }
 

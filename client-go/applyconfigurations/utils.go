@@ -35,6 +35,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.ArtifactWorkflowSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowStatus"):
 		return &arcv1alpha1.ArtifactWorkflowStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ArtifactWorkflowTTLSettings"):
+		return &arcv1alpha1.ArtifactWorkflowTTLSettingsApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ClusterArtifactType"):
 		return &arcv1alpha1.ClusterArtifactTypeApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Cron"):

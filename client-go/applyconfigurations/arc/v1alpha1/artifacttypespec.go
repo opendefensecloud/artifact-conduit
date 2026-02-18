@@ -10,6 +10,7 @@ package v1alpha1
 //
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
 type ArtifactTypeSpecApplyConfiguration struct {
+	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
 	// Rules defines a set of rules for this type.
 	Rules *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
 	// Parameters defines extra parameters for the Workflow to use.
@@ -17,16 +18,28 @@ type ArtifactTypeSpecApplyConfiguration struct {
 	Parameters []ArtifactWorkflowParameterApplyConfiguration `json:"parameters,omitempty"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
-	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
-	// After this time, the ArtifactWorkflow(s) are automatically deleted.
-	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // ArtifactTypeSpecApplyConfiguration constructs a declarative configuration of the ArtifactTypeSpec type for use with
 // apply.
 func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
 	return &ArtifactTypeSpecApplyConfiguration{}
+}
+
+// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterFinished field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterFinished(value int64) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFinished = &value
+	return b
+}
+
+// WithTTLSecondsAfterFailed sets the TTLSecondsAfterFailed field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterFailed field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterFailed(value int64) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFailed = &value
+	return b
 }
 
 // WithRules sets the Rules field in the declarative configuration to the given value
@@ -55,13 +68,5 @@ func (b *ArtifactTypeSpecApplyConfiguration) WithParameters(values ...*ArtifactW
 // If called multiple times, the WorkflowTemplateRef field is set to the value of the last call.
 func (b *ArtifactTypeSpecApplyConfiguration) WithWorkflowTemplateRef(value *ArtifactTypeTemplateRefApplyConfiguration) *ArtifactTypeSpecApplyConfiguration {
 	b.WorkflowTemplateRef = value
-	return b
-}
-
-// WithTTLSecondsAfterCompletion sets the TTLSecondsAfterCompletion field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterCompletion field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterCompletion(value int64) *ArtifactTypeSpecApplyConfiguration {
-	b.TTLSecondsAfterCompletion = &value
 	return b
 }

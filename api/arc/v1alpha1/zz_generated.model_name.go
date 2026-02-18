@@ -64,6 +64,11 @@ func (in ArtifactWorkflowStatus) OpenAPIModelName() string {
 }
 
 // OpenAPIModelName returns the OpenAPI model name for this type.
+func (in ArtifactWorkflowTTLSettings) OpenAPIModelName() string {
+	return "cloud.opendefense.arc.v1alpha1.ArtifactWorkflowTTLSettings"
+}
+
+// OpenAPIModelName returns the OpenAPI model name for this type.
 func (in ClusterArtifactType) OpenAPIModelName() string {
 	return "cloud.opendefense.arc.v1alpha1.ClusterArtifactType"
 }
