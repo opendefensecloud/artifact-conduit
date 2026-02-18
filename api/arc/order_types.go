@@ -60,13 +60,10 @@ type OrderStatus struct {
 }
 
 type OrderArtifactWorkflowStatus struct {
-	WorkflowStatus `json:",inline"`
+	ArtifactWorkflowTTLSettings `json:",inline"`
+	WorkflowStatus              `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex int `json:"artifactIndex"`
-	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
-	// After this time, the ArtifactWorkflow(s) are automatically deleted.
-	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // +genclient

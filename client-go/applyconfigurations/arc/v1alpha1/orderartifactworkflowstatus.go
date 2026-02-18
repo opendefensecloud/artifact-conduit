@@ -13,19 +13,32 @@ import (
 // OrderArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the OrderArtifactWorkflowStatus type for use
 // with apply.
 type OrderArtifactWorkflowStatusApplyConfiguration struct {
-	WorkflowStatusApplyConfiguration `json:",inline"`
+	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
+	WorkflowStatusApplyConfiguration              `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex *int `json:"artifactIndex,omitempty"`
-	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
-	// After this time, the ArtifactWorkflow(s) are automatically deleted.
-	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // OrderArtifactWorkflowStatusApplyConfiguration constructs a declarative configuration of the OrderArtifactWorkflowStatus type for use with
 // apply.
 func OrderArtifactWorkflowStatus() *OrderArtifactWorkflowStatusApplyConfiguration {
 	return &OrderArtifactWorkflowStatusApplyConfiguration{}
+}
+
+// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterFinished field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterFinished(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFinished = &value
+	return b
+}
+
+// WithTTLSecondsAfterFailed sets the TTLSecondsAfterFailed field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLSecondsAfterFailed field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterFailed(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFailed = &value
+	return b
 }
 
 // WithPhase sets the Phase field in the declarative configuration to the given value
@@ -49,6 +62,14 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithMessage(value string
 // If called multiple times, the CompletionTime field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithCompletionTime(value v1.Time) *OrderArtifactWorkflowStatusApplyConfiguration {
 	b.WorkflowStatusApplyConfiguration.CompletionTime = &value
+	return b
+}
+
+// WithFailureTime sets the FailureTime field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the FailureTime field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithFailureTime(value v1.Time) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.WorkflowStatusApplyConfiguration.FailureTime = &value
 	return b
 }
 
@@ -81,13 +102,5 @@ func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithFailed(value int64) 
 // If called multiple times, the ArtifactIndex field is set to the value of the last call.
 func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithArtifactIndex(value int) *OrderArtifactWorkflowStatusApplyConfiguration {
 	b.ArtifactIndex = &value
-	return b
-}
-
-// WithTTLSecondsAfterCompletion sets the TTLSecondsAfterCompletion field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterCompletion field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterCompletion(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.TTLSecondsAfterCompletion = &value
 	return b
 }

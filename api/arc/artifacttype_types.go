@@ -24,8 +24,20 @@ type ArtifactTypeTemplateRef struct {
 	ClusterScope bool `json:"clusterScope,omitempty"`
 }
 
+type ArtifactWorkflowTTLSettings struct {
+	// TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	TTLSecondsAfterFinished *int64 `json:"ttlSecondsAfterFinished,omitempty"`
+	// TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
+	// After this time, the ArtifactWorkflow(s) are automatically deleted.
+	// If unset finished ArtifactWorkflow(s) are retained indefinitely.
+	TTLSecondsAfterFailed *int64 `json:"ttlSecondsAfterFailed,omitempty"`
+}
+
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
 type ArtifactTypeSpec struct {
+	ArtifactWorkflowTTLSettings `json:",inline"`
 	// Rules defines a set of rules for this type.
 	Rules ArtifactTypeRules `json:"rules"`
 	// Parameters defines extra parameters for the Workflow to use.
@@ -33,11 +45,6 @@ type ArtifactTypeSpec struct {
 	Parameters []ArtifactWorkflowParameter `json:"parameters"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact.
 	WorkflowTemplateRef ArtifactTypeTemplateRef `json:"workflowTemplateRef"`
-	// +optional
-	// TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.
-	// After this time, the ArtifactWorkflow(s) are automatically deleted.
-	// If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLSecondsAfterCompletion *int64 `json:"TTLSecondsAfterCompletion,omitempty"`
 }
 
 // ArtifactTypeStatus defines the observed state of ArtifactType
