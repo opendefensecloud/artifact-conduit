@@ -590,8 +590,8 @@ func Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *a
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(in *ArtifactWorkflowTTLSettings, out *arc.ArtifactWorkflowTTLSettings, s conversion.Scope) error {
-	out.TTLSecondsAfterFinished = (*int64)(unsafe.Pointer(in.TTLSecondsAfterFinished))
-	out.TTLSecondsAfterFailed = (*int64)(unsafe.Pointer(in.TTLSecondsAfterFailed))
+	out.TTLDurationAfterFinished = (*v1.Duration)(unsafe.Pointer(in.TTLDurationAfterFinished))
+	out.TTLDurationAfterFailed = (*v1.Duration)(unsafe.Pointer(in.TTLDurationAfterFailed))
 	return nil
 }
 
@@ -601,8 +601,8 @@ func Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSett
 }
 
 func autoConvert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(in *arc.ArtifactWorkflowTTLSettings, out *ArtifactWorkflowTTLSettings, s conversion.Scope) error {
-	out.TTLSecondsAfterFinished = (*int64)(unsafe.Pointer(in.TTLSecondsAfterFinished))
-	out.TTLSecondsAfterFailed = (*int64)(unsafe.Pointer(in.TTLSecondsAfterFailed))
+	out.TTLDurationAfterFinished = (*v1.Duration)(unsafe.Pointer(in.TTLDurationAfterFinished))
+	out.TTLDurationAfterFailed = (*v1.Duration)(unsafe.Pointer(in.TTLDurationAfterFailed))
 	return nil
 }
 

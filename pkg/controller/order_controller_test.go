@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
@@ -28,7 +29,7 @@ var _ = Describe("OrderController", func() {
 		at1            = setupClusterArtifactType(ctx)
 		at2            = setupClusterArtifactType(ctx)
 		at3            = setupClusterArtifactType(ctx)
-		at4            = setupClusterArtifactType(ctx)
+		customAt       = setupClusterArtifactType(ctx)
 		createEndpoint = func(name, t string) *arcv1alpha1.Endpoint {
 			secret := corev1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
@@ -395,6 +396,73 @@ var _ = Describe("OrderController", func() {
 			}).ShouldNot(BeZero())
 		})
 
+		It("should keep artifact workflows when order is completed successfully and TTL is set", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
+			customAt.Spec.TTLDurationAfterFinished = &metav1.Duration{Duration: 10 * time.Second}
+			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
+
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-cleanup-on-completion",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: customAt.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Check that the ttl time is set in the order status
+			Eventually(func() *metav1.Duration {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				if len(order.Status.ArtifactWorkflows) == 0 {
+					return nil
+				}
+
+				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
+
+				return awStatus.TTLDurationAfterFinished
+			}).ShouldNot(BeNil())
+
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(awList.Items[0].Namespace, awList.Items[0].Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			// Check that the completion time is set in the order status
+			Eventually(func() metav1.Time {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
+
+				return awStatus.CompletionTime
+			}).ShouldNot(BeZero())
+
+			// Eventually the workflow should be keept due to TTL
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// Eventually all artifact workflows should be gone
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
 		It("should create a new artifact workflow and update status when an artifact is added", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
@@ -628,11 +696,11 @@ var _ = Describe("OrderController", func() {
 		It("should validate rules of referenced ArtifactType before creating an artifact workflow", func() {
 			srcEp := createEndpoint("src-1", "disallowed-src-type")
 			dstEp := createEndpoint("dst-1", "disallowed-dst-type")
-			at4.Spec.Rules = arcv1alpha1.ArtifactTypeRules{
+			customAt.Spec.Rules = arcv1alpha1.ArtifactTypeRules{
 				SrcTypes: []string{"allowed-src-type"},
 				DstTypes: []string{"allowed-dst-type"},
 			}
-			Expect(k8sClient.Update(ctx, at4)).To(Succeed())
+			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			// Create test Order with an artifact referencing an ArtifactType with validation rules
 			order := &arcv1alpha1.Order{
@@ -643,7 +711,7 @@ var _ = Describe("OrderController", func() {
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
-							Type:   at4.Name,
+							Type:   customAt.Name,
 							SrcRef: corev1.LocalObjectReference{Name: srcEp.Name},                  // src type does not match allowed-src-type
 							DstRef: corev1.LocalObjectReference{Name: dstEp.Name},                  // dst type does not match allowed-dst-type
 							Spec:   runtime.RawExtension{Raw: []byte(`{"validKey":"validValue"}`)}, // valid spec
