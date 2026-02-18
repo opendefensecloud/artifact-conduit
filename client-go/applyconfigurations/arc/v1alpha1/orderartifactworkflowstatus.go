@@ -25,19 +25,19 @@ func OrderArtifactWorkflowStatus() *OrderArtifactWorkflowStatusApplyConfiguratio
 	return &OrderArtifactWorkflowStatusApplyConfiguration{}
 }
 
-// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished field in the declarative configuration to the given value
+// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFinished field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterFinished(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFinished = &value
+// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLDurationAfterFinished(value v1.Duration) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
 	return b
 }
 
-// WithTTLSecondsAfterFailed sets the TTLSecondsAfterFailed field in the declarative configuration to the given value
+// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFailed field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLSecondsAfterFailed(value int64) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFailed = &value
+// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
+func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLDurationAfterFailed(value v1.Duration) *OrderArtifactWorkflowStatusApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
 	return b
 }
 

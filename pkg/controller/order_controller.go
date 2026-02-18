@@ -37,18 +37,18 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index                   int
-	objectMeta              metav1.ObjectMeta
-	artifact                *arcv1alpha1.OrderArtifact
-	typeSpec                *arcv1alpha1.ArtifactTypeSpec
-	srcEndpoint             *arcv1alpha1.Endpoint
-	dstEndpoint             *arcv1alpha1.Endpoint
-	srcSecret               *corev1.Secret
-	dstSecret               *corev1.Secret
-	sha                     string
-	cron                    *arcv1alpha1.Cron
-	ttlSecondsAfterFinished *int64
-	ttlSecondsAfterFailed   *int64
+	index            int
+	objectMeta       metav1.ObjectMeta
+	artifact         *arcv1alpha1.OrderArtifact
+	typeSpec         *arcv1alpha1.ArtifactTypeSpec
+	srcEndpoint      *arcv1alpha1.Endpoint
+	dstEndpoint      *arcv1alpha1.Endpoint
+	srcSecret        *corev1.Secret
+	dstSecret        *corev1.Secret
+	sha              string
+	cron             *arcv1alpha1.Cron
+	ttlAfterFinished *metav1.Duration
+	ttlAfterFailed   *metav1.Duration
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
@@ -219,30 +219,30 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			continue
 		}
 
-		// Cleanup finished workflows if TTLSecondsAfterFinished is set.
+		// Cleanup finished workflows if TTLDurationAfterFinished is set.
 		if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
 			// If TTL is set, check if it has expired
-			if awStatus.TTLSecondsAfterFinished != nil {
-				if *awStatus.TTLSecondsAfterFinished == 0 {
+			if awStatus.TTLDurationAfterFinished != nil {
+				if awStatus.TTLDurationAfterFinished.Seconds() == 0 {
 					// If TTL is zero keep the workflow.
 					continue
 				}
-				if time.Since(awStatus.CompletionTime.Time) < time.Duration(*awStatus.TTLSecondsAfterFinished)*time.Second {
+				if time.Since(awStatus.CompletionTime.Time) < awStatus.TTLDurationAfterFinished.Duration {
 					// If TTL is set but not expired keep the workflow.
 					continue
 				}
 			}
 		}
 
-		// Cleanup failed workflows if TTLSecondsAfterFailed is set.
+		// Cleanup failed workflows if TTLDurationAfterFailed is set.
 		if awStatus.Phase == arcv1alpha1.WorkflowFailed || awStatus.Phase == arcv1alpha1.WorkflowError {
 			// If TTL is set, check if it has expired
-			if awStatus.TTLSecondsAfterFailed != nil {
-				if *awStatus.TTLSecondsAfterFailed == 0 {
+			if awStatus.TTLDurationAfterFailed != nil {
+				if awStatus.TTLDurationAfterFailed.Seconds() == 0 {
 					// If TTL is zero keep the workflow.
 					continue
 				}
-				if time.Since(awStatus.FailureTime.Time) < time.Duration(*awStatus.TTLSecondsAfterFailed)*time.Second {
+				if time.Since(awStatus.FailureTime.Time) < awStatus.TTLDurationAfterFailed.Duration {
 					// If TTL is set but not expired keep the workflow.
 					continue
 				}
@@ -292,8 +292,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				Phase: arcv1alpha1.WorkflowUnknown,
 			},
 			ArtifactWorkflowTTLSettings: arcv1alpha1.ArtifactWorkflowTTLSettings{
-				TTLSecondsAfterFinished: daw.ttlSecondsAfterFinished,
-				TTLSecondsAfterFailed:   daw.ttlSecondsAfterFailed,
+				TTLDurationAfterFinished: daw.ttlAfterFinished,
+				TTLDurationAfterFailed:   daw.ttlAfterFailed,
 			},
 		}
 	}
@@ -506,8 +506,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
-		artifactType.Spec.TTLSecondsAfterFinished,
-		artifactType.Spec.TTLSecondsAfterFailed,
+		artifactType.Spec.TTLDurationAfterFailed,
+		artifactType.Spec.TTLDurationAfterFinished,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
@@ -519,18 +519,18 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// We gave all the information to further process this artifact workflow.
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
-		index:                   i,
-		objectMeta:              awObjectMeta(order, sha),
-		artifact:                artifact,
-		typeSpec:                artifactTypeSpec,
-		srcEndpoint:             srcEndpoint,
-		dstEndpoint:             dstEndpoint,
-		srcSecret:               srcSecret,
-		dstSecret:               dstSecret,
-		sha:                     sha,
-		cron:                    cron,
-		ttlSecondsAfterFinished: artifactType.Spec.TTLSecondsAfterFinished,
-		ttlSecondsAfterFailed:   artifactType.Spec.TTLSecondsAfterFailed,
+		index:            i,
+		objectMeta:       awObjectMeta(order, sha),
+		artifact:         artifact,
+		typeSpec:         artifactTypeSpec,
+		srcEndpoint:      srcEndpoint,
+		dstEndpoint:      dstEndpoint,
+		srcSecret:        srcSecret,
+		dstSecret:        dstSecret,
+		sha:              sha,
+		cron:             cron,
+		ttlAfterFinished: artifactType.Spec.TTLDurationAfterFinished,
+		ttlAfterFailed:   artifactType.Spec.TTLDurationAfterFailed,
 	}, nil
 }
 

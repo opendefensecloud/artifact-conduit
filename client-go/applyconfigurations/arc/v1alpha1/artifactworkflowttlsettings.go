@@ -5,17 +5,21 @@
 
 package v1alpha1
 
+import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // ArtifactWorkflowTTLSettingsApplyConfiguration represents a declarative configuration of the ArtifactWorkflowTTLSettings type for use
 // with apply.
 type ArtifactWorkflowTTLSettingsApplyConfiguration struct {
-	// TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
+	// TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLSecondsAfterFinished *int64 `json:"ttlSecondsAfterFinished,omitempty"`
-	// TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
+	TTLDurationAfterFinished *v1.Duration `json:"ttlDurationAfterFinished,omitempty"`
+	// TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are retained indefinitely.
-	TTLSecondsAfterFailed *int64 `json:"ttlSecondsAfterFailed,omitempty"`
+	TTLDurationAfterFailed *v1.Duration `json:"ttlDurationAfterFailed,omitempty"`
 }
 
 // ArtifactWorkflowTTLSettingsApplyConfiguration constructs a declarative configuration of the ArtifactWorkflowTTLSettings type for use with
@@ -24,18 +28,18 @@ func ArtifactWorkflowTTLSettings() *ArtifactWorkflowTTLSettingsApplyConfiguratio
 	return &ArtifactWorkflowTTLSettingsApplyConfiguration{}
 }
 
-// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished field in the declarative configuration to the given value
+// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFinished field is set to the value of the last call.
-func (b *ArtifactWorkflowTTLSettingsApplyConfiguration) WithTTLSecondsAfterFinished(value int64) *ArtifactWorkflowTTLSettingsApplyConfiguration {
-	b.TTLSecondsAfterFinished = &value
+// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
+func (b *ArtifactWorkflowTTLSettingsApplyConfiguration) WithTTLDurationAfterFinished(value v1.Duration) *ArtifactWorkflowTTLSettingsApplyConfiguration {
+	b.TTLDurationAfterFinished = &value
 	return b
 }
 
-// WithTTLSecondsAfterFailed sets the TTLSecondsAfterFailed field in the declarative configuration to the given value
+// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFailed field is set to the value of the last call.
-func (b *ArtifactWorkflowTTLSettingsApplyConfiguration) WithTTLSecondsAfterFailed(value int64) *ArtifactWorkflowTTLSettingsApplyConfiguration {
-	b.TTLSecondsAfterFailed = &value
+// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
+func (b *ArtifactWorkflowTTLSettingsApplyConfiguration) WithTTLDurationAfterFailed(value v1.Duration) *ArtifactWorkflowTTLSettingsApplyConfiguration {
+	b.TTLDurationAfterFailed = &value
 	return b
 }

@@ -488,18 +488,16 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 				Description: "ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlSecondsAfterFinished": {
+					"ttlDurationAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlSecondsAfterFailed": {
+					"ttlDurationAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
 					"rules": {
@@ -535,7 +533,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName()},
+			v1alpha1.ArtifactTypeRules{}.OpenAPIModelName(), v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), metav1.Duration{}.OpenAPIModelName()},
 	}
 }
 
@@ -850,23 +848,23 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowTTLSettings(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlSecondsAfterFinished": {
+					"ttlDurationAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlSecondsAfterFailed": {
+					"ttlDurationAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
 				},
 			},
 		},
+		Dependencies: []string{
+			metav1.Duration{}.OpenAPIModelName()},
 	}
 }
 
@@ -1274,18 +1272,16 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlSecondsAfterFinished": {
+					"ttlDurationAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlSecondsAfterFailed": {
+					"ttlDurationAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
-							Type:        []string{"integer"},
-							Format:      "int64",
+							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
 					"phase": {
@@ -1350,7 +1346,7 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 			},
 		},
 		Dependencies: []string{
-			metav1.Time{}.OpenAPIModelName()},
+			metav1.Duration{}.OpenAPIModelName(), metav1.Time{}.OpenAPIModelName()},
 	}
 }
 

@@ -63,8 +63,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlSecondsAfterFailed` _integer_ | TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlDurationAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
+| `ttlDurationAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
 | `rules` _[ArtifactTypeRules](#artifacttyperules)_ | Rules defines a set of rules for this type. |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines extra parameters for the Workflow to use.<br />These parameters will override parameters coming from ArtifactWorkflows. |  |  |
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
@@ -201,8 +201,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlSecondsAfterFailed` _integer_ | TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlDurationAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
+| `ttlDurationAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
 
 
 #### ClusterArtifactType
@@ -373,8 +373,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlSecondsAfterFinished` _integer_ | TTLSecondsAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlSecondsAfterFailed` _integer_ | TTLSecondsAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlDurationAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
+| `ttlDurationAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |

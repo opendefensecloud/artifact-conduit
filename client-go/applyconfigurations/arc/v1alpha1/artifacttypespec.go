@@ -5,6 +5,10 @@
 
 package v1alpha1
 
+import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // ArtifactTypeSpecApplyConfiguration represents a declarative configuration of the ArtifactTypeSpec type for use
 // with apply.
 //
@@ -26,19 +30,19 @@ func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
 	return &ArtifactTypeSpecApplyConfiguration{}
 }
 
-// WithTTLSecondsAfterFinished sets the TTLSecondsAfterFinished field in the declarative configuration to the given value
+// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFinished field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterFinished(value int64) *ArtifactTypeSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFinished = &value
+// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLDurationAfterFinished(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
 	return b
 }
 
-// WithTTLSecondsAfterFailed sets the TTLSecondsAfterFailed field in the declarative configuration to the given value
+// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLSecondsAfterFailed field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithTTLSecondsAfterFailed(value int64) *ArtifactTypeSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLSecondsAfterFailed = &value
+// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLDurationAfterFailed(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
 	return b
 }
 
