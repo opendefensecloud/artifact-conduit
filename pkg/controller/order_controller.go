@@ -225,34 +225,34 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrlResult, errLogAndWrap(log, err, "")
 		}
 		if artifactWorkflow.Name != "" {
-			// Cleanup finished workflows if TTLDurationAfterFinished is set.
+			// Cleanup finished workflows if TTLAfterFinished is set.
 			if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
 				// If TTL is set, check if it has expired
-				if artifactWorkflow.Spec.TTLDurationAfterFinished != nil {
-					if artifactWorkflow.Spec.TTLDurationAfterFinished.Seconds() == 0 {
+				if artifactWorkflow.Spec.TTLAfterFinished != nil {
+					if artifactWorkflow.Spec.TTLAfterFinished.Seconds() == 0 {
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFinished.Duration {
+					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLAfterFinished.Duration {
 						// If TTL is set but not expired keep the workflow.
 						// Requeue when the next TTL expires
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time)
+						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time)
 						continue
 					}
 				}
 			}
 
-			// Cleanup failed workflows if TTLDurationAfterFailed is set.
+			// Cleanup failed workflows if TTLAfterFailed is set.
 			if awStatus.Phase == arcv1alpha1.WorkflowFailed || awStatus.Phase == arcv1alpha1.WorkflowError {
 				// If TTL is set, check if it has expired
-				if artifactWorkflow.Spec.TTLDurationAfterFailed != nil {
-					if artifactWorkflow.Spec.TTLDurationAfterFailed.Seconds() == 0 {
+				if artifactWorkflow.Spec.TTLAfterFailed != nil {
+					if artifactWorkflow.Spec.TTLAfterFailed.Seconds() == 0 {
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFailed.Duration {
+					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLAfterFailed.Duration {
 						// If TTL is set but not expired keep the workflow.
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFailed.Duration - time.Since(awStatus.FailureTime.Time)
+						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFailed.Duration - time.Since(awStatus.FailureTime.Time)
 						continue
 					}
 				} else {

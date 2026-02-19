@@ -34,19 +34,19 @@ func ArtifactWorkflowSpec() *ArtifactWorkflowSpecApplyConfiguration {
 	return &ArtifactWorkflowSpecApplyConfiguration{}
 }
 
-// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
+// WithTTLAfterFinished sets the TTLAfterFinished field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
-func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLDurationAfterFinished(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
+// If called multiple times, the TTLAfterFinished field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLAfterFinished(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLAfterFinished = &value
 	return b
 }
 
-// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
+// WithTTLAfterFailed sets the TTLAfterFailed field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
-func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLDurationAfterFailed(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
+// If called multiple times, the TTLAfterFailed field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLAfterFailed(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLAfterFailed = &value
 	return b
 }
 

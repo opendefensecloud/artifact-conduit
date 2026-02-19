@@ -5,14 +5,14 @@ The `ArtifactWorkflowTTLSettings` controls automatic cleanup of completed and fa
 
 ## TTL Settings
 
-| Field                      | Description                                           |
-| -------------------------- | ----------------------------------------------------- |
-| `TTLDurationAfterFinished` | Time to live for succeeded workflows after completion |
-| `TTLDurationAfterFailed`   | Time to live for failed/error workflows after failure |
+| Field              | Description                                           |
+| ------------------ | ----------------------------------------------------- |
+| `TTLAfterFinished` | Time to live for succeeded workflows after completion |
+| `TTLAfterFailed`   | Time to live for failed/error workflows after failure |
 
 ## Cleanup Behavior
 
-### TTLDurationAfterFinished
+### TTLAfterFinished
 
 | TTL Value     | Behavior                                                                         |
 | ------------- | -------------------------------------------------------------------------------- |
@@ -20,7 +20,7 @@ The `ArtifactWorkflowTTLSettings` controls automatic cleanup of completed and fa
 | `0`           | ArtifactWorkflows retained indefinitely                                          |
 | `> 0`         | ArtifactWorkflows retained for specified duration after completion, then deleted |
 
-### TTLDurationAfterFailed
+### TTLAfterFailed
 
 | TTL Value     | Behavior                                                                      |
 | ------------- | ----------------------------------------------------------------------------- |

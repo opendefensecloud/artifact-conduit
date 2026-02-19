@@ -25,14 +25,14 @@ type ArtifactTypeTemplateRef struct {
 }
 
 type ArtifactWorkflowTTLSettings struct {
-	// TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
+	// TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.
-	TTLDurationAfterFinished *metav1.Duration `json:"ttlDurationAfterFinished,omitempty"`
-	// TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
+	TTLAfterFinished *metav1.Duration `json:"ttlAfterFinished,omitempty"`
+	// TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are retained indefinitely.
-	TTLDurationAfterFailed *metav1.Duration `json:"ttlDurationAfterFailed,omitempty"`
+	TTLAfterFailed *metav1.Duration `json:"ttlAfterFailed,omitempty"`
 }
 
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
