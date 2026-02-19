@@ -1,14 +1,31 @@
 
 # TTL-Based Cleanup
 
-The `Order.spec.TTLSecondsAfterCompletion` field controls automatic cleanup of completed `ArtifactWorkflow` resources. Understanding this mechanism is important for status visibility.
+The `ArtifactWorkflowTTLSettings` controls automatic cleanup of completed and failed `ArtifactWorkflow` resources. These settings can be configured on both `ClusterArtifactWorkflow` and `ArtifactWorkflow` specs.
+
+## TTL Settings
+
+| Field                      | Description                                           |
+| -------------------------- | ----------------------------------------------------- |
+| `TTLDurationAfterFinished` | Time to live for succeeded workflows after completion |
+| `TTLDurationAfterFailed`   | Time to live for failed/error workflows after failure |
 
 ## Cleanup Behavior
 
-| TTL Value     | Behavior                                                                        |
-| ------------- | ------------------------------------------------------------------------------- |
-| Not set (nil) | ArtifactWorkflows deleted immediately after reaching `Succeeded` phase          |
-| `0`           | ArtifactWorkflows deleted immediately after reaching `Succeeded` phase          |
-| `> 0`         | ArtifactWorkflows retained for specified seconds after completion, then deleted |
+### TTLDurationAfterFinished
 
-**Note:** Only `Succeeded` workflows are subject to TTL cleanup. `Failed` and `Error` workflows are retained indefinitely for troubleshooting unless explicitly deleted.
+| TTL Value     | Behavior                                                                         |
+| ------------- | -------------------------------------------------------------------------------- |
+| Not set (nil) | ArtifactWorkflows deleted immediately after reaching `Succeeded` phase           |
+| `0`           | ArtifactWorkflows retained indefinitely                                          |
+| `> 0`         | ArtifactWorkflows retained for specified duration after completion, then deleted |
+
+### TTLDurationAfterFailed
+
+| TTL Value     | Behavior                                                                      |
+| ------------- | ----------------------------------------------------------------------------- |
+| Not set (nil) | ArtifactWorkflows retained indefinitely for troubleshooting                   |
+| `0`           | ArtifactWorkflows retained indefinitely                                       |
+| `> 0`         | ArtifactWorkflows retained for specified duration after failure, then deleted |
+
+**Note:** Only `Succeeded`, `Failed`, and `Error` workflows are subject to TTL cleanup. Other workflows (Running, Pending) are retained until completion.

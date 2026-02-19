@@ -454,6 +454,64 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(0))
 		})
 
+		It("should keep artifact workflows when order is failed and TTL is set", func() {
+			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
+			customAt.Spec.TTLDurationAfterFailed = &metav1.Duration{Duration: 2 * time.Second}
+			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
+
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-cleanup-on-completion",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: customAt.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// Check that TTL is set
+			Expect(awList.Items[0].Spec.TTLDurationAfterFailed).To(Equal(customAt.Spec.TTLDurationAfterFailed))
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(awList.Items[0].Namespace, awList.Items[0].Name), wf)
+			}).Should(Succeed())
+
+			// NOTE: Argo Workflows does not support the status resource atm:
+			// https://github.com/argoproj/argo-workflows/issues/11082
+			wf.Status.Phase = wfv1alpha1.WorkflowError
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			// Check that the failure time is set in the order status
+			Eventually(func() metav1.Time {
+				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
+
+				return awStatus.FailureTime
+			}).ShouldNot(BeZero())
+
+			// Eventually the workflow should be kept due to TTL
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// Eventually all artifact workflows should be gone
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
 		It("should create a new artifact workflow and update status when an artifact is added", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
