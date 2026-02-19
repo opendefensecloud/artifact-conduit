@@ -506,8 +506,6 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
-		artifactType.Spec.TTLDurationAfterFailed,
-		artifactType.Spec.TTLDurationAfterFinished,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
@@ -529,8 +527,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstSecret:        dstSecret,
 		sha:              sha,
 		cron:             cron,
-		ttlAfterFinished: artifactType.Spec.TTLDurationAfterFinished,
-		ttlAfterFailed:   artifactType.Spec.TTLDurationAfterFailed,
+		ttlAfterFinished: artifactTypeSpec.TTLDurationAfterFinished,
+		ttlAfterFailed:   artifactTypeSpec.TTLDurationAfterFailed,
 	}, nil
 }
 
