@@ -17,6 +17,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -219,40 +220,48 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			continue
 		}
 
-		// Cleanup finished workflows if TTLDurationAfterFinished is set.
-		if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
-			// If TTL is set, check if it has expired
-			if awStatus.TTLDurationAfterFinished != nil {
-				if awStatus.TTLDurationAfterFinished.Seconds() == 0 {
-					// If TTL is zero keep the workflow.
-					continue
+		// Get ArtifactWorkflow object and check TTLs.
+		artifactWorkflow := &arcv1alpha1.ArtifactWorkflow{}
+		if err := r.Get(ctx, types.NamespacedName{Namespace: order.Namespace, Name: awName(order, sha)}, artifactWorkflow); err != nil && !apierrors.IsNotFound(err) {
+			r.Recorder.Eventf(order, corev1.EventTypeWarning, "Failed to get ArtifactWorkflow: %v", sha)
+			return ctrlResult, errLogAndWrap(log, err, "")
+		}
+		if artifactWorkflow.Name != "" {
+			// Cleanup finished workflows if TTLDurationAfterFinished is set.
+			if awStatus.Phase == arcv1alpha1.WorkflowSucceeded {
+				// If TTL is set, check if it has expired
+				if artifactWorkflow.Spec.TTLDurationAfterFinished != nil {
+					if artifactWorkflow.Spec.TTLDurationAfterFinished.Seconds() == 0 {
+						// If TTL is zero keep the workflow.
+						continue
+					}
+					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFinished.Duration {
+						// If TTL is set but not expired keep the workflow.
+						continue
+					}
 				}
-				if time.Since(awStatus.CompletionTime.Time) < awStatus.TTLDurationAfterFinished.Duration {
-					// If TTL is set but not expired keep the workflow.
+			}
+
+			// Cleanup failed workflows if TTLDurationAfterFailed is set.
+			if awStatus.Phase == arcv1alpha1.WorkflowFailed || awStatus.Phase == arcv1alpha1.WorkflowError {
+				// If TTL is set, check if it has expired
+				if artifactWorkflow.Spec.TTLDurationAfterFailed != nil {
+					if artifactWorkflow.Spec.TTLDurationAfterFailed.Seconds() == 0 {
+						// If TTL is zero keep the workflow.
+						continue
+					}
+					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFailed.Duration {
+						// If TTL is set but not expired keep the workflow.
+						continue
+					}
+				} else {
+					// If no TTL is set keep the workflow.
 					continue
 				}
 			}
 		}
 
-		// Cleanup failed workflows if TTLDurationAfterFailed is set.
-		if awStatus.Phase == arcv1alpha1.WorkflowFailed || awStatus.Phase == arcv1alpha1.WorkflowError {
-			// If TTL is set, check if it has expired
-			if awStatus.TTLDurationAfterFailed != nil {
-				if awStatus.TTLDurationAfterFailed.Seconds() == 0 {
-					// If TTL is zero keep the workflow.
-					continue
-				}
-				if time.Since(awStatus.FailureTime.Time) < awStatus.TTLDurationAfterFailed.Duration {
-					// If TTL is set but not expired keep the workflow.
-					continue
-				}
-			} else {
-				// If no TTL is set keep the workflow.
-				continue
-			}
-		}
-
-		// Cleanup finished workflows
+		// Cleanup finished or not existing workflows
 		finishedAWs = append(finishedAWs, sha)
 	}
 
@@ -290,10 +299,6 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			ArtifactIndex: daw.index,
 			WorkflowStatus: arcv1alpha1.WorkflowStatus{
 				Phase: arcv1alpha1.WorkflowUnknown,
-			},
-			ArtifactWorkflowTTLSettings: arcv1alpha1.ArtifactWorkflowTTLSettings{
-				TTLDurationAfterFinished: daw.ttlAfterFinished,
-				TTLDurationAfterFailed:   daw.ttlAfterFailed,
 			},
 		}
 	}
@@ -386,11 +391,12 @@ func (r *OrderReconciler) hydrateArtifactWorkflow(daw *desiredAW) (*arcv1alpha1.
 	aw := &arcv1alpha1.ArtifactWorkflow{
 		ObjectMeta: daw.objectMeta,
 		Spec: arcv1alpha1.ArtifactWorkflowSpec{
-			WorkflowTemplateRef: daw.typeSpec.WorkflowTemplateRef,
-			Parameters:          params,
-			SrcSecretRef:        daw.srcEndpoint.Spec.SecretRef,
-			DstSecretRef:        daw.dstEndpoint.Spec.SecretRef,
-			Cron:                daw.cron,
+			WorkflowTemplateRef:         daw.typeSpec.WorkflowTemplateRef,
+			Parameters:                  params,
+			SrcSecretRef:                daw.srcEndpoint.Spec.SecretRef,
+			DstSecretRef:                daw.dstEndpoint.Spec.SecretRef,
+			Cron:                        daw.cron,
+			ArtifactWorkflowTTLSettings: daw.typeSpec.ArtifactWorkflowTTLSettings,
 		},
 	}
 
@@ -495,6 +501,10 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		cron = order.Spec.Defaults.Cron
 	}
 
+	// TTLs
+	ttlAfterFinished := artifactTypeSpec.TTLDurationAfterFinished
+	ttlAfterFailed := artifactTypeSpec.TTLDurationAfterFailed
+
 	// Create a hash based on all related data for idempotency and compute the workflow name
 	h := sha256.New()
 	data := []any{
@@ -506,6 +516,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
+		ttlAfterFinished,
+		ttlAfterFailed,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
@@ -527,8 +539,8 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstSecret:        dstSecret,
 		sha:              sha,
 		cron:             cron,
-		ttlAfterFinished: artifactTypeSpec.TTLDurationAfterFinished,
-		ttlAfterFailed:   artifactTypeSpec.TTLDurationAfterFailed,
+		ttlAfterFinished: ttlAfterFinished,
+		ttlAfterFailed:   ttlAfterFailed,
 	}, nil
 }
 

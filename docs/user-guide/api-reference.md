@@ -155,6 +155,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `ttlDurationAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
+| `ttlDurationAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
@@ -197,7 +199,7 @@ _Appears in:_
 
 _Appears in:_
 - [ArtifactTypeSpec](#artifacttypespec)
-- [OrderArtifactWorkflowStatus](#orderartifactworkflowstatus)
+- [ArtifactWorkflowSpec](#artifactworkflowspec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -373,8 +375,6 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlDurationAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlDurationAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset finished ArtifactWorkflow(s) are retained indefinitely. |  |  |
 | `phase` _[WorkflowPhase](#workflowphase)_ | Phase tracks which phase the corresponding Workflow is in |  |  |
 | `message` _string_ | A human readable message describing the current condition of the artifact workflow. |  |  |
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |

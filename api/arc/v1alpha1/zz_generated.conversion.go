@@ -528,6 +528,9 @@ func Convert_arc_ArtifactWorkflowParameter_To_v1alpha1_ArtifactWorkflowParameter
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *ArtifactWorkflowSpec, out *arc.ArtifactWorkflowSpec, s conversion.Scope) error {
+	if err := Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
+		return err
+	}
 	if err := Convert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
 		return err
 	}
@@ -544,6 +547,9 @@ func Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *Artif
 }
 
 func autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.ArtifactWorkflowSpec, out *ArtifactWorkflowSpec, s conversion.Scope) error {
+	if err := Convert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
+		return err
+	}
 	if err := Convert_arc_ArtifactTypeTemplateRef_To_v1alpha1_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
 		return err
 	}
@@ -850,9 +856,6 @@ func Convert_arc_OrderArtifact_To_v1alpha1_OrderArtifact(in *arc.OrderArtifact, 
 }
 
 func autoConvert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowStatus(in *OrderArtifactWorkflowStatus, out *arc.OrderArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
 	if err := Convert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
 		return err
 	}
@@ -866,9 +869,6 @@ func Convert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowSt
 }
 
 func autoConvert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkflowStatus(in *arc.OrderArtifactWorkflowStatus, out *OrderArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
 	if err := Convert_arc_WorkflowStatus_To_v1alpha1_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
 		return err
 	}

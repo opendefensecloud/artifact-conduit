@@ -414,23 +414,14 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			// Check that the ttl time is set in the order status
-			Eventually(func() *metav1.Duration {
-				_ = k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
-				if len(order.Status.ArtifactWorkflows) == 0 {
-					return nil
-				}
-
-				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
-
-				return awStatus.TTLDurationAfterFinished
-			}).ShouldNot(Equal(customAt.Spec.TTLDurationAfterFinished))
-
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
 			}).Should(Equal(1))
+
+			// Check that TTL is set
+			Expect(awList.Items[0].Spec.TTLDurationAfterFinished).To(Equal(customAt.Spec.TTLDurationAfterFinished))
 
 			wf := &wfv1alpha1.Workflow{}
 			Eventually(func() error {

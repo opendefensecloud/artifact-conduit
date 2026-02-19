@@ -708,6 +708,18 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 				Description: "ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
+					"ttlDurationAfterFinished": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
+						},
+					},
+					"ttlDurationAfterFailed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
+						},
+					},
 					"workflowTemplateRef": {
 						SchemaProps: spec.SchemaProps{
 							Description: "WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType",
@@ -754,7 +766,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), v1alpha1.Cron{}.OpenAPIModelName(), v1.LocalObjectReference{}.OpenAPIModelName()},
+			v1alpha1.ArtifactTypeTemplateRef{}.OpenAPIModelName(), v1alpha1.ArtifactWorkflowParameter{}.OpenAPIModelName(), v1alpha1.Cron{}.OpenAPIModelName(), v1.LocalObjectReference{}.OpenAPIModelName(), metav1.Duration{}.OpenAPIModelName()},
 	}
 }
 
@@ -1272,18 +1284,6 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlDurationAfterFinished": {
-						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
-							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
-						},
-					},
-					"ttlDurationAfterFailed": {
-						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
-							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
-						},
-					},
 					"phase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Phase tracks which phase the corresponding Workflow is in\n\nPossible enum values:\n - `\"\"` analog to Argo Workflows\n - `\"Active\"`\n - `\"Error\"`\n - `\"Failed\"`\n - `\"Pending\"`\n - `\"Running\"`\n - `\"Stopped\"`\n - `\"Succeeded\"`",
@@ -1346,7 +1346,7 @@ func schema_arc_api_arc_v1alpha1_OrderArtifactWorkflowStatus(ref common.Referenc
 			},
 		},
 		Dependencies: []string{
-			metav1.Duration{}.OpenAPIModelName(), metav1.Time{}.OpenAPIModelName()},
+			metav1.Time{}.OpenAPIModelName()},
 	}
 }
 

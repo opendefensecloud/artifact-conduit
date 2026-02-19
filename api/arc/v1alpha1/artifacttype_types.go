@@ -28,10 +28,12 @@ type ArtifactWorkflowTTLSettings struct {
 	// TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.
+	// +optional
 	TTLDurationAfterFinished *metav1.Duration `json:"ttlDurationAfterFinished,omitempty"`
 	// TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.
 	// After this time, the ArtifactWorkflow(s) are automatically deleted.
 	// If unset finished ArtifactWorkflow(s) are retained indefinitely.
+	// +optional
 	TTLDurationAfterFailed *metav1.Duration `json:"ttlDurationAfterFailed,omitempty"`
 }
 

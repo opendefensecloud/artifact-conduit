@@ -60,8 +60,7 @@ type OrderStatus struct {
 }
 
 type OrderArtifactWorkflowStatus struct {
-	ArtifactWorkflowTTLSettings `json:",inline"`
-	WorkflowStatus              `json:",inline"`
+	WorkflowStatus `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex int `json:"artifactIndex"`
 }

@@ -7,6 +7,7 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ArtifactWorkflowSpecApplyConfiguration represents a declarative configuration of the ArtifactWorkflowSpec type for use
@@ -14,6 +15,7 @@ import (
 //
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpecApplyConfiguration struct {
+	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType
 	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
 	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.
@@ -30,6 +32,22 @@ type ArtifactWorkflowSpecApplyConfiguration struct {
 // apply.
 func ArtifactWorkflowSpec() *ArtifactWorkflowSpecApplyConfiguration {
 	return &ArtifactWorkflowSpecApplyConfiguration{}
+}
+
+// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLDurationAfterFinished(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
+	return b
+}
+
+// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
+func (b *ArtifactWorkflowSpecApplyConfiguration) WithTTLDurationAfterFailed(value metav1.Duration) *ArtifactWorkflowSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
+	return b
 }
 
 // WithWorkflowTemplateRef sets the WorkflowTemplateRef field in the declarative configuration to the given value
