@@ -424,7 +424,7 @@ var _ = Describe("OrderController", func() {
 				awStatus := order.Status.ArtifactWorkflows[slices.Collect(maps.Keys(order.Status.ArtifactWorkflows))[0]]
 
 				return awStatus.TTLDurationAfterFinished
-			}).ShouldNot(BeNil())
+			}).ShouldNot(Equal(customAt.Spec.TTLDurationAfterFinished))
 
 			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
@@ -450,7 +450,7 @@ var _ = Describe("OrderController", func() {
 				return awStatus.CompletionTime
 			}).ShouldNot(BeZero())
 
-			// Eventually the workflow should be keept due to TTL
+			// Eventually the workflow should be kepet due to TTL
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
