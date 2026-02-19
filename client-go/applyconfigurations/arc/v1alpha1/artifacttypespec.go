@@ -30,19 +30,19 @@ func ArtifactTypeSpec() *ArtifactTypeSpecApplyConfiguration {
 	return &ArtifactTypeSpecApplyConfiguration{}
 }
 
-// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
+// WithTTLAfterFinished sets the TTLAfterFinished field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithTTLDurationAfterFinished(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
+// If called multiple times, the TTLAfterFinished field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLAfterFinished(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLAfterFinished = &value
 	return b
 }
 
-// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
+// WithTTLAfterFailed sets the TTLAfterFailed field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
-func (b *ArtifactTypeSpecApplyConfiguration) WithTTLDurationAfterFailed(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
+// If called multiple times, the TTLAfterFailed field is set to the value of the last call.
+func (b *ArtifactTypeSpecApplyConfiguration) WithTTLAfterFailed(value v1.Duration) *ArtifactTypeSpecApplyConfiguration {
+	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLAfterFailed = &value
 	return b
 }
 

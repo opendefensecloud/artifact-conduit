@@ -488,15 +488,15 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeSpec(ref common.ReferenceCallback) 
 				Description: "ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlDurationAfterFinished": {
+					"ttlAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Description: "TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlDurationAfterFailed": {
+					"ttlAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Description: "TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
@@ -708,15 +708,15 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 				Description: "ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlDurationAfterFinished": {
+					"ttlAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Description: "TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlDurationAfterFailed": {
+					"ttlAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Description: "TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
@@ -860,15 +860,15 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowTTLSettings(ref common.Referenc
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"ttlDurationAfterFinished": {
+					"ttlAfterFinished": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
+							Description: "TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are automatically deleted immediately after completion.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},
-					"ttlDurationAfterFailed": {
+					"ttlAfterFailed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "TTLDurationAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
+							Description: "TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure. After this time, the ArtifactWorkflow(s) are automatically deleted. If unset finished ArtifactWorkflow(s) are retained indefinitely.",
 							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
 						},
 					},

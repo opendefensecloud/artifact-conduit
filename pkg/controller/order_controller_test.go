@@ -398,7 +398,7 @@ var _ = Describe("OrderController", func() {
 
 		It("should keep artifact workflows when order is completed successfully and TTL is set", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
-			customAt.Spec.TTLDurationAfterFinished = &metav1.Duration{Duration: 2 * time.Second}
+			customAt.Spec.TTLAfterFinished = &metav1.Duration{Duration: 2 * time.Second}
 			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			order := &arcv1alpha1.Order{
@@ -421,7 +421,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 
 			// Check that TTL is set
-			Expect(awList.Items[0].Spec.TTLDurationAfterFinished).To(Equal(customAt.Spec.TTLDurationAfterFinished))
+			Expect(awList.Items[0].Spec.TTLAfterFinished).To(Equal(customAt.Spec.TTLAfterFinished))
 
 			wf := &wfv1alpha1.Workflow{}
 			Eventually(func() error {
@@ -456,7 +456,7 @@ var _ = Describe("OrderController", func() {
 
 		It("should keep artifact workflows when order is failed and TTL is set", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
-			customAt.Spec.TTLDurationAfterFailed = &metav1.Duration{Duration: 2 * time.Second}
+			customAt.Spec.TTLAfterFailed = &metav1.Duration{Duration: 2 * time.Second}
 			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			order := &arcv1alpha1.Order{
@@ -479,7 +479,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 
 			// Check that TTL is set
-			Expect(awList.Items[0].Spec.TTLDurationAfterFailed).To(Equal(customAt.Spec.TTLDurationAfterFailed))
+			Expect(awList.Items[0].Spec.TTLAfterFailed).To(Equal(customAt.Spec.TTLAfterFailed))
 
 			wf := &wfv1alpha1.Workflow{}
 			Eventually(func() error {
