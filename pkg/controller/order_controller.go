@@ -38,18 +38,16 @@ type OrderReconciler struct {
 }
 
 type desiredAW struct {
-	index            int
-	objectMeta       metav1.ObjectMeta
-	artifact         *arcv1alpha1.OrderArtifact
-	typeSpec         *arcv1alpha1.ArtifactTypeSpec
-	srcEndpoint      *arcv1alpha1.Endpoint
-	dstEndpoint      *arcv1alpha1.Endpoint
-	srcSecret        *corev1.Secret
-	dstSecret        *corev1.Secret
-	sha              string
-	cron             *arcv1alpha1.Cron
-	ttlAfterFinished *metav1.Duration
-	ttlAfterFailed   *metav1.Duration
+	index       int
+	objectMeta  metav1.ObjectMeta
+	artifact    *arcv1alpha1.OrderArtifact
+	typeSpec    *arcv1alpha1.ArtifactTypeSpec
+	srcEndpoint *arcv1alpha1.Endpoint
+	dstEndpoint *arcv1alpha1.Endpoint
+	srcSecret   *corev1.Secret
+	dstSecret   *corev1.Secret
+	sha         string
+	cron        *arcv1alpha1.Cron
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
@@ -237,6 +235,8 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					}
 					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFinished.Duration {
 						// If TTL is set but not expired keep the workflow.
+						// Requeue when the next TTL expires
+						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time)
 						continue
 					}
 				}
@@ -252,6 +252,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					}
 					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFailed.Duration {
 						// If TTL is set but not expired keep the workflow.
+						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFailed.Duration - time.Since(awStatus.CompletionTime.Time)
 						continue
 					}
 				} else {
@@ -501,10 +502,6 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		cron = order.Spec.Defaults.Cron
 	}
 
-	// TTLs
-	ttlAfterFinished := artifactTypeSpec.TTLDurationAfterFinished
-	ttlAfterFailed := artifactTypeSpec.TTLDurationAfterFailed
-
 	// Create a hash based on all related data for idempotency and compute the workflow name
 	h := sha256.New()
 	data := []any{
@@ -516,8 +513,6 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 		dstEndpoint.Name,
 		order.Status.LastForceAt,
 		cron,
-		ttlAfterFinished,
-		ttlAfterFailed,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
@@ -529,18 +524,16 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// We gave all the information to further process this artifact workflow.
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
-		index:            i,
-		objectMeta:       awObjectMeta(order, sha),
-		artifact:         artifact,
-		typeSpec:         artifactTypeSpec,
-		srcEndpoint:      srcEndpoint,
-		dstEndpoint:      dstEndpoint,
-		srcSecret:        srcSecret,
-		dstSecret:        dstSecret,
-		sha:              sha,
-		cron:             cron,
-		ttlAfterFinished: ttlAfterFinished,
-		ttlAfterFailed:   ttlAfterFailed,
+		index:       i,
+		objectMeta:  awObjectMeta(order, sha),
+		artifact:    artifact,
+		typeSpec:    artifactTypeSpec,
+		srcEndpoint: srcEndpoint,
+		dstEndpoint: dstEndpoint,
+		srcSecret:   srcSecret,
+		dstSecret:   dstSecret,
+		sha:         sha,
+		cron:        cron,
 	}, nil
 }
 
