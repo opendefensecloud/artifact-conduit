@@ -252,7 +252,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 					}
 					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLDurationAfterFailed.Duration {
 						// If TTL is set but not expired keep the workflow.
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFailed.Duration - time.Since(awStatus.CompletionTime.Time)
+						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLDurationAfterFailed.Duration - time.Since(awStatus.FailureTime.Time)
 						continue
 					}
 				} else {
