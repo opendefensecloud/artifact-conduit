@@ -25,6 +25,7 @@ const ( // analog to Argo Workflows
 
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpec struct {
+	ArtifactWorkflowTTLSettings `json:",inline"`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType
 	WorkflowTemplateRef ArtifactTypeTemplateRef `json:"workflowTemplateRef"`
 	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.

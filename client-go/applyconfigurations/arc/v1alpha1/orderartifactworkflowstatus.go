@@ -13,8 +13,7 @@ import (
 // OrderArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the OrderArtifactWorkflowStatus type for use
 // with apply.
 type OrderArtifactWorkflowStatusApplyConfiguration struct {
-	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
-	WorkflowStatusApplyConfiguration              `json:",inline"`
+	WorkflowStatusApplyConfiguration `json:",inline"`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex *int `json:"artifactIndex,omitempty"`
 }
@@ -23,22 +22,6 @@ type OrderArtifactWorkflowStatusApplyConfiguration struct {
 // apply.
 func OrderArtifactWorkflowStatus() *OrderArtifactWorkflowStatusApplyConfiguration {
 	return &OrderArtifactWorkflowStatusApplyConfiguration{}
-}
-
-// WithTTLDurationAfterFinished sets the TTLDurationAfterFinished field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFinished field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLDurationAfterFinished(value v1.Duration) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFinished = &value
-	return b
-}
-
-// WithTTLDurationAfterFailed sets the TTLDurationAfterFailed field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the TTLDurationAfterFailed field is set to the value of the last call.
-func (b *OrderArtifactWorkflowStatusApplyConfiguration) WithTTLDurationAfterFailed(value v1.Duration) *OrderArtifactWorkflowStatusApplyConfiguration {
-	b.ArtifactWorkflowTTLSettingsApplyConfiguration.TTLDurationAfterFailed = &value
-	return b
 }
 
 // WithPhase sets the Phase field in the declarative configuration to the given value
