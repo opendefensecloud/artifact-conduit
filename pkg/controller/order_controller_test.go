@@ -398,7 +398,7 @@ var _ = Describe("OrderController", func() {
 
 		It("should keep artifact workflows when order is completed successfully and TTL is set", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
-			customAt.Spec.TTLDurationAfterFinished = &metav1.Duration{Duration: 10 * time.Second}
+			customAt.Spec.TTLDurationAfterFinished = &metav1.Duration{Duration: 2 * time.Second}
 			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			order := &arcv1alpha1.Order{
@@ -441,7 +441,7 @@ var _ = Describe("OrderController", func() {
 				return awStatus.CompletionTime
 			}).ShouldNot(BeZero())
 
-			// Eventually the workflow should be kepet due to TTL
+			// Eventually the workflow should be kept due to TTL
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
