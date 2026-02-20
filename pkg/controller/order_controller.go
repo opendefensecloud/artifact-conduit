@@ -18,7 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -34,7 +34,7 @@ const (
 type OrderReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	Recorder events.EventRecorder
 }
 
 type desiredAW struct {
@@ -82,7 +82,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
-		r.Recorder.Event(order, corev1.EventTypeWarning, "Deleting", "Order is being deleted, cleaning up artifact workflows")
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "Deleting", "Delete", "Order is being deleted, cleaning up artifact workflows")
 
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
@@ -136,7 +136,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 	if !forceAt.IsZero() && (order.Status.LastForceAt.IsZero() || forceAt.After(order.Status.LastForceAt.Time)) {
 		log.V(1).Info("Force reconcile requested")
-		r.Recorder.Event(order, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
+		r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, "ForceReconcile", "Reconcile", "Force reconcile requested via annotation")
 		// Delete existing artifact workflows to force re-creation
 		for sha := range order.Status.ArtifactWorkflows {
 			// Remove Secret and ArtifactWorkflow
@@ -145,7 +145,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			}
 			_ = r.Delete(ctx, aw) // Ignore errors
 			delete(order.Status.ArtifactWorkflows, sha)
-			r.Recorder.Eventf(order, corev1.EventTypeNormal, "ForceReconcile", "Deleted artifact workflow '%s' with sha %s", aw.Name, sha)
+			r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "ForceReconcile", "Reconcile", "Deleted artifact workflow '%s' with sha %s", aw.Name, sha)
 		}
 		// Update last force time
 		order.Status.LastForceAt = metav1.Now()
@@ -167,7 +167,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for i, artifact := range order.Spec.Artifacts {
 		daw, err := r.computeDesiredAW(ctx, log, order, &artifact, i)
 		if err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "ComputationFailed", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "ComputationFailed", "Compute", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			if err := r.Status().Update(ctx, order); err != nil {
 				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
@@ -221,7 +221,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Get ArtifactWorkflow object and check TTLs.
 		artifactWorkflow := &arcv1alpha1.ArtifactWorkflow{}
 		if err := r.Get(ctx, types.NamespacedName{Namespace: order.Namespace, Name: awName(order, sha)}, artifactWorkflow); err != nil && !apierrors.IsNotFound(err) {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "Failed to get ArtifactWorkflow: %v", sha)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "Invalid", "Fetch", "Failed to fetch ArtifactWorkflow: %v", sha)
 			return ctrlResult, errLogAndWrap(log, err, "")
 		}
 		if artifactWorkflow.Name != "" {
@@ -271,13 +271,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		daw := desiredAWs[sha]
 		aw, err := r.hydrateArtifactWorkflow(&daw)
 		if err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "HydrationFailed", "Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "HydrationFailed", "Hydrate", "Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err)
 			return ctrlResult, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
 		}
 
 		// Set owner references
 		if err := controllerutil.SetControllerReference(order, aw, r.Scheme); err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "HydrationFailed", "Failed to set controller reference for artifact workflow: %v", err)
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "HydrationFailed", "Hydrate", "Failed to set controller reference for artifact workflow: %v", err)
 			return ctrlResult, errLogAndWrap(log, err, "failed to set controller reference")
 		}
 
@@ -287,11 +287,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				// Already created by a previous reconcile — that's fine
 				continue
 			}
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "CreationFailed", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "CreationFailed", "Create", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
 
 			return ctrlResult, errLogAndWrap(log, err, "failed to create artifact workflow")
 		} else {
-			r.Recorder.Eventf(order, corev1.EventTypeNormal, "ArtifactWorkflowCreated", "Created artifact workflow '%s' for artifact index %d", aw.Name, daw.index)
+			r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Created", "Create", "Created artifact workflow '%s' for artifact index %d", aw.Name, daw.index)
 			log.V(1).Info("Created artifact workflow", "artifactWorkflow", aw.Name)
 		}
 
@@ -307,31 +307,33 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Delete obsolete artifact workflows
 	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
-		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
+		aw := &arcv1alpha1.ArtifactWorkflow{
 			ObjectMeta: awObjectMeta(order, sha),
-		}); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "DeletionFailed", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
+		}
+		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
 			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		// Update status
 		delete(order.Status.ArtifactWorkflows, sha)
 		log.V(1).Info("Deleted obsolete artifact workflow", "artifactWorkflow", sha)
-		r.Recorder.Eventf(order, corev1.EventTypeNormal, "ArtifactWorkflowDeleted", "Deleted obsolete artifact workflow '%s'", sha)
+		r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Deleted", "Delete", "Deleted obsolete artifact workflow '%s'", sha)
 	}
 
 	// Delete finished artifact workflows
 	for _, sha := range finishedAWs {
 		// Finished, let's clean up!
-		if err := r.Delete(ctx, &arcv1alpha1.ArtifactWorkflow{
+		aw := &arcv1alpha1.ArtifactWorkflow{
 			ObjectMeta: awObjectMeta(order, sha),
-		}); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "DeletionFailed", "Failed to delete finished artifact workflow '%s': %v", sha, err)
+		}
+		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete finished artifact workflow '%s': %v", sha, err)
 			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		log.V(1).Info("Deleted finished artifact workflow", "artifactWorkflow", sha)
-		r.Recorder.Eventf(order, corev1.EventTypeNormal, "ArtifactWorkflowDeleted", "Deleted finished artifact workflow '%s'", sha)
+		r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Deleted", "Delete", "Deleted finished artifact workflow '%s'", sha)
 	}
 
 	anyPhaseChanged := false
@@ -419,25 +421,25 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 
 	srcEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidEndpoint", "FetchEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for source")
 	}
 	dstEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Failed to fetch destination endpoint '%s': %v", dstRefName, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidEndpoint", "FetchEndpoint", "Failed to fetch destination endpoint '%s': %v", dstRefName, err)
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 	}
 
 	// Validate that the endpoint usage is correct
 	if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+		r.Recorder.Eventf(order, srcEndpoint, corev1.EventTypeWarning, "InvalidEndpoint", "ValidateEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+		r.Recorder.Eventf(order, dstEndpoint, corev1.EventTypeWarning, "InvalidEndpoint", "ValidateEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
@@ -445,7 +447,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// Validate against ArtifactType rules
 	artifactType := &arcv1alpha1.ArtifactType{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Failed to fetch ArtifactType '%s': %v", artifact.Type, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidArtifactType", "FetchArtifactType", "Failed to fetch ArtifactType '%s': %v", artifact.Type, err)
 		return nil, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 	}
 	var (
@@ -468,13 +470,13 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 
 	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
 		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
+		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, "InvalidArtifactType", "ValidateArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
 		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
+		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, "InvalidArtifactType", "ValidateArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
@@ -483,7 +485,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	srcSecret := &corev1.Secret{}
 	if srcEndpoint.Spec.SecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", "Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err)
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
@@ -491,7 +493,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	dstSecret := &corev1.Secret{}
 	if dstEndpoint.Spec.SecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-			r.Recorder.Eventf(order, corev1.EventTypeWarning, "InvalidSecret", "Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", "Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err)
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}

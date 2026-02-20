@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -42,7 +42,7 @@ var (
 	k8sClient    client.Client
 	testEnv      *envtest.Environment
 	atValue      = "art"
-	fakeRecorder *record.FakeRecorder
+	fakeRecorder *events.FakeRecorder
 )
 
 func TestController(t *testing.T) {
@@ -84,7 +84,7 @@ var _ = BeforeSuite(func() {
 	DeferCleanup(cancel)
 
 	// log all events to GinkgoWriter
-	fakeRecorder = record.NewFakeRecorder(1)
+	fakeRecorder = events.NewFakeRecorder(1)
 	go func() {
 		for event := range fakeRecorder.Events {
 			logf.Log.Info(fmt.Sprintf("Event: %s", event))

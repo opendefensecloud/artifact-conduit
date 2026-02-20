@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,7 +39,7 @@ type ArtifactWorkflowReconciler struct {
 	client.Client
 	ClientSet kubernetes.Interface
 	Scheme    *runtime.Scheme
-	Recorder  record.EventRecorder
+	Recorder  events.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=clusterartifacttypes,verbs=get;list;watch
@@ -120,7 +120,7 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	if !forceAt.IsZero() && (aw.Status.LastForceAt.IsZero() || forceAt.After(aw.Status.LastForceAt.Time)) {
 		log.V(1).Info("Force reconcile requested")
-		r.Recorder.Event(aw, corev1.EventTypeNormal, "ForceReconcile", "Force reconcile requested via annotation")
+		r.Recorder.Eventf(aw, nil, corev1.EventTypeNormal, "ForceReconcile", "Reconcile", "Force reconcile requested via annotation")
 		// Delete existing workflow, if any
 		if err := handler.DeleteArgoResources(ctx); err != nil {
 			return ctrlResult, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
@@ -224,7 +224,7 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
 			return nil, nil, fmt.Errorf("failed to fetch secret for source: %w", err)
 		}
 	}
@@ -232,7 +232,7 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	dstSecret := corev1.Secret{}
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			r.Recorder.Event(aw, corev1.EventTypeWarning, "InvalidSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
 			return nil, nil, fmt.Errorf("failed to fetch secret for destination: %w", err)
 		}
 	}

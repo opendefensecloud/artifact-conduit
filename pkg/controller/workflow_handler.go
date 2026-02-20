@@ -44,10 +44,10 @@ func (h *SingleWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 		},
 	}
 	if err := h.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.aw.Name, err))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, "DeletionFailed", "Delete", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.aw.Name, err))
 		return errLogAndWrap(h.log, err, "workflow deletion failed")
 	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted workflow '%s'", h.aw.Name))
+	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted workflow '%s'", h.aw.Name))
 
 	return nil
 }
@@ -65,10 +65,10 @@ func (h *SingleWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 	}
 
 	if err := h.Create(ctx, wf); client.IgnoreAlreadyExists(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create workflow '%s': %v", wf.GetName(), err))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, "CreationFailed", "Create", fmt.Sprintf("Failed to create workflow '%s': %v", wf.GetName(), err))
 		return errLogAndWrap(h.log, err, "failed to create argo workflow")
 	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created workflow '%s'", wf.GetName()))
+	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Created", "Create", fmt.Sprintf("Created workflow '%s'", wf.GetName()))
 
 	h.aw.Status.Phase = arcv1alpha1.WorkflowPending
 	if err := h.Status().Update(ctx, h.aw); err != nil {
@@ -115,10 +115,10 @@ func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 		},
 	}
 	if err := h.Delete(ctx, &cwf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Event(h.aw, corev1.EventTypeWarning, "DeletionFailed", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, "DeletionFailed", "Delete", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
 		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
 	}
-	h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Deleted", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
+	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
 
 	return nil
 }
@@ -137,11 +137,11 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 
 	if err := h.Create(ctx, cwf); err != nil {
 		if client.IgnoreAlreadyExists(err) != nil {
-			h.Recorder.Event(h.aw, corev1.EventTypeWarning, "CreationFailed", fmt.Sprintf("Failed to create cron workflow '%s': %v", cwf.GetName(), err))
+			h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, "CreationFailed", "Create", fmt.Sprintf("Failed to create cron workflow '%s': %v", cwf.GetName(), err))
 			return errLogAndWrap(h.log, err, "failed to create argo cron workflow")
 		}
 	} else {
-		h.Recorder.Event(h.aw, corev1.EventTypeNormal, "Created", fmt.Sprintf("Created cron workflow '%s'", cwf.GetName()))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Created", "Create", fmt.Sprintf("Created cron workflow '%s'", cwf.GetName()))
 	}
 
 	h.aw.Status.Phase = arcv1alpha1.WorkflowPending
