@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="../../arc_logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -839,6 +839,17 @@
     <span class="md-ellipsis">
       
         ArtifactWorkflowStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#artifactworkflowttlsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactWorkflowTTLSettings
       
     </span>
   </a>
@@ -2106,6 +2117,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#artifactworkflowttlsettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ArtifactWorkflowTTLSettings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#clusterartifacttype" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2394,6 +2416,18 @@
 </thead>
 <tbody>
 <tr>
+<td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>rules</code> <em><a href="#artifacttyperules">ArtifactTypeRules</a></em></td>
 <td>Rules defines a set of rules for this type.</td>
 <td></td>
@@ -2537,6 +2571,18 @@
 </thead>
 <tbody>
 <tr>
+<td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>workflowTemplateRef</code> <em><a href="#artifacttypetemplateref">ArtifactTypeTemplateRef</a></em></td>
 <td>WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType</td>
 <td></td>
@@ -2601,6 +2647,12 @@
 <td></td>
 </tr>
 <tr>
+<td><code>failureTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>FailureTime is the time when the workflow finished with a failure status.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>lastScheduled</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>LastScheduled is the last time the workflow was scheduled via cron</td>
 <td></td>
@@ -2633,6 +2685,34 @@
 <tr>
 <td><code>activeWorkflowRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br>It resets after a successful or failed run.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="artifactworkflowttlsettings">ArtifactWorkflowTTLSettings<a class="headerlink" href="#artifactworkflowttlsettings" title="Permanent link">¶</a></h4>
+<p><em>Appears in:</em>
+- <a href="#artifacttypespec">ArtifactTypeSpec</a>
+- <a href="#artifactworkflowspec">ArtifactWorkflowSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
+<td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
 <td></td>
 <td></td>
 </tr>
@@ -2967,6 +3047,12 @@
 <td></td>
 </tr>
 <tr>
+<td><code>failureTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>FailureTime is the time when the workflow finished with a failure status.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>lastScheduled</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>LastScheduled is the last time the workflow was scheduled via cron</td>
 <td></td>
@@ -3049,12 +3135,6 @@
 <tr>
 <td><code>artifacts</code> <em><a href="#orderartifact">OrderArtifact</a> array</em></td>
 <td>Artifacts lists all artifacts, that will be processed by this Order.</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td><code>TTLSecondsAfterCompletion</code> <em>integer</em></td>
-<td>TTLSecondsAfterCompletion specifies the time to live for the created ArtifactWorkflow(s) after completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset, the ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
 <td></td>
 <td></td>
 </tr>
@@ -3178,6 +3258,12 @@
 <tr>
 <td><code>completionTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
 <td>CompletionTime is the time when the workflow finished</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>failureTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>FailureTime is the time when the workflow finished with a failure status.</td>
 <td></td>
 <td></td>
 </tr>
