@@ -112,7 +112,7 @@ jobs:
           output-file: 'sbom.cyclonedx.json'
           upload-release-assets: false # we use immutable releases
       - name: Attest SBOM
-        uses: actions/attest-sbom@v3
+        uses: actions/attest-sbom@v4
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
