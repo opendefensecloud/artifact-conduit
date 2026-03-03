@@ -10,7 +10,7 @@ require (
 	github.com/onsi/gomega v1.39.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/pflag v1.0.10
-	go.opendefense.cloud/kit v0.3.0
+	go.opendefense.cloud/kit v0.3.1
 	k8s.io/api v0.35.2
 	k8s.io/apimachinery v0.35.2
 	k8s.io/apiserver v0.35.2
