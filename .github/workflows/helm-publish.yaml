@@ -43,7 +43,7 @@ jobs:
           version: 'v4.0.1'
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v4.0.0
+        uses: sigstore/cosign-installer@v4.1.0
 
       - name: Login to GHCR # required for cosign
         uses: docker/login-action@v3
