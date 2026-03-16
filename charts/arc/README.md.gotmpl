@@ -5,9 +5,17 @@
 
 # ARC Helm Chart
 
-This Helm chart deploys Artifact Conduit (ARC) - a Kubernetes-native system for artifact procurement and transfer across security zones with automated scanning and validation.
+{{ template "chart.deprecationWarning" . }}
+
+{{ template "chart.badgesSection" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.homepageLine" . }}
 
 ## Prerequisites
+
+{{ template "chart.requirementsSection" . }}
 
 - Kubernetes 1.28+
 - Helm 3.8+
@@ -286,6 +294,8 @@ If you're currently using Kustomize to deploy ARC:
 
 Contributions are welcome! Please see the [Contributing Guide](https://github.com/opendefensecloud/artifact-conduit/blob/main/docs/CONTRIBUTING.md).
 
+#{{ template "chart.maintainersSection" . }}
+
 ## License
 
 Apache-2.0
@@ -296,3 +306,5 @@ Apache-2.0
 - [GitHub Repository](https://github.com/opendefensecloud/artifact-conduit)
 - [Issue Tracker](https://github.com/opendefensecloud/artifact-conduit/issues)
 - [Examples](https://github.com/opendefensecloud/artifact-conduit/tree/main/examples)
+
+#{{ template "chart.sourcesSection" . }}
