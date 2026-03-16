@@ -83,6 +83,7 @@ plugins:
   - search # re-include the default: https://www.mkdocs.org/user-guide/configuration/#plugins,
   - glightbox
   - include-markdown
+  - awesome-nav
   - panzoom:
       full_screen: True # default False
 validation:
@@ -90,39 +91,5 @@ validation:
   absolute_links: relative_to_docs
   unrecognized_links: warn
   anchors: warn
-nav:
-  - Home: index.md
-  - Getting Started:
-      - getting-started.md
-      - walk-through/about.md
-  - User Guide:
-      - user-guide/core-concepts.md
-      - user-guide/api-reference.md
-  - Operator Manual:
-      - Installation:
-          - operator-manual/installation.md
-          - operator-manual/helm.md
-      - operator-manual/releases.md
-      - operator-manual/upgrading.md
-      # - operator-manual/new-features.md
-      # - operator-manual/security.md
-      - operator-manual/understanding-workflows.md
-      - operator-manual/extending-artifact-types.md
-      - operator-manual/force-reconciliation.md
-      - operator-manual/debugging.md
-      - operator-manual/ttl-based-cleanup.md
-      - operator-manual/cron-orders.md
-      - operator-manual/verifying-artifacts.md
-  - Developer Guide:
-      - Code of Conduct: CODE_OF_CONDUCT.md
-      - CONTRIBUTING.md
-      - developer-guide/architecture.md
-      - developer-guide/developing-locally.md
-      - developer-guide/documentation-changes.md
-      - developer-guide/workflow-execution.md
-      - ADRs:
-          - developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records.md
-          - developer-guide/adrs/001-ARC-Architecture.md
-          - developer-guide/adrs/002-ARC-API.md
-          - developer-guide/adrs/003-Branch-Naming.md
-          - developer-guide/adrs/004-Scheduled-Orders.md
+exclude_docs: |
+  requirements.txt

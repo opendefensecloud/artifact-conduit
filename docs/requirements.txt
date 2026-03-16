@@ -1,0 +1,8 @@
+mkdocs-material
+mkdocs-glightbox
+mkdocs-include-markdown-plugin
+mkdocs-panzoom-plugin
+
+pillow
+cairosvg
+mike

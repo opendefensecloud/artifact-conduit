@@ -23,11 +23,7 @@ jobs:
           python-version: 3.14.3
       - name: Install Dependencies
         run: |
-          pip install mkdocs-material
-          pip install mkdocs-glightbox
-          pip install mkdocs-include-markdown-plugin
-          pip install mkdocs-panzoom-plugin
-          pip install pillow cairosvg mike
+          pip install -r docs/requirements.txt
       - name: Setup Docs Deploy
         run: |
           git config --global user.name "Docs Deploy"
