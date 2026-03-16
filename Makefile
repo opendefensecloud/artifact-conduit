@@ -221,7 +221,7 @@ docker-build-manager: ## Build manager image
 
 .PHONY: docker-build-docs
 docker-build-docs: ## Build mkdocs image for local serving of documentation
-	@$(DOCKER) build --target mkdocs -t local/mkdocs-material .
+	@$(DOCKER) build --target mkdocs -t ${DOCS_IMG} .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
