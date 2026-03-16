@@ -39,6 +39,6 @@ Then, copy the commands below to install ARC with `helm`:
 
 ## Checkout the examples
 
-Keep in mind that multiple resources have to be created to be able to run workflows for your orders, so the best place to start is the [examples](../examples/).
+Keep in mind that multiple resources have to be created to be able to run workflows for your orders, so the best place to start is the [examples](https://github.com/opendefensecloud/artifact-conduit/tree/main/examples).
 
 For an `Order` to complete you need to define `ArtifactType` or `ClusterArtifactType` for your desired artifact types, which in turn reference the workflow templates.
