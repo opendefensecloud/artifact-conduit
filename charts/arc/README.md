@@ -1,3 +1,8 @@
+<!-- IMPORTANT:
+  This file contains auto generated content.
+  Make sure to edit `README.md.gotmpl` and run `make docs-helm-ref`
+-->
+
 # ARC Helm Chart
 
 This Helm chart deploys Artifact Conduit (ARC) - a Kubernetes-native system for artifact procurement and transfer across security zones with automated scanning and validation.
