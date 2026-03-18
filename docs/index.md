@@ -78,7 +78,7 @@ flowchart LR
 ## Quickstart
 
 - [Get started here](getting-started.md)
-- [Walk-through Workflow Configuration](./operator-manual/workflow-config.md)
+- [Walk-through Workflow Configuration](./operator-manual/understanding-workflows.md)
 
 ## Features
 

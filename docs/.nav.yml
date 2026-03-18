@@ -1,0 +1,18 @@
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started.md
+      - walk-through/about.md
+  - User Guide:
+      - user-guide/*
+  - Operator Manual:
+      - Installation:
+          - operator-manual/installation.md
+          - operator-manual/helm.md
+      - operator-manual/*
+  - Developer Guide:
+      - Code of Conduct: CODE_OF_CONDUCT.md
+      - CONTRIBUTING.md
+      - developer-guide/*
+      - ADRs:
+          - developer-guide/adrs/*

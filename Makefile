@@ -10,6 +10,7 @@ MAKEFLAGS += --no-print-directory
 BUILD_PATH ?= $(shell pwd)
 HACK_DIR ?= $(shell cd hack 2>/dev/null && pwd)
 LOCALBIN ?= $(BUILD_PATH)/bin
+ARC_CHART_DIR ?= $(BUILD_PATH)/charts/arc
 
 GO ?= go
 SHELLCHECK ?= shellcheck
@@ -26,6 +27,7 @@ ADDLICENSE ?= $(LOCALBIN)/addlicense
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
 CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
+HELM_DOCS ?= $(LOCALBIN)/helm-docs
 
 GINKGO_VERSION ?= $(shell go list -json -m -u github.com/onsi/ginkgo/v2 | jq -r '.Version')
 GOLANGCI_LINT_VERSION ?= v2.8.0
@@ -34,6 +36,7 @@ ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_K8S_VERSION ?= 1.34.1
 CRD_REF_DOCS_VERSION ?= v0.2.0
+HELM_DOCS_VERSION ?= v1.14.2
 
 export GOPRIVATE=*.go.opendefense.cloud/arc
 export GNOSUMDB=*.go.opendefense.cloud/arc
@@ -41,6 +44,7 @@ export GNOPROXY=*.go.opendefense.cloud/arc
 
 APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
+DOCS_IMG ?= arc-docs:latest
 
 ##@ General
 
@@ -217,14 +221,17 @@ docker-build-manager: ## Build manager image
 
 .PHONY: docker-build-docs
 docker-build-docs: ## Build mkdocs image for local serving of documentation
-	@$(DOCKER) build --target mkdocs -t local/mkdocs-material .
+	@$(DOCKER) build --target mkdocs -t ${DOCS_IMG} .
 
 docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
+docs-helm-ref: helm-docs ## Generate Helm Chart reference documentation.
+	cd $(ARC_CHART_DIR) && $(HELM_DOCS) --template-files=README.md.gotmpl
+
 .PHONY: docs
-docs: docs-crd-ref docker-build-docs ## Serve the documentation using Docker
-	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs local/mkdocs-material
+docs: docs-crd-ref docs-helm-ref docker-build-docs ## Serve the documentation using Docker
+	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs ${DOCS_IMG}
 
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
@@ -267,3 +274,9 @@ $(OPENAPI_GEN): $(LOCALBIN)
 crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs locally if necessary.
 $(CRD_REF_DOCS): $(LOCALBIN)
 	test -s $(LOCALBIN)/crd-ref-docs || GOBIN=$(LOCALBIN) go install github.com/elastic/crd-ref-docs@$(CRD_REF_DOCS_VERSION)
+
+.PHONY: helm-docs
+helm-docs: $(LOCALBIN)
+	@test -s $(LOCALBIN)/helm-docs && grep -q $(HELM_DOCS_VERSION) $(LOCALBIN)/.helm-docs-version 2>/dev/null || \
+	GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@$(HELM_DOCS_VERSION); \
+	echo $(HELM_DOCS_VERSION) > $(LOCALBIN)/.helm-docs-version
