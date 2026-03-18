@@ -85,7 +85,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Install cosign
-        uses: sigstore/cosign-installer@v4.0.0
+        uses: sigstore/cosign-installer@v4.1.0
       - name: Sign image with cosign
         env:
           COSIGN_EXPERIMENTAL: 1
