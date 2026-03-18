@@ -62,7 +62,7 @@ jobs:
           platforms: arm64
       - name: Set up Docker Buildx
         timeout-minutes: 5
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           version: latest
       - name: Login to GHCR
