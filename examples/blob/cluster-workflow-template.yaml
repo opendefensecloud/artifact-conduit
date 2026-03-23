@@ -88,6 +88,9 @@ spec:
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/dst/AWS_SESSION_TOKEN)
+              fi
           else
               AWS_NO_AUTH="--no-sign-request"
           fi
@@ -140,6 +143,9 @@ spec:
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/src/AWS_SESSION_TOKEN)
+              fi
           else
               AWS_NO_AUTH="--no-sign-request"
           fi
@@ -219,6 +225,9 @@ spec:
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/src/AWS_SESSION_TOKEN)
+              fi
           else
               AWS_NO_AUTH="--no-sign-request"
           fi
@@ -271,6 +280,9 @@ spec:
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/dst/AWS_SESSION_TOKEN)
+              fi
           else
               AWS_NO_AUTH="--no-sign-request"
           fi
