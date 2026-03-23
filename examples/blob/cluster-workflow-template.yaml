@@ -79,9 +79,8 @@ spec:
         image: amazon/aws-cli:latest
         command: [sh, -c]
         volumeMounts:
-          - name: src-secret-vol
-            mountPath: /secrets/src
-          - name: dst-secret-vol
+          - &dstSecretMount
+            name: dst-secret-vol
             mountPath: /secrets/dst
 
         source: |
@@ -116,7 +115,7 @@ spec:
             echo "unavailable"
             exit 0
           else
-            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
                 echo "available"
             else
@@ -130,7 +129,8 @@ spec:
         image: amazon/aws-cli:latest
         command: [sh, -c]
         volumeMounts:
-          - name: src-secret-vol
+          - &srcSecretMount
+            name: src-secret-vol
             mountPath: /secrets/src
 
         source: |
@@ -199,18 +199,19 @@ spec:
                 storage: "{{inputs.parameters.file-size}}"
 
     - name: pull-s3
-      volumes: &volumes
-        - name: work-volume
+      volumes:
+        - &workDir
+          name: work-volume
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-        volumeMounts: &volumeMounts
-          - name: work-volume
+        volumeMounts:
+          - &workDirMount
+            name: work-volume
             mountPath: /data
-          - name: src-secret-vol
-            mountPath: /secrets/src
+          - *srcSecretMount
         source: |
           set -euo pipefail
 
@@ -227,11 +228,13 @@ spec:
           aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
 
     - name: pull-http
-      volumes: *volumes
+      volumes:
+        - *workDir
       script:
         image: quay.io/curl/curl:latest
         command: [sh, -c]
-        volumeMounts: *volumeMounts
+        volumeMounts:
+          - *workDirMount
 
         source: |
           set -euo pipefail
@@ -240,11 +243,13 @@ spec:
           curl --output "/data/storage/file" "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
 
     - name: scan-clamav
-      volumes: *volumes
+      volumes:
+        - *workDir
       script:
         image: clamav/clamav-debian:unstable
         command: ["/bin/bash", "-c"]
-        volumeMounts: *volumeMounts
+        volumeMounts:
+          - *workDirMount
         source: |
           set -euo pipefail
           echo "Scanning blob with ClamAV..."
@@ -252,17 +257,13 @@ spec:
 
     - name: push
       volumes:
-        - name: work-volume
-          persistentVolumeClaim:
-            claimName: "{{ workflow.name }}"
+        - *workDir
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
         volumeMounts:
-          - name: work-volume
-            mountPath: /data
-          - name: dst-secret-vol
-            mountPath: /secrets/dst
+          - *workDirMount
+          - *dstSecretMount
         source: |
           set -euo pipefail
 
