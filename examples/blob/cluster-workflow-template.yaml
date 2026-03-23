@@ -75,11 +75,6 @@ spec:
       retryStrategy:
         limit: "2"
 
-      volumes:
-        - name: src-secret-vol
-          emptyDir: {}
-        - name: dst-secret-vol
-          emptyDir: {}
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
@@ -131,9 +126,6 @@ spec:
           exit 0
 
     - name: determine-size-s3
-      volumes:
-        - name: src-secret-vol
-          emptyDir: {}
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
@@ -211,8 +203,6 @@ spec:
         - name: work-volume
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
-        - name: src-secret-vol
-          emptyDir: {}
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
@@ -265,8 +255,6 @@ spec:
         - name: work-volume
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
-        - name: dst-secret-vol
-          emptyDir: {}
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
@@ -278,11 +266,13 @@ spec:
         source: |
           set -euo pipefail
 
-          # Export destination credentials if available
+          AWS_NO_AUTH=""
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+          else
+              AWS_NO_AUTH="--no-sign-request"
           fi
 
           echo "Uploading {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}..."
-          aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
+          aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
