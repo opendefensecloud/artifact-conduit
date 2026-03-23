@@ -79,7 +79,7 @@ ARC generates these parameters:
 | `specTags0`     | `latest`                   |
 | `specTags1`     | `v1.0`                     |
 
-!!! tip
+!!! note
 
     All parameter values are strings. Arrays are expanded into individually numbered parameters
     rather than passed as a single list.
