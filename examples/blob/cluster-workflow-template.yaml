@@ -78,14 +78,20 @@ spec:
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-
-        envFrom:
-          - secretRef:
-              name: s3-secret
+        volumeMounts:
+          - &dstSecretMount
+            name: dst-secret-vol
+            mountPath: /secrets/dst
 
         source: |
           AWS_NO_AUTH=""
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/dst/AWS_SESSION_TOKEN)
+              fi
+          else
               AWS_NO_AUTH="--no-sign-request"
           fi
 
@@ -108,11 +114,11 @@ spec:
                 exit 0
               fi
             fi
-            
+
             echo "unavailable"
             exit 0
           else
-            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
                 echo "available"
             else
@@ -125,21 +131,27 @@ spec:
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-
-        envFrom:
-          - secretRef:
-              name: s3-secret
+        volumeMounts:
+          - &srcSecretMount
+            name: src-secret-vol
+            mountPath: /secrets/src
 
         source: |
           set -euo pipefail
 
-          BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
-          KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
-
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/src/AWS_SESSION_TOKEN)
+              fi
+          else
               AWS_NO_AUTH="--no-sign-request"
           fi
+
+          BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
+          KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
 
           FILE_SIZE_BYTES=$(aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
 
@@ -193,35 +205,45 @@ spec:
                 storage: "{{inputs.parameters.file-size}}"
 
     - name: pull-s3
-      volumes: &volumes
-        - name: work-volume
+      volumes:
+        - &workDir
+          name: work-volume
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-        volumeMounts: &volumeMounts
-          - name: work-volume
+        volumeMounts:
+          - &workDirMount
+            name: work-volume
             mountPath: /data
-        envFrom:
-          - secretRef:
-              name: s3-secret
+          - *srcSecretMount
         source: |
           set -euo pipefail
-          mkdir -p /data/storage
-          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
+
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+              export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/src/AWS_SESSION_TOKEN)
+              fi
+          else
               AWS_NO_AUTH="--no-sign-request"
           fi
+
+          mkdir -p /data/storage
+          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
           aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
 
     - name: pull-http
-      volumes: *volumes
+      volumes:
+        - *workDir
       script:
         image: quay.io/curl/curl:latest
         command: [sh, -c]
-        volumeMounts: *volumeMounts
+        volumeMounts:
+          - *workDirMount
 
         source: |
           set -euo pipefail
@@ -230,26 +252,40 @@ spec:
           curl --output "/data/storage/file" "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
 
     - name: scan-clamav
-      volumes: *volumes
+      volumes:
+        - *workDir
       script:
         image: clamav/clamav-debian:unstable
         command: ["/bin/bash", "-c"]
-        volumeMounts: *volumeMounts
+        volumeMounts:
+          - *workDirMount
         source: |
           set -euo pipefail
           echo "Scanning blob with ClamAV..."
           clamscan /data/storage/
 
     - name: push
-      volumes: *volumes
+      volumes:
+        - *workDir
       script:
         image: amazon/aws-cli:latest
         command: [sh, -c]
-        volumeMounts: *volumeMounts
-        envFrom:
-          - secretRef:
-              name: s3-secret
+        volumeMounts:
+          - *workDirMount
+          - *dstSecretMount
         source: |
           set -euo pipefail
+
+          AWS_NO_AUTH=""
+          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+              export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
+              export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+              if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
+                  export AWS_SESSION_TOKEN=$(cat /secrets/dst/AWS_SESSION_TOKEN)
+              fi
+          else
+              AWS_NO_AUTH="--no-sign-request"
+          fi
+
           echo "Uploading {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}..."
-          aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
+          aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
