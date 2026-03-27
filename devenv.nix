@@ -1,13 +1,5 @@
-{
-  pkgs,
-  lib,
-  config,
-  inputs,
-  ...
-}:
-let
-  pkgs-unstable = import inputs.nixpkgs-unstable { system = pkgs.stdenv.system; };
-in
+{ pkgs, ... }:
+
 {
   # https://devenv.sh/packages/
   packages = [
@@ -41,7 +33,4 @@ in
     };
   };
   # See full reference at https://devenv.sh/reference/options/
-
-  difftastic.enable = true;
-  delta.enable = true;
 }
