@@ -33,6 +33,8 @@ const (
 
 	apiserverImage = "apiserver:e2e"
 	managerImage   = "manager:e2e"
+
+	waitTimeout = "5m"
 )
 
 var (

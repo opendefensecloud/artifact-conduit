@@ -185,7 +185,8 @@ dev-cluster: setup-dev-cluster ## Install all necessary components into local Ki
 	@echo -e "\nSETTING UP ARC:\n"
 	$(HELM) upgrade --install --create-namespace \
 		--namespace arc-system arc charts/arc \
-		--set fullnameOverride=arc
+		--set fullnameOverride=arc \
+		--set apiserver.args.cronMinScheduleInterval=30s
 	@echo -e "\nDONE"
 
 TIMESTAMP ?= $(shell date '+%Y%m%d%H%M%S')

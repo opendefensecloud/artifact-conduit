@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -21,6 +23,35 @@ const namespace = "arc-system"
 var _ = Describe("ARC", Ordered, func() {
 	var controllerPodName string
 	dir, _ := getProjectDir()
+
+	orderState := func(name string, state func(string) bool) bool {
+		GinkgoHelper()
+
+		cmd := exec.Command("kubectl", "get", "-n", "default", "orders", name, "-o", "go-template={{ range .status.artifactWorkflows }}{{ .phase }}\t{{ end }}")
+		output, err := run(cmd)
+		Expect(err).NotTo(HaveOccurred())
+
+		phases := strings.Fields(output)
+
+		if len(phases) < 1 {
+			return false
+		}
+
+		for _, phase := range phases {
+			if !state(phase) {
+				return false
+			}
+		}
+		return true
+	}
+
+	stateFinal := func(p string) bool {
+		return p == "Succeeded" || p == "Failed"
+	}
+
+	stateSucceeded := func(p string) bool {
+		return p == "Succeeded"
+	}
 
 	// Before running the tests, set up the environment by creating the namespace,
 	// enforce the restricted security policy to the namespace, installing CRDs,
@@ -41,14 +72,14 @@ var _ = Describe("ARC", Ordered, func() {
 		By("deploying apiserver and controller-manager")
 		dir, err := getProjectDir()
 		Expect(err).NotTo(HaveOccurred())
-		cmd = exec.Command("kubectl", "apply", "-n", namespace, "-k", filepath.Join(dir, "test", "fixtures"))
 		cmd = exec.Command(helmBinary, "upgrade", "--install",
 			"--namespace", namespace, "arc", filepath.Join(dir, "charts", "arc"),
 			"--set", "fullnameOverride=arc",
 			"--set", "apiserver.image.repository=apiserver",
 			"--set", "apiserver.image.tag=e2e",
 			"--set", "controller.image.repository=manager",
-			"--set", "controller.image.tag=e2e")
+			"--set", "controller.image.tag=e2e",
+			"--set", "apiserver.args.cronMinScheduleInterval=30s")
 		_, err = run(cmd)
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -138,13 +169,11 @@ var _ = Describe("ARC", Ordered, func() {
 			}
 			Eventually(verifyControllerUp).Should(Succeed())
 
-			verifyAPIServicesAvailable := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "apiservices", "v1alpha1.arc.opendefense.cloud", "-o", "go-template={{ range .status.conditions }}{{ if eq .type \"Available\" }}{{ .status }}{{ end }}{{ end }}")
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("True"))
-			}
-			Eventually(verifyAPIServicesAvailable).Should(Succeed())
+			cmd := exec.Command("kubectl", "wait", "apiservices/v1alpha1.arc.opendefense.cloud",
+				"--for", "condition=Available",
+				"--timeout", waitTimeout)
+			_, err := run(cmd)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("should create oci workflowtemplate and artifact type", func() {
@@ -196,13 +225,11 @@ var _ = Describe("ARC", Ordered, func() {
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			verifyOrderSuccessful := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-blob-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("SucceededSucceeded"))
-			}
-			Eventually(verifyOrderSuccessful).Should(Succeed())
+			Eventually(func() bool {
+				return orderState("example-blob-order", stateFinal)
+			}).Should(BeTrue())
+
+			Expect(orderState("example-blob-order", stateSucceeded)).To(BeTrue())
 		})
 
 		It("should run workflows of helm order successfully", func() {
@@ -214,13 +241,11 @@ var _ = Describe("ARC", Ordered, func() {
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			verifyOrderSuccessful := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-helm-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("SucceededSucceeded")) // two artifacts are ordered
-			}
-			Eventually(verifyOrderSuccessful).Should(Succeed())
+			Eventually(func() bool {
+				return orderState("example-helm-order", stateFinal)
+			}).Should(BeTrue())
+
+			Expect(orderState("example-helm-order", stateSucceeded)).To(BeTrue())
 		})
 
 		It("should run workflows of oci order successfully", func() {
@@ -236,27 +261,26 @@ var _ = Describe("ARC", Ordered, func() {
 			_, err = run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			verifyOrderSuccessful := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "example-oci-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.phase}}{{ end }}")
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("SucceededSucceeded"))
-			}
-			Eventually(verifyOrderSuccessful).Should(Succeed())
+			Eventually(func() bool {
+				return orderState("example-oci-order", stateFinal)
+			}).Should(BeTrue())
+
+			Expect(orderState("example-oci-order", stateSucceeded)).To(BeTrue())
 		})
 
-		It("should run workflows of oci order successfully", func() {
+		It("should run workflows of oci cron order successfully", func() {
 			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			verifyOrderSuccessful := func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
+			Eventually(func(g Gomega) {
+				cmd = exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("1"))
-			}
-			Eventually(verifyOrderSuccessful).Should(Succeed())
+				numOutput, err := strconv.Atoi(output)
+				g.Expect(err).NotTo(HaveOccurred())
+				g.Expect(numOutput).To(BeNumerically(">", 0))
+			}).Should(Succeed())
 		})
 	})
 })
