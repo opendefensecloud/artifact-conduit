@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -205,12 +206,15 @@ var _ = Describe("ARC", Ordered, func() {
 
 		It("should run workflows of oci cron order successfully", func() {
 			Eventually(func(g Gomega) {
-				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}\t{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
-				numOutput, err := strconv.Atoi(output)
+
+				succeeded := strings.Fields(output)
+				g.Expect(succeeded).To(HaveLen(1))
+				numSucceeded, err := strconv.Atoi(succeeded[0])
 				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(numOutput).To(BeNumerically(">", 0))
+				g.Expect(numSucceeded).To(BeNumerically(">", 0))
 			}).Should(Succeed())
 		})
 	})
