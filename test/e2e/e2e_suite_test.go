@@ -291,7 +291,11 @@ func logf(format string, a ...any) {
 func applyResource(namespace, file string) {
 	GinkgoHelper()
 
-	cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", file)
+	args := []string{"apply", "-f", file}
+	if namespace != "" {
+		args = append([]string{"-n", namespace}, args...)
+	}
+	cmd := exec.Command("kubectl", args...)
 	_, err := run(cmd)
 	Expect(err).NotTo(HaveOccurred())
 }
