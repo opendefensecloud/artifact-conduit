@@ -1,0 +1,36 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: quay
+spec:
+  type: oci
+  remoteURL: quay.io
+  usage: PullOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal
+spec:
+  type: oci
+  remoteURL: dst.zot
+  secretRef:
+    name: dst-reg-secret
+  usage: PushOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: example-helm-order
+spec:
+  defaults:
+    srcRef:
+      name: quay
+    dstRef:
+      name: internal
+  artifacts:
+    - type: helm
+      spec:
+        repo: jetstack/charts
+        chart: cert-manager
+        version: v1.19.1
