@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -23,35 +22,7 @@ const namespace = "arc-system"
 var _ = Describe("ARC", Ordered, func() {
 	var controllerPodName string
 	dir, _ := getProjectDir()
-
-	orderState := func(name string, state func(string) bool) bool {
-		GinkgoHelper()
-
-		cmd := exec.Command("kubectl", "get", "-n", "default", "orders", name, "-o", "go-template={{ range .status.artifactWorkflows }}{{ .phase }}\t{{ end }}")
-		output, err := run(cmd)
-		Expect(err).NotTo(HaveOccurred())
-
-		phases := strings.Fields(output)
-
-		if len(phases) < 1 {
-			return false
-		}
-
-		for _, phase := range phases {
-			if !state(phase) {
-				return false
-			}
-		}
-		return true
-	}
-
-	stateFinal := func(p string) bool {
-		return p == "Succeeded" || p == "Failed"
-	}
-
-	stateSucceeded := func(p string) bool {
-		return p == "Succeeded"
-	}
+	testStart := time.Now()
 
 	// Before running the tests, set up the environment by creating the namespace,
 	// enforce the restricted security policy to the namespace, installing CRDs,
@@ -100,13 +71,17 @@ var _ = Describe("ARC", Ordered, func() {
 		_, _ = run(cmd)
 	})
 
+	BeforeEach(func() {
+		testStart = time.Now()
+	})
+
 	// After each test, check for failures and collect logs, events,
 	// and pod descriptions for debugging.
 	AfterEach(func() {
 		specReport := CurrentSpecReport()
 		if specReport.Failed() {
 			By("Fetching controller manager pod logs")
-			cmd := exec.Command("kubectl", "logs", controllerPodName, "-n", namespace)
+			cmd := exec.Command("kubectl", "logs", controllerPodName, "-n", namespace, "--since", time.Since(testStart).String())
 			controllerLogs, err := run(cmd)
 			if err == nil {
 				logf("Controller logs:\n %s", controllerLogs)
@@ -115,12 +90,15 @@ var _ = Describe("ARC", Ordered, func() {
 			}
 
 			By("Fetching Kubernetes events")
-			cmd = exec.Command("kubectl", "get", "events", "-n", namespace, "--sort-by=.lastTimestamp")
-			eventsOutput, err := run(cmd)
-			if err == nil {
-				logf("Kubernetes events:\n%s", eventsOutput)
-			} else {
-				logf("Failed to get Kubernetes events: %s", err)
+			eventNamespaces := []string{namespace, "default"}
+			for _, ns := range eventNamespaces {
+				cmd = exec.Command("kubectl", "get", "events", "-n", ns, "--sort-by=.lastTimestamp")
+				eventsOutput, err := run(cmd)
+				if err == nil {
+					logf("Kubernetes events (%s):\n%s", ns, eventsOutput)
+				} else {
+					logf("Failed to get Kubernetes events (%s): %s", ns, err)
+				}
 			}
 
 			By("Fetching controller manager pod description")
@@ -176,105 +154,58 @@ var _ = Describe("ARC", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("should create oci workflowtemplate and artifact type", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("should create helm workflowtemplate and artifact type", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "helm", "cluster-workflow-template.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "helm", "artifact-type.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("should create blob workflowtemplate and artifact type", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "blob", "cluster-workflow-template.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", namespace, "-f", filepath.Join(dir, "examples", "blob", "artifact-type.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-		})
-
-		It("should prepare default namespace for Argo Workflows", func() {
+		It("should prepare default namespace for Orders", func() {
 			cmd := exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
 
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "service-account.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
+			By("Creating the ServiceAccount")
+			applyResource("default", filepath.Join(dir, "test", "fixtures", "service-account.yaml"))
+			By("Creating the secret for zot")
+			applyResource("default", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
+			By("Creating a secret with the cosign key")
+			applyResource("default", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
 		})
 
-		It("should run workflows of blob order successfully", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
+		artifactTypes := []string{"blob", "oci", "helm", "ocm"}
+		for _, artifactType := range artifactTypes {
+			It(fmt.Sprintf("should create orders for %s", artifactType), func() {
+				By("registering the ClusterWorkflowTemplate and ClusterArtifactType")
+				applyResource("", filepath.Join(dir, "examples", artifactType, "cluster-workflow-template.yaml"))
+				applyResource("", filepath.Join(dir, "examples", artifactType, "artifact-type.yaml"))
+				By("creating a order")
+				manifest := filepath.Join(dir, "test", "fixtures", fmt.Sprintf("%s-order.yaml", artifactType))
+				applyResource("default", manifest)
+			})
+		}
 
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "blob", "order-and-endpoints.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(func() bool {
-				return orderState("example-blob-order", stateFinal)
-			}).Should(BeTrue())
-
-			Expect(orderState("example-blob-order", stateSucceeded)).To(BeTrue())
+		// We create the cron here so it has time to trigger while the other tests run (cron triggers every 2 minutes)
+		It("should create cron oci order successfully", func() {
+			applyResource("default", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 		})
 
-		It("should run workflows of helm order successfully", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
+		stateFinal := func(p string) bool {
+			return p == "Succeeded" || p == "Failed"
+		}
 
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "helm", "order-and-endpoints.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
+		stateSucceeded := func(p string) bool {
+			return p == "Succeeded"
+		}
 
-			Eventually(func() bool {
-				return orderState("example-helm-order", stateFinal)
-			}).Should(BeTrue())
+		for _, artifactType := range artifactTypes {
+			It(fmt.Sprintf("should run workflows of %s order successfully", artifactType), func() {
+				resourceName := fmt.Sprintf("example-%s-order", artifactType)
+				Eventually(func() bool {
+					return orderState(resourceName, stateFinal)
+				}).Should(BeTrue())
 
-			Expect(orderState("example-helm-order", stateSucceeded)).To(BeTrue())
-		})
-
-		It("should run workflows of oci order successfully", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			cmd = exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "examples", "oci", "order-and-endpoints.yaml"))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
-			Eventually(func() bool {
-				return orderState("example-oci-order", stateFinal)
-			}).Should(BeTrue())
-
-			Expect(orderState("example-oci-order", stateSucceeded)).To(BeTrue())
-		})
+				Expect(orderState(resourceName, stateSucceeded)).To(BeTrue())
+			})
+		}
 
 		It("should run workflows of oci cron order successfully", func() {
-			cmd := exec.Command("kubectl", "apply", "-n", "default", "-f", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
-			_, err := run(cmd)
-			Expect(err).NotTo(HaveOccurred())
-
 			Eventually(func(g Gomega) {
-				cmd = exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}{{ end }}")
 				output, err := run(cmd)
 				g.Expect(err).NotTo(HaveOccurred())
 				numOutput, err := strconv.Atoi(output)

@@ -264,8 +264,7 @@ func installArgoWorkflows() error {
 // according to line breakers, and ignores the empty elements in it.
 func getNonEmptyLines(output string) []string {
 	var res []string
-	elements := strings.Split(output, "\n")
-	for _, element := range elements {
+	for element := range strings.SplitSeq(output, "\n") {
 		if element != "" {
 			res = append(res, element)
 		}
@@ -286,4 +285,35 @@ func getProjectDir() (string, error) {
 
 func logf(format string, a ...any) {
 	_, _ = fmt.Fprintf(GinkgoWriter, format, a...)
+}
+
+// applyResource applies a resource in the namespace
+func applyResource(namespace, file string) {
+	GinkgoHelper()
+
+	cmd := exec.Command("kubectl", "apply", "-n", namespace, "-f", file)
+	_, err := run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+}
+
+func orderState(name string, state func(string) bool) bool {
+	GinkgoHelper()
+
+	cmd := exec.Command("kubectl", "get", "-n", "default", "orders", name, "-o", "go-template={{ range .status.artifactWorkflows }}{{ .phase }}\t{{ end }}")
+	output, err := run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+
+	phases := strings.Fields(output)
+
+	// Expect to have at least one workflow
+	if len(phases) < 1 {
+		return false
+	}
+
+	for _, phase := range phases {
+		if !state(phase) {
+			return false
+		}
+	}
+	return true
 }
