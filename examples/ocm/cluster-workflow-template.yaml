@@ -3,6 +3,27 @@ kind: ClusterWorkflowTemplate
 metadata:
   name: ocm-transfer-pipeline
 spec:
+  retryStrategy:
+    retryPolicy: OnError
+    limit: 1
+
+  serviceAccountName: arc-workflow
+  # FIXME: ocm requires permissions to write to /var/lib/registry/docker
+  #  securityContext:
+  #    fsGroup: 65532
+  #    runAsUser: 65532
+
+  # Mount certificate bundle
+  volumes:
+    - name: ca-certificates
+      configMap:
+        name: "root-bundle"
+        defaultMode: 0644
+        optional: false
+        items:
+          - key: trust-bundle.pem
+            path: trust-bundle.pem
+
   # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
     - metadata:
@@ -147,6 +168,12 @@ spec:
             mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
+          - name: ca-certificates
+            readOnly: true
+            mountPath: /etc/ssl/certs/
+        env:
+          - name: SSL_CERT_FILE
+            value: /etc/ssl/certs/trust-bundle.pem
         source: |
           set -euo pipefail
           export HOME=/tmp

@@ -14,6 +14,6 @@ spec:
     - name: scanExitCode
       value: "0"
     - name: dstScheme
-      value: "http"
+      value: "https"
   workflowTemplateRef: # argo.ClusterWorkflowTemplate
     name: ocm-transfer-pipeline
