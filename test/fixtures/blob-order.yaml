@@ -42,6 +42,6 @@ spec:
       srcRef:
         name: src-http
       spec:
-        key: "opendefensecloud/artifact-conduit/refs/heads/feature/101-example-for-blob-file-transfer-s3/examples/blob/file.txt"
+        key: "opendefensecloud/artifact-conduit/refs/heads/main/examples/blob/file.txt"
         md5: "5eb63bbbe01eeed093cb22bb8f5acdc3"
         override: "test/result-http.txt"
