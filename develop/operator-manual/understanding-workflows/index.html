@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2057,7 +2057,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc.opendefense.cloud/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterArtifactType</span>
 <span class="nt">metadata</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">oci</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example-oci</span>
 <span class="nt">spec</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">rules</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">srcTypes</span><span class="p">:</span><span class="w"> </span><span class="c1"># Endpoint Types</span>
@@ -2204,7 +2204,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">authenticate-registries</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 
 <span class="w">        </span><span class="c1"># Mount the volumes</span>
@@ -2269,7 +2269,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2293,7 +2293,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2308,7 +2308,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="nt">retryStrategy</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/trevex/semver:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ghcr.io/trevex/semver:v0.1.1</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">bash</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2331,7 +2331,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">          </span><span class="nt">valueFrom</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/dst.txt</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hairyhenderson/gomplate:alpine</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hairyhenderson/gomplate:v5.0.0-alpine</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2375,7 +2375,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2399,7 +2399,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
@@ -2414,7 +2414,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scan-image</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aquasec/trivy:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aquasec/trivy:0.69.2</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 
@@ -2445,7 +2445,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">        </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="s">"2"</span>
 
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:latest</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/skopeo/stable:v1.22.0</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 
 <span class="w">        </span><span class="c1"># Mount the secret volume to a temporary directory</span>
