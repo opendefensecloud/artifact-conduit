@@ -1,0 +1,47 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: src-s3
+spec:
+  type: s3
+  remoteURL: https://s3.us-west-2.amazonaws.com
+  usage: PullOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: src-http
+spec:
+  type: http
+  remoteURL: https://raw.githubusercontent.com
+  usage: PullOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal-s3
+spec:
+  type: s3
+  remoteURL: http://dst.minio:9000
+  secretRef:
+    name: s3-secret
+  usage: PushOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: example-blob-order
+spec:
+  defaults:
+    srcRef:
+      name: src-s3
+    dstRef:
+      name: internal-s3
+  artifacts:
+    - type: blob
+      srcRef:
+        name: src-http
+      spec:
+        key: "opendefensecloud/artifact-conduit/refs/heads/main/examples/blob/file.txt"
+        md5: "5eb63bbbe01eeed093cb22bb8f5acdc3"
+        override: "test/result-http.txt"

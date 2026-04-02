@@ -1,10 +1,10 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
-  name: ghcr
+  name: quay
 spec:
-  type: oci # Endpoint Type!
-  remoteURL: ghcr.io
+  type: oci
+  remoteURL: quay.io
   usage: PullOnly
 ---
 apiVersion: arc.opendefense.cloud/v1alpha1
@@ -12,7 +12,7 @@ kind: Endpoint
 metadata:
   name: internal
 spec:
-  type: oci # Endpoint Type!
+  type: oci
   remoteURL: dst.zot
   secretRef:
     name: dst-reg-secret
@@ -21,16 +21,16 @@ spec:
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
-  name: example-ocm-order
+  name: example-helm-order
 spec:
   defaults:
     srcRef:
-      name: ghcr
+      name: quay
     dstRef:
       name: internal
   artifacts:
-    - type: ocm # Artifact Type!
+    - type: helm
       spec:
-        repo: open-component-model/ocm
-        component: ocm.software/toi/demo/helmdemo
-        version: 0.12.0
+        repo: jetstack/charts
+        chart: cert-manager
+        version: v1.19.1

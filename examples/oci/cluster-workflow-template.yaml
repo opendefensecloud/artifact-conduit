@@ -107,7 +107,7 @@ spec:
     - name: authenticate-registries
 
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
 
         # Mount the volumes
@@ -172,7 +172,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -196,7 +196,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -211,7 +211,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: ghcr.io/trevex/semver:latest
+        image: ghcr.io/trevex/semver:v0.1.1
         command: [bash, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -234,7 +234,7 @@ spec:
           valueFrom:
             path: /tmp/dst.txt
       script:
-        image: hairyhenderson/gomplate:alpine
+        image: hairyhenderson/gomplate:v5.0.0-alpine
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -278,7 +278,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -302,7 +302,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -317,7 +317,7 @@ spec:
 
     - name: scan-image
       script:
-        image: aquasec/trivy:latest
+        image: aquasec/trivy:0.69.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
 
@@ -348,7 +348,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:latest
+        image: quay.io/skopeo/stable:v1.22.0
         command: [sh, -c]
 
         # Mount the secret volume to a temporary directory

@@ -1,7 +1,7 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: ClusterArtifactType
 metadata:
-  name: oci
+  name: example-oci
 spec:
   rules:
     srcTypes: # Endpoint Types

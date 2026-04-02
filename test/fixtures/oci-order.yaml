@@ -1,10 +1,10 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
-  name: ghcr
+  name: gcrio
 spec:
-  type: oci # Endpoint Type!
-  remoteURL: ghcr.io
+  type: oci
+  remoteURL: gcr.io
   usage: PullOnly
 ---
 apiVersion: arc.opendefense.cloud/v1alpha1
@@ -12,7 +12,7 @@ kind: Endpoint
 metadata:
   name: internal
 spec:
-  type: oci # Endpoint Type!
+  type: oci
   remoteURL: dst.zot
   secretRef:
     name: dst-reg-secret
@@ -21,16 +21,16 @@ spec:
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
-  name: example-ocm-order
+  name: example-oci-order
 spec:
   defaults:
     srcRef:
-      name: ghcr
+      name: gcrio
     dstRef:
       name: internal
   artifacts:
-    - type: ocm # Artifact Type!
+    - type: oci
       spec:
-        repo: open-component-model/ocm
-        component: ocm.software/toi/demo/helmdemo
-        version: 0.12.0
+        repository: distroless/static
+        tag: nonroot
+        override: "myteam/static:{{.tag}}-dev"
