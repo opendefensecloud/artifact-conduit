@@ -7,12 +7,13 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/examples/[^/]+/cluster-workflow-template\\.yaml$"
+        "examples/*/cluster-workflow-template.yaml"
       ],
       "matchStrings": [
         "image:\\s*(?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)"
       ],
       "datasourceTemplate": "docker"
     }
-  ]
+  ],
+  "ignorePaths": []
 }
