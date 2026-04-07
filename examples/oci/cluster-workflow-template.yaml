@@ -317,7 +317,7 @@ spec:
 
     - name: scan-image
       script:
-        image: aquasec/trivy:0.69.2
+        image: aquasec/trivy:0.69.3
         command: [sh, -c]
         volumeMounts: *volumeMounts
 

@@ -135,7 +135,7 @@ spec:
     # --- 2. Scan Image (Trivy) ---
     - name: scan-all-images
       script:
-        image: aquasec/trivy:0.69.2
+        image: aquasec/trivy:0.69.3
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
