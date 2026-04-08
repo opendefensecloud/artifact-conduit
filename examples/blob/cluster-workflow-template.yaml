@@ -167,7 +167,7 @@ spec:
 
     - name: determine-size-http
       script:
-        image: quay.io/curl/curl:8.18.0
+        image: quay.io/curl/curl:8.19.0
         command: [sh, -c]
 
         source: |
@@ -240,7 +240,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: quay.io/curl/curl:8.18.0
+        image: quay.io/curl/curl:8.19.0
         command: [sh, -c]
         volumeMounts:
           - *workDirMount
