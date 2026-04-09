@@ -63,7 +63,7 @@ spec:
     # --- 1A. Pull Chart from OCI Registry ---
     - name: pull-chart-oci
       script:
-        image: alpine/helm:4.1.3
+        image: alpine/helm:4.1.4
         command: [sh, -c]
         volumeMounts:
           - name: src-secret-vol
@@ -96,7 +96,7 @@ spec:
     # --- 1B. Pull Chart from Helm Repository ---
     - name: pull-chart-helm
       script:
-        image: alpine/helm:4.1.3
+        image: alpine/helm:4.1.4
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
@@ -131,7 +131,7 @@ spec:
     # --- 2. Lint/Validate Chart (Helm) ---
     - name: lint-chart
       script:
-        image: alpine/helm:4.1.3
+        image: alpine/helm:4.1.4
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
@@ -182,7 +182,7 @@ spec:
     # --- 3. Package and Push Chart to OCI Destination ---
     - name: package-and-push
       script:
-        image: alpine/helm:4.1.3
+        image: alpine/helm:4.1.4
         command: [sh, -c]
 
         # Mount the secret volume for destination authentication
