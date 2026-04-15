@@ -33,7 +33,7 @@ GINKGO_VERSION ?= $(shell go list -json -m -u github.com/onsi/ginkgo/v2 | jq -r 
 SETUP_ENVTEST_VERSION ?= release-0.22
 # Note: Renovate tracks the versions below via regex. If you rename these variables, you must update the custom regex managers in
 # 'renovate.json' to prevent dependency updates from breaking.
-GOLANGCI_LINT_VERSION ?= v2.8.0
+GOLANGCI_LINT_VERSION ?= v2.11.4
 ADDLICENSE_VERSION ?= v1.1.1
 CONTROLLER_TOOLS_VERSION ?= v0.19.0
 ENVTEST_K8S_VERSION ?= 1.34.1
