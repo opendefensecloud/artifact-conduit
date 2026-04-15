@@ -19,7 +19,7 @@
 
   # https://devenv.sh/languages/
   languages.go.enable = true;
-  languages.go.version = "1.25.7";
+  languages.go.version = "1.26.2";
 
   git-hooks.hooks = {
     gofmt.enable = true;
