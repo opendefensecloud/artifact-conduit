@@ -202,7 +202,7 @@ func (r *ArtifactWorkflowReconciler) fetchPodLogs(ctx context.Context, namespace
 	podLogOptions := corev1.PodLogOptions{
 		Container: "main", // Assuming the main container
 		Follow:    false,
-		TailLines: sprint.ToPointer(int64(30)), // Fetch last 30 lines
+		TailLines: new(int64(30)), // Fetch last 30 lines
 	}
 	req := r.ClientSet.CoreV1().Pods(namespace).GetLogs(podName, &podLogOptions)
 	podLogs, err := req.Stream(ctx)

@@ -9,7 +9,6 @@ import (
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
-	"github.com/jastBytes/sprint"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -295,8 +294,8 @@ func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1
 			StartingDeadlineSeconds:    aw.Spec.Cron.StartingDeadlineSeconds,
 			Timezone:                   aw.Spec.Cron.Timezone,
 			When:                       aw.Spec.Cron.When,
-			SuccessfulJobsHistoryLimit: sprint.ToPointer(int32(1)),
-			FailedJobsHistoryLimit:     sprint.ToPointer(int32(1)),
+			SuccessfulJobsHistoryLimit: new(int32(1)),
+			FailedJobsHistoryLimit:     new(int32(1)),
 			WorkflowMetadata:           &om,
 		},
 	}
