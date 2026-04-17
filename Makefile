@@ -34,7 +34,7 @@ SETUP_ENVTEST_VERSION ?= release-0.22
 # Note: Renovate tracks the versions below via regex. If you rename these variables, you must update the custom regex managers in
 # 'renovate.json' to prevent dependency updates from breaking.
 GOLANGCI_LINT_VERSION ?= v2.11.4
-ADDLICENSE_VERSION ?= v1.1.1
+ADDLICENSE_VERSION ?= v1.2.0
 CONTROLLER_TOOLS_VERSION ?= v0.20.1
 ENVTEST_K8S_VERSION ?= 1.34.1
 CRD_REF_DOCS_VERSION ?= v0.3.0
