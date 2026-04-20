@@ -107,7 +107,7 @@ spec:
     - name: authenticate-registries
 
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
 
         # Mount the volumes
@@ -172,7 +172,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -196,7 +196,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -278,7 +278,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -302,7 +302,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -348,7 +348,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.0
+        image: quay.io/skopeo/stable:v1.22.2
         command: [sh, -c]
 
         # Mount the secret volume to a temporary directory
