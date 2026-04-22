@@ -1,44 +1,10 @@
+# Include ODC common make targets
+DEV_KIT_VERSION := v1.0.2
+-include common.mk
+common.mk:
+	curl -sSL https://raw.githubusercontent.com/opendefensecloud/dev-kit/$(DEV_KIT_VERSION)/common.mk -o $@
 
-# Setting SHELL to bash allows bash commands to be executed by recipes.
-# Options are set to exit when a recipe line exits non-zero or a piped command fails.
-SHELL = /usr/bin/env bash -o pipefail
-.SHELLFLAGS = -ec
-
-# Set MAKEFLAGS to suppress entering/leaving directory messages
-MAKEFLAGS += --no-print-directory
-
-BUILD_PATH ?= $(shell pwd)
-HACK_DIR ?= $(shell cd hack 2>/dev/null && pwd)
-LOCALBIN ?= $(BUILD_PATH)/bin
 ARC_CHART_DIR ?= $(BUILD_PATH)/charts/arc
-
-GO ?= go
-SHELLCHECK ?= shellcheck
-MKDOCS ?= mkdocs
-DOCKER ?= docker
-KIND ?= kind
-KUBECTL ?= kubectl
-HELM ?= helm
-OSV_SCANNER ?= osv-scanner
-GINKGO ?= $(LOCALBIN)/ginkgo
-GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
-SETUP_ENVTEST ?= $(LOCALBIN)/setup-envtest
-ADDLICENSE ?= $(LOCALBIN)/addlicense
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-OPENAPI_GEN ?= $(LOCALBIN)/openapi-gen
-CRD_REF_DOCS ?= $(LOCALBIN)/crd-ref-docs
-HELM_DOCS ?= $(LOCALBIN)/helm-docs
-
-GINKGO_VERSION ?= $(shell go list -json -m -u github.com/onsi/ginkgo/v2 | jq -r '.Version')
-SETUP_ENVTEST_VERSION ?= release-0.22
-# Note: Renovate tracks the versions below via regex. If you rename these variables, you must update the custom regex managers in
-# 'renovate.json' to prevent dependency updates from breaking.
-GOLANGCI_LINT_VERSION ?= v2.11.4
-ADDLICENSE_VERSION ?= v1.2.0
-CONTROLLER_TOOLS_VERSION ?= v0.20.1
-ENVTEST_K8S_VERSION ?= 1.34.1
-CRD_REF_DOCS_VERSION ?= v0.3.0
-HELM_DOCS_VERSION ?= v1.14.2
 
 export GOPRIVATE=*.go.opendefense.cloud/arc
 export GNOSUMDB=*.go.opendefense.cloud/arc
@@ -48,87 +14,39 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
-##@ General
-
-# The help target prints out all targets with their descriptions organized
-# beneath their categories. The categories are represented by '##@' and the
-# target descriptions by '##'. The awk commands is responsible for reading the
-# entire set of makefiles included in this invocation, looking for lines of the
-# file as xyz: ## something, and then pretty-format the target and help. Then,
-# if there's a line with ##@ something, that gets pretty-printed as a category.
-# More info on the usage of ANSI control characters for terminal formatting:
-# https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters
-# More info on the awk command:
-# http://linuxcommand.org/lc3_adv_awk.php
-
-help: ## Display this help.
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-
-.PHONY: clean
-clean: ## Clean local codebase and remove temporary files
-	rm -rf $(LOCALBIN)
-
 .PHONY: codegen
-codegen: openapi-gen ## Run code generation, e.g. openapi
+codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
 	$(MAKE) docs-crd-ref
 
 .PHONY: fmt
-fmt: addlicense ## Add license headers and format code
-	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only {} +
+fmt: $(ADDLICENSE) $(GOLANGCI_LINT) ## Add license headers and format code
+	git ls-files | grep '.*\.go$$' | xargs $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only
 	$(GO) fmt ./...
 	$(GOLANGCI_LINT) run --fix
 
-.PHONY: mod
-mod: ## Do go mod tidy, download, verify
-	@$(GO) mod tidy
-	@$(GO) mod download
-	@$(GO) mod verify
-
 .PHONY: lint
-lint: lint-no-golangci golangci-lint ## Run linters such as golangci-lint and addlicence checks
-	$(GOLANGCI_LINT) run -v
+lint: lint-no-golangci golangci-lint ## Run linters
 
 .PHONY: lint-no-golangci
-lint-no-golangci: addlicense
-	find . -not -path '*/.*' -name '*.go' -exec $(ADDLICENSE) -check  -l apache -s=only -check {} +
-	shellcheck hack/*.sh
-
-.PHONY: scan
-scan:
-	$(OSV_SCANNER) scan -r .
+lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
+	git ls-files | grep '.*\.go$$' | xargs $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only -check
 
 .PHONY: test
-test: setup-envtest ginkgo ## Run all tests
+test: $(SETUP_ENVTEST) $(GINKGO) ## Run all tests
 	@KUBEBUILDER_ASSETS="$(shell $(SETUP_ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" $(GINKGO) -r -cover --fail-fast --require-suite -covermode count --output-dir=$(BUILD_PATH) -coverprofile=arc.full.coverprofile $(testargs)
 	@cat arc.full.coverprofile | grep -v /arc/api > arc.coverprofile
 
 .PHONY: manifests
-manifests: controller-gen ## Generate ClusterRole and CustomResourceDefinition objects.
+manifests: $(CONTROLLER_GEN) ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=charts/arc/files
 
-
 KIND_CLUSTER_E2E ?= arc-test-e2e
-
-.PHONY: setup-test-e2e
-setup-test-e2e: ## Set up a Kind cluster for e2e tests if it does not exist
-	@command -v $(KIND) >/dev/null 2>&1 || { \
-		echo "Kind is not installed. Please install Kind manually."; \
-		exit 1; \
-	}
-	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER_E2E)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER_E2E)' already exists. Skipping creation." ;; \
-		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER_E2E)'..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER_E2E) ;; \
-	esac
-
 .PHONY: test-e2e
-test-e2e: setup-test-e2e manifests ## Run the e2e tests. Expected an isolated environment using Kind.
+test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
+	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_E2E)
 	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
 	$(MAKE) cleanup-test-e2e
-
 
 .PHONY: cleanup-test-e2e
 cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
@@ -137,22 +55,9 @@ cleanup-test-e2e: ## Tear down the Kind cluster used for e2e tests
 
 KIND_CLUSTER_DEV ?= arc-dev
 
-.PHONY: setup-dev-cluster
-setup-dev-cluster: ## Set up a Kind cluster for local development if it does not exist
-	@command -v $(KIND) >/dev/null 2>&1 || { \
-		echo "Kind is not installed. Please install Kind manually."; \
-		exit 1; \
-	}
-	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER_DEV)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER_DEV)' already exists. Skipping creation." ;; \
-		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER_DEV)'..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER_DEV) ;; \
-	esac
-
 .PHONY: dev-cluster
-dev-cluster: setup-dev-cluster ## Install all necessary components into local Kind cluster for local development
+dev-cluster: manifests ## Install all necessary components into local Kind cluster for local development
+	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_DEV)
 	@echo -e "\nSETTING UP CERT-MANAGER:\n"
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
 		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
@@ -210,6 +115,10 @@ dev-cluster-rebuild: ## Rebuild local images, load them into Kind cluster and up
 cleanup-dev-cluster: ## Tear down the Kind cluster used for e2e tests
 	@$(KIND) delete cluster --name $(KIND_CLUSTER_DEV)
 
+# Docker images
+
+# docker is assumed to be installed on the machine
+DOCKER ?= docker
 
 .PHONY: docker-build
 docker-build: docker-build-apiserver docker-build-manager ## Build apiserver and manager image
@@ -226,60 +135,16 @@ docker-build-manager: ## Build manager image
 docker-build-docs: ## Build mkdocs image for local serving of documentation
 	@$(DOCKER) build --target mkdocs -t ${DOCS_IMG} .
 
-docs-crd-ref: crd-ref-docs ## Generate CRD reference documentation.
+# Docs
+
+.PHONY: docs-crd-ref
+docs-crd-ref: $(CRD_REF_DOCS) ## Generate CRD reference documentation.
 	$(CRD_REF_DOCS) --source-path=api/arc/v1alpha1 --config=crd-ref-docs.yaml --output-path=./docs/user-guide/api-reference.md --renderer=markdown
 
-docs-helm-ref: helm-docs ## Generate Helm Chart reference documentation.
+.PHONY: docs-helm-ref
+docs-helm-ref: $(HELM_DOCS) ## Generate Helm Chart reference documentation.
 	cd $(ARC_CHART_DIR) && $(HELM_DOCS) --template-files=README.md.gotmpl
 
 .PHONY: docs
 docs: docs-crd-ref docs-helm-ref docker-build-docs ## Serve the documentation using Docker
 	@$(DOCKER) run --rm -it -p 8000:8000 -v ${PWD}:/docs ${DOCS_IMG}
-
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
-
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen && $(LOCALBIN)/controller-gen --version | grep -q $(CONTROLLER_TOOLS_VERSION) || \
-	GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_TOOLS_VERSION)
-
-.PHONY: golangci-lint
-golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
-$(GOLANGCI_LINT): $(LOCALBIN)
-	test -s $(LOCALBIN)/golangci-lint && $(LOCALBIN)/golangci-lint --version | grep -q $(GOLANGCI_LINT_VERSION) || \
-	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
-
-.PHONY: ginkgo
-ginkgo: $(GINKGO) ## Download setup-envtest locally if necessary.
-$(GINKGO): $(LOCALBIN)
-	test -s $(LOCALBIN)/ginkgo && $(LOCALBIN)/ginkgo version | grep -q $(subst v,,$(GINKGO_VERSION)) || \
-	GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
-
-.PHONY: addlicense
-addlicense: $(ADDLICENSE) ## Download addlicense locally if necessary.
-$(ADDLICENSE): $(LOCALBIN)
-	test -s $(LOCALBIN)/addlicense || \
-	GOBIN=$(LOCALBIN) go install github.com/google/addlicense@$(ADDLICENSE_VERSION)
-
-.PHONY: setup-envtest
-setup-envtest: $(SETUP_ENVTEST) ## Download setup-envtest locally if necessary.
-$(SETUP_ENVTEST): $(LOCALBIN)
-	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(SETUP_ENVTEST_VERSION)
-
-.PHONY: openapi-gen
-openapi-gen: $(OPENAPI_GEN) ## Download openapi-gen locally if necessary.
-$(OPENAPI_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/openapi-gen || GOBIN=$(LOCALBIN) go install k8s.io/kube-openapi/cmd/openapi-gen
-
-.PHONY: crd-ref-docs
-crd-ref-docs: $(CRD_REF_DOCS) ## Download crd-ref-docs locally if necessary.
-$(CRD_REF_DOCS): $(LOCALBIN)
-	test -s $(LOCALBIN)/crd-ref-docs || GOBIN=$(LOCALBIN) go install github.com/elastic/crd-ref-docs@$(CRD_REF_DOCS_VERSION)
-
-.PHONY: helm-docs
-helm-docs: $(LOCALBIN)
-	@test -s $(LOCALBIN)/helm-docs && grep -q $(HELM_DOCS_VERSION) $(LOCALBIN)/.helm-docs-version 2>/dev/null || \
-	GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@$(HELM_DOCS_VERSION); \
-	echo $(HELM_DOCS_VERSION) > $(LOCALBIN)/.helm-docs-version

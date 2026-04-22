@@ -95,8 +95,16 @@
       ],
       "depNameTemplate": "go",
       "datasourceTemplate": "golang-version"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["tools.lock"],
+      "matchStrings": [
+        "(?<depName>[^\\s]+) (?<currentValue>[^@]+@v?[^\\s]+)"
+      ],
+      "depNameTemplate": "go",
+      "versioningTemplate": "semver"
     }
-
   ],
   "ignorePaths": []
 }
