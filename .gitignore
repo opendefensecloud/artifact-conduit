@@ -46,3 +46,5 @@ tmp/
 deep-docs/
 
 *.coverprofile
+
+common.mk
