@@ -20,66 +20,6 @@
         "Makefile"
       ],
       "matchStrings": [
-        "GOLANGCI_LINT_VERSION \\?= (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "golangci/golangci-lint",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "ADDLICENSE_VERSION \\?= (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "google/addlicense",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "CONTROLLER_TOOLS_VERSION \\?= (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "kubernetes-sigs/controller-tools",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "CRD_REF_DOCS_VERSION \\?= (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "elastic/crd-ref-docs",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "HELM_DOCS_VERSION \\?= (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "norwoodj/helm-docs",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
         "ENVTEST_K8S_VERSION \\?= (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
       ],
       "datasourceTemplate": "github-releases",
@@ -89,21 +29,26 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/(^|/)devenv\\.nix$/"],
-      "matchStrings": [
-        "languages\\.go\\.version\\s*=\\s*\"(?<currentValue>[^\"]+)\"\\s*;"
+      "managerFilePatterns": [
+        "Makefile"
       ],
-      "depNameTemplate": "go",
-      "datasourceTemplate": "golang-version"
+      "matchStrings": [
+        "DEV_KIT_VERSION := (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "opendefensecloud/dev-kit",
+      "versioningTemplate": "semver"
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["tools.lock"],
-      "matchStrings": [
-        "(?<depName>[^\\s]+) (?<currentValue>[^@]+@v?[^\\s]+)"
+      "managerFilePatterns": [
+        "tools.lock"
       ],
-      "depNameTemplate": "go",
-      "versioningTemplate": "semver"
+      "matchStrings": [
+        "(?<depName>[^\\s]+) (?<packageName>[^@]+)@(?<currentValue>v?[^\\s]+)"
+      ],
+      "versioningTemplate": "semver",
+      "datasourceTemplate": "go"
     }
   ],
   "ignorePaths": []
