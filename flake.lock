@@ -13,16 +13,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1776942435,
-        "narHash": "sha256-naEnc59ToSqH9GbTsEAxv4/dw2DsIEVLmU4APy/3Lo8=",
+        "lastModified": 1776946977,
+        "narHash": "sha256-Zy0XUnoXzf5M7Nv8A9E6hJqPR1DpfZzE7O0peDcwpWM=",
         "owner": "opendefensecloud",
         "repo": "dev-kit",
-        "rev": "8f600cc0fed51689db015a0efefe8f127e4cce43",
+        "rev": "a45338b1771458313cf3af96d2b2207fe7dbc570",
         "type": "github"
       },
       "original": {
         "owner": "opendefensecloud",
-        "ref": "8f600cc0fed51689db015a0efefe8f127e4cce43",
         "repo": "dev-kit",
         "type": "github"
       }
