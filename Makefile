@@ -15,6 +15,8 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
+ENVTEST_K8S_VERSION ?= 1.34.1
+
 .PHONY: codegen
 codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
