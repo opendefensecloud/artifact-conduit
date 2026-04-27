@@ -16,7 +16,7 @@ require (
 	k8s.io/apiserver v0.35.4
 	k8s.io/client-go v0.35.4
 	k8s.io/code-generator v0.35.4
-	k8s.io/kube-openapi v0.0.0-20260414162039-ec9c827d403f
+	k8s.io/kube-openapi v0.0.0-20260427204847-8949caaa1199
 	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 	sigs.k8s.io/controller-runtime v0.23.3
 	sigs.k8s.io/randfill v1.0.0
