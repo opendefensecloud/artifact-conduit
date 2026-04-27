@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v1.0.2
+DEV_KIT_VERSION := v1.0.4
 -include common.mk
 common.mk:
 	curl --fail -sSL https://raw.githubusercontent.com/opendefensecloud/dev-kit/$(DEV_KIT_VERSION)/common.mk -o common.mk.download && \
@@ -17,14 +17,17 @@ DOCS_IMG ?= arc-docs:latest
 
 ENVTEST_K8S_VERSION ?= 1.34.1
 
+LICENSE := apache
+LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
+
 .PHONY: codegen
 codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
 	$(MAKE) docs-crd-ref
 
 .PHONY: fmt
-fmt: $(ADDLICENSE) $(GOLANGCI_LINT) ## Add license headers and format code
-	git ls-files | grep '.*\.go$$' | xargs $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only
+fmt: $(GOLANGCI_LINT) ## Add license headers and format code
+	$(MAKE) addlicense license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='*\.go'
 	$(GO) fmt ./...
 	$(GOLANGCI_LINT) run --fix
 
@@ -33,7 +36,7 @@ lint: lint-no-golangci golangci-lint ## Run linters
 
 .PHONY: lint-no-golangci
 lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
-	git ls-files | grep '.*\.go$$' | xargs $(ADDLICENSE) -c 'BWI GmbH and Artifact Conduit contributors' -l apache -s=only -check
+	$(MAKE) addlicense-check license=apache comment='$(LICENSE_COMMENT)' pattern='*\.go'
 
 .PHONY: test
 test: $(SETUP_ENVTEST) $(GINKGO) ## Run all tests
