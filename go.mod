@@ -6,7 +6,7 @@ require (
 	github.com/argoproj/argo-workflows/v3 v3.7.13
 	github.com/go-logr/logr v1.4.3
 	github.com/jastBytes/sprint v0.0.3
-	github.com/onsi/ginkgo/v2 v2.28.1
+	github.com/onsi/ginkgo/v2 v2.28.2
 	github.com/onsi/gomega v1.39.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/pflag v1.0.10
