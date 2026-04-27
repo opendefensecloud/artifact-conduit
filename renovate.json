@@ -3,7 +3,30 @@
   "extends": [
     "config:recommended"
   ],
+  "postUpdateOptions": ["gomodTidy"],
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["golang"],
+      "rangeStrategy": "bump"
+    },
+    {
+      "matchDatasources": ["docker", "golang-version"],
+      "matchPackageNames": ["go", "golang"],
+      "groupName": "golang version sync",
+      "groupSlug": "go-version"
+    }
+  ],
   "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)flake\\.nix$/"],
+      "matchStrings": [
+        "goVersion\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version"
+    },
     {
       "customType": "regex",
       "managerFilePatterns": [
