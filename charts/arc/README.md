@@ -391,7 +391,7 @@ If you're currently using Kustomize to deploy ARC:
 | etcd.extraEnv | list | `[]` | Additional environment variables |
 | etcd.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | etcd.image.repository | string | `"quay.io/coreos/etcd"` | etcd image repository |
-| etcd.image.tag | string | `"v3.6.8"` | etcd image tag |
+| etcd.image.tag | string | `"v3.6.10"` | etcd image tag |
 | etcd.imagePullSecrets | list | `[]` | Image pull secrets for etcd |
 | etcd.livenessProbe | object | `{"httpGet":{"path":"/health","port":2379},"initialDelaySeconds":15,"periodSeconds":20}` | Liveness probe configuration |
 | etcd.nodeSelector | object | `{}` | Node selector for pod assignment |

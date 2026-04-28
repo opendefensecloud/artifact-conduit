@@ -31,11 +31,6 @@ apiserver.local.config/
 default.etcd/
 .DS_Store
 
-# Devenv
-.devenv*
-devenv.local.nix
-devenv.local.yaml
-
 # direnv
 .direnv
 
@@ -46,3 +41,5 @@ tmp/
 deep-docs/
 
 *.coverprofile
+
+common.mk

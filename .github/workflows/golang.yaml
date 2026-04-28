@@ -5,14 +5,20 @@ permissions:
 on:
   push:
     branches: [main, develop]
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
+    paths:
+      - "**/*.go"
+      - ".github/workflows/golang.yaml"
+      - "flake.nix"
+      - "go.mod"
+      - "go.sum"
   pull_request:
     branches: [main, develop]
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
+    paths:
+      - "**/*.go"
+      - ".github/workflows/golang.yaml"
+      - "flake.nix"
+      - "go.mod"
+      - "go.sum"
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
@@ -27,18 +33,20 @@ jobs:
       - name: get-go-version
         id: get-go-version
         run: |
-          GO_VERSION="$(grep -oP 'languages.go.version = "\K[^"]+' devenv.nix)"
-          if [ -z "$GO_VERSION" ]; then
-            echo "::error::Failed to extract Go version from devenv.nix"
+          GO_VERSION="$(sed -nE 's/^[[:space:]]*goVersion[[:space:]]*=[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)";[[:space:]]*$/\1/p' flake.nix)"
+          if [ "$(printf '%s\n' "$GO_VERSION" | sed '/^$/d' | wc -l)" -ne 1 ]; then
+            echo "::error::Expected exactly one goVersion assignment in flake.nix"
             exit 1
           fi
           echo "version=$GO_VERSION" >> $GITHUB_OUTPUT
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ steps.get-go-version.outputs.version }}
-      - name: lint
+      - name: lint-license-and-shell
         run: |
-          make lint
+          make lint-no-golangci
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
 
   test:
     needs: lint
