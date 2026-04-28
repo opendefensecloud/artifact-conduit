@@ -1,6 +1,6 @@
 module go.opendefense.cloud/arc
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/argoproj/argo-workflows/v3 v3.7.13
@@ -17,7 +17,6 @@ require (
 	k8s.io/client-go v0.35.4
 	k8s.io/code-generator v0.35.4
 	k8s.io/kube-openapi v0.0.0-20260427204847-8949caaa1199
-	k8s.io/utils v0.0.0-20260319190234-28399d86e0b5
 	sigs.k8s.io/controller-runtime v0.23.3
 	sigs.k8s.io/randfill v1.0.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.0
