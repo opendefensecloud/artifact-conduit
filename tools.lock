@@ -1,5 +1,5 @@
 controller-gen sigs.k8s.io/controller-tools/cmd/controller-gen@v0.19.0
-addlicense github.com/google/addlicense@v1.1.1
+addlicense github.com/google/addlicense@v1.2.0
 osv-scanner github.com/google/osv-scanner/v2/cmd/osv-scanner@v2.3.5
 helm-docs github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
 crd-ref-docs github.com/elastic/crd-ref-docs@v0.2.0
