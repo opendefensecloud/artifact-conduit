@@ -1,9 +1,10 @@
 mkdocs-material
+pymdown-extensions >= 10.16.1
 mkdocs-glightbox
 mkdocs-include-markdown-plugin
 mkdocs-panzoom-plugin
 mkdocs-awesome-nav
 
-pillow
+pillow >= 10.3.0
 cairosvg
 mike
