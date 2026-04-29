@@ -417,8 +417,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.ActiveWorkflowRef.Name
 			}
-			Eventually(getActiveWorkflowRefName).Should(Equal(""))
-			Consistently(getActiveWorkflowRefName).Should(Equal(""))
+			Eventually(getActiveWorkflowRefName).Should(BeEmpty())
+			Consistently(getActiveWorkflowRefName).Should(BeEmpty())
 
 			// Verify failed counter is synced
 			getWorkflowFailed := func() int64 {
@@ -429,15 +429,45 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Consistently(getWorkflowFailed).Should(Equal(cwf.Status.Failed))
 
 			// Simulate workflow succeeding (replace policy creates new run)
-			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
-			Expect(k8sClient.Update(ctx, &wf)).To(Succeed())
+			Expect(k8sClient.Delete(ctx, &wf)).To(Succeed())
+			wf2 := wfv1alpha1.Workflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: wfv1alpha1.WorkflowSpec{
+					WorkflowTemplateRef: cwf.Spec.WorkflowSpec.WorkflowTemplateRef,
+				},
+				Status: wfv1alpha1.WorkflowStatus{
+					Phase: wfv1alpha1.WorkflowPending,
+				},
+			}
+			Expect(controllerutil.SetControllerReference(&cwf, &wf2, scheme.Scheme)).To(Succeed())
+			Expect(k8sClient.Create(ctx, &wf2)).To(Succeed())
+
+			// Simulate CronWorkflow activating the Workflow
+			cwf.Status.Active = []corev1.ObjectReference{
+				{
+					Name:      awName,
+					Namespace: ns.Name,
+				},
+			}
+			now = metav1.Now()
+			cwf.Status.LastScheduledTime = &now
+			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
+			Eventually(getActiveWorkflowRefName).ShouldNot(BeEmpty())
+
+			// Simulate workflow success
+			wf2.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			Expect(k8sClient.Update(ctx, &wf2)).To(Succeed())
 
 			// Simulate CronWorkflow tracking the success count
 			cwf.Status.Succeeded += 1
 			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
 
-			// Verify active workflow ref remains cleared
-			Consistently(getActiveWorkflowRefName).Should(Equal(""))
+			// Verify active workflow ref gets cleared again
+			Eventually(getActiveWorkflowRefName).Should(BeEmpty())
+			Consistently(getActiveWorkflowRefName).Should(BeEmpty())
 
 			// Verify phase transitions to succeeded
 			getWorkflowPhase := func() arcv1alpha1.WorkflowPhase {
