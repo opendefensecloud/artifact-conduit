@@ -359,13 +359,13 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}
 			Expect(k8sClient.Create(ctx, &aw)).To(Succeed())
 
+			// Verify controller creates CronWorkflow
 			cwf := wfv1alpha1.CronWorkflow{}
 			Eventually(func() error {
 				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &cwf)
 			}).Should(Succeed())
 
-			// Create the Workflow BEFORE updating CronWorkflow status
-			// so it's available when the controller tries to fetch it
+			// Simulate Argo Workflows creating a Workflow on cron schedule
 			wf := wfv1alpha1.Workflow{
 				ObjectMeta: metav1.ObjectMeta{
 					Namespace: ns.Name,
@@ -381,7 +381,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Expect(controllerutil.SetControllerReference(&cwf, &wf, scheme.Scheme)).To(Succeed())
 			Expect(k8sClient.Create(ctx, &wf)).To(Succeed())
 
-			// Now update the CronWorkflow status to trigger the controller reconciliation
+			// Simulate CronWorkflow activating the Workflow
 			cwf.Status.Active = []corev1.ObjectReference{
 				{
 					Name:      awName,
@@ -392,42 +392,68 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			cwf.Status.LastScheduledTime = &now
 			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
 
+			// Verify controller syncs active workflow reference
 			Eventually(func() string {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.ActiveWorkflowRef.Name
 			}).To(Equal(awName))
 
+			// Simulate workflow failure
 			wf.Status.Phase = wfv1alpha1.WorkflowFailed
 			Expect(k8sClient.Update(ctx, &wf)).To(Succeed())
 
+			// Verify controller syncs failed phase
 			Eventually(func() arcv1alpha1.WorkflowPhase {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowFailed))
 
+			// Simulate CronWorkflow tracking the failure count
 			cwf.Status.Failed += 1
 			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
 
-			Eventually(func() int64 {
+			// Verify active workflow ref is cleared after completion
+			getActiveWorkflowRefName := func() string {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
-				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
+				return aw.Status.ActiveWorkflowRef.Name
+			}
+			Eventually(getActiveWorkflowRefName).Should(Equal(""))
+			Consistently(getActiveWorkflowRefName).Should(Equal(""))
 
+			// Verify failed counter is synced
+			getWorkflowFailed := func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.Failed
-			}).To(Equal(cwf.Status.Failed))
+			}
+			Eventually(getWorkflowFailed).Should(Equal(cwf.Status.Failed))
+			Consistently(getWorkflowFailed).Should(Equal(cwf.Status.Failed))
 
+			// Simulate workflow succeeding (replace policy creates new run)
 			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
 			Expect(k8sClient.Update(ctx, &wf)).To(Succeed())
 
+			// Simulate CronWorkflow tracking the success count
 			cwf.Status.Succeeded += 1
 			Expect(k8sClient.Update(ctx, &cwf)).To(Succeed())
 
-			Eventually(func() int64 {
-				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
-				Expect(aw.Status.ActiveWorkflowRef.Name).To(Equal(""))
-				Expect(aw.Status.Phase).To(Equal(arcv1alpha1.WorkflowSucceeded))
+			// Verify active workflow ref remains cleared
+			Consistently(getActiveWorkflowRefName).Should(Equal(""))
 
+			// Verify phase transitions to succeeded
+			getWorkflowPhase := func() arcv1alpha1.WorkflowPhase {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
+				return aw.Status.Phase
+			}
+			Eventually(getWorkflowPhase).Should(Equal(arcv1alpha1.WorkflowSucceeded))
+			Consistently(getWorkflowPhase).Should(Equal(arcv1alpha1.WorkflowSucceeded))
+
+			// Verify succeeded counter is synced
+			getWorkflowSucceeded := func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &aw)).To(Succeed())
 				return aw.Status.Succeeded
-			}).To(Equal(cwf.Status.Succeeded))
+			}
+			Eventually(getWorkflowSucceeded).Should(Equal(cwf.Status.Succeeded))
+			Consistently(getWorkflowSucceeded).Should(Equal(cwf.Status.Succeeded))
 		})
 	})
 })
