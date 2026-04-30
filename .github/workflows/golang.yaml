@@ -11,6 +11,7 @@ on:
       - "flake.nix"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
   pull_request:
     branches: [main, develop]
     paths:
@@ -19,6 +20,7 @@ on:
       - "flake.nix"
       - "go.mod"
       - "go.sum"
+      - "Makefile"
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
