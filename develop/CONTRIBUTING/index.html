@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1389,6 +1389,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commit-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit Convention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commit Convention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allowed-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-to-contribute" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1977,6 +2038,67 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#commit-convention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commit Convention
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Commit Convention">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allowed-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allowed Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-to-contribute" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2154,6 +2276,70 @@
 <p>There are currently no public contributor meetings. Please raise an issue to reach out.</p>
 <h2 id="slack">Slack<a class="headerlink" href="#slack" title="Permanent link">¶</a></h2>
 <p>There is currently no public Slack. Please raise an issue to reach out.</p>
+<h2 id="commit-convention">Commit Convention<a class="headerlink" href="#commit-convention" title="Permanent link">¶</a></h2>
+<p>This project follows the <a href="https://www.conventionalcommits.org/">Conventional Commits</a> specification. Both PR titles and individual commit messages are validated in CI.</p>
+<h3 id="format">Format<a class="headerlink" href="#format" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code>&lt;type&gt;(optional scope): &lt;description&gt;
+</code></pre></div>
+<h3 id="allowed-types">Allowed Types<a class="headerlink" href="#allowed-types" title="Permanent link">¶</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>feat</code></td>
+<td>A new feature</td>
+</tr>
+<tr>
+<td><code>fix</code></td>
+<td>A bug fix</td>
+</tr>
+<tr>
+<td><code>docs</code></td>
+<td>Documentation changes</td>
+</tr>
+<tr>
+<td><code>chore</code></td>
+<td>Maintenance tasks (deps, CI config, etc.)</td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>Code changes that neither fix a bug nor add a feature</td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>Adding or updating tests</td>
+</tr>
+<tr>
+<td><code>ci</code></td>
+<td>CI/CD pipeline changes</td>
+</tr>
+<tr>
+<td><code>perf</code></td>
+<td>Performance improvements</td>
+</tr>
+<tr>
+<td><code>revert</code></td>
+<td>Reverting a previous commit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">¶</a></h3>
+<div class="highlight"><pre><span></span><code>feat: add OCI artifact signing support
+fix(registry): handle missing manifest digest
+docs: update contributing guidelines
+chore(deps): update cosign to v2.5.0
+refactor(transfer): extract blob streaming logic
+</code></pre></div>
+<h3 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">¶</a></h3>
+<p>Append <code>!</code> after the type/scope to indicate a breaking change:</p>
+<div class="highlight"><pre><span></span><code>feat!: change artifact transfer API
+refactor(api)!: rename TransferPolicy to SyncPolicy
+</code></pre></div>
 <h2 id="how-to-contribute">How To Contribute<a class="headerlink" href="#how-to-contribute" title="Permanent link">¶</a></h2>
 <p>We're always looking for contributors.</p>
 <h3 id="authoring-prs">Authoring PRs<a class="headerlink" href="#authoring-prs" title="Permanent link">¶</a></h3>
