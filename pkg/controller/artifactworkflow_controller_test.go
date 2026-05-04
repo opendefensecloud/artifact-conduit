@@ -365,6 +365,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), &cwf)
 			}).Should(Succeed())
 
+			Expect(cwf.Spec.Schedules).To(Equal([]string{"*/5 * * * *"}))
+
 			// Simulate Argo Workflows creating a Workflow on cron schedule
 			wf := wfv1alpha1.Workflow{
 				ObjectMeta: metav1.ObjectMeta{
