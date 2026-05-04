@@ -12,6 +12,7 @@ on:
       - "go.mod"
       - "go.sum"
       - "Makefile"
+      - "tools.lock"
   pull_request:
     branches: [main, develop]
     paths:
@@ -21,6 +22,7 @@ on:
       - "go.mod"
       - "go.sum"
       - "Makefile"
+      - "tools.lock"
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
