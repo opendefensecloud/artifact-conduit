@@ -32,6 +32,9 @@
             pkgs.cosign
             pkgs.trivy
           ];
+          preCommitHooks = {
+            commitlint.enable = true;
+          };
         };
       }
     );
