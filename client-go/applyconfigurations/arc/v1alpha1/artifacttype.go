@@ -15,7 +15,7 @@ import (
 // ArtifactTypeApplyConfiguration represents a declarative configuration of the ArtifactType type for use
 // with apply.
 //
-// ArtifactType is the Schema for the endpoints API
+// ArtifactType is the Schema for the artifact types API
 type ArtifactTypeApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`

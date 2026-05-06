@@ -22,14 +22,14 @@ type OrderDefaults struct {
 	Cron *Cron `json:"cron,omitempty"`
 }
 
-// OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow
+// OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow
 type OrderArtifact struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`
 	// SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).
 	// +optional
 	SrcRef corev1.LocalObjectReference `json:"srcRef,omitempty"`
-	// SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).
+	// DstRef defines which Endpoint object is used as destination (falls back to OrderDefaults).
 	// +optional
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 	// Spec specifies parameters used by the underlying Workflow.

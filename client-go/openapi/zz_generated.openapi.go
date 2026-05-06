@@ -346,7 +346,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactType(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactType is the Schema for the endpoints API",
+				Description: "ArtifactType is the Schema for the artifact types API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -757,7 +757,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowSpec(ref common.ReferenceCallba
 					},
 					"cron": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Cron specifies options which determine when the order should be scheduled.",
+							Description: "Cron specifies options which determine when the ArtifactWorkflow should be scheduled.",
 							Ref:         ref(v1alpha1.Cron{}.OpenAPIModelName()),
 						},
 					},
@@ -828,7 +828,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 					},
 					"lastReconcileAt": {
 						SchemaProps: spec.SchemaProps{
-							Description: "LastReconcileAt is the last time the Order was reconciled",
+							Description: "LastReconcileAt is the last time the ArtifactWorkflow was reconciled",
 							Ref:         ref(metav1.Time{}.OpenAPIModelName()),
 						},
 					},
@@ -884,7 +884,7 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactType(ref common.ReferenceCallbac
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactType is the Schema for the endpoints API",
+				Description: "ClusterArtifactType is the Schema for the cluster artifact types API",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -931,7 +931,7 @@ func schema_arc_api_arc_v1alpha1_ClusterArtifactTypeList(ref common.ReferenceCal
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeList is a list of ArtifactType objects.",
+				Description: "ClusterArtifactTypeList is a list of ClusterArtifactType objects.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -1232,7 +1232,7 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow",
+				Description: "OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"type": {
@@ -1252,7 +1252,7 @@ func schema_arc_api_arc_v1alpha1_OrderArtifact(ref common.ReferenceCallback) com
 					},
 					"dstRef": {
 						SchemaProps: spec.SchemaProps{
-							Description: "SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).",
+							Description: "DstRef defines which Endpoint object is used as destination (falls back to OrderDefaults).",
 							Default:     map[string]interface{}{},
 							Ref:         ref(v1.LocalObjectReference{}.OpenAPIModelName()),
 						},

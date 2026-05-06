@@ -21,7 +21,7 @@ const (
 	EndpointUsageAll EndpointUsage = "All"
 )
 
-// EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
+// EndpointSpec defines the desired state of Endpoint.
 type EndpointSpec struct {
 	// Type specifies which ArtifactType is used to process this artifact.
 	Type string `json:"type"`

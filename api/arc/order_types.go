@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// OrderDefaults is used to set defaults for all other artifacts of an Order.
 type OrderDefaults struct {
 	// SrcRef defines which Endpoint object is used as fallback source by all artifacts.
 	// +optional
@@ -28,7 +29,7 @@ type OrderArtifact struct {
 	// SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).
 	// +optional
 	SrcRef corev1.LocalObjectReference `json:"srcRef,omitempty"`
-	// SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).
+	// DstRef defines which Endpoint object is used as destination (falls back to OrderDefaults).
 	// +optional
 	DstRef corev1.LocalObjectReference `json:"dstRef,omitempty"`
 	// Spec specifies parameters used by the underlying Workflow.
