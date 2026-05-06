@@ -10,7 +10,7 @@ import (
 	"io"
 	"slices"
 
-	wfv1alpha1 "github.com/argoproj/argo-workflows/v3/pkg/apis/workflow/v1alpha1"
+	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/jastBytes/sprint"
 	corev1 "k8s.io/api/core/v1"
