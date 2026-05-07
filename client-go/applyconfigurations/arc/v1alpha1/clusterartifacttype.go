@@ -15,7 +15,7 @@ import (
 // ClusterArtifactTypeApplyConfiguration represents a declarative configuration of the ClusterArtifactType type for use
 // with apply.
 //
-// ArtifactType is the Schema for the endpoints API
+// ClusterArtifactType is the Schema for the cluster artifact types API
 type ClusterArtifactTypeApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`

@@ -14,7 +14,7 @@ Package v1alpha1 is the v1alpha1 version of the API.
 
 
 
-ArtifactType is the Schema for the endpoints API
+ArtifactType is the Schema for the artifact types API
 
 
 
@@ -23,8 +23,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ArtifactTypeSpec](#artifacttypespec)_ |  |  |  |
 | `status` _[ArtifactTypeStatus](#artifacttypestatus)_ |  |  |  |
@@ -63,8 +63,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  | Optional: \{\} <br /> |
+| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  | Optional: \{\} <br /> |
 | `rules` _[ArtifactTypeRules](#artifacttyperules)_ | Rules defines a set of rules for this type. |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines extra parameters for the Workflow to use.<br />These parameters will override parameters coming from ArtifactWorkflows. |  |  |
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this type of artifact. |  |  |
@@ -115,8 +115,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ArtifactWorkflowSpec](#artifactworkflowspec)_ |  |  |  |
 | `status` _[ArtifactWorkflowStatus](#artifactworkflowstatus)_ |  |  |  |
@@ -155,13 +155,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  | Optional: \{\} <br /> |
+| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  | Optional: \{\} <br /> |
 | `workflowTemplateRef` _[ArtifactTypeTemplateRef](#artifacttypetemplateref)_ | WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType |  |  |
 | `parameters` _[ArtifactWorkflowParameter](#artifactworkflowparameter) array_ | Parameters defines the key-value pairs, that are passed to the underlying Workflow. |  |  |
 | `srcSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcSecretRef references the secret containing credentials for the source. |  |  |
 | `dstSecretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstSecretRef references the secret containing credentials for the destination. |  |  |
-| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled. |  |  |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the ArtifactWorkflow should be scheduled. |  | Optional: \{\} <br /> |
 
 
 #### ArtifactWorkflowStatus
@@ -182,9 +182,9 @@ _Appears in:_
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 | `failureTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | FailureTime is the time when the workflow finished with a failure status. |  |  |
 | `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
-| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
-| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
-| `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  | Optional: \{\} <br /> |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  | Optional: \{\} <br /> |
+| `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the ArtifactWorkflow was reconciled |  |  |
 | `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
 | `activeWorkflowRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br />It resets after a successful or failed run. |  |  |
 
@@ -203,15 +203,15 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  |  |
-| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  |  |
+| `ttlAfterFinished` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are automatically deleted immediately after completion. |  | Optional: \{\} <br /> |
+| `ttlAfterFailed` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br />After this time, the ArtifactWorkflow(s) are automatically deleted.<br />If unset ArtifactWorkflow(s) are retained indefinitely. |  | Optional: \{\} <br /> |
 
 
 #### ClusterArtifactType
 
 
 
-ArtifactType is the Schema for the endpoints API
+ClusterArtifactType is the Schema for the cluster artifact types API
 
 
 
@@ -220,8 +220,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[ArtifactTypeSpec](#artifacttypespec)_ |  |  |  |
 | `status` _[ArtifactTypeStatus](#artifacttypestatus)_ |  |  |  |
@@ -246,7 +246,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `timezone` _string_ | Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time. |  |  |
 | `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
-| `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: ^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$ <br /> |
+| `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: `^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$` <br /> |
 | `when` _string_ | When is an expression that determines if a run should be scheduled. |  |  |
 
 
@@ -263,8 +263,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[EndpointSpec](#endpointspec)_ |  |  |  |
 | `status` _[EndpointStatus](#endpointstatus)_ |  |  |  |
@@ -287,7 +287,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `type` _string_ | Type specifies which ArtifactType is used to process this artifact. |  |  |
 | `remoteURL` _string_ | RemoteURL defines the URL which is used to interact with the endpoint. |  |  |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SecretRef specifies the secret containing the relevant credentials for the endpoint. |  |  |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SecretRef specifies the secret containing the relevant credentials for the endpoint. |  | Optional: \{\} <br /> |
 | `usage` _[EndpointUsage](#endpointusage)_ | Usage defines how the endpoint is allowed to be used. |  |  |
 
 
@@ -335,8 +335,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[OrderSpec](#orderspec)_ |  |  |  |
 | `status` _[OrderStatus](#orderstatus)_ |  |  |  |
@@ -346,7 +346,7 @@ _Appears in:_
 
 
 
-OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow
+OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow
 
 
 
@@ -356,10 +356,10 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `type` _string_ | Type specifies which ArtifactType is used to process this artifact. |  |  |
-| `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults). |  |  |
-| `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults). |  |  |
+| `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults). |  | Optional: \{\} <br /> |
+| `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as destination (falls back to OrderDefaults). |  | Optional: \{\} <br /> |
 | `spec` _[RawExtension](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#rawextension-runtime-pkg)_ | Spec specifies parameters used by the underlying Workflow. |  |  |
-| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults). |  |  |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults). |  | Optional: \{\} <br /> |
 
 
 #### OrderArtifactWorkflowStatus
@@ -380,8 +380,8 @@ _Appears in:_
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 | `failureTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | FailureTime is the time when the workflow finished with a failure status. |  |  |
 | `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
-| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
-| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  | Optional: \{\} <br /> |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  | Optional: \{\} <br /> |
 | `artifactIndex` _integer_ | ArtifactIndex references back the index the corresponding artifact has in the .Spec |  |  |
 
 
@@ -398,9 +398,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as fallback source by all artifacts. |  |  |
-| `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as fallback destination by all artifacts. |  |  |
-| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled. |  |  |
+| `srcRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SrcRef defines which Endpoint object is used as fallback source by all artifacts. |  | Optional: \{\} <br /> |
+| `dstRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | DstRef defines which Endpoint object is used as fallback destination by all artifacts. |  | Optional: \{\} <br /> |
+| `cron` _[Cron](#cron)_ | Cron specifies options which determine when the order should be scheduled. |  | Optional: \{\} <br /> |
 
 
 
@@ -418,7 +418,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  |  |
+| `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  | Optional: \{\} <br /> |
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
 
 
@@ -485,7 +485,7 @@ _Appears in:_
 | `completionTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | CompletionTime is the time when the workflow finished |  |  |
 | `failureTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | FailureTime is the time when the workflow finished with a failure status. |  |  |
 | `lastScheduled` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastScheduled is the last time the workflow was scheduled via cron |  |  |
-| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  |  |
-| `failed` _integer_ | Failed counts how many times child workflows failed |  |  |
+| `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  | Optional: \{\} <br /> |
+| `failed` _integer_ | Failed counts how many times child workflows failed |  | Optional: \{\} <br /> |
 
 

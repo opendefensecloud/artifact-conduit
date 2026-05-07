@@ -56,7 +56,7 @@ type ArtifactTypeStatus struct {
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactType is the Schema for the endpoints API
+// ArtifactType is the Schema for the artifact types API
 type ArtifactType struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
@@ -79,7 +79,7 @@ type ArtifactTypeList struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactType is the Schema for the endpoints API
+// ClusterArtifactType is the Schema for the cluster artifact types API
 type ClusterArtifactType struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
@@ -91,7 +91,7 @@ type ClusterArtifactType struct {
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ArtifactTypeList is a list of ArtifactType objects.
+// ClusterArtifactTypeList is a list of ClusterArtifactType objects.
 type ClusterArtifactTypeList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`

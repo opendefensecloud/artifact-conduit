@@ -52,7 +52,7 @@ type ArtifactWorkflowSpec struct {
 	SrcSecretRef corev1.LocalObjectReference `json:"srcSecretRef"`
 	// DstSecretRef references the secret containing credentials for the destination.
 	DstSecretRef corev1.LocalObjectReference `json:"dstSecretRef"`
-	// Cron specifies options which determine when the order should be scheduled.
+	// Cron specifies options which determine when the ArtifactWorkflow should be scheduled.
 	// +optional
 	Cron *Cron `json:"cron,omitempty"`
 }
@@ -87,7 +87,7 @@ type WorkflowStatus struct {
 // ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
 type ArtifactWorkflowStatus struct {
 	WorkflowStatus `json:",inline"`
-	// LastReconcileAt is the last time the Order was reconciled
+	// LastReconcileAt is the last time the ArtifactWorkflow was reconciled
 	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`
 	// LastForceAt is the last time a force reconciliation was requested
 	LastForceAt metav1.Time `json:"lastForceAt,omitempty"`

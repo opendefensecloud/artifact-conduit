@@ -24,7 +24,7 @@ type ArtifactWorkflowSpecApplyConfiguration struct {
 	SrcSecretRef *v1.LocalObjectReference `json:"srcSecretRef,omitempty"`
 	// DstSecretRef references the secret containing credentials for the destination.
 	DstSecretRef *v1.LocalObjectReference `json:"dstSecretRef,omitempty"`
-	// Cron specifies options which determine when the order should be scheduled.
+	// Cron specifies options which determine when the ArtifactWorkflow should be scheduled.
 	Cron *CronApplyConfiguration `json:"cron,omitempty"`
 }
 
