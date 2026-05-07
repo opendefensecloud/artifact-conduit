@@ -51,7 +51,7 @@ KIND_CLUSTER_E2E ?= arc-test-e2e
 .PHONY: test-e2e
 test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
 	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_E2E)
-	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
+	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
 	$(MAKE) cleanup-test-e2e
 
 .PHONY: cleanup-test-e2e
