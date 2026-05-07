@@ -2357,7 +2357,7 @@
 <h2 id="arcopendefensecloudv1alpha1">arc.opendefense.cloud/v1alpha1<a class="headerlink" href="#arcopendefensecloudv1alpha1" title="Permanent link">¶</a></h2>
 <p>Package v1alpha1 is the v1alpha1 version of the API.</p>
 <h4 id="artifacttype">ArtifactType<a class="headerlink" href="#artifacttype" title="Permanent link">¶</a></h4>
-<p>ArtifactType is the Schema for the endpoints API</p>
+<p>ArtifactType is the Schema for the artifact types API</p>
 <p><em>Appears in:</em>
 - <a href="#artifacttypelist">ArtifactTypeList</a></p>
 <table>
@@ -2374,13 +2374,13 @@
 <td><code>kind</code> <em>string</em></td>
 <td>Kind is a string value representing the REST resource this object represents.<br>Servers may infer this from the endpoint the client submits requests to.<br>Cannot be updated.<br>In CamelCase.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>apiVersion</code> <em>string</em></td>
 <td>APIVersion defines the versioned schema of this representation of an object.<br>Servers should convert recognized schemas to the latest internal value, and<br>may reject unrecognized values.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta">ObjectMeta</a></em></td>
@@ -2449,13 +2449,13 @@
 <td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>rules</code> <em><a href="#artifacttyperules">ArtifactTypeRules</a></em></td>
@@ -2529,13 +2529,13 @@
 <td><code>kind</code> <em>string</em></td>
 <td>Kind is a string value representing the REST resource this object represents.<br>Servers may infer this from the endpoint the client submits requests to.<br>Cannot be updated.<br>In CamelCase.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>apiVersion</code> <em>string</em></td>
 <td>APIVersion defines the versioned schema of this representation of an object.<br>Servers should convert recognized schemas to the latest internal value, and<br>may reject unrecognized values.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta">ObjectMeta</a></em></td>
@@ -2604,13 +2604,13 @@
 <td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>workflowTemplateRef</code> <em><a href="#artifacttypetemplateref">ArtifactTypeTemplateRef</a></em></td>
@@ -2638,9 +2638,9 @@
 </tr>
 <tr>
 <td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
-<td>Cron specifies options which determine when the order should be scheduled.</td>
+<td>Cron specifies options which determine when the ArtifactWorkflow should be scheduled.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 </tbody>
 </table>
@@ -2692,17 +2692,17 @@
 <td><code>succeeded</code> <em>integer</em></td>
 <td>Succeeded counts how many times child workflows succeeded</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>failed</code> <em>integer</em></td>
 <td>Failed counts how many times child workflows failed</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>lastReconcileAt</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
-<td>LastReconcileAt is the last time the Order was reconciled</td>
+<td>LastReconcileAt is the last time the ArtifactWorkflow was reconciled</td>
 <td></td>
 <td></td>
 </tr>
@@ -2738,18 +2738,18 @@
 <td><code>ttlAfterFinished</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFinished specifies the time to live for the created ArtifactWorkflow(s) after successful completion.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are automatically deleted immediately after completion.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>ttlAfterFailed</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta">Duration</a></em></td>
 <td>TTLAfterFailed specifies the time to live for the created ArtifactWorkflow(s) after failure.<br>After this time, the ArtifactWorkflow(s) are automatically deleted.<br>If unset ArtifactWorkflow(s) are retained indefinitely.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 </tbody>
 </table>
 <h4 id="clusterartifacttype">ClusterArtifactType<a class="headerlink" href="#clusterartifacttype" title="Permanent link">¶</a></h4>
-<p>ArtifactType is the Schema for the endpoints API</p>
+<p>ClusterArtifactType is the Schema for the cluster artifact types API</p>
 <p><em>Appears in:</em>
 - <a href="#clusterartifacttypelist">ClusterArtifactTypeList</a></p>
 <table>
@@ -2766,13 +2766,13 @@
 <td><code>kind</code> <em>string</em></td>
 <td>Kind is a string value representing the REST resource this object represents.<br>Servers may infer this from the endpoint the client submits requests to.<br>Cannot be updated.<br>In CamelCase.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>apiVersion</code> <em>string</em></td>
 <td>APIVersion defines the versioned schema of this representation of an object.<br>Servers should convert recognized schemas to the latest internal value, and<br>may reject unrecognized values.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta">ObjectMeta</a></em></td>
@@ -2826,7 +2826,7 @@
 <td><code>schedules</code> <em>string array</em></td>
 <td>Schedules is a list of schedules to run the Order in Cron format</td>
 <td></td>
-<td>MinItems: 1 <br>items:Pattern: ^(@(yearly|annually|monthly|weekly|daily|midnight|hourly)|@every\s+([0-9]+(ns|us|µs|ms|s|m|h))+|([0-9<em>,/?-]+\s+){4}[0-9</em>,/?-]+)$ <br></td>
+<td>MinItems: 1 <br>items:Pattern: <code>^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$</code> <br></td>
 </tr>
 <tr>
 <td><code>when</code> <em>string</em></td>
@@ -2854,13 +2854,13 @@
 <td><code>kind</code> <em>string</em></td>
 <td>Kind is a string value representing the REST resource this object represents.<br>Servers may infer this from the endpoint the client submits requests to.<br>Cannot be updated.<br>In CamelCase.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>apiVersion</code> <em>string</em></td>
 <td>APIVersion defines the versioned schema of this representation of an object.<br>Servers should convert recognized schemas to the latest internal value, and<br>may reject unrecognized values.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta">ObjectMeta</a></em></td>
@@ -2912,7 +2912,7 @@
 <td><code>secretRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>SecretRef specifies the secret containing the relevant credentials for the endpoint.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>usage</code> <em><a href="#endpointusage">EndpointUsage</a></em></td>
@@ -2971,13 +2971,13 @@
 <td><code>kind</code> <em>string</em></td>
 <td>Kind is a string value representing the REST resource this object represents.<br>Servers may infer this from the endpoint the client submits requests to.<br>Cannot be updated.<br>In CamelCase.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>apiVersion</code> <em>string</em></td>
 <td>APIVersion defines the versioned schema of this representation of an object.<br>Servers should convert recognized schemas to the latest internal value, and<br>may reject unrecognized values.<br>More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>metadata</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta">ObjectMeta</a></em></td>
@@ -3000,7 +3000,7 @@
 </tbody>
 </table>
 <h4 id="orderartifact">OrderArtifact<a class="headerlink" href="#orderartifact" title="Permanent link">¶</a></h4>
-<p>OrderArtifact specifies a single artifact which is translated into a corresponding OrderArtifactWorkflow</p>
+<p>OrderArtifact specifies a single artifact which is translated into a corresponding ArtifactWorkflow</p>
 <p><em>Appears in:</em>
 - <a href="#orderspec">OrderSpec</a></p>
 <table>
@@ -3023,13 +3023,13 @@
 <td><code>srcRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>SrcRef defines which Endpoint object is used as source (falls back to OrderDefaults).</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>dstRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
-<td>SrcRef defines which Endpoint object is used as destination (falls back to OrderDefaults).</td>
+<td>DstRef defines which Endpoint object is used as destination (falls back to OrderDefaults).</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>spec</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#rawextension-runtime-pkg">RawExtension</a></em></td>
@@ -3041,7 +3041,7 @@
 <td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
 <td>Cron specifies options which determine when the order should be scheduled (falls back to OrderDefaults).</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 </tbody>
 </table>
@@ -3092,13 +3092,13 @@
 <td><code>succeeded</code> <em>integer</em></td>
 <td>Succeeded counts how many times child workflows succeeded</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>failed</code> <em>integer</em></td>
 <td>Failed counts how many times child workflows failed</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>artifactIndex</code> <em>integer</em></td>
@@ -3126,19 +3126,19 @@
 <td><code>srcRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>SrcRef defines which Endpoint object is used as fallback source by all artifacts.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>dstRef</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core">LocalObjectReference</a></em></td>
 <td>DstRef defines which Endpoint object is used as fallback destination by all artifacts.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>cron</code> <em><a href="#cron">Cron</a></em></td>
 <td>Cron specifies options which determine when the order should be scheduled.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 </tbody>
 </table>
@@ -3160,7 +3160,7 @@
 <td><code>defaults</code> <em><a href="#orderdefaults">OrderDefaults</a></em></td>
 <td>Defaults sets up defaults for all artifacts.</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>artifacts</code> <em><a href="#orderartifact">OrderArtifact</a> array</em></td>
@@ -3307,13 +3307,13 @@
 <td><code>succeeded</code> <em>integer</em></td>
 <td>Succeeded counts how many times child workflows succeeded</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 <tr>
 <td><code>failed</code> <em>integer</em></td>
 <td>Failed counts how many times child workflows failed</td>
 <td></td>
-<td></td>
+<td>Optional: {} <br></td>
 </tr>
 </tbody>
 </table>
