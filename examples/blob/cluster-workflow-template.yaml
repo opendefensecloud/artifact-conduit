@@ -76,7 +76,7 @@ spec:
         limit: "2"
 
       script:
-        image: amazon/aws-cli:2.34.44
+        image: amazon/aws-cli:2.34.45
         command: [sh, -c]
         volumeMounts:
           - &dstSecretMount
@@ -129,7 +129,7 @@ spec:
 
     - name: determine-size-s3
       script:
-        image: amazon/aws-cli:2.34.44
+        image: amazon/aws-cli:2.34.45
         command: [sh, -c]
         volumeMounts:
           - &srcSecretMount
@@ -211,7 +211,7 @@ spec:
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
       script:
-        image: amazon/aws-cli:2.34.44
+        image: amazon/aws-cli:2.34.45
         command: [sh, -c]
         volumeMounts:
           - &workDirMount
@@ -268,7 +268,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: amazon/aws-cli:2.34.44
+        image: amazon/aws-cli:2.34.45
         command: [sh, -c]
         volumeMounts:
           - *workDirMount
