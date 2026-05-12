@@ -24,7 +24,7 @@ const (
 	trustmanagerChart   = "oci://quay.io/jetstack/charts/trust-manager"
 	trustmanagerVersion = "v0.20.2"
 
-	argoWorkflowsVersion = "v3.7.4"
+	argoWorkflowsVersion = "v4.0.5"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
 	minioRepoUrl = "https://charts.min.io"
@@ -244,7 +244,16 @@ func installArgoWorkflows() error {
 		logf("Note: namespace creation returned: %v (may already exist)\n", err)
 	}
 
-	cmd = exec.Command("kubectl", "apply", "-n", "argo", "-f", url)
+	cmd = exec.Command("kubectl", "apply", "--server-side", "-n", "argo", "-f", url)
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	// archiveLogs is enabled by default but not needed for e2e test
+	cmd = exec.Command("kubectl", "patch", "configmap", "workflow-controller-configmap",
+		"-n", "argo", "--type", "merge",
+		"-p", `{"data": {"artifactRepository": "archiveLogs: false\n"}}`,
+	)
 	if _, err := run(cmd); err != nil {
 		return err
 	}
