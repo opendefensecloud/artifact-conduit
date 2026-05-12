@@ -2,114 +2,114 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://arc.opendefense.cloud/develop/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/CODE_OF_CONDUCT/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/CONTRIBUTING/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/getting-started/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/architecture/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/developing-locally/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/documentation-changes/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/workflow-execution/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/000-Use-Markdown-Architectural-Decision-Records/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/001-ARC-Architecture/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/002-ARC-API/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/003-Branch-Naming/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/developer-guide/adrs/004-Scheduled-Orders/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/cron-orders/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/debugging/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/extending-artifact-types/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/force-reconciliation/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/helm/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/installation/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/releases/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/ttl-based-cleanup/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/understanding-workflows/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/upgrading/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/verifying-artifacts/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/operator-manual/workflow-parameters/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/user-guide/api-reference/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/user-guide/core-concepts/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://arc.opendefense.cloud/develop/walk-through/about/</loc>
-         <lastmod>2026-05-07</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
 </urlset>
