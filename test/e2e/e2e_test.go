@@ -114,7 +114,7 @@ var _ = Describe("ARC", Ordered, func() {
 	})
 
 	SetDefaultEventuallyTimeout(10 * time.Minute)
-	SetDefaultEventuallyPollingInterval(2 * time.Second)
+	SetDefaultEventuallyPollingInterval(5 * time.Second)
 
 	Context("Extension API server and Controller Manager", func() {
 		It("should run successfully", func() {
@@ -168,7 +168,7 @@ var _ = Describe("ARC", Ordered, func() {
 			applyResource("default", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
 		})
 
-		artifactTypes := []string{"blob", "oci", "helm", "ocm"}
+		artifactTypes := []string{"helm", "blob", "ocm"}
 		for _, artifactType := range artifactTypes {
 			It(fmt.Sprintf("should create orders for %s", artifactType), func() {
 				By("registering the ClusterWorkflowTemplate and ClusterArtifactType")
@@ -182,6 +182,8 @@ var _ = Describe("ARC", Ordered, func() {
 
 		// We create the cron here so it has time to trigger while the other tests run (cron triggers every 2 minutes)
 		It("should create cron oci order successfully", func() {
+			applyResource("", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
+			applyResource("", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
 			applyResource("default", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 		})
 

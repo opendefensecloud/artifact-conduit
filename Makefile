@@ -81,7 +81,7 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo -f \
-		https://github.com/argoproj/argo-workflows/releases/download/v3.7.4/quick-start-minimal.yaml
+		https://github.com/argoproj/argo-workflows/releases/download/v4.0.5/quick-start-minimal.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/secret.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \

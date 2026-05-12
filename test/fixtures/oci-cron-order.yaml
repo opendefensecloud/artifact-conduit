@@ -1,4 +1,24 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: gcrio
+spec:
+  type: oci
+  remoteURL: gcr.io
+  usage: PullOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: internal
+spec:
+  type: oci
+  remoteURL: dst.zot
+  secretRef:
+    name: dst-reg-secret
+  usage: PushOnly
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Order
 metadata:
   name: test-oci-cron-order
