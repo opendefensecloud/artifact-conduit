@@ -58,7 +58,7 @@ type desiredAW struct {
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=orders/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=orders/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=events.k8s.io,resources=events,verbs=create;patch
 
 // Reconcile moves the current state of the cluster closer to the desired state
 func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
