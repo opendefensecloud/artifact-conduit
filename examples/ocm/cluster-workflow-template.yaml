@@ -8,10 +8,9 @@ spec:
     limit: 1
 
   serviceAccountName: arc-workflow
-  # FIXME: ocm requires permissions to write to /var/lib/registry/docker
-  #  securityContext:
-  #    fsGroup: 65532
-  #    runAsUser: 65532
+  securityContext:
+    fsGroup: 65532
+    runAsUser: 65532
 
   # Mount certificate bundle
   volumes:
@@ -23,6 +22,8 @@ spec:
         items:
           - key: trust-bundle.pem
             path: trust-bundle.pem
+    - name: registry-storage
+      emptyDir: {}
 
   # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
@@ -83,6 +84,9 @@ spec:
           httpGet:
             path: /v2/_catalog
             port: 5000
+        volumeMounts:
+          - name: registry-storage
+            mountPath: /var/lib/registry
 
     # --- 1. Pull all resources & store them both on disk and registry ---
     - name: pull-resources
@@ -151,6 +155,7 @@ spec:
               --severity {{workflow.parameters.scanSeverity}} \
               --format json \
               --output /data/scan-results.json \
+              --cache-dir /tmp/trivy-cache \
               $p
           done < /data/images.txt
         env:
