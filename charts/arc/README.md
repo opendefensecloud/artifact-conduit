@@ -359,7 +359,11 @@ If you're currently using Kustomize to deploy ARC:
 | controller.metrics.certManager.certKey | string | `"tls.key"` | Certificate key file name |
 | controller.metrics.certManager.certName | string | `"tls.crt"` | Certificate file name |
 | controller.metrics.certManager.certPath | string | `"/tmp/k8s-metrics-server/metrics-certs"` | Path to mount certificates |
+| controller.metrics.certManager.duration | string | `""` | Certificate duration; defaults to .Values.certManager.certificate.duration |
 | controller.metrics.certManager.enabled | bool | `false` | Enable cert-manager for metrics certificates |
+| controller.metrics.certManager.issuerRef.kind | string | `""` | Issuer kind (Issuer or ClusterIssuer); defaults to .Values.certManager.issuer.kind |
+| controller.metrics.certManager.issuerRef.name | string | `""` | Issuer name; defaults to arc.certManager.issuerName helper |
+| controller.metrics.certManager.renewBefore | string | `""` | Renew before duration; defaults to .Values.certManager.certificate.renewBefore |
 | controller.metrics.enabled | bool | `false` | Enable metrics service |
 | controller.metrics.service.annotations | object | `{}` | Metrics service annotations |
 | controller.metrics.service.port | int | `8443` | Metrics service port |
@@ -368,6 +372,8 @@ If you're currently using Kustomize to deploy ARC:
 | controller.metrics.serviceMonitor.enabled | bool | `false` | Enable ServiceMonitor |
 | controller.metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
 | controller.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
+| controller.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |
+| controller.metrics.serviceMonitor.tokenSecret.name | string | `""` | Name of the Secret containing the scrape bearer token |
 | controller.nameOverride | string | `""` | Override Controller Manager name |
 | controller.nodeSelector | object | `{}` | Node selector for pod assignment |
 | controller.podAnnotations | object | `{}` | Pod annotations |
@@ -391,7 +397,7 @@ If you're currently using Kustomize to deploy ARC:
 | etcd.extraEnv | list | `[]` | Additional environment variables |
 | etcd.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | etcd.image.repository | string | `"quay.io/coreos/etcd"` | etcd image repository |
-| etcd.image.tag | string | `"v3.6.10"` | etcd image tag |
+| etcd.image.tag | string | `"v3.6.11"` | etcd image tag |
 | etcd.imagePullSecrets | list | `[]` | Image pull secrets for etcd |
 | etcd.livenessProbe | object | `{"httpGet":{"path":"/health","port":2379},"initialDelaySeconds":15,"periodSeconds":20}` | Liveness probe configuration |
 | etcd.nodeSelector | object | `{}` | Node selector for pod assignment |

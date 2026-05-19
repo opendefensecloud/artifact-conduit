@@ -1,0 +1,19 @@
+{{- if and .Values.controller.enabled .Values.controller.metrics.enabled .Values.controller.metrics.certManager.enabled .Values.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "arc.controller.fullname" . }}-metrics-cert
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.controller.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+    - {{ include "arc.controller.metricsServiceName" . }}.{{ include "arc.namespace" . }}.svc
+    - {{ include "arc.controller.metricsServiceName" . }}.{{ include "arc.namespace" . }}.svc.cluster.local
+  issuerRef:
+    kind: {{ default .Values.certManager.issuer.kind .Values.controller.metrics.certManager.issuerRef.kind }}
+    name: {{ default (include "arc.certManager.issuerName" .) .Values.controller.metrics.certManager.issuerRef.name }}
+  secretName: {{ include "arc.controller.fullname" . }}-metrics-cert
+  duration: {{ default .Values.certManager.certificate.duration .Values.controller.metrics.certManager.duration }}
+  renewBefore: {{ default .Values.certManager.certificate.renewBefore .Values.controller.metrics.certManager.renewBefore }}
+{{- end }}

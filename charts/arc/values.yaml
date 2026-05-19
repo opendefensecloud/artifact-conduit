@@ -226,6 +226,16 @@ controller:
       certName: tls.crt
       # -- Certificate key file name
       certKey: tls.key
+      # Issuer override — leave empty to fall back to the shared certManager issuer
+      issuerRef:
+        # -- Issuer kind (Issuer or ClusterIssuer); defaults to .Values.certManager.issuer.kind
+        kind: ""
+        # -- Issuer name; defaults to arc.certManager.issuerName helper
+        name: ""
+      # -- Certificate duration; defaults to .Values.certManager.certificate.duration
+      duration: ""
+      # -- Renew before duration; defaults to .Values.certManager.certificate.renewBefore
+      renewBefore: ""
 
     # ServiceMonitor for Prometheus Operator
     serviceMonitor:
@@ -237,6 +247,17 @@ controller:
       scrapeTimeout: 10s
       # -- Additional labels for ServiceMonitor
       additionalLabels: {}
+
+      # Bearer-token credentials for scraping the secured (HTTPS) metrics endpoint.
+      # Only used when controller.metrics.certManager.enabled=true, where the
+      # controller enforces authn/authz. Reference a Secret in the release namespace
+      # holding a token for an identity bound to the {release name}controller-manager-metrics-reader
+      # ClusterRole. Leave name empty for the plain-HTTP endpoint (no auth required).
+      tokenSecret:
+        # -- Name of the Secret containing the scrape bearer token
+        name: ""
+        # -- Key within the Secret that holds the token
+        key: token
 
   # -- Resource limits and requests
   resources:

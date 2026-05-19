@@ -14,10 +14,26 @@ spec:
     matchLabels:
       {{- include "arc.controller.selectorLabels" . | nindent 6 }}
   endpoints:
+    {{- if .Values.controller.metrics.certManager.enabled }}
     - port: https
       scheme: https
-      interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
-      scrapeTimeout: {{ .Values.controller.metrics.serviceMonitor.scrapeTimeout }}
       tlsConfig:
         insecureSkipVerify: true
+      {{- with .Values.controller.metrics.serviceMonitor.tokenSecret.name }}
+      # In secure mode the controller enforces authn/authz on /metrics, so scrape
+      # with a bearer token whose identity is granted GET /metrics via the
+      # {release name}-controller-manager-metrics-reader ClusterRole. The token
+      # is read from a Secret in this namespace.
+      authorization:
+        type: Bearer
+        credentials:
+          name: {{ . }}
+          key: {{ $.Values.controller.metrics.serviceMonitor.tokenSecret.key }}
+      {{- end }}
+    {{- else }}
+    - port: http
+      scheme: http
+    {{- end }}
+      interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.controller.metrics.serviceMonitor.scrapeTimeout }}
 {{- end }}

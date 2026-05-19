@@ -53,7 +53,7 @@ spec:
             - --health-probe-bind-address={{ .Values.controller.args.healthProbeBindAddress }}
             {{- if .Values.controller.metrics.enabled }}
             - --metrics-bind-address={{ .Values.controller.args.metricsBindAddress }}
-            - --metrics-secure={{ .Values.controller.args.metricsSecure }}
+            - --metrics-secure={{ and .Values.controller.args.metricsSecure .Values.controller.metrics.certManager.enabled }}
             {{- if .Values.controller.metrics.certManager.enabled }}
             - --metrics-cert-path={{ .Values.controller.metrics.certManager.certPath }}
             - --metrics-cert-name={{ .Values.controller.metrics.certManager.certName }}
