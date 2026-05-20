@@ -7,7 +7,7 @@ permissions:
   contents: write
 jobs:
   deploy:
-    runs-on: arc-scale-set
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
         with:
