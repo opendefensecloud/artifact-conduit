@@ -1,77 +1,18 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
-  ],
-  "postUpdateOptions": ["gomodTidy"],
-  "packageRules": [
-    {
-      "matchManagers": ["gomod"],
-      "matchDepTypes": ["golang"],
-      "rangeStrategy": "bump"
-    },
-    {
-      "matchDatasources": ["docker", "golang-version"],
-      "matchPackageNames": ["go", "golang"],
-      "groupName": "golang version sync",
-      "groupSlug": "go-version"
-    }
+    "github>opendefensecloud/renovate-config",
+    "github>opendefensecloud/renovate-config:go",
+    "github>opendefensecloud/renovate-config:k8s"
   ],
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/(^|/)flake\\.nix$/"],
-      "matchStrings": [
-        "goVersion\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
-      ],
-      "depNameTemplate": "go",
-      "datasourceTemplate": "golang-version"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "examples/*/cluster-workflow-template.yaml"
-      ],
+      "managerFilePatterns": ["examples/*/cluster-workflow-template.yaml"],
       "matchStrings": [
         "image:\\s*(?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)"
       ],
       "datasourceTemplate": "docker"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "ENVTEST_K8S_VERSION \\?= (?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "kubernetes/kubernetes",
-      "versioningTemplate": "semver",
-      "extractVersionTemplate": "^v(?<version>.+)$"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "Makefile"
-      ],
-      "matchStrings": [
-        "DEV_KIT_VERSION := (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"
-      ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "opendefensecloud/dev-kit",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
-        "tools.lock"
-      ],
-      "matchStrings": [
-        "(?<depName>[^\\s]+) (?<packageName>[^@]+)@(?<currentValue>v?[^\\s]+)"
-      ],
-      "versioningTemplate": "semver",
-      "datasourceTemplate": "go"
     }
   ],
   "ignorePaths": []
