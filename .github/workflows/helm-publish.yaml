@@ -20,7 +20,7 @@ on:
 
 jobs:
   publish:
-    runs-on: arc-scale-set
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write # Push to ghcr.io
