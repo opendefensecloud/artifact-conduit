@@ -18,13 +18,8 @@ import (
 )
 
 const (
-	certmanagerVersion = "v1.19.1"
-	certmanagerChart   = "oci://quay.io/jetstack/charts/cert-manager"
-
-	trustmanagerChart   = "oci://quay.io/jetstack/charts/trust-manager"
-	trustmanagerVersion = "v0.20.2"
-
-	argoWorkflowsVersion = "v4.0.5"
+	certmanagerChart     = "oci://quay.io/jetstack/charts/cert-manager"
+	trustmanagerChart    = "oci://quay.io/jetstack/charts/trust-manager"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
 	minioRepoUrl = "https://charts.min.io"
@@ -59,6 +54,9 @@ var (
 			return "helm"
 		}
 	}()
+	trustmanagerVersion  = getEnvOrExit("TRUSTMANAGER_VERSION")
+	certmanagerVersion   = getEnvOrExit("CERTMANAGER_VERSION")
+	argoWorkflowsVersion = getEnvOrExit("ARGO_WORKFLOWS_VERSION")
 
 	kubeConfigPath = ""
 )
@@ -329,4 +327,13 @@ func orderState(name string, state func(string) bool) bool {
 		}
 	}
 	return true
+}
+
+func getEnvOrExit(name string) string {
+	if v, ok := os.LookupEnv(name); ok {
+		return v
+	}
+	fmt.Fprintf(os.Stderr, "%s was not set\n", name)
+	os.Exit(1)
+	return ""
 }

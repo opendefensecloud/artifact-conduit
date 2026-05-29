@@ -17,6 +17,10 @@ DOCS_IMG ?= arc-docs:latest
 
 ENVTEST_K8S_VERSION ?= 1.36.0
 
+export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
+export CERTMANAGER_VERSION := v1.19.1
+export TRUSTMANAGER_VERSION := v0.20.2
+
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
 
@@ -51,7 +55,10 @@ KIND_CLUSTER_E2E ?= arc-test-e2e
 .PHONY: test-e2e
 test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
 	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_E2E)
-	KIND=$(KIND) KIND_CLUSTER=$(KIND_CLUSTER_E2E) HELM=$(HELM) go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
+	KIND=$(KIND) \
+	KIND_CLUSTER=$(KIND_CLUSTER_E2E) \
+	HELM=$(HELM) \
+	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
 	$(MAKE) cleanup-test-e2e
 
 .PHONY: cleanup-test-e2e
@@ -66,22 +73,22 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_DEV)
 	@echo -e "\nSETTING UP CERT-MANAGER:\n"
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f \
-		https://github.com/cert-manager/cert-manager/releases/download/v1.19.1/cert-manager.yaml
+		https://github.com/cert-manager/cert-manager/releases/download/$(CERTMANAGER_VERSION)/cert-manager.yaml
 	$(KUBECTL) wait deployment.apps/cert-manager-webhook --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f \
 		test/fixtures/certmanager.yaml
 
 	@echo -e "\nSETTING UP TRUST-MANAGER:\n"
-	$(HELM) upgrade --install --namespace=cert-manager trust-manager oci://quay.io/jetstack/charts/trust-manager --version v0.20.2
+	$(HELM) upgrade --install --namespace=cert-manager trust-manager oci://quay.io/jetstack/charts/trust-manager --version $(TRUSTMANAGER_VERSION)
 	$(KUBECTL) wait deployment.apps/trust-manager --for condition=Available --namespace cert-manager --timeout 5m
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n cert-manager -f  \
 		test/fixtures/trustmanager.yaml
-	$(KUBECTL) label  --context kind-$(KIND_CLUSTER_DEV) namespace default trust=enabled --overwrite
+	$(KUBECTL) label --context kind-$(KIND_CLUSTER_DEV) namespace default trust=enabled --overwrite
 
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo --server-side -f \
-		https://github.com/argoproj/argo-workflows/releases/download/v4.0.5/quick-start-minimal.yaml
+		https://github.com/argoproj/argo-workflows/releases/download/$(ARGO_WORKFLOWS_VERSION)/quick-start-minimal.yaml
 	$(KUBECTL) patch configmap workflow-controller-configmap --context kind-$(KIND_CLUSTER_DEV) -n argo --type=merge -p \
 		'{"data": {"artifactRepository": "archiveLogs: false\n"}}'
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
