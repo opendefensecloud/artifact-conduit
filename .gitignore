@@ -42,4 +42,8 @@ deep-docs/
 
 *.coverprofile
 
+# dev-kit common.mk cache/sentinel files
 common.mk
+.common.mk-version
+.common.mk-checked
+.common.mk-download
