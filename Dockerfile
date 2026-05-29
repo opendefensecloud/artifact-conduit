@@ -37,20 +37,20 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot AS apiserver
+FROM gcr.io/distroless/static:nonroot@sha256:963fa6c544fe5ce420f1f54fb88b6fb01479f054c8056d0f74cc2c6000df5240 AS apiserver
 WORKDIR /
 COPY --from=apiserver-builder /workspace/bin/arc-apiserver .
 USER 65532:65532
 ENTRYPOINT ["/arc-apiserver"]
 
-FROM gcr.io/distroless/static:nonroot AS manager
+FROM gcr.io/distroless/static:nonroot@sha256:963fa6c544fe5ce420f1f54fb88b6fb01479f054c8056d0f74cc2c6000df5240 AS manager
 WORKDIR /
 COPY --from=manager-builder /workspace/bin/arc-controller-manager .
 USER 65532:65532
 ENTRYPOINT ["/arc-controller-manager"]
 
 # Let's create a custom image with relevant plugins for local serving of docs
-FROM squidfunk/mkdocs-material AS mkdocs
+FROM squidfunk/mkdocs-material@sha256:868ad4d39fb5865b72d00173ade00f4eae2b38dde7ff790a011cc44ce4a8ff8e AS mkdocs
 
 COPY ./docs/requirements.txt /requirements.txt
 
