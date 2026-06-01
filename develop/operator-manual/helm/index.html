@@ -722,6 +722,8 @@
       
         
       
+        
+      
     
     
     
@@ -1380,6 +1382,34 @@
     
   
     Force reconciliation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Observability &amp; Monitoring
   
 
     
@@ -3124,10 +3154,34 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <td>Path to mount certificates</td>
 </tr>
 <tr>
+<td>controller.metrics.certManager.duration</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Certificate duration; defaults to .Values.certManager.certificate.duration</td>
+</tr>
+<tr>
 <td>controller.metrics.certManager.enabled</td>
 <td>bool</td>
 <td><code>false</code></td>
 <td>Enable cert-manager for metrics certificates</td>
+</tr>
+<tr>
+<td>controller.metrics.certManager.issuerRef.kind</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Issuer kind (Issuer or ClusterIssuer); defaults to .Values.certManager.issuer.kind</td>
+</tr>
+<tr>
+<td>controller.metrics.certManager.issuerRef.name</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Issuer name; defaults to arc.certManager.issuerName helper</td>
+</tr>
+<tr>
+<td>controller.metrics.certManager.renewBefore</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Renew before duration; defaults to .Values.certManager.certificate.renewBefore</td>
 </tr>
 <tr>
 <td>controller.metrics.enabled</td>
@@ -3176,6 +3230,18 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <td>string</td>
 <td><code>"10s"</code></td>
 <td>Scrape timeout</td>
+</tr>
+<tr>
+<td>controller.metrics.serviceMonitor.tokenSecret.key</td>
+<td>string</td>
+<td><code>"token"</code></td>
+<td>Key within the Secret that holds the token</td>
+</tr>
+<tr>
+<td>controller.metrics.serviceMonitor.tokenSecret.name</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Name of the Secret containing the scrape bearer token</td>
 </tr>
 <tr>
 <td>controller.nameOverride</td>
@@ -3318,7 +3384,7 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <tr>
 <td>etcd.image.tag</td>
 <td>string</td>
-<td><code>"v3.6.10"</code></td>
+<td><code>"v3.6.11"</code></td>
 <td>etcd image tag</td>
 </tr>
 <tr>
