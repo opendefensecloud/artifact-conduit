@@ -13,7 +13,7 @@ metadata:
 spec:
   type: {{ .Values.controller.metrics.service.type }}
   ports:
-    - name: https
+    - name: {{ if .Values.controller.metrics.certManager.enabled }}https{{ else }}http{{ end }}
       port: {{ .Values.controller.metrics.service.port }}
       protocol: TCP
       targetPort: {{ .Values.controller.metrics.service.port }}
