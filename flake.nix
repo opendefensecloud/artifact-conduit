@@ -27,7 +27,7 @@
       {
         devShells.default = dev-kit.lib.mkShell {
           inherit system;
-          goVersion = "1.26.2";
+          goVersion = "1.26.3";
           packages = [
             pkgs.cosign
             pkgs.trivy
