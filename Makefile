@@ -22,8 +22,8 @@ DOCS_IMG ?= arc-docs:latest
 ENVTEST_K8S_VERSION ?= 1.36.0
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
-export CERTMANAGER_VERSION := v1.19.1
-export TRUSTMANAGER_VERSION := v0.20.2
+export CERTMANAGER_VERSION := v1.20.2
+export TRUSTMANAGER_VERSION := v0.22.1
 
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
