@@ -15,11 +15,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777472486,
-        "narHash": "sha256-SqeEH+7j6wvWLXn6bzpckEXHiJXjwx2VhT+oIgj0dPw=",
+        "lastModified": 1780499049,
+        "narHash": "sha256-oqS4fc4qgrfP5TFl/IHW39fsERtSWNufQQp0QoDxb/Q=",
         "owner": "opendefensecloud",
         "repo": "dev-kit",
-        "rev": "98ce0218949e5f406658070b6076fb927cdfd229",
+        "rev": "9fe77282c8260284d4efdb69d19b883e52e9a4d8",
         "type": "github"
       },
       "original": {
@@ -47,15 +47,15 @@
     "flake-compat_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1761588595,
-        "narHash": "sha256-XKUZz9zewJNUj46b4AJdiRZJAvSZ0Dqj2BNfXvFlJC4=",
-        "owner": "edolstra",
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "NixOS",
         "repo": "flake-compat",
-        "rev": "f387cd2afec9419c8ee37694406ca490c3f34ee5",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
         "type": "github"
       },
       "original": {
-        "owner": "edolstra",
+        "owner": "NixOS",
         "repo": "flake-compat",
         "type": "github"
       }
@@ -111,11 +111,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1765016596,
-        "narHash": "sha256-rhSqPNxDVow7OQKi4qS5H8Au0P4S3AYbawBSmJNUtBQ=",
+        "lastModified": 1778507602,
+        "narHash": "sha256-kTwur1wV+01SdqskVMSo6JMEpg71ps3HpbFY2GsflKs=",
         "owner": "cachix",
         "repo": "git-hooks.nix",
-        "rev": "548fc44fca28a5e81c5d6b846e555e6b9c2a5a3c",
+        "rev": "61ab0e80d9c7ab14c256b5b453d8b3fb0189ba0a",
         "type": "github"
       },
       "original": {
@@ -179,11 +179,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777526177,
-        "narHash": "sha256-RwNNjxVpLXsPvv9lTUytNEXClGcYz7WRsCnNVH4G9oE=",
+        "lastModified": 1780434986,
+        "narHash": "sha256-y+HEGGFmDGO/hkRmBgt+bcGNsn7zt8UkM+KQnWhlk38=",
         "owner": "purpleclay",
         "repo": "go-overlay",
-        "rev": "36bb712045effe760b3db23abcc2f3273dff9e8a",
+        "rev": "7f70305782ff557ca1e1c8f0dc9bdb71f6255122",
         "type": "github"
       },
       "original": {
@@ -219,11 +219,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1777268161,
-        "narHash": "sha256-bxrdOn8SCOv8tN4JbTF/TXq7kjo9ag4M+C8yzzIRYbE=",
+        "lastModified": 1780749050,
+        "narHash": "sha256-3av0pIjlOWQ6rDbNOmpUSvbNnJkGORQKKjb4LtCZsIY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "1c3fe55ad329cbcb28471bb30f05c9827f724c76",
+        "rev": "a799d3e3886da994fa307f817a6bc705ae538eeb",
         "type": "github"
       },
       "original": {
