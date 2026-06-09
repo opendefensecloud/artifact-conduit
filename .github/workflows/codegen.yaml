@@ -1,0 +1,27 @@
+name: Codegen Check
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - id: go-version
+        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@9fe77282c8260284d4efdb69d19b883e52e9a4d8 # v1.0.9
+      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
+        with:
+          go-version: ${{ steps.go-version.outputs.version }}
+      - name: Run codegen
+        run: |
+          make codegen
+      - name: Check for changes
+        uses: opendefensecloud/dev-kit/.github/actions/diff-check@9fe77282c8260284d4efdb69d19b883e52e9a4d8 # v1.0.9
