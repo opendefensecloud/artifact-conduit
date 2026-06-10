@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v1.0.8
+DEV_KIT_VERSION := v1.0.9
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -32,6 +32,7 @@ LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
 codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 	OPENAPI_GEN=$(OPENAPI_GEN) ./hack/update-codegen.sh
 	$(MAKE) docs-crd-ref
+	$(MAKE) docs-helm-ref
 
 .PHONY: fmt
 fmt: $(GOLANGCI_LINT) ## Add license headers and format code

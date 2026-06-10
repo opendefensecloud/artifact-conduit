@@ -31,21 +31,16 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     outputs:
-      go-version: ${{ steps.get-go-version.outputs.version }}
+      go-version: ${{ steps.go-version.outputs.version }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: get-go-version
-        id: get-go-version
-        run: |
-          GO_VERSION="$(sed -nE 's/^[[:space:]]*goVersion[[:space:]]*=[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)";[[:space:]]*$/\1/p' flake.nix)"
-          if [ "$(printf '%s\n' "$GO_VERSION" | sed '/^$/d' | wc -l)" -ne 1 ]; then
-            echo "::error::Expected exactly one goVersion assignment in flake.nix"
-            exit 1
-          fi
-          echo "version=$GO_VERSION" >> $GITHUB_OUTPUT
+        with:
+          persist-credentials: false
+      - id: go-version
+        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@9fe77282c8260284d4efdb69d19b883e52e9a4d8 # v1.0.9
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
-          go-version: ${{ steps.get-go-version.outputs.version }}
+          go-version: ${{ steps.go-version.outputs.version }}
       - name: lint-license-and-shell
         run: |
           make lint-no-golangci
@@ -57,6 +52,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
         with:
           go-version: ${{ needs.lint.outputs.go-version }}
