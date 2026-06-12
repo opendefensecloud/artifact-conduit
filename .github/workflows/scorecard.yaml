@@ -1,3 +1,8 @@
+# Below this is the default file falling out of 
+#   https://github.com/ossf/scorecard-action#workflow-setup-required
+# It contains all options, we keep everything for now to have a documented
+# configuration file.
+
 # This workflow uses actions that are not certified by GitHub. They are provided
 # by a third-party and are governed by separate terms of service, privacy
 # policy, and support documentation.
