@@ -41,17 +41,35 @@ var _ = Describe("ARC", Ordered, func() {
 		// _, err = run(cmd)
 		// Expect(err).NotTo(HaveOccurred(), "Failed to label namespace with restricted policy")
 
+		if imageSource != "local" && ghcrToken != "" {
+			By("creating GHCR imagePullSecret")
+			cmd = exec.Command("kubectl", "create", "secret", "docker-registry",
+				ghcrPullSecretName,
+				"--namespace", namespace,
+				"--docker-server=ghcr.io",
+				"--docker-username=oauth2",
+				fmt.Sprintf("--docker-password=%s", ghcrToken))
+			_, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred(), "Failed to create GHCR imagePullSecret")
+		}
+
 		By("deploying apiserver and controller-manager")
 		dir, err := getProjectDir()
 		Expect(err).NotTo(HaveOccurred())
-		cmd = exec.Command(helmBinary, "upgrade", "--install",
+		helmArgs := []string{
+			"upgrade", "--install",
 			"--namespace", namespace, "arc", filepath.Join(dir, "charts", "arc"),
 			"--set", "fullnameOverride=arc",
-			"--set", "apiserver.image.repository=apiserver",
-			"--set", "apiserver.image.tag=e2e",
-			"--set", "controller.image.repository=manager",
-			"--set", "controller.image.tag=e2e",
-			"--set", "apiserver.args.cronMinScheduleInterval=30s")
+			"--set", fmt.Sprintf("apiserver.image.repository=%s", apiserverImageRepo),
+			"--set", fmt.Sprintf("apiserver.image.tag=%s", apiserverImageTag),
+			"--set", fmt.Sprintf("controller.image.repository=%s", managerImageRepo),
+			"--set", fmt.Sprintf("controller.image.tag=%s", managerImageTag),
+			"--set", "apiserver.args.cronMinScheduleInterval=30s",
+		}
+		if imageSource != "local" && ghcrToken != "" {
+			helmArgs = append(helmArgs, "--set", fmt.Sprintf("global.imagePullSecrets[0].name=%s", ghcrPullSecretName))
+		}
+		cmd = exec.Command(helmBinary, helmArgs...)
 		_, err = run(cmd)
 		Expect(err).NotTo(HaveOccurred())
 	})

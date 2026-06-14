@@ -56,13 +56,20 @@ test: $(SETUP_ENVTEST) $(GINKGO) ## Run all tests
 manifests: $(CONTROLLER_GEN) ## Generate ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role paths="./pkg/controller/...;./api/..." output:rbac:artifacts:config=charts/arc/files
 
-KIND_CLUSTER_E2E ?= arc-test-e2e
+KIND_CLUSTER_E2E  ?= arc-test-e2e
+E2E_IMAGE_SOURCE  ?= local
+REGISTRY          ?= localhost/local
+TAG               ?= e2e
+
 .PHONY: test-e2e
 test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
 	$(MAKE) setup-local-cluster KIND_CLUSTER=$(KIND_CLUSTER_E2E)
 	KIND=$(KIND) \
 	KIND_CLUSTER=$(KIND_CLUSTER_E2E) \
 	HELM=$(HELM) \
+	E2E_IMAGE_SOURCE=$(E2E_IMAGE_SOURCE) \
+	REGISTRY=$(REGISTRY) \
+	IMAGE_TAG=$(TAG) \
 	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
 	$(MAKE) cleanup-test-e2e
 
