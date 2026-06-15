@@ -17,14 +17,6 @@ on:
       - "docs/**"
       - "**/*.md"
     types: [labeled, unlabeled, opened, synchronize, reopened]
-  workflow_call:
-    outputs:
-      image-tag:
-        description: "The commit SHA used as image tag, empty if no images were built"
-        value: ${{ jobs.buildAndPush.outputs.image-tag }}
-      is-local:
-        description: "Whether images were built for local act environment"
-        value: ${{ jobs.buildAndPush.outputs.is-local }}
 
 jobs:
   buildAndPush:

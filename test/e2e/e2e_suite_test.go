@@ -100,6 +100,10 @@ func TestE2E(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	if imageSource != "local" && ghcrToken == "" {
+		Fail("GHCR_TOKEN must be set when E2E_IMAGE_SOURCE is not \"local\"")
+	}
+
 	// Let's retrieve the kubeconfig of the kind cluster
 	By("fetching the kubeconfig from kind")
 	f, err := os.CreateTemp("", "e2e-kubeconfig")
