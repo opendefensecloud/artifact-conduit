@@ -7,6 +7,7 @@ package e2e
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
@@ -49,8 +50,9 @@ var _ = Describe("ARC", Ordered, func() {
 				"--docker-server=ghcr.io",
 				"--docker-username=oauth2",
 				fmt.Sprintf("--docker-password=%s", ghcrToken))
-			_, err = run(cmd)
-			Expect(err).NotTo(HaveOccurred(), "Failed to create GHCR imagePullSecret")
+			cmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeConfigPath))
+			output, err := cmd.CombinedOutput()
+			Expect(err).NotTo(HaveOccurred(), fmt.Sprintf("Failed to create GHCR imagePullSecret: %s", string(output)))
 		}
 
 		By("deploying apiserver and controller-manager")
