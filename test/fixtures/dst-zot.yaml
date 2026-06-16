@@ -59,7 +59,7 @@ httpGet:
 extraVolumes:
   - name: cert
     secret:
-      secretName: zot-tls
+      secretName: arc-zot-tls
 extraVolumeMounts:
   - mountPath: /var/lib/ssl
     name: cert

@@ -1,0 +1,160 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ClusterWorkflowTemplate
+metadata:
+  name: solar-catalog-transfer
+spec:
+  serviceAccountName: arc-workflow
+
+  volumes:
+    - name: kubeconfig
+      secret:
+        secretName: "{{workflow.parameters.kubeconfigSecret}}"
+
+  arguments:
+    parameters:
+      - name: dstRemoteURL
+      - name: dstScheme
+        value: "https"
+      - name: srcSecretName
+        value: ""
+      - name: dstSecretName
+        value: ""
+      - name: srcSecret
+        value: "false"
+      - name: dstSecret
+        value: "false"
+      - name: kubeconfigSecret
+        value: ""
+      - name: scanSeverity
+        value: "CRITICAL,HIGH"
+      - name: scanExitCode
+        value: "0"
+
+  entrypoint: pipeline
+
+  templates:
+    - name: query-resources
+      outputs:
+        parameters:
+          - name: cv-list
+            valueFrom:
+              path: /tmp/cv-list.json
+      script:
+        image: bitnami/kubectl:latest
+        command: [bash, -c]
+        source: |
+          set -euo pipefail
+
+          KUBECTL="kubectl --kubeconfig /etc/kubeconfig/kubeconfig"
+
+          $KUBECTL get components.solar.opendefense.cloud -A -o json > /tmp/components.json 2>/dev/null || echo '{"items":[]}' > /tmp/components.json
+          echo "Found $(jq -r '.items | length // 0' /tmp/components.json) Component(s)"
+
+          $KUBECTL get componentversions.solar.opendefense.cloud -A -o json > /tmp/componentversions.json 2>/dev/null || echo '{"items":[]}' > /tmp/componentversions.json
+          echo "Found $(jq -r '.items | length // 0' /tmp/componentversions.json) ComponentVersion(s)"
+
+          jq -n '
+            (($components[0].items // []) | map({(.metadata.namespace + "/" + .metadata.name): {registry: .spec.registry, repository: .spec.repository}}) | add // {}) as $comp_idx |
+            [ $cvs[0].items[] |
+              ($comp_idx[.metadata.namespace + "/" + .spec.componentRef.name] // {}) as $comp |
+              select($comp.registry != null) |
+              {
+                name: .metadata.name,
+                component: .spec.componentRef.name,
+                tag: .spec.tag,
+                registry: $comp.registry,
+                repository: $comp.repository,
+                secret: "{{workflow.parameters.srcSecretName}}"
+              }
+            ]
+          ' \
+            --slurpfile components /tmp/components.json \
+            --slurpfile cvs /tmp/componentversions.json > /tmp/cv-list.json
+
+          echo "Generated $(jq -r 'length' /tmp/cv-list.json) transfer item(s)"
+        volumeMounts:
+          - name: kubeconfig
+            mountPath: /etc/kubeconfig
+            readOnly: true
+
+    - name: submit-artifactworkflow
+      inputs:
+        parameters:
+          - name: name
+          - name: component
+          - name: tag
+          - name: registry
+          - name: repository
+          - name: namespace
+          - name: secret
+      resource:
+        action: create
+        manifest: |
+          apiVersion: arc.opendefense.cloud/v1alpha1
+          kind: ArtifactWorkflow
+          metadata:
+            generateName: "{{inputs.parameters.component}}-"
+            namespace: "{{inputs.parameters.namespace}}"
+            labels:
+              solar.opendefense.cloud/component: "{{inputs.parameters.component}}"
+              solar.opendefense.cloud/componentversion: "{{inputs.parameters.name}}"
+              solar.opendefense.cloud/tag: "{{inputs.parameters.tag}}"
+          spec:
+            workflowTemplateRef:
+              name: ocm-transfer-pipeline
+              clusterScope: true
+            srcSecretRef:
+              name: "{{inputs.parameters.secret}}"
+            dstSecretRef:
+              name: "{{workflow.parameters.dstSecretName}}"
+            parameters:
+              - name: srcType
+                value: "oci"
+              - name: srcRemoteURL
+                value: "{{inputs.parameters.registry}}"
+              - name: specRepo
+                value: ""  # FIXME: save discovered sub namespaces
+              - name: specComponent
+                value: "{{inputs.parameters.repository}}"
+              - name: specVersion
+                value: "{{inputs.parameters.tag}}"
+              - name: dstType
+                value: "oci"
+              - name: dstRemoteURL
+                value: "{{workflow.parameters.dstRemoteURL}}"
+              - name: dstScheme
+                value: "{{workflow.parameters.dstScheme}}"
+              - name: srcSecret
+                value: "{{workflow.parameters.srcSecret}}"
+              - name: dstSecret
+                value: "{{workflow.parameters.dstSecret}}"
+              - name: scanSeverity
+                value: "{{workflow.parameters.scanSeverity}}"
+              - name: scanExitCode
+                value: "{{workflow.parameters.scanExitCode}}"
+        successCondition: status.phase == Succeeded
+        failureCondition: status.phase in (Failed, Error)
+
+    - name: pipeline
+      steps:
+        - - name: query-resources
+            template: query-resources
+        - - name: trigger-transfers
+            template: submit-artifactworkflow
+            arguments:
+              parameters:
+                - name: name
+                  value: "{{item.name}}"
+                - name: component
+                  value: "{{item.component}}"
+                - name: tag
+                  value: "{{item.tag}}"
+                - name: registry
+                  value: "{{item.registry}}"
+                - name: secret
+                  value: "{{item.secret}}"
+                - name: repository
+                  value: "{{item.repository}}"
+                - name: namespace
+                  value: "{{workflow.namespace}}"
+            withParam: "{{steps.query-resources.outputs.parameters.cv-list}}"
