@@ -26,8 +26,12 @@ const (
 
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
 
-	apiserverImage = "apiserver:e2e"
-	managerImage   = "manager:e2e"
+	// Image names used when building from source (local development)
+	localApiserverImage = "apiserver:e2e"
+	localManagerImage   = "manager:e2e"
+
+	// Kubernetes secret name used for GHCR image pull auth
+	ghcrPullSecretName = "ghcr-pull-secret"
 
 	waitTimeout = "5m"
 )
@@ -54,6 +58,30 @@ var (
 			return "helm"
 		}
 	}()
+
+	// imageSource controls where images come from: "local" builds from source, "ghcr" uses pre-built images.
+	imageSource = func() string {
+		if v, ok := os.LookupEnv("E2E_IMAGE_SOURCE"); ok {
+			return v
+		}
+		return "local"
+	}()
+
+	// imageRegistry is the registry prefix, e.g. "ghcr.io/opendefensecloud".
+	imageRegistry = os.Getenv("REGISTRY")
+
+	// imageTag is the tag of the pre-built images (only used when imageSource != "local").
+	imageTag = os.Getenv("IMAGE_TAG")
+
+	// ghcrToken is used to create an imagePullSecret when pulling from GHCR.
+	ghcrToken = os.Getenv("GHCR_TOKEN")
+
+	// Image repository and tag resolved in BeforeSuite; used by e2e_test.go.
+	apiserverImageRepo string
+	apiserverImageTag  string
+	managerImageRepo   string
+	managerImageTag    string
+
 	trustmanagerVersion  = getEnvOrExit("TRUSTMANAGER_VERSION")
 	certmanagerVersion   = getEnvOrExit("CERTMANAGER_VERSION")
 	argoWorkflowsVersion = getEnvOrExit("ARGO_WORKFLOWS_VERSION")
@@ -72,6 +100,18 @@ func TestE2E(t *testing.T) {
 }
 
 var _ = BeforeSuite(func() {
+	if imageSource != "local" {
+		if ghcrToken == "" {
+			Fail("GHCR_TOKEN must be set when E2E_IMAGE_SOURCE is not \"local\"")
+		}
+		if imageRegistry == "" {
+			Fail("REGISTRY must be set when E2E_IMAGE_SOURCE is not \"local\"")
+		}
+		if imageTag == "" {
+			Fail("IMAGE_TAG must be set when E2E_IMAGE_SOURCE is not \"local\"")
+		}
+	}
+
 	// Let's retrieve the kubeconfig of the kind cluster
 	By("fetching the kubeconfig from kind")
 	f, err := os.CreateTemp("", "e2e-kubeconfig")
@@ -85,25 +125,35 @@ var _ = BeforeSuite(func() {
 	f.Sync()
 	kubeConfigPath = f.Name()
 
-	// Build images
-	By("building the apiserver image")
-	cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", apiserverImage))
-	_, err = run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
+	if imageSource == "local" {
+		By("building the apiserver image")
+		cmd = exec.Command("make", "docker-build-apiserver", fmt.Sprintf("APISERVER_IMG=%s", localApiserverImage))
+		_, err = run(cmd)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the apiserver image")
 
-	By("building the manager image")
-	cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", managerImage))
-	_, err = run(cmd)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
+		By("building the manager image")
+		cmd = exec.Command("make", "docker-build-manager", fmt.Sprintf("MANAGER_IMG=%s", localManagerImage))
+		_, err = run(cmd)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to build the manager image")
 
-	// Load images
-	By("loading the apiserver image on Kind")
-	err = loadImageToKindClusterWithName(apiserverImage)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the apiserver image into Kind")
+		By("loading the apiserver image on Kind")
+		err = loadImageToKindClusterWithName(localApiserverImage)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the apiserver image into Kind")
 
-	By("loading the manager image on Kind")
-	err = loadImageToKindClusterWithName(managerImage)
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
+		By("loading the manager image on Kind")
+		err = loadImageToKindClusterWithName(localManagerImage)
+		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
+
+		apiserverImageRepo = "apiserver"
+		apiserverImageTag = "e2e"
+		managerImageRepo = "manager"
+		managerImageTag = "e2e"
+	} else {
+		apiserverImageRepo = imageRegistry + "/arc-apiserver"
+		apiserverImageTag = imageTag
+		managerImageRepo = imageRegistry + "/arc-controller-manager"
+		managerImageTag = imageTag
+	}
 
 	logf("Installing CertManager...\n")
 	Expect(installCertManager()).To(Succeed(), "Failed to install CertManager")

@@ -15,7 +15,7 @@ jobs:
           persist-credentials: false
       - name: Verify all actions are pinned to a SHA
         run: |
-          unpinned=$(grep -rE '^\s+(- )?uses: ' .github/workflows/ \
+          unpinned=$(grep -rhE '^\s+(- )?uses: ' .github/workflows/ \
             | grep -vE '^\s+(- )?uses: \.\/' \
             | grep -vE '@[0-9a-f]{40}($|\s)' || true)
           if [[ -n "$unpinned" ]]; then
