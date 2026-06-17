@@ -103,6 +103,12 @@ spec:
             mountPath: /secrets/src
           - name: work-volume
             mountPath: /data
+          - name: ca-certificates
+            readOnly: true
+            mountPath: /etc/ssl/certs/
+        env:
+          - name: SSL_CERT_FILE
+            value: /etc/ssl/certs/trust-bundle.pem
         source: |
           set -euo pipefail
           export HOME=/tmp
