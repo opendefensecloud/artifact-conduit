@@ -129,13 +129,23 @@ spec:
           fi
 
           echo "Transfering to CTF..."
-          ocm transfer component {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}} -r --copy-resources --copy-sources /data/ctf
+          if [ -n "{{workflow.parameters.specRepo}}" ]; then
+            component_url={{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+          else
+            component_url={{workflow.parameters.srcRemoteURL}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+          fi
+          ocm transfer component "$component_url" -r --copy-resources --copy-sources /data/ctf
 
           echo "Transfering CTF to temporary registry"
-          ocm transfer ctf /data/ctf http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}
+          if [ -n "{{workflow.parameters.specRepo}}" ]; then
+            temp_registry_url=http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}
+          else
+            temp_registry_url=http://{{inputs.parameters.registryIP}}:5000
+          fi
+          ocm transfer ctf /data/ctf "$temp_registry_url"
 
           echo "Compile list of images for trivy"
-          ocm get resources http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}} -r -ojson > /data/resources.json
+          ocm get resources "$temp_registry_url//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}" -r -ojson > /data/resources.json
           cat /data/resources.json | jq -r '.items[] | select(.element.type == "ociImage") | .element.access.imageReference' > /data/images-tmp.txt
           cat /data/images-tmp.txt | sed 's/http:\/\///g' > /data/images.txt
 
@@ -203,4 +213,9 @@ spec:
                         password: $(cat /secrets/dst/password)" > $HOME/.ocmconfig
           fi
 
-          ocm transfer ctf /data/ctf {{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}
+          if [ -n "{{workflow.parameters.specRepo}}" ]; then
+            dst_url={{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}
+          else
+            dst_url={{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}
+          fi
+          ocm transfer ctf /data/ctf "$dst_url"
