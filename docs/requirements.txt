@@ -8,3 +8,7 @@ mkdocs-awesome-nav == 3.3.0
 pillow == 12.2.0
 cairosvg == 2.9.0
 mike == 2.2.0
+
+# Pinned transitive dependency; introduced to patch GHSA-65pc-fj4g-8rjx
+# (CVE-2026-45409). Kept current by Renovate.
+idna == 3.18
