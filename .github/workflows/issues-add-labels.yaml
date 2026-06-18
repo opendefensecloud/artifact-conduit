@@ -1,4 +1,8 @@
 name: Label issues
+
+permissions:
+  contents: read
+
 on:
   issues:
     types:

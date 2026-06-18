@@ -1,5 +1,8 @@
 name: Update Action Pins
 
+permissions:
+  contents: read
+
 on:
   pull_request:
     paths:
