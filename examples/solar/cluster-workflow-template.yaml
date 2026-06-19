@@ -40,7 +40,7 @@ spec:
             valueFrom:
               path: /tmp/cv-list.json
       script:
-        image: bitnami/kubectl:latest
+        image: bitnami/kubectl@sha256:e1436ad01baa5f7a8eda94d4db4606c2d34a46d191dc8fcffe7c2ced52a6ef46
         command: [bash, -c]
         source: |
           set -euo pipefail
