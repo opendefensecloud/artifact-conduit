@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1107,6 +1107,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#verifying-release-artefacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying release artefacts
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1786,6 +1797,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#verifying-release-artefacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying release artefacts
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1823,6 +1845,20 @@
 <p>You can find the most recent version in the <a href="https://github.com/opendefensecloud/artifact-conduit/releases">GitHub Releases</a>.</p>
 <h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">¶</a></h2>
 <p>Versions are expressed as <code>x.y.z</code>, where <code>x</code> is the major version, <code>y</code> is the minor version, and <code>z</code> is the patch version, following Semantic Versioning terminology.</p>
+<h2 id="verifying-release-artefacts">Verifying release artefacts<a class="headerlink" href="#verifying-release-artefacts" title="Permanent link">¶</a></h2>
+<p>Every release artefact (each binary and <code>checksums.txt</code>) is keylessly signed with <a href="https://docs.sigstore.dev/">cosign</a> during the release workflow. For each artefact <code>&lt;file&gt;</code>, a matching <code>&lt;file&gt;.sig</code> (signature) and <code>&lt;file&gt;.pem</code> (certificate) is published next to it on the GitHub Release page.</p>
+<p>To verify a downloaded binary, install <a href="https://docs.sigstore.dev/system_config/installation/">cosign</a> and run <code>cosign verify-blob</code>, pointing it at the artefact's <code>.pem</code> and <code>.sig</code>:</p>
+<div class="highlight"><pre><span></span><code>cosign<span class="w"> </span>verify-blob<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certificate<span class="w"> </span>arc-apiserver-linux-amd64.pem<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--signature<span class="w">  </span>arc-apiserver-linux-amd64.sig<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certificate-identity-regexp<span class="w"> </span><span class="s1">'https://github.com/opendefensecloud/artifact-conduit/\.github/workflows/release\.yaml@.*'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--certificate-oidc-issuer<span class="w"> </span><span class="s1">'https://token.actions.githubusercontent.com'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>arc-apiserver-linux-amd64
+</code></pre></div>
+<p>The same command works for <code>checksums.txt</code> and any other artefact — swap the file names accordingly. A successful run prints <code>Verified OK</code>.</p>
+<p>Release binaries additionally carry a <a href="https://docs.github.com/en/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds">build-provenance attestation</a>, which can be verified with the GitHub CLI:</p>
+<div class="highlight"><pre><span></span><code>gh<span class="w"> </span>attestation<span class="w"> </span>verify<span class="w"> </span>arc-apiserver-linux-amd64<span class="w"> </span>--repo<span class="w"> </span>opendefensecloud/artifact-conduit
+</code></pre></div>
 
 
 
