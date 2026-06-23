@@ -19,7 +19,7 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
-ENVTEST_K8S_VERSION ?= 1.36.0
+ENVTEST_K8S_VERSION ?= 1.36.2
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
 export CERTMANAGER_VERSION := v1.20.2
