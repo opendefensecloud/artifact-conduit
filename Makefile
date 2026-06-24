@@ -23,7 +23,7 @@ ENVTEST_K8S_VERSION ?= 1.36.2
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
 export CERTMANAGER_VERSION := v1.20.2
-export TRUSTMANAGER_VERSION := v0.22.1
+export TRUSTMANAGER_VERSION := v0.23.0
 
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
