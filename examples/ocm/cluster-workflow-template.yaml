@@ -120,7 +120,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo '{{workflow.parameters.srcRemoteURL}}' | cut -d : -f 1)
+                    hostname: $(echo '{{workflow.parameters.srcRemoteURL}}' | cut -d / -f 1 | cut -d : -f 1)
                   credentials:
                     - type: Credentials
                       properties:
@@ -205,7 +205,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo '{{workflow.parameters.dstRemoteURL}}' | cut -d : -f 1)
+                    hostname: $(echo '{{workflow.parameters.dstRemoteURL}}' | cut -d / -f 1 | cut -d : -f 1)
                   credentials:
                     - type: Credentials
                       properties:
