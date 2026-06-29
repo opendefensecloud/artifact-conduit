@@ -27,6 +27,11 @@ ENVTEST_K8S_VERSION ?= 1.36.0
 # directly to decouple them.
 KIND_NODE_IMAGE ?= kindest/node:v$(patsubst v%,%,$(ENVTEST_K8S_VERSION))
 
+# The image tag (e.g. v1.36.0) the cluster's K8s server version must match.
+# Derived from KIND_NODE_IMAGE itself so overriding the image keeps the check
+# honest. Splitting on ':' takes the tag even with a registry:port prefix.
+KIND_NODE_VERSION := $(lastword $(subst :, ,$(KIND_NODE_IMAGE)))
+
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
 export CERTMANAGER_VERSION := v1.20.2
 export TRUSTMANAGER_VERSION := v0.22.1
@@ -80,13 +85,21 @@ kind-cluster: ## Create the Kind cluster $(KIND_CLUSTER) pinned to KIND_NODE_IMA
 		echo "Kind is not installed. Please install Kind manually."; \
 		exit 1; \
 	}
-	@case "$$($(KIND) get clusters)" in \
-		*"$(KIND_CLUSTER)"*) \
-			echo "Kind cluster '$(KIND_CLUSTER)' already exists. Skipping creation." ;; \
-		*) \
-			echo "Creating Kind cluster '$(KIND_CLUSTER)' ($(KIND_NODE_IMAGE))..."; \
-			$(KIND) create cluster --name $(KIND_CLUSTER) --image $(KIND_NODE_IMAGE) ;; \
-	esac
+	@if $(KIND) get clusters 2>/dev/null | grep -qx "$(KIND_CLUSTER)"; then \
+		current=$$($(KUBECTL) --context kind-$(KIND_CLUSTER) version -o json 2>/dev/null \
+			| $(JQ) -r '.serverVersion.gitVersion // empty' 2>/dev/null) || true; \
+		case "$$current" in \
+			$(KIND_NODE_VERSION) | $(KIND_NODE_VERSION)[-+]*) \
+				echo "Kind cluster '$(KIND_CLUSTER)' already exists at $$current. Skipping creation." ;; \
+			*) \
+				echo "error: Kind cluster '$(KIND_CLUSTER)' runs '$${current:-unknown}', but $(KIND_NODE_VERSION) is required (KIND_NODE_IMAGE=$(KIND_NODE_IMAGE))." >&2; \
+				echo "       Recreate it: $(KIND) delete cluster --name $(KIND_CLUSTER) && $(MAKE) kind-cluster KIND_CLUSTER=$(KIND_CLUSTER)" >&2; \
+				exit 1 ;; \
+		esac; \
+	else \
+		echo "Creating Kind cluster '$(KIND_CLUSTER)' ($(KIND_NODE_IMAGE))..."; \
+		$(KIND) create cluster --name $(KIND_CLUSTER) --image $(KIND_NODE_IMAGE); \
+	fi
 
 .PHONY: test-e2e
 test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
