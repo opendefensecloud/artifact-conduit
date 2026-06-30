@@ -19,7 +19,7 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
-ENVTEST_K8S_VERSION ?= 1.36.0
+ENVTEST_K8S_VERSION ?= 1.36.1
 
 # Kind node image for local/e2e clusters — defaults to track ENVTEST_K8S_VERSION
 # so envtest (`make test`) and Kind-based clusters (`make dev-cluster`,
@@ -103,6 +103,7 @@ kind-cluster: ## Create the Kind cluster $(KIND_CLUSTER) pinned to KIND_NODE_IMA
 
 .PHONY: test-e2e
 test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using Kind.
+	@if [ "$(E2E_IMAGE_SOURCE)" = "local" ]; then KIND=$(KIND) bash hack/require-kind-version.sh; fi
 	$(MAKE) kind-cluster KIND_CLUSTER=$(KIND_CLUSTER_E2E)
 	KIND=$(KIND) \
 	KIND_CLUSTER=$(KIND_CLUSTER_E2E) \
