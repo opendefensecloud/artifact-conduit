@@ -59,7 +59,7 @@ jobs:
       - name: Attest build provenance
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
         with:
-          subject-path: 'bin/arc-*-*' # binaries only; runs before signing so .sig/.pem are not yet present
+          subject-path: 'bin/arc-*-*' # binaries only; runs before signing so the .sigstore.json bundles are not yet present
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -71,10 +71,15 @@ jobs:
           cd bin
           for f in *; do
             [ -f "$f" ] || continue
-            case "$f" in *.sig|*.pem) continue ;; esac
+            case "$f" in *.sigstore.json) continue ;; esac
+            # Emit a Sigstore bundle (signature + cert + Rekor proof), named
+            # *.sigstore.json so OpenSSF Scorecard's Signed-Releases check
+            # detects it. Don't revert to --output-signature/--output-certificate:
+            # those are deprecated and silently ignored by newer cosign, which
+            # defaults to the bundle format and requires --bundle.
             cosign sign-blob --yes \
-              --output-signature "${f}.sig" \
-              --output-certificate "${f}.pem" \
+              --new-bundle-format=true \
+              --bundle "${f}.sigstore.json" \
               "$f"
           done
 

@@ -8,14 +8,13 @@ Versions are expressed as `x.y.z`, where `x` is the major version, `y` is the mi
 
 ## Verifying release artefacts
 
-Every release artefact (each binary and `checksums.txt`) is keylessly signed with [cosign](https://docs.sigstore.dev/) during the release workflow. For each artefact `<file>`, a matching `<file>.sig` (signature) and `<file>.pem` (certificate) is published next to it on the GitHub Release page.
+Every release artefact (each binary and `checksums.txt`) is keylessly signed with [cosign](https://docs.sigstore.dev/) during the release workflow. For each artefact `<file>`, a matching Sigstore bundle `<file>.sigstore.json` (containing the signature, certificate, and transparency-log proof) is published next to it on the GitHub Release page.
 
-To verify a downloaded binary, install [cosign](https://docs.sigstore.dev/system_config/installation/) and run `cosign verify-blob`, pointing it at the artefact's `.pem` and `.sig`:
+To verify a downloaded binary, install [cosign](https://docs.sigstore.dev/system_config/installation/) and run `cosign verify-blob`, pointing it at the artefact's `.sigstore.json` bundle:
 
 ```bash
 cosign verify-blob \
-  --certificate arc-apiserver-linux-amd64.pem \
-  --signature  arc-apiserver-linux-amd64.sig \
+  --bundle arc-apiserver-linux-amd64.sigstore.json \
   --certificate-identity-regexp 'https://github.com/opendefensecloud/artifact-conduit/\.github/workflows/release\.yaml@.*' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   arc-apiserver-linux-amd64
