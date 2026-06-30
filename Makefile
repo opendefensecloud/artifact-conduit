@@ -19,7 +19,7 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
-ENVTEST_K8S_VERSION ?= 1.36.0
+ENVTEST_K8S_VERSION ?= 1.36.1
 
 # Kind node image for local/e2e clusters — defaults to track ENVTEST_K8S_VERSION
 # so envtest (`make test`) and Kind-based clusters (`make dev-cluster`,
