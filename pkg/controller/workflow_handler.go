@@ -83,8 +83,23 @@ func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "failed to get workflow")
 	}
 
-	if updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf); !updated {
-		return nil // nothing updated
+	updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+
+	if wf.Status.Phase == wfv1alpha1.WorkflowSucceeded && h.aw.Status.Succeeded != 1 {
+		h.aw.Status.Succeeded = 1
+		updated = true
+	}
+
+	failed := wf.Status.Phase == wfv1alpha1.WorkflowError ||
+		wf.Status.Phase == wfv1alpha1.WorkflowFailed
+
+	if failed && h.aw.Status.Failed != 1 {
+		h.aw.Status.Failed = 1
+		updated = true
+	}
+
+	if !updated {
+		return nil
 	}
 
 	if err := h.Status().Update(ctx, h.aw); err != nil {

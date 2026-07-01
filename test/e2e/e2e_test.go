@@ -223,6 +223,16 @@ var _ = Describe("ARC", Ordered, func() {
 				}).Should(BeTrue())
 
 				Expect(orderState(resourceName, stateSucceeded)).To(BeTrue())
+				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", resourceName, "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}\t{{ end }}")
+				output, err := run(cmd)
+				Expect(err).NotTo(HaveOccurred())
+				fields := strings.Fields(output)
+				Expect(fields).NotTo(BeEmpty())
+				for _, field := range fields {
+					numSucceeded, err := strconv.Atoi(field)
+					Expect(err).NotTo(HaveOccurred())
+					Expect(numSucceeded).To(BeNumerically(">", 0))
+				}
 			})
 		}
 

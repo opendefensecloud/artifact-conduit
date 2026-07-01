@@ -160,6 +160,11 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowSucceeded))
+
+			Eventually(func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Succeeded
+			}).Should(Equal(int64(1)))
 		})
 
 		It("should track failed Workflow information of created ArtifactWorkflows", func() {
@@ -220,6 +225,11 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Message
 			}).To(ContainSubstring("Step 'step1' failed"))
+
+			Eventually(func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Failed
+			}).Should(Equal(int64(1)))
 		})
 
 		It("should track error Workflow status of created ArtifactWorkflows", func() {
@@ -253,6 +263,11 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Phase
 			}).To(Equal(arcv1alpha1.WorkflowError))
+
+			Eventually(func() int64 {
+				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+				return aw.Status.Failed
+			}).Should(Equal(int64(1)))
 		})
 
 		It("should track pending Workflow status of created ArtifactWorkflows", func() {
