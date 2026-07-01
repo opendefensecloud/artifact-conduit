@@ -90,4 +90,8 @@ jobs:
           # assets here so the drafted notes are preserved.
           files: |
             bin/*
+          # Immutable releases forbid uploading assets to an already-published
+          # release, so create a draft with the signed artefacts attached and
+          # publish it separately (UI, or `gh release edit <tag> --draft=false`).
+          draft: true
           prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
