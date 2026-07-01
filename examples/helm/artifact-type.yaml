@@ -11,6 +11,6 @@ spec:
       - oci
   parameters:
     - name: scanSeverity
-      value: CRITICAL # NOTE only CRITICAL as the helm hello-world example contains HIGH vulnerabilities
+      value: CRITICAL # NOTE only CRITICAL as the podinfo e2e fixture contains HIGH findings (pod-hardening)
   workflowTemplateRef: # argo.Workflow
     name: helm-chart-pipeline
