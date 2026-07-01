@@ -1,10 +1,10 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
-  name: quay
+  name: ghcr
 spec:
   type: oci
-  remoteURL: quay.io
+  remoteURL: ghcr.io
   usage: PullOnly
 ---
 apiVersion: arc.opendefense.cloud/v1alpha1
@@ -25,12 +25,12 @@ metadata:
 spec:
   defaults:
     srcRef:
-      name: quay
+      name: ghcr
     dstRef:
       name: internal
   artifacts:
     - type: helm
       spec:
-        repo: jetstack/charts
-        chart: cert-manager
-        version: v1.19.1
+        repo: stefanprodan/charts
+        chart: podinfo
+        version: 6.9.2
