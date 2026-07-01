@@ -34,7 +34,7 @@ KIND_NODE_VERSION := $(lastword $(subst :, ,$(KIND_NODE_IMAGE)))
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
 export CERTMANAGER_VERSION := v1.20.3
-export TRUSTMANAGER_VERSION := v0.22.1
+export TRUSTMANAGER_VERSION := v0.24.0
 
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
