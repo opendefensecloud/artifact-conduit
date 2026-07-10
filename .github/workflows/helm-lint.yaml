@@ -7,10 +7,12 @@ on:
     branches: [main, develop]
     paths:
       - "charts/**"
+      - ".github/workflows/helm-lint.yaml"
   pull_request:
     branches: [main, develop]
     paths:
       - "charts/**"
+      - ".github/workflows/helm-lint.yaml"
 
 jobs:
   lint:
