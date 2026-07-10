@@ -336,7 +336,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Deleted", "Delete", "Deleted finished artifact workflow '%s'", sha)
 	}
 
-	anyPhaseChanged := false
+	anyStatusChanged := false
 	for sha, daw := range desiredAWs {
 		if slices.Contains(createAWs, sha) {
 			// If it was just created we skip the update
@@ -357,18 +357,21 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		orderAWStatus := order.Status.ArtifactWorkflows[sha]
-		if orderAWStatus.Phase != aw.Status.Phase ||
-			orderAWStatus.Succeeded != aw.Status.Succeeded ||
-			orderAWStatus.Failed != aw.Status.Failed ||
-			!orderAWStatus.LastScheduled.Equal(aw.Status.LastScheduled) {
+
+		phaseChanged := orderAWStatus.Phase != aw.Status.Phase
+		succeededChanged := orderAWStatus.Succeeded != aw.Status.Succeeded
+		failedChanged := orderAWStatus.Failed != aw.Status.Failed
+		lastScheduledChanged := !orderAWStatus.LastScheduled.Equal(aw.Status.LastScheduled)
+
+		if phaseChanged || succeededChanged || failedChanged || lastScheduledChanged {
 			orderAWStatus.WorkflowStatus = aw.Status.WorkflowStatus
 			order.Status.ArtifactWorkflows[sha] = orderAWStatus
-			anyPhaseChanged = true
+			anyStatusChanged = true
 		}
 	}
 
 	// Update status
-	if len(createAWs) > 0 || len(deleteAWs) > 0 || anyPhaseChanged {
+	if len(createAWs) > 0 || len(deleteAWs) > 0 || anyStatusChanged {
 		log.V(1).Info("Updating order status")
 		// Make sure ArtifactIndex is up to date
 		for sha, daw := range desiredAWs {
