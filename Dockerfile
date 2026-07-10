@@ -2,15 +2,18 @@
 FROM --platform=$BUILDPLATFORM golang:1.26@sha256:f96cc555eb8db430159a3aa6797cd5bae561945b7b0fe7d0e284c63a3b291609 AS builder
 
 WORKDIR /workspace
-RUN go env -w GOMODCACHE=/root/.cache/go-build
 
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum
 
 # Cache deps before building and copying source so that we don't need to re-download as much
-# and so that source changes don't invalidate our downloaded layer
-RUN --mount=type=cache,target=/root/.cache/go-build go mod download
+# and so that source changes don't invalidate our downloaded layer. Modules live at the
+# default $GOMODCACHE (/go/pkg/mod); the build cache is /root/.cache/go-build. Both mounts
+# are restored from actions/cache via the cache-mount preservation step in docker.yaml so
+# the CI cold-start doesn't repeat a full Go compile every run.
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
 # Copy the go source
 COPY api/ api/
@@ -26,13 +29,13 @@ RUN mkdir bin
 
 FROM builder AS apiserver-builder
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
+    --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -ldflags="-s -w" ${GO_BUILD_FLAGS} -o bin/arc-apiserver ./cmd/arc-apiserver
 
 
 FROM builder AS manager-builder
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    --mount=type=cache,target=/go/pkg \
+    --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH GO111MODULE=on go build -ldflags="-s -w" ${GO_BUILD_FLAGS} -o bin/arc-controller-manager ./cmd/arc-controller-manager
 
 # Use distroless as minimal base image to package the manager binary

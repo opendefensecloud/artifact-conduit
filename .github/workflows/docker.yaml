@@ -79,6 +79,7 @@ jobs:
         with:
           platforms: arm64
       - name: Set up Docker Buildx
+        id: buildx
         timeout-minutes: 5
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
         with:
@@ -91,6 +92,37 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      # buildkit-cache-dance restores/saves the RUN --mount=type=cache contents
+      # (the Go build + module caches in our Dockerfile). docker/build-push-action's
+      # cache-to=gha preserves layers but NOT cache-mount contents, so without
+      # this dance every CI build starts with an empty Go build cache.
+      # Per-binary scope; go.sum + sha in the key so a `go.sum` bump invalidates
+      # cleanly but consecutive pushes can incrementally refresh the cache.
+      - name: Cache Go build mounts
+        if: ${{ env.ACT != 'true' }}
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        id: go-cache
+        with:
+          path: cache-mount
+          # Scope key by trust level so PR builds and trusted (push to main /
+          # release) builds live in disjoint cache namespaces. Prevents a
+          # malicious PR from poisoning a cache that a later trusted build
+          # would consume via the restore-keys ladder. Flagged by zizmor
+          # (cache-poisoning) and CodeRabbit.
+          key: cache-mount-${{ matrix.image.name }}-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            cache-mount-${{ matrix.image.name }}-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-
+            cache-mount-${{ matrix.image.name }}-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-
+      - name: Inject Go build cache into buildx
+        if: ${{ env.ACT != 'true' }}
+        uses: reproducible-containers/buildkit-cache-dance@5422eac04292c961a382e0f584ea0f03ad9da723 # v3.4.0
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-dir: cache-mount
+          dockerfile: Dockerfile
+          # Always extract so post-build mount contents are saved for the next
+          # run, even when we restored from a partial-key match.
+          skip-extraction: false
       - name: Build and push
         id: image
         timeout-minutes: 20
@@ -102,8 +134,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ matrix.image.target }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # Same trust-scoping rationale as the actions/cache step above: keep
+          # PR-built layer caches out of the trusted (push/release) scope.
+          cache-from: type=gha,scope=${{ matrix.image.name }}-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image.name }}-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}
       - name: Install cosign
         if: ${{ env.ACT != 'true' }}
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
@@ -160,3 +194,4 @@ jobs:
     permissions:
       contents: read
       packages: read
+
