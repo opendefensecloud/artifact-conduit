@@ -37,6 +37,18 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "cert-manager/trust-manager",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "examples/ocm/Dockerfile"
+      ],
+      "matchStrings": [
+        "ARG OCM_VERSION=(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "open-component-model/ocm",
+      "versioningTemplate": "semver"
     }
   ],
   "ignorePaths": []
