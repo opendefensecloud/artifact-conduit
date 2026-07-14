@@ -41,10 +41,10 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "examples/ocm/Dockerfile"
+        ".github/workflows/docker.yaml"
       ],
       "matchStrings": [
-        "ARG OCM_VERSION=(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
+        "ocmVersion:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "open-component-model/ocm",

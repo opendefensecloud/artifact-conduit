@@ -94,7 +94,7 @@ spec:
         parameters:
         - name: registryIP
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:latest
+        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
         command: [bash, -c]
         # Mount the secret volume to a temporary directory
         volumeMounts:
@@ -181,7 +181,7 @@ spec:
     # --- 3. Push all resources ---
     - name: push-resources
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:latest
+        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
         command: [bash, -c]
         volumeMounts:
           - name: dst-secret-vol
