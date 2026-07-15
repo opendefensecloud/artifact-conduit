@@ -77,7 +77,7 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
             type=sha
-            ${{ matrix.image.name == 'ocm-tools' && format('type=raw,value={0}', matrix.image.ocmVersion) || '' }}
+            ${{ matrix.image.name == 'ocm-tools' && github.ref == 'refs/heads/main' && format('type=raw,value={0}', matrix.image.ocmVersion) || '' }}
           flavor: |
             latest=${{ matrix.image.name != 'ocm-tools' && github.ref == 'refs/heads/main' }}
       - name: Set up QEMU
