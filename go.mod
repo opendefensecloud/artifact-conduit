@@ -1,6 +1,6 @@
 module go.opendefense.cloud/arc
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/argoproj/argo-workflows/v4 v4.0.6
