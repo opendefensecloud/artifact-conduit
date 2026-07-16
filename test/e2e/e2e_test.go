@@ -192,7 +192,12 @@ var _ = Describe("ARC", Ordered, func() {
 		for _, artifactType := range artifactTypes {
 			It(fmt.Sprintf("should create orders for %s", artifactType), func() {
 				By("registering the ClusterWorkflowTemplate and ClusterArtifactType")
-				applyResource("", filepath.Join(dir, "examples", artifactType, "cluster-workflow-template.yaml"))
+				templateFile := filepath.Join(dir, "examples", artifactType, "cluster-workflow-template.yaml")
+				if artifactType == "ocm" {
+					applyOCMClusterWorkflowTemplate("", templateFile)
+				} else {
+					applyResource("", templateFile)
+				}
 				applyResource("", filepath.Join(dir, "examples", artifactType, "artifact-type.yaml"))
 				By("creating a order")
 				manifest := filepath.Join(dir, "test", "fixtures", fmt.Sprintf("%s-order.yaml", artifactType))
