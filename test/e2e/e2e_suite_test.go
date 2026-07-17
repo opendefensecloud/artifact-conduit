@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -354,6 +355,41 @@ func applyResource(namespace, file string) {
 	}
 	cmd := exec.Command("kubectl", args...)
 	_, err := run(cmd)
+	Expect(err).NotTo(HaveOccurred())
+}
+
+// ocmToolsImageRef matches the pinned ocm-tools image reference in the ocm example's
+// ClusterWorkflowTemplate, regardless of which version tag is currently checked in
+// (Renovate bumps that tag directly in the YAML, see renovate.json).
+var ocmToolsImageRef = regexp.MustCompile(`ghcr\.io/opendefensecloud/ocm-tools:\S+`)
+
+// applyOCMClusterWorkflowTemplate applies the ocm example's ClusterWorkflowTemplate.
+// The checked-in file pins ocm-tools to a released version tag, which is only
+// published for pushes to main (see docker.yaml), so on a PR that itself bumps or
+// introduces that tag, it doesn't exist yet. When testing pre-built CI images, rewrite
+// the reference to the ocm-tools image built for this run instead of the pinned tag.
+func applyOCMClusterWorkflowTemplate(namespace, file string) {
+	GinkgoHelper()
+
+	if imageSource == "local" {
+		applyResource(namespace, file)
+		return
+	}
+
+	content, err := os.ReadFile(file)
+	Expect(err).NotTo(HaveOccurred())
+
+	ocmToolsImage := fmt.Sprintf("%s/ocm-tools:%s", imageRegistry, imageTag)
+	Expect(ocmToolsImageRef.Match(content)).To(BeTrue(), "expected an ocm-tools image reference in %s", file)
+	rewritten := ocmToolsImageRef.ReplaceAllString(string(content), ocmToolsImage)
+
+	args := []string{"apply", "-f", "-"}
+	if namespace != "" {
+		args = append([]string{"-n", namespace}, args...)
+	}
+	cmd := exec.Command("kubectl", args...)
+	cmd.Stdin = strings.NewReader(rewritten)
+	_, err = run(cmd)
 	Expect(err).NotTo(HaveOccurred())
 }
 
