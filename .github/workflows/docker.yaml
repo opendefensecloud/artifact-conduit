@@ -35,7 +35,7 @@ jobs:
           - name: ocm-tools
             context: examples/ocm
             target: ""
-            ocmVersion: "0.45.0"
+            ocmVersion: "0.46.0"
     permissions:
       actions: read
       contents: read
