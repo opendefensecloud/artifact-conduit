@@ -17,7 +17,7 @@ jobs:
           persist-credentials: false
       - id: go-version
         uses: opendefensecloud/dev-kit/.github/actions/get-go-version@41370fd52f6889401ef79388e54e7e38bfbf112e # v1.0.11
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version: ${{ steps.go-version.outputs.version }}
       - name: Run codegen
