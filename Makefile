@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v1.0.11
+DEV_KIT_VERSION := v1.0.13
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -33,7 +33,7 @@ KIND_NODE_IMAGE ?= kindest/node:v$(patsubst v%,%,$(ENVTEST_K8S_VERSION))
 KIND_NODE_VERSION := $(lastword $(subst :, ,$(KIND_NODE_IMAGE)))
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
-export CERTMANAGER_VERSION := v1.21.0
+export CERTMANAGER_VERSION := v1.21.1
 export TRUSTMANAGER_VERSION := v0.24.0
 
 LICENSE := apache
