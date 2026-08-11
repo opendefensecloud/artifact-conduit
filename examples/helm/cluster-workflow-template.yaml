@@ -152,7 +152,7 @@ spec:
     # --- 2. Scan Chart (Helm) ---
     - name: scan-chart
       script:
-        image: aquasec/trivy:0.72.0
+        image: aquasec/trivy:0.73.0
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
