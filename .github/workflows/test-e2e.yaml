@@ -25,7 +25,7 @@ jobs:
         with:
           persist-credentials: false
       - id: go-version
-        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@41370fd52f6889401ef79388e54e7e38bfbf112e # v1.0.11
+        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@170f07afc6757b8cdcb0d32a89ebb058a5431631 # v1.0.13
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version: ${{ steps.go-version.outputs.version }}
