@@ -21,6 +21,18 @@ DOCS_IMG ?= arc-docs:latest
 
 ENVTEST_K8S_VERSION ?= 1.36.1
 
+# Repo branch protection settings
+REPO_ADMIN_BYPASS := false
+REPO_REQUIRED_APPROVING_REVIEW_COUNT := 1
+REPO_REQUIRE_CODE_OWNER_REVIEW := false
+REPO_REQUIRE_BRANCH_UP_TO_DATE := true
+REPO_STATUS_CHECKS := ["check", "CodeQL"]
+REPO_RULESET_BRANCHES := ["release/*"]
+REPO_ALLOW_MERGE_COMMIT := true
+REPO_ALLOW_SQUASH_MERGE := false
+REPO_ALLOW_REBASE_MERGE := false
+REPO_REQUIRE_LAST_PUSH_APPROVAL := true
+
 # Kind node image for local/e2e clusters — defaults to track ENVTEST_K8S_VERSION
 # so envtest (`make test`) and Kind-based clusters (`make dev-cluster`,
 # `make test-e2e`) target the same K8s release. Override KIND_NODE_IMAGE
