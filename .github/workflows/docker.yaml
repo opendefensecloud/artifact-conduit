@@ -35,7 +35,7 @@ jobs:
           - name: ocm-tools
             context: examples/ocm
             target: ""
-            ocmVersion: "0.47.0"
+            ocmVersion: "0.48.0"
     permissions:
       actions: read
       contents: read
@@ -142,21 +142,29 @@ jobs:
           format: 'cyclonedx-json'
           output-file: 'sbom.cyclonedx.json'
           upload-release-assets: false # we use immutable releases
+      # actions/attest picks the attestation type from its inputs: sbom-path
+      # yields an SBOM attestation, its absence a SLSA build provenance one.
+      # create-storage-record only feeds the org Linked Artifacts page, which
+      # we dont use. It defaults to true whenever push-to-registry is set and
+      # has only ever failed here with "no artifacts found", so turn it off
+      # rather than keep two bogus warnings per image in every build.
       - name: Attest SBOM
         if: ${{ env.ACT != 'true' }}
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
           sbom-path: 'sbom.cyclonedx.json'
           push-to-registry: true
+          create-storage-record: false
       - name: Attest provenance
         if: ${{ env.ACT != 'true' }}
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
           push-to-registry: true
+          create-storage-record: false
 
   test-e2e:
     needs: buildAndPush
