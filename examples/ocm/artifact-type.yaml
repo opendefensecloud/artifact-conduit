@@ -15,5 +15,7 @@ spec:
       value: "0"
     - name: dstScheme
       value: "https"
+    - name: srcScheme
+      value: "https"
   workflowTemplateRef: # argo.ClusterWorkflowTemplate
     name: ocm-transfer-pipeline

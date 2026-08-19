@@ -49,7 +49,10 @@ spec:
       - name: specVersion
       - name: scanSeverity # Additional parameter coming from ArtifactType
       - name: scanExitCode # Additional parameter coming from ArtifactType
-      - name: dstScheme    # Additional parameter coming from ArtifactType
+      - name: srcScheme
+        value: "https"
+      - name: dstScheme
+        value: "https"
 
   entrypoint: ocm-pipeline
 
@@ -113,6 +116,8 @@ spec:
           set -euo pipefail
           export HOME=/tmp
 
+          src_host=$(echo '{{workflow.parameters.srcRemoteURL}}' | sed 's#^[a-z][a-z0-9+.-]*://##')
+
           if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
               echo "type: generic.config.ocm.software/v1
           configurations:
@@ -120,7 +125,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo '{{workflow.parameters.srcRemoteURL}}' | cut -d : -f 1)
+                    hostname: $(echo "$src_host" | cut -d : -f 1)
                   credentials:
                     - type: Credentials
                       properties:
@@ -130,9 +135,9 @@ spec:
 
           echo "Transfering to CTF..."
           if [ -n "{{workflow.parameters.specRepo}}" ]; then
-            component_url={{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+            component_url={{workflow.parameters.srcScheme}}://$src_host/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
           else
-            component_url={{workflow.parameters.srcRemoteURL}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+            component_url={{workflow.parameters.srcScheme}}://$src_host//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
           fi
           ocm transfer component "$component_url" -r --copy-resources --copy-sources /data/ctf
 
@@ -198,6 +203,9 @@ spec:
         source: |
           set -euo pipefail
           export HOME=/tmp
+
+          dst_host=$(echo '{{workflow.parameters.dstRemoteURL}}' | sed 's#^[a-z][a-z0-9+.-]*://##')
+
           if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
               echo "type: generic.config.ocm.software/v1
           configurations:
@@ -205,7 +213,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo '{{workflow.parameters.dstRemoteURL}}' | cut -d : -f 1)
+                    hostname: $(echo "$dst_host" | cut -d : -f 1)
                   credentials:
                     - type: Credentials
                       properties:
@@ -214,8 +222,8 @@ spec:
           fi
 
           if [ -n "{{workflow.parameters.specRepo}}" ]; then
-            dst_url={{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}
+            dst_url={{workflow.parameters.dstScheme}}://$dst_host/{{workflow.parameters.specRepo}}
           else
-            dst_url={{workflow.parameters.dstScheme}}://{{workflow.parameters.dstRemoteURL}}
+            dst_url={{workflow.parameters.dstScheme}}://$dst_host
           fi
-          ocm transfer ctf /data/ctf "$dst_url"
+          ocm -X preferrelativeaccess=true transfer ctf /data/ctf "$dst_url"
