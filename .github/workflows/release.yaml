@@ -57,7 +57,9 @@ jobs:
           find bin -type f ! -name checksums.txt | sort | xargs sha256sum > bin/checksums.txt
 
       - name: Attest build provenance
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        # actions/attest defaults to SLSA build provenance when no sbom-path or
+        # predicate input is given.
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: 'bin/arc-*-*' # binaries only; runs before signing so the .sigstore.json bundles are not yet present
 
