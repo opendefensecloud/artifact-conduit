@@ -1,0 +1,9 @@
+---
+# kcp populates .status.endpoints with the virtual-workspace URLs the agent connects to.
+apiVersion: apis.kcp.io/v1alpha1
+kind: APIExportEndpointSlice
+metadata:
+  name: arc.opendefense.cloud
+spec:
+  export:
+    name: arc.opendefense.cloud

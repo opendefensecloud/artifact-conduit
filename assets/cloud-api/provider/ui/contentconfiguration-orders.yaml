@@ -1,0 +1,842 @@
+---
+# ARC Orders bundled generic UI (list + detail + create modal).
+apiVersion: ui.platform-mesh.io/v1alpha1
+kind: ContentConfiguration
+metadata:
+  name: arc-orders
+  labels:
+    ui.platform-mesh.io/content-for: arc.opendefense.cloud
+    ui.platform-mesh.io/entity: core_platform-mesh_io_account
+spec:
+  inlineConfiguration:
+    contentType: json
+    content: |
+      {
+        "name": "arc-orders",
+        "luigiConfigFragment": {
+          "data": {
+            "nodes": [
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-orders",
+                "label": "Orders",
+                "icon": "shipping-status",
+                "category": {
+                  "id": "arc",
+                  "label": "ARC",
+                  "isGroup": true,
+                  "collapsible": true,
+                  "order": 500
+                },
+                "order": 10,
+                "keepSelectedForChildren": true,
+                "loadingIndicator": {
+                  "enabled": false
+                },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Order",
+                    "entityCollection": "Orders",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Source",
+                            "property": "spec.artifact.srcRef.name"
+                          },
+                          {
+                            "label": "Destination",
+                            "property": "spec.artifact.dstRef.name"
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message",
+                            "uiSettings": {
+                              "cssRules": [
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "Error"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "Failed"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "not found"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Pending"
+                                  },
+                                  "styles": {
+                                    "color": "#e9730c",
+                                    "fontWeight": "600"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Running"
+                                  },
+                                  "styles": {
+                                    "color": "#0a6ed1",
+                                    "fontWeight": "600"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Succeeded"
+                                  },
+                                  "styles": {
+                                    "color": "#107e3e",
+                                    "fontWeight": "600"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Last run",
+                            "property": "status.lastReconcileAt"
+                          },
+                          {
+                            "label": "Created",
+                            "property": "metadata.creationTimestamp"
+                          }
+                        ]
+                      },
+                      "detailView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Source",
+                            "property": "spec.artifact.srcRef.name"
+                          },
+                          {
+                            "label": "Destination",
+                            "property": "spec.artifact.dstRef.name"
+                          },
+                          {
+                            "label": "Repository (OCI)",
+                            "property": "spec.artifact.spec.repository"
+                          },
+                          {
+                            "label": "Tag / constraint (OCI)",
+                            "property": "spec.artifact.spec.tag"
+                          },
+                          {
+                            "label": "Override (OCI)",
+                            "property": "spec.artifact.spec.override"
+                          },
+                          {
+                            "label": "Repo (OCM)",
+                            "property": "spec.artifact.spec.repo"
+                          },
+                          {
+                            "label": "Component (OCM)",
+                            "property": "spec.artifact.spec.component"
+                          },
+                          {
+                            "label": "Version (OCM)",
+                            "property": "spec.artifact.spec.version"
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message",
+                            "uiSettings": {
+                              "cssRules": [
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "Error"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "Failed"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "contains",
+                                    "value": "not found"
+                                  },
+                                  "styles": {
+                                    "color": "#bb0000",
+                                    "fontWeight": "bold"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Pending"
+                                  },
+                                  "styles": {
+                                    "color": "#e9730c",
+                                    "fontWeight": "600"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Running"
+                                  },
+                                  "styles": {
+                                    "color": "#0a6ed1",
+                                    "fontWeight": "600"
+                                  }
+                                },
+                                {
+                                  "if": {
+                                    "condition": "equals",
+                                    "value": "Succeeded"
+                                  },
+                                  "styles": {
+                                    "color": "#107e3e",
+                                    "fontWeight": "600"
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Last run",
+                            "property": "status.lastReconcileAt"
+                          },
+                          {
+                            "label": "Last force",
+                            "property": "status.lastForceAt"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "pathSegment": ":orderId",
+                    "hideFromNav": true,
+                    "keepSelectedForChildren": false,
+                    "defineEntity": {
+                      "id": "arc_opendefense_cloud_order",
+                      "contextKey": "orderId",
+                      "graphqlEntity": {
+                        "group": "arc_opendefense_cloud",
+                        "version": "v1alpha1",
+                        "kind": "Order",
+                        "query": "{ metadata { name } }"
+                      }
+                    },
+                    "context": {
+                      "accountId": ":accountId",
+                      "resourceId": ":orderId"
+                    }
+                  }
+                ]
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-orders-oci",
+                "label": "OCI Transfer",
+                "icon": "add-product",
+                "category": {
+                  "id": "arc",
+                  "label": "ARC",
+                  "isGroup": true,
+                  "collapsible": true,
+                  "order": 500
+                },
+                "order": 11,
+                "loadingIndicator": {
+                  "enabled": false
+                },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Order",
+                    "entityCollection": "Orders",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message"
+                          }
+                        ]
+                      },
+                      "createView": {
+                        "fields": [
+                          {
+                            "label": "Name",
+                            "property": "metadata.name",
+                            "required": true
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "required": true,
+                            "values": [
+                              "oci"
+                            ]
+                          },
+                          {
+                            "label": "Source endpoint",
+                            "property": "spec.artifact.srcRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Destination endpoint",
+                            "property": "spec.artifact.dstRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Repository",
+                            "property": "spec.artifact.spec.repository",
+                            "required": true,
+                            "placeholder": "distroless/static"
+                          },
+                          {
+                            "label": "Tag / constraint",
+                            "property": "spec.artifact.spec.tag",
+                            "required": true,
+                            "placeholder": "nonroot  or  ^3.23"
+                          },
+                          {
+                            "label": "Override",
+                            "property": "spec.artifact.spec.override",
+                            "placeholder": "myteam/static:{{.tag}}-dev"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-orders-ocm",
+                "label": "OCM Transfer",
+                "icon": "add-product",
+                "category": {
+                  "id": "arc",
+                  "label": "ARC",
+                  "isGroup": true,
+                  "collapsible": true,
+                  "order": 500
+                },
+                "order": 12,
+                "loadingIndicator": {
+                  "enabled": false
+                },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Order",
+                    "entityCollection": "Orders",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message"
+                          }
+                        ]
+                      },
+                      "createView": {
+                        "fields": [
+                          {
+                            "label": "Name",
+                            "property": "metadata.name",
+                            "required": true
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "required": true,
+                            "values": [
+                              "ocm"
+                            ]
+                          },
+                          {
+                            "label": "Source endpoint",
+                            "property": "spec.artifact.srcRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Destination endpoint",
+                            "property": "spec.artifact.dstRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Component",
+                            "property": "spec.artifact.spec.component",
+                            "required": true,
+                            "placeholder": "ocm.software/toi/demo/helmdemo"
+                          },
+                          {
+                            "label": "Version",
+                            "property": "spec.artifact.spec.version",
+                            "required": true,
+                            "placeholder": "0.12.0"
+                          },
+                          {
+                            "label": "Repo",
+                            "property": "spec.artifact.spec.repo",
+                            "placeholder": "open-component-model/ocm"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-orders-helm",
+                "label": "Helm Transfer",
+                "icon": "add-product",
+                "category": {
+                  "id": "arc",
+                  "label": "ARC",
+                  "isGroup": true,
+                  "collapsible": true,
+                  "order": 500
+                },
+                "order": 13,
+                "loadingIndicator": {
+                  "enabled": false
+                },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Order",
+                    "entityCollection": "Orders",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message"
+                          }
+                        ]
+                      },
+                      "createView": {
+                        "fields": [
+                          {
+                            "label": "Name",
+                            "property": "metadata.name",
+                            "required": true
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "required": true,
+                            "values": [
+                              "helm"
+                            ]
+                          },
+                          {
+                            "label": "Source endpoint",
+                            "property": "spec.artifact.srcRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Destination endpoint",
+                            "property": "spec.artifact.dstRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Repo",
+                            "property": "spec.artifact.spec.repo",
+                            "required": true,
+                            "placeholder": "charts/mychart"
+                          },
+                          {
+                            "label": "Chart",
+                            "property": "spec.artifact.spec.chart",
+                            "required": true,
+                            "placeholder": "mychart"
+                          },
+                          {
+                            "label": "Version",
+                            "property": "spec.artifact.spec.version",
+                            "required": true,
+                            "placeholder": "1.2.3"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-orders-blob",
+                "label": "Blob Transfer",
+                "icon": "add-product",
+                "category": {
+                  "id": "arc",
+                  "label": "ARC",
+                  "isGroup": true,
+                  "collapsible": true,
+                  "order": 500
+                },
+                "order": 14,
+                "loadingIndicator": {
+                  "enabled": false
+                },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Order",
+                    "entityCollection": "Orders",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          {
+                            "label": "Order",
+                            "property": "metadata.name",
+                            "uiSettings": {
+                              "withCopyButton": true
+                            }
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "uiSettings": {
+                              "cssCustomization": {
+                                "display": "inline-block",
+                                "padding": "0.0625rem 0.5rem",
+                                "borderRadius": "1rem",
+                                "fontSize": "0.75rem",
+                                "fontWeight": "600",
+                                "color": "#ffffff"
+                              },
+                              "cssRules": [
+                                { "if": { "condition": "equals", "value": "oci" }, "styles": { "backgroundColor": "#0057d2" } },
+                                { "if": { "condition": "equals", "value": "ocm" }, "styles": { "backgroundColor": "#a100c2" } },
+                                { "if": { "condition": "equals", "value": "helm" }, "styles": { "backgroundColor": "#256f3a" } },
+                                { "if": { "condition": "equals", "value": "blob" }, "styles": { "backgroundColor": "#5b738b" } }
+                              ]
+                            }
+                          },
+                          {
+                            "label": "Status",
+                            "property": "status.message"
+                          }
+                        ]
+                      },
+                      "createView": {
+                        "fields": [
+                          {
+                            "label": "Name",
+                            "property": "metadata.name",
+                            "required": true
+                          },
+                          {
+                            "label": "Artifact type",
+                            "property": "spec.artifact.type",
+                            "required": true,
+                            "values": [
+                              "blob"
+                            ]
+                          },
+                          {
+                            "label": "Source endpoint",
+                            "property": "spec.artifact.srcRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Destination endpoint",
+                            "property": "spec.artifact.dstRef.name",
+                            "required": true,
+                            "dynamicValuesDefinition": {
+                              "operation": "arc_opendefense_cloud.v1alpha1.Endpoints.items",
+                              "gqlQuery": "query ($namespace: String) { arc_opendefense_cloud { v1alpha1 { Endpoints(namespace: $namespace) { items { metadata { name } } } } } }",
+                              "value": "metadata.name",
+                              "key": "metadata.name"
+                            }
+                          },
+                          {
+                            "label": "Key",
+                            "property": "spec.artifact.spec.key",
+                            "required": true,
+                            "placeholder": "bucket/path/object"
+                          },
+                          {
+                            "label": "Override",
+                            "property": "spec.artifact.spec.override",
+                            "placeholder": "defaults to key"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace.arc_opendefense_cloud_order",
+                "pathSegment": "dashboard",
+                "label": "Order",
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-detail-view",
+                "webcomponent": {
+                  "selfRegistered": true
+                },
+                "defineEntity": {
+                  "id": "dashboard"
+                },
+                "compound": {
+                  "children": []
+                }
+              }
+            ]
+          }
+        }
+      }

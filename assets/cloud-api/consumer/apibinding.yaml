@@ -1,0 +1,35 @@
+---
+apiVersion: apis.kcp.io/v1alpha2
+kind: APIBinding
+metadata:
+  name: arc.opendefense.cloud
+spec:
+  reference:
+    export:
+      name: arc.opendefense.cloud
+      # path: root:somepath
+  permissionClaims:
+    - group: ""
+      resource: "secrets"
+      verbs: ["*"]
+      selector:
+        matchAll: true
+      state: Accepted
+    - group: ""
+      resource: "namespaces"
+      verbs: ["*"]
+      selector:
+        matchAll: true
+      state: Accepted
+    - group: ""
+      resource: "events"
+      verbs: ["*"]
+      selector:
+        matchAll: true
+      state: Accepted
+    - group: "core.kcp.io"
+      resource: "logicalclusters"
+      verbs: ["*"]
+      selector:
+        matchAll: true
+      state: Accepted
