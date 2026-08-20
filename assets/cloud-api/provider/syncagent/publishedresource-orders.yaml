@@ -1,0 +1,34 @@
+---
+# Order: bidirectional sync (spec + status subresource).
+apiVersion: syncagent.kcp.io/v1alpha1
+kind: PublishedResource
+metadata:
+  name: arc-orders
+spec:
+  enableWorkspacePaths: true
+  resource:
+    apiGroup: arc.opendefense.cloud
+    kind: Order
+    versions:
+      - v1alpha1
+  naming:
+    namespace: arc-system
+    name: '{{ .ClusterName }}-{{ .Object.metadata.namespace }}-{{ .Object.metadata.name }}'
+  mutation:
+    # Rewrite the defaults-level endpoint refs to collision-safe names that match the synced
+    # Endpoints on the host (<ClusterName>-<namespace>-<name>). Per-artifact srcRef/dstRef
+    # overrides are not supported because the syncagent mutation engine cannot iterate array
+    # elements (gjson * is a key wildcard, not an array iterator). Orders authored via the
+    # generic UI must use spec.defaults.srcRef/dstRef only.
+    spec:
+      - cel:
+          path: spec.defaults.srcRef.name
+          expression: 'has(self.spec.defaults.srcRef) && self.spec.defaults.srcRef.name != "" ? self.metadata.annotations["kcp.io/cluster"] + "-" + self.metadata.namespace + "-" + self.spec.defaults.srcRef.name : ""'
+      - cel:
+          path: spec.defaults.dstRef.name
+          expression: 'has(self.spec.defaults.dstRef) && self.spec.defaults.dstRef.name != "" ? self.metadata.annotations["kcp.io/cluster"] + "-" + self.metadata.namespace + "-" + self.spec.defaults.dstRef.name : ""'
+    status:
+      - cel:
+          path: status.message
+          expression: '(has(self.status) && has(self.status.message) && self.status.message != "") ? self.status.message : ((has(self.status) && has(self.status.artifactWorkflows) && size(self.status.artifactWorkflows) > 0) ? (string(size(self.status.artifactWorkflows.filter(k, self.status.artifactWorkflows[k].phase == "Succeeded"))) + "/" + string(size(self.status.artifactWorkflows)) + " succeeded" + (self.status.artifactWorkflows.exists(k, self.status.artifactWorkflows[k].phase in ["Error","Failed"]) ? (": " + (has(self.status.artifactWorkflows[self.status.artifactWorkflows.filter(k, self.status.artifactWorkflows[k].phase in ["Error","Failed"])[0]].message) ? self.status.artifactWorkflows[self.status.artifactWorkflows.filter(k, self.status.artifactWorkflows[k].phase in ["Error","Failed"])[0]].message : "")) : "")) : "")'
+

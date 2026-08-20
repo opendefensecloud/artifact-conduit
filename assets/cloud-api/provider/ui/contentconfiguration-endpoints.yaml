@@ -1,0 +1,101 @@
+---
+# ARC Endpoints bundled generic UI (list + detail + create modal).
+apiVersion: ui.platform-mesh.io/v1alpha1
+kind: ContentConfiguration
+metadata:
+  name: arc-endpoints
+  labels:
+    ui.platform-mesh.io/content-for: arc.opendefense.cloud
+    ui.platform-mesh.io/entity: core_platform-mesh_io_account
+spec:
+  inlineConfiguration:
+    contentType: json
+    content: |
+      {
+        "name": "arc-endpoints",
+        "luigiConfigFragment": {
+          "data": {
+            "nodes": [
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace",
+                "pathSegment": "arc-endpoints",
+                "label": "Endpoints",
+                "icon": "disconnected",
+                "category": { "id": "arc", "label": "ARC", "isGroup": true, "collapsible": true, "order": 500 },
+                "order": 20,
+                "keepSelectedForChildren": true,
+                "loadingIndicator": { "enabled": false },
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-list-view",
+                "webcomponent": { "selfRegistered": true },
+                "context": {
+                  "namespaceId": ":namespaceId",
+                  "resourceDefinition": {
+                    "apiGroup": "arc_opendefense_cloud",
+                    "version": "v1alpha1",
+                    "entity": "Endpoint",
+                    "entityCollection": "Endpoints",
+                    "scope": "Namespaced",
+                    "namespace": null,
+                    "ui": {
+                      "listView": {
+                        "fields": [
+                          { "label": "Endpoint", "property": "metadata.name", "uiSettings": { "withCopyButton": true } },
+                          { "label": "Type", "property": "spec.type", "uiSettings": { "displayAs": "tag", "tagSettings": { "design": "Information", "colorScheme": "6" } } },
+                          { "label": "Remote URL", "property": "spec.remoteURL", "uiSettings": { "displayAs": "link", "withCopyButton": true } },
+                          { "label": "Usage", "property": "spec.usage", "uiSettings": { "displayAs": "tag", "tagSettings": { "design": "Set2", "colorScheme": "8" } } },
+                          { "label": "Created", "property": "metadata.creationTimestamp" }
+                        ]
+                      },
+                      "createView": {
+                        "fields": [
+                          { "label": "Name", "property": "metadata.name", "required": true },
+                          { "label": "Type", "property": "spec.type", "required": true, "values": ["oci", "helm", "ocm", "blob"] },
+                          { "label": "Remote URL", "property": "spec.remoteURL", "required": true },
+                          { "label": "Usage", "property": "spec.usage", "required": true, "values": ["PullOnly", "PushOnly", "All"] },
+                          { "label": "Secret", "property": "spec.secretRef.name", "dynamicValuesDefinition": { "operation": "v1.Secrets.items", "gqlQuery": "query ($namespace: String) { v1 { Secrets(namespace: $namespace) { items { metadata { name } } } } }", "value": "metadata.name", "key": "metadata.name" } }
+                        ]
+                      },
+                      "detailView": {
+                        "fields": [
+                          { "label": "Endpoint", "property": "metadata.name", "uiSettings": { "withCopyButton": true } },
+                          { "label": "Type", "property": "spec.type", "uiSettings": { "displayAs": "tag", "tagSettings": { "design": "Information", "colorScheme": "6" } } },
+                          { "label": "Remote URL", "property": "spec.remoteURL", "uiSettings": { "displayAs": "link", "withCopyButton": true } },
+                          { "label": "Usage", "property": "spec.usage", "uiSettings": { "displayAs": "tag", "tagSettings": { "design": "Set2", "colorScheme": "8" } } },
+                          { "label": "Secret", "property": "spec.secretRef.name", "uiSettings": { "withCopyButton": true } }
+                        ]
+                      }
+                    }
+                  }
+                },
+                "children": [
+                  {
+                    "pathSegment": ":endpointId",
+                    "hideFromNav": true,
+                    "keepSelectedForChildren": false,
+                    "defineEntity": {
+                      "id": "arc_opendefense_cloud_endpoint",
+                      "contextKey": "endpointId",
+                      "graphqlEntity": {
+                        "group": "arc_opendefense_cloud",
+                        "version": "v1alpha1",
+                        "kind": "Endpoint",
+                        "query": "{ metadata { name } }"
+                      }
+                    },
+                    "context": { "accountId": ":accountId", "resourceId": ":endpointId" }
+                  }
+                ]
+              },
+              {
+                "entityType": "main.core_platform-mesh_io_account.namespace.arc_opendefense_cloud_endpoint",
+                "pathSegment": "dashboard",
+                "label": "Endpoint",
+                "url": "/assets/platform-mesh-portal-ui-wc.js#generic-detail-view",
+                "webcomponent": { "selfRegistered": true },
+                "defineEntity": { "id": "dashboard" },
+                "compound": { "children": [] }
+              }
+            ]
+          }
+        }
+      }
