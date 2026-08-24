@@ -105,8 +105,8 @@ deletion of `Endpoints` while `Orders` still reference them via
 ### Binding RBAC
 
 `apiexport-bind-rbac.yaml` grants the [`bind`][kcp-apiexport] verb on the
-`arc.opendefense.cloud` APIExport to `system:anonymous` and
-`system:authenticated`, enabling marketplace binding.
+`arc.opendefense.cloud` APIExport to `system:authenticated`, enabling
+marketplace binding.
 
 ### UI assets
 
@@ -154,8 +154,8 @@ The kubeconfig must target the provider workspace (e.g. `root:providers:odd`).
 ### RBAC and service account
 
 `syncagent-serviceaccount.yaml` (in the [provider directory][provider]) creates
-a `ServiceAccount`, token `Secret`, and `ClusterRoleBinding` on the service
-cluster. Supplemental RBAC in `rbac.yaml` grants access to ARC resources and
+a `ServiceAccount`, token `Secret`, and least-privilege `ClusterRole`/`ClusterRoleBinding`
+in the kcp provider workspace. Supplemental RBAC in `rbac.yaml` grants access to ARC resources and
 secrets beyond what the Helm chart provides.
 
 ### PublishedResources

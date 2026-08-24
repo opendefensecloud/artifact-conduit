@@ -11,25 +11,25 @@ spec:
   permissionClaims:
     - group: ""
       resource: "secrets"
-      verbs: ["*"]
+      verbs: ["get", "list", "watch", "create", "update", "patch"]
       selector:
         matchAll: true
       state: Accepted
     - group: ""
       resource: "namespaces"
-      verbs: ["*"]
+      verbs: ["get", "list", "watch"]
       selector:
         matchAll: true
       state: Accepted
     - group: ""
       resource: "events"
-      verbs: ["*"]
+      verbs: ["get", "list", "watch", "create", "update", "patch"]
       selector:
         matchAll: true
       state: Accepted
     - group: "core.kcp.io"
       resource: "logicalclusters"
-      verbs: ["*"]
+      verbs: ["get", "list", "watch"]
       selector:
         matchAll: true
       state: Accepted
