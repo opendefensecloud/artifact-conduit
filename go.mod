@@ -3,7 +3,7 @@ module go.opendefense.cloud/arc
 go 1.26.6
 
 require (
-	github.com/argoproj/argo-workflows/v4 v4.1.1
+	github.com/argoproj/argo-workflows/v4 v4.1.2
 	github.com/go-logr/logr v1.4.4
 	github.com/jastBytes/sprint v0.0.3
 	github.com/onsi/ginkgo/v2 v2.32.1
@@ -58,7 +58,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.29.0 // indirect
+	github.com/google/cel-go v0.30.0 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260402051712-545e8a4df936 // indirect
