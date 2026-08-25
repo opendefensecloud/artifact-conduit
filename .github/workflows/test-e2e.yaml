@@ -57,4 +57,4 @@ jobs:
           IMAGE_TAG: ${{ inputs.image-tag }}
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          make test-e2e E2E_IMAGE_SOURCE=$E2E_IMAGE_SOURCE TAG=$IMAGE_TAG REGISTRY=$REGISTRY
+          make test-e2e E2E_IMAGE_SOURCE="$E2E_IMAGE_SOURCE" TAG="$IMAGE_TAG" REGISTRY="$REGISTRY"
