@@ -2,7 +2,6 @@
 
 [![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=main)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=main)
-[![Go Report Card](https://goreportcard.com/badge/go.opendefense.cloud/arc)](https://goreportcard.com/report/go.opendefense.cloud/arc)
 [![Go Reference](https://pkg.go.dev/badge/go.opendefense.cloud/arc.svg)](https://pkg.go.dev/go.opendefense.cloud/arc)
 [![GitHub Release](https://img.shields.io/github/v/release/opendefensecloud/artifact-conduit)
 ](https://github.com/opendefensecloud/artifact-conduit/releases)
