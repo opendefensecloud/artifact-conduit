@@ -8,9 +8,6 @@
 package metrics
 
 import (
-	"runtime"
-	"runtime/debug"
-
 	"github.com/prometheus/client_golang/prometheus"
 	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 
@@ -47,15 +44,10 @@ var (
 		Name: "arc_reconcile_errors_total",
 		Help: "Total classified reconcile failures. The reason label matches the Kubernetes Event reason for the same failure.",
 	}, []string{"controller", "reason"})
-
-	buildInfo = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "arc_build_info",
-		Help: "Build information of the running controller manager. Always 1.",
-	}, []string{"version", "revision", "go_version"})
 )
 
 func init() {
-	ctrlmetrics.Registry.MustRegister(completions, duration, reconcileErrors, buildInfo)
+	ctrlmetrics.Registry.MustRegister(completions, duration, reconcileErrors)
 }
 
 // ResultFor maps a terminal ArtifactWorkflow phase onto a result label value.
@@ -103,23 +95,4 @@ func RecordReconcileError(controller, reason string) {
 // assertions in controller tests. It is not part of the runtime API.
 func ReconcileErrorsCounterForTest(controller, reason string) prometheus.Counter {
 	return reconcileErrors.WithLabelValues(controller, reason)
-}
-
-// SetBuildInfo publishes build information read from the embedded build data.
-func SetBuildInfo() {
-	version, revision := "unknown", "unknown"
-
-	if info, ok := debug.ReadBuildInfo(); ok {
-		if info.Main.Version != "" {
-			version = info.Main.Version
-		}
-
-		for _, setting := range info.Settings {
-			if setting.Key == "vcs.revision" {
-				revision = setting.Value
-			}
-		}
-	}
-
-	buildInfo.WithLabelValues(version, revision, runtime.Version()).Set(1)
 }

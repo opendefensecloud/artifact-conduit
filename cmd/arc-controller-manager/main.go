@@ -178,8 +178,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	arcmetrics.SetBuildInfo()
-
 	if err := wfv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		setupLog.Error(err, "failed to add Argo Workflows types to scheme")
 		os.Exit(1)

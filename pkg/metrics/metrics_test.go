@@ -111,9 +111,4 @@ var _ = Describe("Recording helpers", func() {
 		Expect(after120-before120).To(Equal(1.0), "a 90 second observation should land in the le=\"120\" bucket")
 		Expect(after60-before60).To(Equal(0.0), "a 90 second observation must not increment the le=\"60\" bucket")
 	})
-
-	It("should expose build info as a constant one", func() {
-		SetBuildInfo()
-		Expect(testutil.CollectAndCount(buildInfo)).To(Equal(1))
-	})
 })
