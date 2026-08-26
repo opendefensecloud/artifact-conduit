@@ -124,6 +124,32 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}))
 		})
 
+		It("should count a missing secret under the reason its Event carries", func() {
+			counter := metrics.ReconcileErrorsCounterForTest(ControllerArtifactWorkflow, ReasonInvalidSecret)
+			before := testutil.ToFloat64(counter)
+
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      "missing-secret",
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					SrcSecretRef:        corev1.LocalObjectReference{Name: "does-not-exist"},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			Eventually(func() float64 {
+				return testutil.ToFloat64(counter) - before
+			}).Should(BeNumerically(">=", 1.0))
+
+			// The workflow must not be created from secrets that could not be read.
+			Consistently(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), &wfv1alpha1.Workflow{})
+			}).ShouldNot(Succeed())
+		})
+
 		It("should track Workflow status changes of created ArtifactWorkflows", func() {
 			awName := "track-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{

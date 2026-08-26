@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/metrics"
 )
 
 const (
@@ -225,7 +226,9 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonInvalidSecret)
+
 			return nil, nil, fmt.Errorf("failed to fetch secret for source: %w", err)
 		}
 	}
@@ -233,7 +236,9 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	dstSecret := corev1.Secret{}
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonInvalidSecret)
+
 			return nil, nil, fmt.Errorf("failed to fetch secret for destination: %w", err)
 		}
 	}

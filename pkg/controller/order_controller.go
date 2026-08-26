@@ -169,8 +169,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for i, artifact := range order.Spec.Artifacts {
 		daw, err := r.computeDesiredAW(ctx, log, order, &artifact, i)
 		if err != nil {
+			// computeDesiredAW counts its own failures under the reason that
+			// describes them, so counting again here would report every one of
+			// them twice and shadow the specific reason with a generic sibling.
 			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonComputationFailed, "Compute", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
-			metrics.RecordReconcileError(ControllerOrder, ReasonComputationFailed)
 			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			if err := r.Status().Update(ctx, order); err != nil {
 				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
@@ -482,6 +484,11 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 		if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
+			// No Event of its own is emitted here. The only Event this failure
+			// produces is the caller's ComputationFailed, so that is the reason
+			// the metric has to carry for the two to agree.
+			metrics.RecordReconcileError(ControllerOrder, ReasonComputationFailed)
+
 			return nil, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
@@ -549,6 +556,10 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
+		// Same as the ClusterArtifactType fetch above: the caller's
+		// ComputationFailed is the only Event this failure produces.
+		metrics.RecordReconcileError(ControllerOrder, ReasonComputationFailed)
+
 		return nil, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 	}
 

@@ -913,9 +913,11 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when artifact type does not exist", func() {
-			// A missing ArtifactType/ClusterArtifactType surfaces here as
-			// ReasonComputationFailed, recorded once Reconcile wraps the
-			// error from computeDesiredAW, rather than ReasonInvalidArtifactType.
+			// A missing ArtifactType/ClusterArtifactType is the one failure in
+			// computeDesiredAW with no Event of its own, so ComputationFailed,
+			// the reason its only Event carries, is what it counts under. Every
+			// other failure there counts under its own reason and is not
+			// counted a second time by the caller.
 			counter := metrics.ReconcileErrorsCounterForTest(ControllerOrder, ReasonComputationFailed)
 			before := testutil.ToFloat64(counter)
 
