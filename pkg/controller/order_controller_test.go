@@ -1169,3 +1169,16 @@ var _ = Describe("OrderController", func() {
 
 	})
 })
+
+var _ = Describe("Reconcile error reasons", func() {
+	It("should use the same strings as the events", func() {
+		Expect(ReasonInvalidEndpoint).To(Equal("InvalidEndpoint"))
+		Expect(ReasonInvalidArtifactType).To(Equal("InvalidArtifactType"))
+		Expect(ReasonInvalidSecret).To(Equal("InvalidSecret"))
+		Expect(ReasonComputationFailed).To(Equal("ComputationFailed"))
+		Expect(ReasonHydrationFailed).To(Equal("HydrationFailed"))
+		Expect(ReasonCreationFailed).To(Equal("CreationFailed"))
+		Expect(ReasonDeletionFailed).To(Equal("DeletionFailed"))
+		Expect(ReasonInvalid).To(Equal("Invalid"))
+	})
+})
