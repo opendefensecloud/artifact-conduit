@@ -4,6 +4,7 @@
 package controller
 
 import (
+	"strings"
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
@@ -112,10 +113,88 @@ var _ = Describe("Helper Functions", func() {
 				},
 			}
 
-			result := awObjectMeta(order, "sha123")
+			result := awObjectMeta(order, "sha123", "oci")
 			Expect(result.Namespace).To(Equal("test-ns"))
 			Expect(result.Name).To(Equal("test-order-sha123"))
 			Expect(result.Labels).To(HaveKeyWithValue("app", "test"))
+			Expect(result.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "oci"))
+		})
+
+		It("should stamp the artifact type label", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels:    map[string]string{"owner": "platform"},
+				},
+			}
+
+			meta := awObjectMeta(order, "abc123", "oci")
+
+			Expect(meta.Namespace).To(Equal("team-a"))
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).To(HaveKeyWithValue("owner", "platform"))
+			Expect(meta.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "oci"))
+		})
+
+		It("should not mutate the order's own labels", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels:    map[string]string{"owner": "platform"},
+				},
+			}
+
+			awObjectMeta(order, "abc123", "oci")
+
+			Expect(order.Labels).To(HaveLen(1))
+			Expect(order.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
+		})
+
+		It("should skip the artifact type label when the value is not a valid label", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+			}
+
+			// 64 characters, one over the label value limit. The workflow still
+			// has to be creatable, so the label is left off rather than
+			// truncated to a type that does not exist.
+			meta := awObjectMeta(order, "abc123", strings.Repeat("a", 64))
+
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
+		})
+
+		It("should work when the order has no labels", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+			}
+
+			meta := awObjectMeta(order, "abc123", "helm")
+
+			Expect(meta.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "helm"))
+		})
+
+		It("should drop inherited artifact type label when artifact type is invalid", func() {
+			longType := strings.Repeat("x", 64)
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels: map[string]string{
+						"owner":                       "platform",
+						arcv1alpha1.LabelArtifactType: "inherited-type",
+					},
+				},
+			}
+
+			meta := awObjectMeta(order, "abc123", longType)
+
+			Expect(meta.Namespace).To(Equal("team-a"))
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).To(HaveKeyWithValue("owner", "platform"))
+			Expect(meta.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
 		})
 	})
 

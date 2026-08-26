@@ -87,9 +87,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
 			for sha := range order.Status.ArtifactWorkflows {
-				// Remove ArtifactWorkflow
+				// Remove ArtifactWorkflow. The artifact type label is not needed here since
+				// Delete matches targets by namespace and name, not labels.
 				aw := &arcv1alpha1.ArtifactWorkflow{
-					ObjectMeta: awObjectMeta(order, sha),
+					ObjectMeta: awObjectMeta(order, sha, ""),
 				}
 				_ = r.Delete(ctx, aw) // Ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
@@ -141,7 +142,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		for sha := range order.Status.ArtifactWorkflows {
 			// Remove Secret and ArtifactWorkflow
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: awObjectMeta(order, sha),
+				ObjectMeta: awObjectMeta(order, sha, ""),
 			}
 			_ = r.Delete(ctx, aw) // Ignore errors
 			delete(order.Status.ArtifactWorkflows, sha)
@@ -308,7 +309,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: awObjectMeta(order, sha),
+			ObjectMeta: awObjectMeta(order, sha, ""),
 		}
 		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
 			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
@@ -325,7 +326,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for _, sha := range finishedAWs {
 		// Finished, let's clean up!
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: awObjectMeta(order, sha),
+			ObjectMeta: awObjectMeta(order, sha, ""),
 		}
 		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
 			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete finished artifact workflow '%s': %v", sha, err)
@@ -530,7 +531,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
 		index:       i,
-		objectMeta:  awObjectMeta(order, sha),
+		objectMeta:  awObjectMeta(order, sha, artifact.Type),
 		artifact:    artifact,
 		typeSpec:    artifactTypeSpec,
 		srcEndpoint: srcEndpoint,
