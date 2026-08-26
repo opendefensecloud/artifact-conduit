@@ -21,11 +21,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/controller"
+	arcmetrics "go.opendefense.cloud/arc/pkg/metrics"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
@@ -167,6 +169,16 @@ func main() {
 			os.Exit(1)
 		}
 	}
+
+	arcMetrics := arcmetrics.NewCollector(mgr.GetCache())
+	ctrlmetrics.Registry.MustRegister(arcMetrics)
+
+	if err := mgr.Add(arcMetrics.LeaderRunnable()); err != nil {
+		setupLog.Error(err, "unable to add metrics leader gate")
+		os.Exit(1)
+	}
+
+	arcmetrics.SetBuildInfo()
 
 	if err := wfv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		setupLog.Error(err, "failed to add Argo Workflows types to scheme")
