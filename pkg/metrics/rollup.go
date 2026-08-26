@@ -15,9 +15,12 @@ import (
 // in progress work wins over completed work, so an Order reads Succeeded only
 // once every workflow has succeeded.
 //
-// An Order containing a cron artifact never reaches a terminal phase, because
-// cron workflows are rescheduled indefinitely. Running therefore means "has
-// work in flight", not "is unhealthy".
+// An Order containing a cron artifact moves between phases for as long as it
+// exists rather than settling in one. It reads Running while a run is in
+// flight, Succeeded between runs, and stays Failed after a failed run until the
+// next run reports otherwise. Running therefore means "has work in flight", not
+// "is unhealthy", and Succeeded means "nothing outstanding right now", not
+// "finished for good".
 func OrderPhase(statuses map[string]arcv1alpha1.OrderArtifactWorkflowStatus) arcv1alpha1.WorkflowPhase {
 	if len(statuses) == 0 {
 		return arcv1alpha1.WorkflowPending

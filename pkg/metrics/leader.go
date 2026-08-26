@@ -32,9 +32,13 @@ func (g *leaderGate) NeedLeaderElection() bool {
 	return true
 }
 
-// Start implements manager.Runnable. The manager starts caches and waits for
-// them to sync before starting leader election runnables, so by the time this
-// flips the collector on, the cache the collector reads is already synced.
+// Start implements manager.Runnable. The manager syncs the caches it knows
+// about before starting leader election runnables, but the Order and
+// ArtifactWorkflow informers are created lazily by the controllers, which are
+// leader election runnables started alongside this one. A scrape that arrives
+// before a controller has asked for its informer therefore creates it and waits
+// for it to sync, bounded by collectTimeout, so the worst case is a scrape that
+// fails rather than one that hangs.
 func (g *leaderGate) Start(ctx context.Context) error {
 	g.collector.isLeader.Store(true)
 	defer g.collector.isLeader.Store(false)
