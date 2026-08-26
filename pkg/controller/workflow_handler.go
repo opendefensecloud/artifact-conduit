@@ -83,7 +83,7 @@ func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 		return errLogAndWrap(h.log, err, "failed to get workflow")
 	}
 
-	updated := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+	updated, done := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
 
 	if wf.Status.Phase == wfv1alpha1.WorkflowSucceeded && h.aw.Status.Succeeded != 1 {
 		h.aw.Status.Succeeded = 1
@@ -104,6 +104,10 @@ func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 
 	if err := h.Status().Update(ctx, h.aw); err != nil {
 		return errLogAndWrap(h.log, err, "failed to update status")
+	}
+
+	if done != nil {
+		done.record()
 	}
 
 	return nil
@@ -207,7 +211,8 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			h.aw.Status.Message = ""
 			h.aw.Status.Phase = arcv1alpha1.WorkflowActive
 
-			updated = updated || h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+			changed, _ := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+			updated = changed || updated
 		}
 	}
 
@@ -218,7 +223,8 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 			return errLogAndWrap(h.log, err, "failed to fetch active workflow")
 		}
 
-		updated = updated || h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+		changed, _ := h.setStatusFromWorkflow(ctx, h.log, h.aw, &wf)
+		updated = changed || updated
 
 		if wf.Status.Phase.Completed() {
 			h.aw.Status.ActiveWorkflowRef.Name = ""

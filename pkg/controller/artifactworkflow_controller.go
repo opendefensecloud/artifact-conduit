@@ -146,10 +146,11 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return ctrlResult, nil
 }
 
-func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, wf *wfv1alpha1.Workflow) bool {
+func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, wf *wfv1alpha1.Workflow) (bool, *completion) {
 	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return false // nothing updated
+		return false, nil // nothing updated
 	}
+
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
 	switch aw.Status.Phase {
@@ -162,7 +163,7 @@ func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, 
 	default:
 	}
 
-	return true
+	return true, newCompletion(aw, wf)
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf *wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
