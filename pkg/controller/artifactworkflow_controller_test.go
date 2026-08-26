@@ -196,9 +196,11 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
 			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
 
-			Eventually(func() float64 {
+			delta := func() float64 {
 				return testutil.ToFloat64(counter) - before
-			}).Should(Equal(1.0))
+			}
+			Eventually(delta).Should(Equal(1.0))
+			Consistently(delta).Should(Equal(1.0))
 		})
 
 		It("should track failed Workflow information of created ArtifactWorkflows", func() {
@@ -575,6 +577,46 @@ var _ = Describe("newCompletion", func() {
 		Expect(completion.result).To(Equal(metrics.ResultSucceeded))
 		Expect(completion.hasDuration).To(BeTrue())
 		Expect(completion.seconds).To(Equal(90.0))
+	})
+
+	It("should record a zero length duration when start and finish share the same second", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "team-a",
+				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
+			},
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
+
+		same := metav1.NewTime(metav1.Unix(1700000000, 0).Time)
+		wf := &wfv1alpha1.Workflow{}
+		wf.Status.StartedAt = same
+		wf.Status.FinishedAt = same
+
+		completion := newCompletion(aw, wf)
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.hasDuration).To(BeTrue())
+		Expect(completion.seconds).To(Equal(0.0))
+	})
+
+	It("should not record a duration when finish precedes start", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "team-a",
+				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
+			},
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
+
+		wf := &wfv1alpha1.Workflow{}
+		wf.Status.StartedAt = metav1.NewTime(metav1.Unix(1700000090, 0).Time)
+		wf.Status.FinishedAt = metav1.NewTime(metav1.Unix(1700000000, 0).Time)
+
+		completion := newCompletion(aw, wf)
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.hasDuration).To(BeFalse())
 	})
 
 	It("should record a failure without a duration when argo has no timestamps", func() {

@@ -99,6 +99,12 @@ func RecordReconcileError(controller, reason string) {
 	reconcileErrors.WithLabelValues(controller, reason).Inc()
 }
 
+// ReconcileErrorsCounterForTest exposes one reconcile error series for
+// assertions in controller tests. It is not part of the runtime API.
+func ReconcileErrorsCounterForTest(controller, reason string) prometheus.Counter {
+	return reconcileErrors.WithLabelValues(controller, reason)
+}
+
 // SetBuildInfo publishes build information read from the embedded build data.
 func SetBuildInfo() {
 	version, revision := "unknown", "unknown"

@@ -5,12 +5,15 @@ package metrics
 
 import (
 	"context"
+	"errors"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	dto "github.com/prometheus/client_model/go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -18,6 +21,37 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+// errSentinel is the error a failingReader returns, so a spec can assert it
+// surfaced rather than merely that some error occurred.
+var errSentinel = errors.New("sentinel: cache read failed")
+
+// failingReader is a client.Reader stub that fails List for one object list
+// type and succeeds (returning an empty list) for the other, so a spec can
+// pin down that a given List call site is actually checked for errors.
+type failingReader struct {
+	failOrders    bool
+	failWorkflows bool
+}
+
+func (r *failingReader) Get(_ context.Context, _ client.ObjectKey, _ client.Object, _ ...client.GetOption) error {
+	return nil
+}
+
+func (r *failingReader) List(_ context.Context, list client.ObjectList, _ ...client.ListOption) error {
+	switch list.(type) {
+	case *arcv1alpha1.OrderList:
+		if r.failOrders {
+			return errSentinel
+		}
+	case *arcv1alpha1.ArtifactWorkflowList:
+		if r.failWorkflows {
+			return errSentinel
+		}
+	}
+
+	return nil
+}
 
 func newScheme() *runtime.Scheme {
 	scheme := runtime.NewScheme()
@@ -253,6 +287,32 @@ arc_artifactworkflow_last_success_timestamp_seconds{artifact_type="oci",namespac
 		} {
 			Expect(seriesCount(families, name)).To(Equal(1), "%s should hold one series per namespace and artifact type", name)
 		}
+	})
+})
+
+var _ = Describe("Collector cache errors", func() {
+	It("should surface a scrape error when the Orders list fails", func() {
+		collector := NewCollector(&failingReader{failOrders: true})
+		collector.isLeader.Store(true)
+
+		registry := prometheus.NewPedanticRegistry()
+		Expect(registry.Register(collector)).To(Succeed())
+
+		_, err := registry.Gather()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(errSentinel.Error()))
+	})
+
+	It("should surface a scrape error when the ArtifactWorkflows list fails", func() {
+		collector := NewCollector(&failingReader{failWorkflows: true})
+		collector.isLeader.Store(true)
+
+		registry := prometheus.NewPedanticRegistry()
+		Expect(registry.Register(collector)).To(Succeed())
+
+		_, err := registry.Gather()
+		Expect(err).To(HaveOccurred())
+		Expect(err.Error()).To(ContainSubstring(errSentinel.Error()))
 	})
 })
 
