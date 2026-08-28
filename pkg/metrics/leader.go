@@ -9,39 +9,32 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// leaderGate flips the collector on for as long as this replica holds
-// leadership. When leader election is disabled the manager starts leader
-// election runnables immediately, so single replica installs report normally.
-type leaderGate struct {
-	collector *Collector
-}
-
 var (
-	_ manager.Runnable               = &leaderGate{}
-	_ manager.LeaderElectionRunnable = &leaderGate{}
+	_ manager.Runnable               = &Collector{}
+	_ manager.LeaderElectionRunnable = &Collector{}
 )
 
-// LeaderRunnable returns a Runnable that must be added to the manager for the
-// collector to report anything.
-func (c *Collector) LeaderRunnable() manager.Runnable {
-	return &leaderGate{collector: c}
-}
-
-// NeedLeaderElection implements manager.LeaderElectionRunnable.
-func (g *leaderGate) NeedLeaderElection() bool {
+// NeedLeaderElection implements manager.LeaderElectionRunnable. Every replica
+// serves the metrics endpoint but only the leader reconciles, so ungated gauges
+// would be multiplied by the replica count.
+func (c *Collector) NeedLeaderElection() bool {
 	return true
 }
 
-// Start implements manager.Runnable. The manager syncs the caches it knows
-// about before starting leader election runnables, but the Order and
-// ArtifactWorkflow informers are created lazily by the controllers, which are
-// leader election runnables started alongside this one. A scrape that arrives
-// before a controller has asked for its informer therefore creates it and waits
-// for it to sync, bounded by collectTimeout, so the worst case is a scrape that
-// fails rather than one that hangs.
-func (g *leaderGate) Start(ctx context.Context) error {
-	g.collector.isLeader.Store(true)
-	defer g.collector.isLeader.Store(false)
+// Start implements manager.Runnable, and reports for as long as this replica
+// holds leadership. The collector must be added to the manager or it reports
+// nothing at all. When leader election is disabled the manager starts leader
+// election runnables immediately, so single replica installs report normally.
+//
+// The manager syncs the caches it knows about before starting leader election
+// runnables, but the Order and ArtifactWorkflow informers are created lazily by
+// the controllers, which are leader election runnables started alongside this
+// one. A scrape that arrives before a controller has asked for its informer
+// therefore creates it and waits for it to sync, bounded by collectTimeout, so
+// the worst case is a scrape that fails rather than one that hangs.
+func (c *Collector) Start(ctx context.Context) error {
+	c.isLeader.Store(true)
+	defer c.isLeader.Store(false)
 
 	<-ctx.Done()
 

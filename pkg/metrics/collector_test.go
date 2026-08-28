@@ -316,7 +316,7 @@ var _ = Describe("Collector cache errors", func() {
 	})
 })
 
-var _ = Describe("LeaderRunnable", func() {
+var _ = Describe("Collector as a leader elected runnable", func() {
 	It("should report only while running", func() {
 		client := fake.NewClientBuilder().WithScheme(newScheme()).WithObjects(
 			aw("team-a", "one", "oci", false, arcv1alpha1.WorkflowRunning),
@@ -327,8 +327,10 @@ var _ = Describe("LeaderRunnable", func() {
 
 		ctx, cancel := context.WithCancel(context.Background())
 
+		Expect(collector.NeedLeaderElection()).To(BeTrue())
+
 		done := make(chan error, 1)
-		go func() { done <- collector.LeaderRunnable().Start(ctx) }()
+		go func() { done <- collector.Start(ctx) }()
 
 		Eventually(func() int { return testutil.CollectAndCount(collector) }).Should(BeNumerically(">", 0))
 

@@ -22,10 +22,6 @@ const collectTimeout = 5 * time.Second
 const (
 	modeSingle = "single"
 	modeCron   = "cron"
-
-	// phaseUnknown replaces the empty phase of a freshly created workflow, so
-	// no series carries an empty label value.
-	phaseUnknown = "Unknown"
 )
 
 var (
@@ -142,9 +138,20 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 	for i := range workflows.Items {
 		workflow := &workflows.Items[i]
 		artifactType := ArtifactTypeOf(workflow)
-		mode := modeOf(workflow)
 
-		counts[key{workflow.Namespace, artifactType, mode, phaseLabel(workflow.Status.Phase)}]++
+		mode := modeSingle
+		if workflow.Spec.Cron != nil {
+			mode = modeCron
+		}
+
+		// A freshly created workflow has no phase yet. An explicit Unknown
+		// beats an empty label value.
+		phase := string(workflow.Status.Phase)
+		if phase == "" {
+			phase = "Unknown"
+		}
+
+		counts[key{workflow.Namespace, artifactType, mode, phase}]++
 
 		if mode != modeCron {
 			continue
@@ -204,20 +211,4 @@ func ArtifactTypeOf(workflow *arcv1alpha1.ArtifactWorkflow) string {
 	}
 
 	return UnknownArtifactType
-}
-
-func modeOf(workflow *arcv1alpha1.ArtifactWorkflow) string {
-	if workflow.Spec.Cron != nil {
-		return modeCron
-	}
-
-	return modeSingle
-}
-
-func phaseLabel(phase arcv1alpha1.WorkflowPhase) string {
-	if phase == arcv1alpha1.WorkflowUnknown {
-		return phaseUnknown
-	}
-
-	return string(phase)
 }

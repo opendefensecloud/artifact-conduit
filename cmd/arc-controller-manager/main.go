@@ -173,7 +173,7 @@ func main() {
 	arcMetrics := arcmetrics.NewCollector(mgr.GetCache())
 	ctrlmetrics.Registry.MustRegister(arcMetrics)
 
-	if err := mgr.Add(arcMetrics.LeaderRunnable()); err != nil {
+	if err := mgr.Add(arcMetrics); err != nil {
 		setupLog.Error(err, "unable to add metrics leader gate")
 		os.Exit(1)
 	}
