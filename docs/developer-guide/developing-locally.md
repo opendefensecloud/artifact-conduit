@@ -88,7 +88,7 @@ The system **pins specific tool versions** for reproducibility:
 - Go linter: `v2.5.0`
 - CRD/RBAC generator: `v0.19.0`
 - Kubernetes test API server: `release-0.22`
-- K8s for integration tests: `1.34.1`
+- K8s for integration tests: see `ENVTEST_K8S_VERSION` in the `Makefile`
 
 ***
 
@@ -127,7 +127,7 @@ See Client Libraries section for usage details.
 ARC uses a multi-layered testing strategy:
 
 - **Unit Tests**
-- **Integration Tests** (uses `ENVTEST_K8S_VERSION=1.34.1`)
+- **Integration Tests** (envtest; K8s version pinned by `ENVTEST_K8S_VERSION` in the `Makefile`)
 - **Controller Tests** via envtest
 - **E2E Tests** using local `kind` cluster via `make test-e2e`
 
