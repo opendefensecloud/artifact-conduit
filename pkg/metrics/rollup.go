@@ -10,10 +10,13 @@ import (
 // OrderPhase derives an aggregate phase for an Order from the phases of the
 // ArtifactWorkflows it owns. Orders have no phase of their own.
 //
-// Precedence is deliberate. A failure anywhere makes the whole Order failed. A
-// deliberate stop is reported rather than folded into Pending. Otherwise
-// in progress work wins over completed work, so an Order reads Succeeded only
-// once every workflow has succeeded.
+// Precedence is deliberate: Failed, then Running, then Stopped, then Succeeded,
+// then Pending. A failure anywhere makes the whole Order failed. In flight work
+// outranks a deliberate stop, because an Order with one stopped workflow and one
+// still running is not settled, and reporting Stopped there would hide the work
+// that is still going. The stop is not lost, it surfaces once nothing is in
+// flight. A stop is still reported rather than folded into Pending, and an Order
+// reads Succeeded only once every workflow has succeeded.
 //
 // An Order containing a cron artifact moves between phases for as long as it
 // exists rather than settling in one. It reads Running while a run is in
@@ -44,10 +47,10 @@ func OrderPhase(statuses map[string]arcv1alpha1.OrderArtifactWorkflowStatus) arc
 	}
 
 	switch {
-	case stopped:
-		return arcv1alpha1.WorkflowStopped
 	case inProgress:
 		return arcv1alpha1.WorkflowRunning
+	case stopped:
+		return arcv1alpha1.WorkflowStopped
 	case succeeded == len(statuses):
 		return arcv1alpha1.WorkflowSucceeded
 	default:
