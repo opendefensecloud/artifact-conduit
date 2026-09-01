@@ -1,0 +1,26 @@
+---
+# Prevents Endpoint deletion while any Order references it.
+# Only defaults-level refs are used; per-artifact srcRef/dstRef overrides are not supported by the
+# syncagent mutation engine (gjson * cannot iterate arrays).
+apiVersion: dependencies.opendefense.cloud/v1alpha1
+kind: DependencyRule
+metadata:
+  name: order-endpoint-dependencies
+spec:
+  dependent:
+    apiExportName: arc.opendefense.cloud
+    group: arc.opendefense.cloud
+    version: v1alpha1
+    kind: Order
+    resource: orders
+  dependencies:
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.defaults.srcRef.name" }
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.defaults.dstRef.name" }

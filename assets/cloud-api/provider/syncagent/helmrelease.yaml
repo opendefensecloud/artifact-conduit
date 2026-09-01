@@ -1,0 +1,48 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: arc-syncagent
+  namespace: arc-system
+spec:
+  interval: 10m
+  chart:
+    spec:
+      chart: api-syncagent
+      version: "0.6.2" # chart 0.6.2 == appVersion v0.7.0
+      sourceRef:
+        kind: HelmRepository
+        name: kcp
+        namespace: arc-system
+      interval: 1h
+  install:
+    remediation:
+      retries: 5
+  upgrade:
+    remediation:
+      retries: 5
+  values:
+    fullnameOverride: arc-syncagent   # -> Deployment + ServiceAccount named "arc-syncagent"
+    image:
+      tag: v0.7.0
+    kcpKubeconfig: arc-syncagent-kcp-kubeconfig   # Secret name (key: kubeconfig), targets root:providers:odd
+    # kubectl create secret generic -n arc-system arc-syncagent-kcp-kubeconfig --from-file kubeconfig=kcp-kubeconfig.yaml --dry-run=client -oyaml | kubectl apply -f -
+    apiExportEndpointSliceName: arc.opendefense.cloud
+    agentName: arc                    # IMMUTABLE — never change (changing it orphans synced objects)
+    # ARC's empty EndpointStatus makes the agent emit an ARS that kcp rejects, so we hand-author
+    # both APIResourceSchemas (see arc-syncagent-kcp/) with endpoints' status fixed to a valid
+    # preserve-unknown-fields object. We also disable the apiexport controller and own the
+    # APIExport.spec.resources wiring in Git — because that controller wires from
+    # PublishedResource.status.resourceSchemaName (set only by the disabled schema controller),
+    # which is not GitOps-reproducible. The agent therefore runs ONLY the sync controller.
+    disabledControllers:
+      - apiexport
+      - apiresourceschema
+    resources:                        # chart default limit (512Mi) OOMs while parsing ARC's ~12MB OpenAPI v2 doc
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 1Gi
+    crds:
+      enabled: true # installs the PublishedResource CRD

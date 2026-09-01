@@ -1,0 +1,62 @@
+---
+# Endpoint: spec-only sync (no /status subresource).
+apiVersion: syncagent.kcp.io/v1alpha1
+kind: PublishedResource
+metadata:
+  name: arc-endpoints
+spec:
+  enableWorkspacePaths: true
+  resource:
+    apiGroup: arc.opendefense.cloud
+    kind: Endpoint
+    versions:
+      - v1alpha1
+  naming:
+    # Collision-safe: rename Endpoints to <ClusterName>-<namespace>-<name> on the host so multiple
+    # consumers/namespaces don't clash in arc-system. Order spec.defaults.srcRef/dstRef are
+    # rewritten to match via the orders PublishedResource mutation.
+    namespace: arc-system
+    name: '{{ .ClusterName }}-{{ .Object.metadata.namespace }}-{{ .Object.metadata.name }}'
+  mutation:
+    # Rewrite the credential Secret reference so each Endpoint gets its OWN collision-safe copy of
+    # the Secret on the host: <ClusterName>-<namespace>-<endpointName>-<secretName>. The related
+    # resource below resolves spec.secretRef.name on BOTH sides, so this single rewrite both NAMES
+    # the synced Secret and makes the host Endpoint reference it. Including the endpoint name means
+    # two Endpoints sharing one source Secret get independent copies — safe to create AND delete
+    # (deleting one Endpoint won't remove the other's Secret).
+    #
+    # The `!= ""` guard is REQUIRED: a secret-less Endpoint authored via the generic UI carries
+    # spec.secretRef.name == "" (the create form's optional Secret field is empty, not absent).
+    # Without the guard the rewrite produces a garbage name "<cluster>-<ns>-<ep>-" (trailing empty
+    # secret), which the host Endpoint then references; ARC fetches secrets only when name != ""
+    # (order_controller.go / artifactworkflow_controller.go), so it would try to load a non-existent
+    # secret and fail the Order. With the guard, an empty/absent secret stays "" — exactly ARC's
+    # native "no credentials" form (SecretRef is a non-omitempty corev1.LocalObjectReference, so a
+    # secret-less ARC Endpoint always serialises secretRef:{name:""}). The related-Secret sync also
+    # skips empty references (mapSlices drops empty origin/dest pairs), so no garbage Secret is made.
+    spec:
+      - cel:
+          path: spec.secretRef.name
+          expression: 'has(self.spec.secretRef) && has(self.spec.secretRef.name) && self.spec.secretRef.name != "" ? self.metadata.annotations["kcp.io/cluster"] + "-" + self.metadata.namespace + "-" + self.metadata.name + "-" + self.spec.secretRef.name : ""'
+  related:
+    - origin: kcp
+      cleanup: true
+      identifier: "credential"
+      group: ""
+      version: v1
+      resource: secrets
+      object:
+        # Resolve the credential Secret NAME via a `template` (NOT `reference`) so the empty/absent
+        # case is skipped cleanly. `reference` requires origin and destination to resolve the SAME
+        # number of names: a secret-less Endpoint authored via the UI carries spec.secretRef.name ==
+        # "" on the consumer (kcp keeps the empty string -> 1 name), but the host ARC Endpoint
+        # collapses it to secretRef:{} (LocalObjectReference.Name is omitempty -> 0 names). So
+        # `reference` fails with "found 1 names on the origin, but 0 on the destination" and the
+        # syncagent.kcp.io/cleanup finalizer never clears -> the Endpoint sticks in Terminating. The
+        # `template` path returns nil when EITHER side renders empty (syncer_related.go), skipping the
+        # sync. `dig ... ""` walks the path with an empty-string default, so an absent secretRef does
+        # NOT error. With a real secret it renders the consumer Secret name on the origin side and the
+        # rewritten host name on the destination side (matching the mutation above), yielding the same
+        # {consumerName: hostName} mapping that `reference` produced.
+        template:
+          template: '{{ dig "spec" "secretRef" "name" "" .Object }}'

@@ -1,0 +1,271 @@
+---
+# Hand-authored APIResourceSchema — workarounds for autogeneration failures (see #442).
+# Fixes: added /status subresource; artifacts[].spec → preserve-unknown-fields for RawExtension.
+# Immutable: bumps metadata.name on schema changes.
+apiVersion: apis.kcp.io/v1alpha1
+kind: APIResourceSchema
+metadata:
+  name: v4d632a97.orders.arc.opendefense.cloud
+  labels:
+    syncagent.kcp.io/agent-name: arc
+  annotations:
+    syncagent.kcp.io/agent-name: arc
+    syncagent.kcp.io/source-generation: "0"
+spec:
+  group: arc.opendefense.cloud
+  nameValidation: DNS1123Subdomain
+  names:
+    kind: Order
+    listKind: OrderList
+    plural: orders
+    singular: order
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      description: Order is the Schema for the orders API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: OrderSpec defines the desired state of Order
+          properties:
+            TTLSecondsAfterCompletion:
+              description: TTLSecondsAfterCompletion specifies the time to live for
+                the created ArtifactWorkflow(s) after completion. After this time,
+                the ArtifactWorkflow(s) are automatically deleted. If unset, the ArtifactWorkflow(s)
+                are automatically deleted immediately after completion.
+              format: int64
+              type: integer
+            artifacts:
+              description: Artifacts lists all artifacts, that will be processed by
+                this Order.
+              items:
+                description: OrderArtifact specifies a single artifact which is translated
+                  into a corresponding OrderArtifactWorkflow
+                properties:
+                  cron:
+                    description: Cron specifies options which determine when the order
+                      should be scheduled (falls back to OrderDefaults).
+                    properties:
+                      schedules:
+                        description: Schedules is a list of schedules to run the Order
+                          in Cron format
+                        items:
+                          type: string
+                        type: array
+                      startingDeadlineSeconds:
+                        description: StartingDeadlineSeconds is the K8s-style deadline
+                          that will limit the time a Order will be run after its original
+                          scheduled time if it is missed.
+                        format: int64
+                        type: integer
+                      timezone:
+                        description: Timezone is the timezone against which the cron
+                          schedule will be calculated, e.g. "Asia/Tokyo". Default
+                          is machine's local time.
+                        type: string
+                      when:
+                        description: When is an expression that determines if a run
+                          should be scheduled.
+                        type: string
+                    required:
+                    - schedules
+                    type: object
+                  dstRef:
+                    description: SrcRef defines which Endpoint object is used as destination
+                      (falls back to OrderDefaults).
+                    properties:
+                      name:
+                        description: 'Name of the referent. This field is effectively
+                          required, but due to backwards compatibility is allowed
+                          to be empty. Instances of this type with an empty value
+                          here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                    type: object
+                  spec:
+                    description: |-
+                      Spec specifies parameters used by the underlying Workflow. TYPED (not
+                      x-kubernetes-preserve-unknown-fields): the platform-mesh GraphQL gateway
+                      exposes a preserve-unknown object as a JSONString scalar, which the
+                      generic-UI create form's nested-object authoring (each spec.artifacts[]
+                      row) would be rejected against — same fix as the retired spec.artifact.spec.
+                      Union of every supported ArtifactType's params: oci -> repository/tag/
+                      override; ocm -> repo/component/version; helm -> repo/chart/version
+                      (shares repo/version with ocm); blob -> key/override/md5 (shares override
+                      with oci). Unused keys sync as "" for a given type's Workflow, which is
+                      inert (each type's Workflow reads only its own params).
+                    type: object
+                    properties:
+                      repository:
+                        type: string
+                      tag:
+                        type: string
+                      override:
+                        type: string
+                      repo:
+                        type: string
+                      component:
+                        type: string
+                      version:
+                        type: string
+                      chart:
+                        type: string
+                      key:
+                        type: string
+                      md5:
+                        type: string
+                  srcRef:
+                    description: SrcRef defines which Endpoint object is used as source
+                      (falls back to OrderDefaults).
+                    properties:
+                      name:
+                        description: 'Name of the referent. This field is effectively
+                          required, but due to backwards compatibility is allowed
+                          to be empty. Instances of this type with an empty value
+                          here are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                        type: string
+                    type: object
+                  type:
+                    description: Type specifies which ArtifactType is used to process
+                      this artifact.
+                    type: string
+                required:
+                - type
+                type: object
+              type: array
+            defaults:
+              description: Defaults sets up defaults for all artifacts.
+              properties:
+                cron:
+                  description: Cron specifies options which determine when the order
+                    should be scheduled.
+                  properties:
+                    schedules:
+                      description: Schedules is a list of schedules to run the Order
+                        in Cron format
+                      items:
+                        type: string
+                      type: array
+                    startingDeadlineSeconds:
+                      description: StartingDeadlineSeconds is the K8s-style deadline
+                        that will limit the time a Order will be run after its original
+                        scheduled time if it is missed.
+                      format: int64
+                      type: integer
+                    timezone:
+                      description: Timezone is the timezone against which the cron
+                        schedule will be calculated, e.g. "Asia/Tokyo". Default is
+                        machine's local time.
+                      type: string
+                    when:
+                      description: When is an expression that determines if a run
+                        should be scheduled.
+                      type: string
+                  required:
+                  - schedules
+                  type: object
+                dstRef:
+                  description: DstRef defines which Endpoint object is used as fallback
+                    destination by all artifacts.
+                  properties:
+                    name:
+                      description: 'Name of the referent. This field is effectively
+                        required, but due to backwards compatibility is allowed to
+                        be empty. Instances of this type with an empty value here
+                        are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                      type: string
+                  type: object
+                srcRef:
+                  description: SrcRef defines which Endpoint object is used as fallback
+                    source by all artifacts.
+                  properties:
+                    name:
+                      description: 'Name of the referent. This field is effectively
+                        required, but due to backwards compatibility is allowed to
+                        be empty. Instances of this type with an empty value here
+                        are almost certainly wrong. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                      type: string
+                  type: object
+              type: object
+          type: object
+        status:
+          description: OrderStatus defines the observed state of Order
+          properties:
+            artifactWorkflows:
+              additionalProperties:
+                properties:
+                  artifactIndex:
+                    description: ArtifactIndex references back the index the corresponding
+                      artifact has in the .Spec
+                    format: int32
+                    type: integer
+                  completionTime:
+                    description: CompletionTime is the time when the workflow finished
+                    format: date-time
+                    type: string
+                  failed:
+                    description: Failed counts how many times child workflows failed
+                    format: int64
+                    type: integer
+                  lastScheduled:
+                    description: LastScheduled is the last time the workflow was scheduled
+                      via cron
+                    format: date-time
+                    type: string
+                  message:
+                    description: A human readable message describing the current condition
+                      of the artifact workflow.
+                    type: string
+                  phase:
+                    description: |-
+                      Phase tracks which phase the corresponding Workflow is in
+
+                      Possible enum values:
+                       - `""` analog to Argo Workflows
+                       - `"Active"`
+                       - `"Error"`
+                       - `"Failed"`
+                       - `"Pending"`
+                       - `"Running"`
+                       - `"Stopped"`
+                       - `"Succeeded"`
+                    type: string
+                  succeeded:
+                    description: Succeeded counts how many times child workflows succeeded
+                    format: int64
+                    type: integer
+                required:
+                - artifactIndex
+                type: object
+              description: ArtifactWorkflows tracks the created workflows
+              type: object
+            lastForceAt:
+              description: LastForceAt is the last time a force reconciliation was
+                requested
+              format: date-time
+              type: string
+            lastReconcileAt:
+              description: LastReconcileAt is the last time the Order was reconciled
+              format: date-time
+              type: string
+            message:
+              description: A human readable message describing the current condition
+                of the order.
+              type: string
+          type: object
+      type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
