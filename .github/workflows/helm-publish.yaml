@@ -65,25 +65,27 @@ jobs:
 
       - name: Extract version from tag
         id: version
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             # Remove 'v' prefix from tag if present (e.g., v0.1.0 -> 0.1.0)
             VERSION=${GITHUB_REF_NAME#v}
-            echo "source=tag" >> $GITHUB_OUTPUT
+            echo "source=tag" >> "$GITHUB_OUTPUT"
           else
             # For pull requests and other refs, compute a semver version
             # Format: 0.0.0-pr.<pr_number>.<short_sha>
-            PR_NUMBER=${{ github.event.pull_request.number }}
-            SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+            SHORT_SHA=${GITHUB_SHA:0:7}
             VERSION="0.0.0-pr.${PR_NUMBER}.${SHORT_SHA}"
-            echo "source=computed" >> $GITHUB_OUTPUT
+            echo "source=computed" >> "$GITHUB_OUTPUT"
           fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Chart version: ${VERSION}"
 
       - name: Update chart version and appVersion
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION=${{ steps.version.outputs.version }}
           for chart in charts/*/; do
             if [ -f "${chart}Chart.yaml" ]; then
               CHART_NAME=$(basename "${chart}")
@@ -100,6 +102,8 @@ jobs:
           done
 
       - name: Package and publish Helm charts
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           for chart in charts/*/; do
             if [ -f "${chart}Chart.yaml" ]; then
@@ -110,12 +114,12 @@ jobs:
               helm package "${chart}"
 
               # Push to OCI registry
-              PACKAGE=$(ls ${CHART_NAME}-*.tgz)
-              helm push "${PACKAGE}" oci://ghcr.io/${{ github.repository_owner }}/charts &> push-metadata.txt
-              echo "✓ Published ${PACKAGE} to ghcr.io/${{ github.repository_owner }}/charts"
+              PACKAGE=$(ls "${CHART_NAME}"-*.tgz)
+              helm push "${PACKAGE}" "oci://ghcr.io/${REPO_OWNER}/charts" &> push-metadata.txt
+              echo "✓ Published ${PACKAGE} to ghcr.io/${REPO_OWNER}/charts"
               CHART_DIGEST=$(awk '/Digest: /{print $2}' push-metadata.txt)
-              echo "CHART_DIGEST=${CHART_DIGEST}" | tee -a $GITHUB_ENV
+              echo "CHART_DIGEST=${CHART_DIGEST}" | tee -a "$GITHUB_ENV"
 
-              cosign sign --yes "ghcr.io/${{ github.repository_owner }}/charts/${CHART_NAME}@${CHART_DIGEST}"
+              cosign sign --yes "ghcr.io/${REPO_OWNER}/charts/${CHART_NAME}@${CHART_DIGEST}"
             fi
           done
