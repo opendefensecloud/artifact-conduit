@@ -67,8 +67,9 @@ jobs:
       - name: Keep the provenance as a release asset
         # The step above only writes to GitHub's attestation store. OpenSSF
         # Scorecard's Signed-Releases check detects provenance by filename and
-        # never looks there, so ship the same bundle as *.intoto.jsonl. Verify
-        # with: gh attestation verify <binary> --bundle arc-<tag>.intoto.jsonl
+        # never looks there, so ship the same bundle as *.intoto.jsonl. Verify with:
+        # gh attestation verify <binary> --repo opendefensecloud/artifact-conduit \
+        #   --bundle arc-<tag>.intoto.jsonl
         env:
           BUNDLE: ${{ steps.attest.outputs.bundle-path }}
         run: cp "${BUNDLE}" "bin/arc-${GITHUB_REF_NAME}.intoto.jsonl"
@@ -96,7 +97,7 @@ jobs:
           done
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
         with:
           # Release notes are curated by release-drafter; only attach the signed
           # assets here so the drafted notes are preserved.
