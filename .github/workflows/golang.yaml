@@ -9,6 +9,7 @@ on:
       - "**/*.go"
       - ".github/workflows/golang.yaml"
       - ".golangci.yml"
+      - "flake.lock"
       - "flake.nix"
       - "go.mod"
       - "go.sum"
@@ -20,6 +21,7 @@ on:
       - "**/*.go"
       - ".github/workflows/golang.yaml"
       - ".golangci.yml"
+      - "flake.lock"
       - "flake.nix"
       - "go.mod"
       - "go.sum"
@@ -32,36 +34,67 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-24.04
-    outputs:
-      go-version: ${{ steps.go-version.outputs.version }}
+    # Tools (go, golangci-lint, shellcheck, addlicense) come from the flake
+    # and tools.lock. `make lint` runs both lint-no-golangci and golangci-lint.
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - id: go-version
-        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@f16fb83a8669ba840346929d9c45b9efe95c4da0 # v1.0.15
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          go-version: ${{ steps.go-version.outputs.version }}
-      - name: lint-license-and-shell
-        run: |
-          make lint-no-golangci
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
+      # actions/setup-go used to warm GOMODCACHE / GOCACHE for us. Nix
+      # provides the toolchain but not those caches, so restore them
+      # explicitly. The key is trust-scoped (pr/trusted) so a pull request
+      # cannot poison the cache used by builds of trusted refs.
+      - name: Cache Go module + build caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-
+            go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-
+      - name: lint
+        run: make lint
 
   test:
     needs: lint
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          go-version: ${{ needs.lint.outputs.go-version }}
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
+      # See the lint job for rationale. Separate cache scope per job so lint
+      # (compile-side artefacts only) does not clobber test, which also builds
+      # envtest / ginkgo binaries.
+      - name: Cache Go module + build caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-cache-test-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            go-cache-test-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-
+            go-cache-test-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-
       - name: test
-        run: |
-          make test
+        run: make test
       - name: Convert coverage to lcov
         uses: jandelgado/gcov2lcov-action@e4612787670fc5b5f49026b8c29c5569921de1db # v1.2.0
         with:
