@@ -29,7 +29,6 @@
           inherit system;
           goVersion = "1.26.6";
           packages = [
-            pkgs.cosign
             pkgs.trivy
           ];
           preCommitHooks = {
