@@ -12,7 +12,7 @@
     };
 
     dev-kit = {
-      url = "github:opendefensecloud/dev-kit";
+      url = "github:opendefensecloud/dev-kit/v2.2.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.go-overlay.follows = "go-overlay";
       inputs.flake-utils.follows = "flake-utils";
