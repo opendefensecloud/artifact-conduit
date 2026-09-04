@@ -20,36 +20,40 @@ permissions:
 jobs:
   test-e2e:
     runs-on: ubuntu-24.04
+    # go, kind, kubectl and helm all come from the flake. The e2e suite
+    # creates the cluster itself via `make test-e2e`, pinned to
+    # KIND_NODE_IMAGE (derived from ENVTEST_K8S_VERSION) — the Makefile
+    # stays the single source of truth for the K8s version.
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - id: go-version
-        uses: opendefensecloud/dev-kit/.github/actions/get-go-version@f16fb83a8669ba840346929d9c45b9efe95c4da0 # v1.0.15
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          go-version: ${{ steps.go-version.outputs.version }}
-      - name: Install Tools
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
+      # actions/setup-go used to warm GOMODCACHE / GOCACHE for us; restore
+      # them explicitly now. Trust-scoped (pr/trusted) so a pull request
+      # cannot poison the cache used by builds of trusted refs.
+      - name: Cache Go module + build caches
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-cache-e2e-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+          restore-keys: |
+            go-cache-e2e-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-
+            go-cache-e2e-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-
+      - name: Report tool versions
         run: |
-          # Install kind. The e2e suite creates the cluster itself via
-          # `make test-e2e`, pinned to KIND_NODE_IMAGE (derived from
-          # ENVTEST_K8S_VERSION) — the Makefile is the single source of truth
-          # for the K8s version, so we only need the binary here.
-          KIND_VERSION="v0.31.0"
-          curl -Lo ./kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
           kind version
-
-          # Install kubectl
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x ./kubectl
-          sudo mv ./kubectl /usr/local/bin/kubectl
           kubectl version --client
-
-          # Install helm
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          helm version
+          helm version --short
       - name: Run E2E Test Suite
         env:
           E2E_IMAGE_SOURCE: ${{ inputs.is-local && 'local' || 'ghcr' }}
