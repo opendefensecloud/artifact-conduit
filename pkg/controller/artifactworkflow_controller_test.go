@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/metrics"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -122,6 +124,32 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}))
 		})
 
+		It("should count a missing secret under the reason its Event carries", func() {
+			counter := metrics.ReconcileErrorsCounterForTest(ControllerArtifactWorkflow, ReasonInvalidSecret)
+			before := testutil.ToFloat64(counter)
+
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      "missing-secret",
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					SrcSecretRef:        corev1.LocalObjectReference{Name: "does-not-exist"},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			Eventually(func() float64 {
+				return testutil.ToFloat64(counter) - before
+			}).Should(BeNumerically(">=", 1.0))
+
+			// The workflow must not be created from secrets that could not be read.
+			Consistently(func() error {
+				return k8sClient.Get(ctx, namespacedName(ns.Name, aw.Name), &wfv1alpha1.Workflow{})
+			}).ShouldNot(Succeed())
+		})
+
 		It("should track Workflow status changes of created ArtifactWorkflows", func() {
 			awName := "track-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{
@@ -165,6 +193,40 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
 				return aw.Status.Succeeded
 			}).Should(Equal(int64(1)))
+		})
+
+		It("should count a completion once the workflow succeeds", func() {
+			counter := metrics.CompletionsCounterForTest(ns.Name, metrics.UnknownArtifactType, metrics.ResultSucceeded)
+			before := testutil.ToFloat64(counter)
+
+			awName := "count-completion"
+			aw := &arcv1alpha1.ArtifactWorkflow{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: ns.Name,
+					Name:      awName,
+				},
+				Spec: arcv1alpha1.ArtifactWorkflowSpec{
+					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
+					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
+						{Name: awName, Value: awName},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
+
+			wf := &wfv1alpha1.Workflow{}
+			Eventually(func() error {
+				return k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf)
+			}).Should(Succeed())
+
+			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
+			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
+
+			delta := func() float64 {
+				return testutil.ToFloat64(counter) - before
+			}
+			Eventually(delta).Should(Equal(1.0))
+			Consistently(delta).Should(Equal(1.0))
 		})
 
 		It("should track failed Workflow information of created ArtifactWorkflows", func() {
@@ -502,5 +564,96 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Eventually(getWorkflowSucceeded).Should(Equal(cwf.Status.Succeeded))
 			Consistently(getWorkflowSucceeded).Should(Equal(cwf.Status.Succeeded))
 		})
+	})
+})
+
+var _ = Describe("newCompletion", func() {
+	It("should return nil for non terminal phases", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{}
+		aw.Status.Phase = arcv1alpha1.WorkflowRunning
+
+		Expect(newCompletion(aw, &wfv1alpha1.Workflow{})).To(BeNil())
+	})
+
+	It("should return nil for Stopped, which is an action not a result", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{}
+		aw.Status.Phase = arcv1alpha1.WorkflowStopped
+
+		Expect(newCompletion(aw, &wfv1alpha1.Workflow{})).To(BeNil())
+	})
+
+	It("should take the duration from the argo workflow", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "team-a",
+				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
+			},
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
+
+		wf := &wfv1alpha1.Workflow{}
+		wf.Status.StartedAt = metav1.NewTime(metav1.Unix(1700000000, 0).Time)
+		wf.Status.FinishedAt = metav1.NewTime(metav1.Unix(1700000090, 0).Time)
+
+		completion := newCompletion(aw, wf)
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.namespace).To(Equal("team-a"))
+		Expect(completion.artifactType).To(Equal("oci"))
+		Expect(completion.result).To(Equal(metrics.ResultSucceeded))
+		Expect(completion.hasDuration).To(BeTrue())
+		Expect(completion.seconds).To(Equal(90.0))
+	})
+
+	It("should record a zero length duration when start and finish share the same second", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "team-a",
+				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
+			},
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
+
+		same := metav1.NewTime(metav1.Unix(1700000000, 0).Time)
+		wf := &wfv1alpha1.Workflow{}
+		wf.Status.StartedAt = same
+		wf.Status.FinishedAt = same
+
+		completion := newCompletion(aw, wf)
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.hasDuration).To(BeTrue())
+		Expect(completion.seconds).To(Equal(0.0))
+	})
+
+	It("should not record a duration when finish precedes start", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: "team-a",
+				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
+			},
+		}
+		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
+
+		wf := &wfv1alpha1.Workflow{}
+		wf.Status.StartedAt = metav1.NewTime(metav1.Unix(1700000090, 0).Time)
+		wf.Status.FinishedAt = metav1.NewTime(metav1.Unix(1700000000, 0).Time)
+
+		completion := newCompletion(aw, wf)
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.hasDuration).To(BeFalse())
+	})
+
+	It("should record a failure without a duration when argo has no timestamps", func() {
+		aw := &arcv1alpha1.ArtifactWorkflow{ObjectMeta: metav1.ObjectMeta{Namespace: "team-a"}}
+		aw.Status.Phase = arcv1alpha1.WorkflowFailed
+
+		completion := newCompletion(aw, &wfv1alpha1.Workflow{})
+
+		Expect(completion).NotTo(BeNil())
+		Expect(completion.result).To(Equal(metrics.ResultFailed))
+		Expect(completion.artifactType).To(Equal(metrics.UnknownArtifactType))
+		Expect(completion.hasDuration).To(BeFalse())
 	})
 })

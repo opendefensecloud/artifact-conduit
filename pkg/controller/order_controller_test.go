@@ -10,6 +10,7 @@ import (
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
+	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/metrics"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -911,6 +913,14 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when artifact type does not exist", func() {
+			// A missing ArtifactType/ClusterArtifactType is the one failure in
+			// computeDesiredAW with no Event of its own, so ComputationFailed,
+			// the reason its only Event carries, is what it counts under. Every
+			// other failure there counts under its own reason and is not
+			// counted a second time by the caller.
+			counter := metrics.ReconcileErrorsCounterForTest(ControllerOrder, ReasonComputationFailed)
+			before := testutil.ToFloat64(counter)
+
 			createEndpoints("src-nonexistent", "dst-nonexistent")
 
 			// Create order referencing a non-existent artifact type
@@ -937,6 +947,11 @@ var _ = Describe("OrderController", func() {
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch ArtifactType or ClusterArtifactType"))
 
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return testutil.ToFloat64(counter) - before
+			}).Should(BeNumerically(">=", 1.0))
+
 			// Verify no artifact workflows were created
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
@@ -947,6 +962,9 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when source endpoint does not exist", func() {
+			counter := metrics.ReconcileErrorsCounterForTest(ControllerOrder, ReasonInvalidEndpoint)
+			before := testutil.ToFloat64(counter)
+
 			createEndpoints("dst-only")
 
 			// Create order referencing a non-existent source endpoint
@@ -972,6 +990,11 @@ var _ = Describe("OrderController", func() {
 				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch endpoint for source"))
+
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return testutil.ToFloat64(counter) - before
+			}).Should(BeNumerically(">=", 1.0))
 
 			// Verify no artifact workflows were created
 			Consistently(func() int {
@@ -1167,5 +1190,18 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 		})
 
+	})
+})
+
+var _ = Describe("Reconcile error reasons", func() {
+	It("should use the same strings as the events", func() {
+		Expect(ReasonInvalidEndpoint).To(Equal("InvalidEndpoint"))
+		Expect(ReasonInvalidArtifactType).To(Equal("InvalidArtifactType"))
+		Expect(ReasonInvalidSecret).To(Equal("InvalidSecret"))
+		Expect(ReasonComputationFailed).To(Equal("ComputationFailed"))
+		Expect(ReasonHydrationFailed).To(Equal("HydrationFailed"))
+		Expect(ReasonCreationFailed).To(Equal("CreationFailed"))
+		Expect(ReasonDeletionFailed).To(Equal("DeletionFailed"))
+		Expect(ReasonInvalid).To(Equal("Invalid"))
 	})
 })
