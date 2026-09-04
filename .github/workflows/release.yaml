@@ -14,6 +14,16 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-24.04
+    # go comes from the flake. cosign comes from cosign-installer on the
+    # runner PATH; nix develop inherits PATH so it remains reachable from
+    # inside the dev shell. No actions/cache here: this is a privileged
+    # signing job, so it deliberately does not share a Go cache with
+    # unprivileged workflows (cache poisoning). This replaces the previous
+    # setup-go `cache: false`.
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -21,21 +31,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Extract go version from flake.nix
-        id: get-go-version
-        run: |
-          GO_VERSION="$(sed -nE 's/^[[:space:]]*goVersion[[:space:]]*=[[:space:]]*"([0-9]+\.[0-9]+\.[0-9]+)";[[:space:]]*$/\1/p' flake.nix)"
-          if [ "$(printf '%s\n' "$GO_VERSION" | sed '/^$/d' | wc -l)" -ne 1 ]; then
-            echo "::error::Expected exactly one goVersion assignment in flake.nix"
-            exit 1
-          fi
-          echo "version=$GO_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Setup Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          go-version: ${{ steps.get-go-version.outputs.version }}
-          cache: false # privileged signing job: avoid shared cache (cache-poisoning)
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
 
       - name: Run tests
         run: make test

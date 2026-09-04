@@ -34,6 +34,13 @@ jobs:
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'ok-to-helm')) ||
       (github.event_name == 'release' && github.event.action == 'published')
 
+    # helm comes from the flake. cosign comes from cosign-installer on the
+    # runner PATH; nix develop inherits PATH so it remains reachable from
+    # inside the dev shell.
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -41,10 +48,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Helm
-        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          version: 'v4.2.4'
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
