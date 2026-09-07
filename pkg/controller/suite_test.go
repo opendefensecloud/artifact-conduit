@@ -6,6 +6,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"maps"
 	"path/filepath"
 	"testing"
 	"time"
@@ -22,6 +23,7 @@ import (
 	ctrlconfig "sigs.k8s.io/controller-runtime/pkg/config"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	metricserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -168,4 +170,29 @@ func setupClusterArtifactType(ctx context.Context) *arcv1alpha1.ClusterArtifactT
 	})
 
 	return at
+}
+
+// counterValue reads one counter series from the controller-runtime registry.
+func counterValue(name string, labels map[string]string) float64 {
+	families, err := ctrlmetrics.Registry.Gather()
+	Expect(err).NotTo(HaveOccurred())
+
+	for _, mf := range families {
+		if mf.GetName() != name {
+			continue
+		}
+
+		for _, m := range mf.GetMetric() {
+			got := map[string]string{}
+			for _, pair := range m.GetLabel() {
+				got[pair.GetName()] = pair.GetValue()
+			}
+
+			if maps.Equal(got, labels) {
+				return m.GetCounter().GetValue()
+			}
+		}
+	}
+
+	return 0
 }
