@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
-	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -125,8 +124,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		})
 
 		It("should count a missing secret under the reason its Event carries", func() {
-			counter := metrics.ReconcileErrorsCounterForTest(ControllerArtifactWorkflow, ReasonInvalidSecret)
-			before := testutil.ToFloat64(counter)
+			errLabels := map[string]string{"controller": ControllerArtifactWorkflow, "reason": ReasonInvalidSecret}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
 
 			aw := &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: metav1.ObjectMeta{
@@ -141,7 +140,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Expect(k8sClient.Create(ctx, aw)).To(Succeed())
 
 			Eventually(func() float64 {
-				return testutil.ToFloat64(counter) - before
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
 			}).Should(BeNumerically(">=", 1.0))
 
 			// The workflow must not be created from secrets that could not be read.
@@ -196,8 +195,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		})
 
 		It("should count a completion once the workflow succeeds", func() {
-			counter := metrics.CompletionsCounterForTest(ns.Name, metrics.UnknownArtifactType, metrics.ResultSucceeded)
-			before := testutil.ToFloat64(counter)
+			doneLabels := map[string]string{"namespace": ns.Name, "artifact_type": metrics.UnknownArtifactType, "result": metrics.ResultSucceeded}
+			before := counterValue("arc_artifactworkflow_completions_total", doneLabels)
 
 			awName := "count-completion"
 			aw := &arcv1alpha1.ArtifactWorkflow{
@@ -223,7 +222,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
 
 			delta := func() float64 {
-				return testutil.ToFloat64(counter) - before
+				return counterValue("arc_artifactworkflow_completions_total", doneLabels) - before
 			}
 			Eventually(delta).Should(Equal(1.0))
 			Consistently(delta).Should(Equal(1.0))

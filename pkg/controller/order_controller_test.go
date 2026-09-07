@@ -10,7 +10,6 @@ import (
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
-	"github.com/prometheus/client_golang/prometheus/testutil"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,7 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
-	"go.opendefense.cloud/arc/pkg/metrics"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -918,8 +916,8 @@ var _ = Describe("OrderController", func() {
 			// the reason its only Event carries, is what it counts under. Every
 			// other failure there counts under its own reason and is not
 			// counted a second time by the caller.
-			counter := metrics.ReconcileErrorsCounterForTest(ControllerOrder, ReasonComputationFailed)
-			before := testutil.ToFloat64(counter)
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonComputationFailed}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
 
 			createEndpoints("src-nonexistent", "dst-nonexistent")
 
@@ -949,7 +947,7 @@ var _ = Describe("OrderController", func() {
 
 			// Verify the reconcile error was counted under the matching reason
 			Eventually(func() float64 {
-				return testutil.ToFloat64(counter) - before
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
 			}).Should(BeNumerically(">=", 1.0))
 
 			// Verify no artifact workflows were created
@@ -962,8 +960,8 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when source endpoint does not exist", func() {
-			counter := metrics.ReconcileErrorsCounterForTest(ControllerOrder, ReasonInvalidEndpoint)
-			before := testutil.ToFloat64(counter)
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonInvalidEndpoint}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
 
 			createEndpoints("dst-only")
 
@@ -993,7 +991,7 @@ var _ = Describe("OrderController", func() {
 
 			// Verify the reconcile error was counted under the matching reason
 			Eventually(func() float64 {
-				return testutil.ToFloat64(counter) - before
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
 			}).Should(BeNumerically(">=", 1.0))
 
 			// Verify no artifact workflows were created
