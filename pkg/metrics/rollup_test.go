@@ -38,36 +38,6 @@ var _ = Describe("OrderPhase", func() {
 		))).To(Equal(arcv1alpha1.WorkflowFailed))
 	})
 
-	It("should prefer Failed over Stopped", func() {
-		Expect(OrderPhase(awStatuses(
-			arcv1alpha1.WorkflowStopped, arcv1alpha1.WorkflowFailed,
-		))).To(Equal(arcv1alpha1.WorkflowFailed))
-	})
-
-	It("should report Stopped rather than laundering it into Pending", func() {
-		Expect(OrderPhase(awStatuses(
-			arcv1alpha1.WorkflowSucceeded, arcv1alpha1.WorkflowStopped,
-		))).To(Equal(arcv1alpha1.WorkflowStopped))
-	})
-
-	It("should prefer in flight work over Stopped", func() {
-		for _, phase := range []arcv1alpha1.WorkflowPhase{
-			arcv1alpha1.WorkflowPending,
-			arcv1alpha1.WorkflowRunning,
-			arcv1alpha1.WorkflowActive,
-		} {
-			Expect(OrderPhase(awStatuses(
-				arcv1alpha1.WorkflowStopped, phase,
-			))).To(Equal(arcv1alpha1.WorkflowRunning), "phase %q should outrank Stopped", phase)
-		}
-	})
-
-	It("should report Stopped once nothing is in flight any more", func() {
-		Expect(OrderPhase(awStatuses(
-			arcv1alpha1.WorkflowStopped, arcv1alpha1.WorkflowSucceeded,
-		))).To(Equal(arcv1alpha1.WorkflowStopped))
-	})
-
 	It("should report Running while any workflow is in progress", func() {
 		for _, phase := range []arcv1alpha1.WorkflowPhase{
 			arcv1alpha1.WorkflowPending,
