@@ -1,5 +1,5 @@
 mkdocs-material ==9.7.7
-pymdown-extensions ==11.0.1
+pymdown-extensions ==11.0.2
 mkdocs-glightbox == 0.5.2
 mkdocs-include-markdown-plugin == 7.3.0
 mkdocs-panzoom-plugin == 0.5.2
