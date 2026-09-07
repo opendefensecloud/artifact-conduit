@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2222,7 +2222,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <li>Go linter: <code>v2.5.0</code></li>
 <li>CRD/RBAC generator: <code>v0.19.0</code></li>
 <li>Kubernetes test API server: <code>release-0.22</code></li>
-<li>K8s for integration tests: <code>1.34.1</code></li>
+<li>K8s for integration tests: see <code>ENVTEST_K8S_VERSION</code> in the <code>Makefile</code></li>
 </ul>
 <hr>
 <h2 id="codebase-organization">Codebase Organization<a class="headerlink" href="#codebase-organization" title="Permanent link">¶</a></h2>
@@ -2289,7 +2289,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <p>ARC uses a multi-layered testing strategy:</p>
 <ul>
 <li><strong>Unit Tests</strong></li>
-<li><strong>Integration Tests</strong> (uses <code>ENVTEST_K8S_VERSION=1.34.1</code>)</li>
+<li><strong>Integration Tests</strong> (envtest; K8s version pinned by <code>ENVTEST_K8S_VERSION</code> in the <code>Makefile</code>)</li>
 <li><strong>Controller Tests</strong> via envtest</li>
 <li><strong>E2E Tests</strong> using local <code>kind</code> cluster via <code>make test-e2e</code></li>
 </ul>
