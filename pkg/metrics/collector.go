@@ -96,9 +96,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 func (c *Collector) collectOrders(ctx context.Context, ch chan<- prometheus.Metric) {
 	orders := &arcv1alpha1.OrderList{}
 	if err := c.reader.List(ctx, orders); err != nil {
-		// Report the failure rather than reporting zeros. A broken collector
-		// must not look like a healthy, idle system.
-		ch <- prometheus.NewInvalidMetric(ordersDesc, err)
+		RecordCollectorError("orders")
 
 		return
 	}
@@ -119,7 +117,7 @@ func (c *Collector) collectOrders(ctx context.Context, ch chan<- prometheus.Metr
 func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.Metric) {
 	workflows := &arcv1alpha1.ArtifactWorkflowList{}
 	if err := c.reader.List(ctx, workflows); err != nil {
-		ch <- prometheus.NewInvalidMetric(workflowsDesc, err)
+		RecordCollectorError("artifactworkflows")
 
 		return
 	}

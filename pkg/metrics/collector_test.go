@@ -291,29 +291,27 @@ arc_artifactworkflow_last_success_timestamp_seconds{artifact_type="oci",namespac
 })
 
 var _ = Describe("Collector cache errors", func() {
-	It("should surface a scrape error when the Orders list fails", func() {
-		collector := NewCollector(&failingReader{failOrders: true})
-		collector.isLeader.Store(true)
+	// A failed list must count, emit nothing, and leave the scrape itself
+	// intact so the rest of the endpoint keeps serving.
+	DescribeTable("should count the failure without breaking the scrape",
+		func(reader *failingReader, resource string) {
+			collector := NewCollector(reader)
+			collector.isLeader.Store(true)
 
-		registry := prometheus.NewPedanticRegistry()
-		Expect(registry.Register(collector)).To(Succeed())
+			before := testutil.ToFloat64(collectorErrors.WithLabelValues(resource))
 
-		_, err := registry.Gather()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring(errSentinel.Error()))
-	})
+			registry := prometheus.NewPedanticRegistry()
+			Expect(registry.Register(collector)).To(Succeed())
 
-	It("should surface a scrape error when the ArtifactWorkflows list fails", func() {
-		collector := NewCollector(&failingReader{failWorkflows: true})
-		collector.isLeader.Store(true)
+			families, err := registry.Gather()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(families).To(BeEmpty())
 
-		registry := prometheus.NewPedanticRegistry()
-		Expect(registry.Register(collector)).To(Succeed())
-
-		_, err := registry.Gather()
-		Expect(err).To(HaveOccurred())
-		Expect(err.Error()).To(ContainSubstring(errSentinel.Error()))
-	})
+			Expect(testutil.ToFloat64(collectorErrors.WithLabelValues(resource)) - before).To(Equal(1.0))
+		},
+		Entry("orders", &failingReader{failOrders: true}, "orders"),
+		Entry("artifactworkflows", &failingReader{failWorkflows: true}, "artifactworkflows"),
+	)
 })
 
 var _ = Describe("Collector as a leader elected runnable", func() {

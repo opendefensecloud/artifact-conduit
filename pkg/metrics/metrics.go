@@ -40,6 +40,13 @@ var (
 		Buckets: []float64{10, 30, 60, 120, 300, 600, 1800, 3600, 7200},
 	}, []string{"artifact_type", "result"})
 
+	// Counted rather than surfaced via NewInvalidMetric, which would make
+	// promhttp answer 500 and drop every other metric in the response.
+	collectorErrors = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "arc_collector_errors_total",
+		Help: "Total cache reads that failed while collecting ARC state, by resource.",
+	}, []string{"resource"})
+
 	reconcileErrors = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "arc_reconcile_errors_total",
 		Help: "Total classified reconcile failures. The reason label matches the Kubernetes Event reason for the same failure.",
@@ -47,12 +54,11 @@ var (
 )
 
 func init() {
-	ctrlmetrics.Registry.MustRegister(completions, duration, reconcileErrors)
+	ctrlmetrics.Registry.MustRegister(completions, duration, reconcileErrors, collectorErrors)
 }
 
 // ResultFor maps a terminal ArtifactWorkflow phase onto a result label value.
-// The second return value is false for phases that are not terminal outcomes,
-// including Stopped, which is an operator action rather than a result.
+// The second return value is false for phases that are not terminal outcomes.
 func ResultFor(phase arcv1alpha1.WorkflowPhase) (string, bool) {
 	switch phase {
 	case arcv1alpha1.WorkflowSucceeded:
@@ -78,10 +84,9 @@ func ObserveDuration(artifactType, result string, seconds float64) {
 	duration.WithLabelValues(artifactType, result).Observe(seconds)
 }
 
-// CompletionsCounterForTest exposes one completions series for assertions in
-// controller tests. It is not part of the runtime API.
-func CompletionsCounterForTest(namespace, artifactType, result string) prometheus.Counter {
-	return completions.WithLabelValues(namespace, artifactType, result)
+// RecordCollectorError counts one failed cache read during collection.
+func RecordCollectorError(resource string) {
+	collectorErrors.WithLabelValues(resource).Inc()
 }
 
 // RecordReconcileError counts one classified reconcile failure. The reason must
@@ -89,10 +94,4 @@ func CompletionsCounterForTest(namespace, artifactType, result string) prometheu
 // and the Kubernetes Event always agree.
 func RecordReconcileError(controller, reason string) {
 	reconcileErrors.WithLabelValues(controller, reason).Inc()
-}
-
-// ReconcileErrorsCounterForTest exposes one reconcile error series for
-// assertions in controller tests. It is not part of the runtime API.
-func ReconcileErrorsCounterForTest(controller, reason string) prometheus.Counter {
-	return reconcileErrors.WithLabelValues(controller, reason)
 }
