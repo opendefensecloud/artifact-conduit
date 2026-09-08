@@ -28,6 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/metrics"
 )
 
 const (
@@ -146,10 +147,11 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return ctrlResult, nil
 }
 
-func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, wf *wfv1alpha1.Workflow) bool {
+func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow, wf *wfv1alpha1.Workflow) (bool, *completion) {
 	if aw.Status.Phase == arcv1alpha1.WorkflowPhase(wf.Status.Phase) {
-		return false // nothing updated
+		return false, nil // nothing updated
 	}
+
 	aw.Status.Phase = arcv1alpha1.WorkflowPhase(wf.Status.Phase)
 
 	switch aw.Status.Phase {
@@ -162,7 +164,7 @@ func (r *ArtifactWorkflowReconciler) setStatusFromWorkflow(ctx context.Context, 
 	default:
 	}
 
-	return true
+	return true, newCompletion(aw, wf)
 }
 
 func (r *ArtifactWorkflowReconciler) generateWorkflowStatusMessage(ctx context.Context, wf *wfv1alpha1.Workflow, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) {
@@ -224,7 +226,9 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	srcSecret := corev1.Secret{}
 	if aw.Spec.SrcSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.SrcSecretRef.Name), &srcSecret); err != nil {
-			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", fmt.Sprintf("Failed to fetch source secret '%s': %v", aw.Spec.SrcSecretRef.Name, err))
+			metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonInvalidSecret)
+
 			return nil, nil, fmt.Errorf("failed to fetch secret for source: %w", err)
 		}
 	}
@@ -232,7 +236,9 @@ func (r *ArtifactWorkflowReconciler) retrieveSecrets(ctx context.Context, aw *ar
 	dstSecret := corev1.Secret{}
 	if aw.Spec.DstSecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(aw.Namespace, aw.Spec.DstSecretRef.Name), &dstSecret); err != nil {
-			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			r.Recorder.Eventf(aw, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", fmt.Sprintf("Failed to fetch destination secret '%s': %v", aw.Spec.DstSecretRef.Name, err))
+			metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonInvalidSecret)
+
 			return nil, nil, fmt.Errorf("failed to fetch secret for destination: %w", err)
 		}
 	}

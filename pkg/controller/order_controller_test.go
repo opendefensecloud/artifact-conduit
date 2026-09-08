@@ -911,6 +911,14 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when artifact type does not exist", func() {
+			// A missing ArtifactType/ClusterArtifactType is the one failure in
+			// computeDesiredAW with no Event of its own, so ComputationFailed,
+			// the reason its only Event carries, is what it counts under. Every
+			// other failure there counts under its own reason and is not
+			// counted a second time by the caller.
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonComputationFailed}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
+
 			createEndpoints("src-nonexistent", "dst-nonexistent")
 
 			// Create order referencing a non-existent artifact type
@@ -937,6 +945,11 @@ var _ = Describe("OrderController", func() {
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch ArtifactType or ClusterArtifactType"))
 
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
+			}).Should(BeNumerically(">=", 1.0))
+
 			// Verify no artifact workflows were created
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
@@ -947,6 +960,9 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when source endpoint does not exist", func() {
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonInvalidEndpoint}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
+
 			createEndpoints("dst-only")
 
 			// Create order referencing a non-existent source endpoint
@@ -972,6 +988,11 @@ var _ = Describe("OrderController", func() {
 				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch endpoint for source"))
+
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
+			}).Should(BeNumerically(">=", 1.0))
 
 			// Verify no artifact workflows were created
 			Consistently(func() int {
@@ -1167,5 +1188,18 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 		})
 
+	})
+})
+
+var _ = Describe("Reconcile error reasons", func() {
+	It("should use the same strings as the events", func() {
+		Expect(ReasonInvalidEndpoint).To(Equal("InvalidEndpoint"))
+		Expect(ReasonInvalidArtifactType).To(Equal("InvalidArtifactType"))
+		Expect(ReasonInvalidSecret).To(Equal("InvalidSecret"))
+		Expect(ReasonComputationFailed).To(Equal("ComputationFailed"))
+		Expect(ReasonHydrationFailed).To(Equal("HydrationFailed"))
+		Expect(ReasonCreationFailed).To(Equal("CreationFailed"))
+		Expect(ReasonDeletionFailed).To(Equal("DeletionFailed"))
+		Expect(ReasonInvalid).To(Equal("Invalid"))
 	})
 })

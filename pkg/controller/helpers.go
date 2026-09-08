@@ -6,6 +6,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 	"time"
@@ -13,6 +14,7 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 )
@@ -37,12 +39,29 @@ func cloneObjectMeta(meta metav1.ObjectMeta, name string) metav1.ObjectMeta {
 	return metav1.ObjectMeta{
 		Namespace: meta.Namespace,
 		Name:      name,
-		Labels:    meta.Labels,
+		Labels:    maps.Clone(meta.Labels),
 	}
 }
 
-func awObjectMeta(order *arcv1alpha1.Order, sha string) metav1.ObjectMeta {
-	return cloneObjectMeta(order.ObjectMeta, awName(order, sha))
+func awObjectMeta(order *arcv1alpha1.Order, sha, artifactType string) metav1.ObjectMeta {
+	meta := cloneObjectMeta(order.ObjectMeta, awName(order, sha))
+
+	// Nothing validates OrderArtifact.Type against the 63 character label value
+	// limit, and an invalid value would make every create of this
+	// ArtifactWorkflow fail permanently. Leaving the label off keeps the
+	// workflow creatable and reports it as artifact_type="unknown". Truncating
+	// would report a wrong type instead of a missing one.
+	if len(validation.IsValidLabelValue(artifactType)) > 0 {
+		delete(meta.Labels, arcv1alpha1.LabelArtifactType)
+		return meta
+	}
+
+	if meta.Labels == nil {
+		meta.Labels = map[string]string{}
+	}
+	meta.Labels[arcv1alpha1.LabelArtifactType] = artifactType
+
+	return meta
 }
 
 func workflowObjectMeta(aw *arcv1alpha1.ArtifactWorkflow) metav1.ObjectMeta {
