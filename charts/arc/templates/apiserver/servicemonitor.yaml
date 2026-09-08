@@ -10,6 +10,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  targetLabels:
+    - app.kubernetes.io/part-of
+    - app.kubernetes.io/component
   selector:
     matchLabels:
       {{- include "arc.apiserver.selectorLabels" . | nindent 6 }}
