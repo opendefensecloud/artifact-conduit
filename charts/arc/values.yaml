@@ -104,9 +104,10 @@ apiserver:
       additionalLabels: {}
 
       tlsConfig:
-        # -- Skip verification of the API Server certificate. Set false and fill in
-        # caSecret and serverName to verify against the cert-manager issued CA.
-        insecureSkipVerify: true
+        # -- Skip verification of the API Server certificate. Off by default, the
+        # scrape verifies against the cert-manager issued CA and the service DNS
+        # name below. Only set this true if you run without cert-manager.
+        insecureSkipVerify: false
         caSecret:
           # -- Secret holding the CA bundle, defaults to the chart's certificate Secret
           name: ""

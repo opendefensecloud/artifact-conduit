@@ -24,6 +24,9 @@ spec:
         {{- if .Values.apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify }}
         insecureSkipVerify: true
         {{- else }}
+        {{- if and (not .Values.certManager.enabled) (not .Values.apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name) }}
+        {{- fail "apiserver.metrics.serviceMonitor: certificate verification needs a CA. Enable certManager, or set tlsConfig.caSecret.name, or set tlsConfig.insecureSkipVerify=true." }}
+        {{- end }}
         insecureSkipVerify: false
         serverName: {{ .Values.apiserver.metrics.serviceMonitor.tlsConfig.serverName | default (printf "%s.%s.svc" (include "arc.apiserver.serviceName" .) (include "arc.namespace" .)) }}
         ca:

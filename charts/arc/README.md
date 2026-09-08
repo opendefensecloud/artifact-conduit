@@ -314,7 +314,7 @@ If you're currently using Kustomize to deploy ARC:
 | apiserver.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
 | apiserver.metrics.serviceMonitor.tlsConfig.caSecret.key | string | `"ca.crt"` | Key within that Secret |
 | apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name | string | `""` | Secret holding the CA bundle, defaults to the chart's certificate Secret |
-| apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify | bool | `true` | Skip verification of the API Server certificate. Set false and fill in caSecret and serverName to verify against the cert-manager issued CA. |
+| apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify | bool | `false` | Skip verification of the API Server certificate. Off by default, the scrape verifies against the cert-manager issued CA and the service DNS name below. Only set this true if you run without cert-manager. |
 | apiserver.metrics.serviceMonitor.tlsConfig.serverName | string | `""` | Expected server name, defaults to the API Server service DNS name |
 | apiserver.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |
 | apiserver.metrics.serviceMonitor.tokenSecret.name | string | `""` | Name of the Secret containing the scrape bearer token |
