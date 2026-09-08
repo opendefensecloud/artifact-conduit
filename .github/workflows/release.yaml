@@ -6,14 +6,16 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
-  id-token: write # for keyless cosign sign-blob
-  attestations: write # for build-provenance attestation
+  contents: read
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write # for keyless cosign sign-blob
+      attestations: write # for build-provenance attestation
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
