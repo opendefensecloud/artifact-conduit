@@ -354,7 +354,7 @@ If you're currently using Kustomize to deploy ARC:
 | controller.args.enableHTTP2 | bool | `false` | Enable HTTP/2 for metrics server |
 | controller.args.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | controller.args.leaderElect | bool | `false` | Enable leader election (set to true for HA) |
-| controller.args.metricsBindAddress | string | `"0"` | Metrics bind address (set to "0" to disable, ":8443" for HTTPS) |
+| controller.args.metricsBindAddress | string | `":8443"` | Metrics bind address. Only used when controller.metrics.enabled is true, the deployment passes 0 otherwise, so this is the port rather than a switch. |
 | controller.args.metricsSecure | bool | `true` | Serve metrics securely via HTTPS |
 | controller.args.pprofBindAddress | string | `""` | Pprof bind address (empty to disable) |
 | controller.command | list | `["/arc-controller-manager"]` | Command to run in the container |
