@@ -88,7 +88,7 @@ apiserver:
     annotations: {}
 
   # Metrics configuration. The API Server always serves /metrics on its secure
-  # port; these settings only control whether Prometheus scrapes it.
+  # port, these settings only control whether Prometheus scrapes it.
   metrics:
     # ServiceMonitor for Prometheus Operator
     serviceMonitor:
@@ -108,11 +108,11 @@ apiserver:
         # caSecret and serverName to verify against the cert-manager issued CA.
         insecureSkipVerify: true
         caSecret:
-          # -- Secret holding the CA bundle; defaults to the chart's certificate Secret
+          # -- Secret holding the CA bundle, defaults to the chart's certificate Secret
           name: ""
           # -- Key within that Secret
           key: ca.crt
-        # -- Expected server name; defaults to the API Server service DNS name
+        # -- Expected server name, defaults to the API Server service DNS name
         serverName: ""
 
       # Bearer token for the scrape. The API Server enforces authn/authz on
@@ -283,7 +283,7 @@ controller:
       # -- Scrape timeout
       scrapeTimeout: 10s
       # -- Keep the target's own metric labels. ARC's `namespace` label names the
-      # Order's namespace; without this Prometheus renames it to `exported_namespace`.
+      # Order's namespace. Without this Prometheus renames it to `exported_namespace`.
       honorLabels: true
       # -- Additional labels for ServiceMonitor
       additionalLabels: {}

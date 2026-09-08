@@ -10,4 +10,22 @@ rules:
       - "/metrics"
     verbs:
       - get
+---
+# A scrape hits the Service directly rather than going through the aggregation
+# layer, so the API Server has to authenticate the bearer token itself.
+# system:auth-delegator grants the TokenReview and SubjectAccessReview it needs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "arc.apiserver.fullname" . }}-metrics-auth-delegator
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "arc.apiserver.serviceAccountName" . }}
+    namespace: {{ include "arc.namespace" . }}
 {{- end }}
