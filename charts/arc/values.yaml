@@ -87,6 +87,43 @@ apiserver:
     # -- Service annotations
     annotations: {}
 
+  # Metrics configuration. The API Server always serves /metrics on its secure
+  # port; these settings only control whether Prometheus scrapes it.
+  metrics:
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      # -- Enable ServiceMonitor for the API Server
+      enabled: false
+      # -- Scrape interval
+      interval: 30s
+      # -- Scrape timeout
+      scrapeTimeout: 10s
+      # -- Keep the target's own metric labels rather than letting Prometheus rename them
+      honorLabels: true
+      # -- Additional labels for ServiceMonitor
+      additionalLabels: {}
+
+      tlsConfig:
+        # -- Skip verification of the API Server certificate. Set false and fill in
+        # caSecret and serverName to verify against the cert-manager issued CA.
+        insecureSkipVerify: true
+        caSecret:
+          # -- Secret holding the CA bundle; defaults to the chart's certificate Secret
+          name: ""
+          # -- Key within that Secret
+          key: ca.crt
+        # -- Expected server name; defaults to the API Server service DNS name
+        serverName: ""
+
+      # Bearer token for the scrape. The API Server enforces authn/authz on
+      # /metrics, so reference a Secret in the release namespace holding a token
+      # for an identity bound to the {release name}-apiserver-metrics-reader ClusterRole.
+      tokenSecret:
+        # -- Name of the Secret containing the scrape bearer token
+        name: ""
+        # -- Key within the Secret that holds the token
+        key: token
+
   # -- Resource limits and requests
   resources:
     limits:
@@ -245,6 +282,9 @@ controller:
       interval: 30s
       # -- Scrape timeout
       scrapeTimeout: 10s
+      # -- Keep the target's own metric labels. ARC's `namespace` label names the
+      # Order's namespace; without this Prometheus renames it to `exported_namespace`.
+      honorLabels: true
       # -- Additional labels for ServiceMonitor
       additionalLabels: {}
 

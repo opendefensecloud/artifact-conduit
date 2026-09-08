@@ -34,6 +34,7 @@ spec:
     - port: http
       scheme: http
     {{- end }}
+      honorLabels: {{ .Values.controller.metrics.serviceMonitor.honorLabels }}
       interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
       scrapeTimeout: {{ .Values.controller.metrics.serviceMonitor.scrapeTimeout }}
 {{- end }}
