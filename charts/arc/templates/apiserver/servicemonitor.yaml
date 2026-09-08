@@ -1,0 +1,44 @@
+{{- if and .Values.apiserver.enabled .Values.apiserver.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "arc.apiserver.fullname" . }}
+  namespace: {{ include "arc.namespace" . }}
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+    {{- with .Values.apiserver.metrics.serviceMonitor.additionalLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "arc.apiserver.selectorLabels" . | nindent 6 }}
+  endpoints:
+    # The API Server serves /metrics on its secure port and enforces authn/authz,
+    # so the scrape identity needs GET /metrics via the
+    # {release name}-apiserver-metrics-reader ClusterRole.
+    - port: https
+      scheme: https
+      path: /metrics
+      tlsConfig:
+        {{- if .Values.apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify }}
+        insecureSkipVerify: true
+        {{- else }}
+        insecureSkipVerify: false
+        serverName: {{ .Values.apiserver.metrics.serviceMonitor.tlsConfig.serverName | default (printf "%s.%s.svc" (include "arc.apiserver.serviceName" .) (include "arc.namespace" .)) }}
+        ca:
+          secret:
+            name: {{ .Values.apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name | default (include "arc.certManager.certificateSecretName" .) }}
+            key: {{ .Values.apiserver.metrics.serviceMonitor.tlsConfig.caSecret.key }}
+        {{- end }}
+      {{- with .Values.apiserver.metrics.serviceMonitor.tokenSecret.name }}
+      authorization:
+        type: Bearer
+        credentials:
+          name: {{ . }}
+          key: {{ $.Values.apiserver.metrics.serviceMonitor.tokenSecret.key }}
+      {{- end }}
+      honorLabels: {{ .Values.apiserver.metrics.serviceMonitor.honorLabels }}
+      interval: {{ .Values.apiserver.metrics.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.apiserver.metrics.serviceMonitor.scrapeTimeout }}
+{{- end }}

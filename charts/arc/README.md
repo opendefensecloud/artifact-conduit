@@ -307,6 +307,17 @@ If you're currently using Kustomize to deploy ARC:
 | apiserver.image.tag | string | `""` | API Server image tag (defaults to chart appVersion if not set) |
 | apiserver.imagePullSecrets | list | `[]` | Image pull secrets for API Server |
 | apiserver.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8443,"scheme":"HTTPS"},"initialDelaySeconds":20,"periodSeconds":20}` | Liveness probe configuration |
+| apiserver.metrics.serviceMonitor.additionalLabels | object | `{}` | Additional labels for ServiceMonitor |
+| apiserver.metrics.serviceMonitor.enabled | bool | `false` | Enable ServiceMonitor for the API Server |
+| apiserver.metrics.serviceMonitor.honorLabels | bool | `true` | Keep the target's own metric labels rather than letting Prometheus rename them |
+| apiserver.metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
+| apiserver.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
+| apiserver.metrics.serviceMonitor.tlsConfig.caSecret.key | string | `"ca.crt"` | Key within that Secret |
+| apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name | string | `""` | Secret holding the CA bundle; defaults to the chart's certificate Secret |
+| apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify | bool | `true` | Skip verification of the API Server certificate. Set false and fill in caSecret and serverName to verify against the cert-manager issued CA. |
+| apiserver.metrics.serviceMonitor.tlsConfig.serverName | string | `""` | Expected server name; defaults to the API Server service DNS name |
+| apiserver.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |
+| apiserver.metrics.serviceMonitor.tokenSecret.name | string | `""` | Name of the Secret containing the scrape bearer token |
 | apiserver.nameOverride | string | `""` | Override API Server name |
 | apiserver.nodeSelector | object | `{}` | Node selector for pod assignment |
 | apiserver.podAnnotations | object | `{}` | Pod annotations |
@@ -370,6 +381,7 @@ If you're currently using Kustomize to deploy ARC:
 | controller.metrics.service.type | string | `"ClusterIP"` | Metrics service type |
 | controller.metrics.serviceMonitor.additionalLabels | object | `{}` | Additional labels for ServiceMonitor |
 | controller.metrics.serviceMonitor.enabled | bool | `false` | Enable ServiceMonitor |
+| controller.metrics.serviceMonitor.honorLabels | bool | `true` | Keep the target's own metric labels. ARC's `namespace` label names the Order's namespace; without this Prometheus renames it to `exported_namespace`. |
 | controller.metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
 | controller.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
 | controller.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |

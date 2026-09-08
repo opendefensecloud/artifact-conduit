@@ -1,0 +1,13 @@
+{{- if and .Values.apiserver.enabled .Values.apiserver.metrics.serviceMonitor.enabled .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "arc.apiserver.fullname" . }}-metrics-reader
+  labels:
+    {{- include "arc.apiserver.labels" . | nindent 4 }}
+rules:
+  - nonResourceURLs:
+      - "/metrics"
+    verbs:
+      - get
+{{- end }}
