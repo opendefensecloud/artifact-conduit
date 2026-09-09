@@ -48,19 +48,23 @@ jobs:
         with:
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
-      # actions/setup-go used to warm GOMODCACHE / GOCACHE for us. Nix
-      # provides the toolchain but not those caches, so restore them
+      # actions/setup-go used to warm GOMODCACHE / GOCACHE for us, and
+      # golangci-lint-action kept golangci-lint's own analysis cache. Nix
+      # provides the toolchain but neither cache, so restore all three
       # explicitly. The key is trust-scoped (pr/trusted) so a pull request
-      # cannot poison the cache used by builds of trusted refs.
-      - name: Cache Go module + build caches
+      # cannot poison the cache used by builds of trusted refs, and it covers
+      # tools.lock / .golangci.yml because a golangci-lint version or config
+      # change invalidates its analysis results.
+      - name: Cache Go module, build and lint caches
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-${{ github.sha }}
+            ~/.cache/golangci-lint
+          key: go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum', 'tools.lock', '.golangci.yml') }}-${{ github.sha }}
           restore-keys: |
-            go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum') }}-
+            go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-${{ hashFiles('go.sum', 'tools.lock', '.golangci.yml') }}-
             go-cache-lint-${{ github.event_name == 'pull_request' && 'pr' || 'trusted' }}-
       - name: lint
         run: make lint
