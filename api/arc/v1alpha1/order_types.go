@@ -46,6 +46,15 @@ type OrderSpec struct {
 	Defaults OrderDefaults `json:"defaults,omitempty"`
 	// Artifacts lists all artifacts, that will be processed by this Order.
 	Artifacts []OrderArtifact `json:"artifacts,omitempty"`
+	// TTL specifies how long the Order is retained after its creation. Once the
+	// duration has elapsed since the Order's creationTimestamp, the Order is
+	// automatically deleted (garbage collected) together with the artifact
+	// workflows it created. The TTL is measured from creation regardless of
+	// workflow progress: if it elapses while an artifact workflow is still
+	// pending or running, that workflow is deleted mid-execution, interrupting
+	// the in-flight transfer. If unset, the Order is retained indefinitely.
+	// +optional
+	TTL *metav1.Duration `json:"ttl,omitempty"`
 }
 
 // OrderStatus defines the observed state of Order

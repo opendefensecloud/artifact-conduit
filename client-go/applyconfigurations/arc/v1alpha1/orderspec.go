@@ -5,6 +5,10 @@
 
 package v1alpha1
 
+import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 // OrderSpecApplyConfiguration represents a declarative configuration of the OrderSpec type for use
 // with apply.
 //
@@ -14,6 +18,14 @@ type OrderSpecApplyConfiguration struct {
 	Defaults *OrderDefaultsApplyConfiguration `json:"defaults,omitempty"`
 	// Artifacts lists all artifacts, that will be processed by this Order.
 	Artifacts []OrderArtifactApplyConfiguration `json:"artifacts,omitempty"`
+	// TTL specifies how long the Order is retained after its creation. Once the
+	// duration has elapsed since the Order's creationTimestamp, the Order is
+	// automatically deleted (garbage collected) together with the artifact
+	// workflows it created. The TTL is measured from creation regardless of
+	// workflow progress: if it elapses while an artifact workflow is still
+	// pending or running, that workflow is deleted mid-execution, interrupting
+	// the in-flight transfer. If unset, the Order is retained indefinitely.
+	TTL *v1.Duration `json:"ttl,omitempty"`
 }
 
 // OrderSpecApplyConfiguration constructs a declarative configuration of the OrderSpec type for use with
@@ -40,5 +52,13 @@ func (b *OrderSpecApplyConfiguration) WithArtifacts(values ...*OrderArtifactAppl
 		}
 		b.Artifacts = append(b.Artifacts, *values[i])
 	}
+	return b
+}
+
+// WithTTL sets the TTL field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the TTL field is set to the value of the last call.
+func (b *OrderSpecApplyConfiguration) WithTTL(value v1.Duration) *OrderSpecApplyConfiguration {
+	b.TTL = &value
 	return b
 }

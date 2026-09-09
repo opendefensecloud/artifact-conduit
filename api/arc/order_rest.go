@@ -90,6 +90,10 @@ func validateOrder(o *Order) field.ErrorList {
 		}
 	}
 
+	if o.Spec.TTL != nil && o.Spec.TTL.Duration < 0 {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "ttl"), o.Spec.TTL.Duration.String(), "ttl must not be negative"))
+	}
+
 	return allErrs
 }
 

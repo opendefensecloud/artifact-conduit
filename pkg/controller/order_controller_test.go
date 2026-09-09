@@ -12,6 +12,7 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -348,6 +349,64 @@ var _ = Describe("OrderController", func() {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
 			}).Should(Equal(0))
+		})
+
+		It("should garbage collect the order once its TTL has elapsed", func() {
+			createEndpoints("src-1", "dst-1")
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-ttl",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					TTL: &metav1.Duration{Duration: 3 * time.Second},
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// Once the TTL elapses, the order should be garbage collected together
+			// with the artifact workflows it created.
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				return apierrors.IsNotFound(err)
+			}).Should(BeTrue())
+
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		It("should not garbage collect an order before its TTL has elapsed", func() {
+			createEndpoints("src-1", "dst-1")
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-ttl-not-expired",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					TTL: &metav1.Duration{Duration: time.Hour},
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// The order should still be present after some reconciles since its TTL is far in the future.
+			Consistently(func() error {
+				return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+			}).Should(Succeed())
 		})
 
 		It("should delete artifact workflows when order is completed successfully", func() {
