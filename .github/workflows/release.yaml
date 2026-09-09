@@ -74,7 +74,11 @@ jobs:
         #   --bundle arc-<tag>.intoto.jsonl
         env:
           BUNDLE: ${{ steps.attest.outputs.bundle-path }}
-        run: cp "${BUNDLE}" "bin/arc-${GITHUB_REF_NAME}.intoto.jsonl"
+        run: |
+          # Tags may legally contain '/', which would turn the asset name into a
+          # path under a directory that does not exist and fail the release job.
+          asset_tag="${GITHUB_REF_NAME//\//-}"
+          cp "${BUNDLE}" "bin/arc-${asset_tag}.intoto.jsonl"
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
