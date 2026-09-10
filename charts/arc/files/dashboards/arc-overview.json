@@ -627,7 +627,7 @@
     {
       "type": "table",
       "title": "Top failing artifact types",
-      "description": "Non successful completions over 15m, worst first. Empty is the healthy state.",
+      "description": "Count of non successful completions in the last 15m, worst first. Empty is the healthy state.",
       "id": 11,
       "datasource": {
         "type": "prometheus",
@@ -646,7 +646,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "topk(5, sum by (artifact_type) (rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result!=\"succeeded\"}[15m])))",
+          "expr": "topk(5, sum by (artifact_type) (increase(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result!=\"succeeded\"}[15m])))",
           "instant": true,
           "format": "table",
           "editorMode": "code"
@@ -654,7 +654,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "short",
           "custom": {
             "align": "auto",
             "cellOptions": {
