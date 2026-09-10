@@ -39,6 +39,66 @@ The Endpoint can be used as both a source and a destination. This is the most fl
 
 **Use Case**: Internal registries that serve as intermediate storage or cache layers.
 
+### Status
+
+An `Endpoint` reports what ARC has observed about it in `status.conditions`.
+
+| Condition | Meaning |
+| --- | --- |
+| `Validated` | The referenced `Secret` exists and the `Endpoint`'s type is accepted by some `ArtifactType` or `ClusterArtifactType` in a position its usage allows. |
+| `Reachable` | The target answered. Any HTTP response counts, including `401` — the point of this condition is that something is listening. |
+| `Authenticated` | The credentials were accepted. |
+| `Ready` | A summary of the others, and the column `kubectl get endpoints.arc.opendefense.cloud` prints. |
+
+`Authenticated` is `Unknown` rather than `False` when ARC cannot verify
+credentials of that shape — an S3 `Secret` holding `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY`, for example. `Unknown` does not prevent an `Endpoint`
+from becoming `Ready`: it records that ARC did not check, not that the check
+failed.
+
+```console
+$ kubectl get endpoints.arc.opendefense.cloud
+NAME       CREATED AT   REMOTE URL           USAGE      SECRET       READY   MESSAGE
+registry   2d           gcr.io               PullOnly   gcr-creds    True
+mirror     5h           https://zot.local    PushOnly   zot-creds    False   credentials rejected (401)
+```
+
+#### When ARC probes
+
+The connection test runs when there is a reason to believe the answer changed:
+on creation, when `spec` changes, and when the referenced `Secret` changes.
+There is no periodic re-probe, so an `Endpoint` nobody touches produces no
+outbound traffic.
+
+To re-check on demand, set the force annotation to the current Unix timestamp:
+
+```console
+$ kubectl annotate endpoints.arc.opendefense.cloud registry \
+    arc.opendefense.cloud/force-at="$(date +%s)" --overwrite
+```
+
+#### What Ready does not promise
+
+The probe runs from ARC's controller-manager, using its network position and
+its identity. The workflow pods that carry out an `Order` run under a different
+ServiceAccount and may be subject to different egress rules. `Ready=True` is
+therefore strong evidence that an `Order` will succeed, not a guarantee of it.
+
+Operators should also note that the probe connects to a URL supplied by the
+consumer. ARC refuses loopback and link-local addresses by default — configurable
+with the controller-manager's `--probe-deny-cidrs` flag — but a NetworkPolicy on
+the controller-manager Deployment is the boundary to rely on.
+
+The probe also reads the `username`/`password` keys of the `Secret` an
+`Endpoint` references and sends them as Basic auth to the `remoteURL` the
+`Endpoint` names — both chosen by whoever created the `Endpoint`. `create` on
+`endpoints.arc.opendefense.cloud` must therefore be treated as equivalent to
+`get` on `Secrets` in the same namespace: anyone who can create an `Endpoint`
+can point it at a server they control and have that Secret's credentials
+delivered to it. RBAC that grants `Endpoint` creation without also granting
+Secret read is not a safe boundary. Egress `NetworkPolicy` on the
+controller-manager is the control for where those credentials may travel.
+
 ## The `ClusterArtifactType` and `ArtifactType`
 
 The `[Cluster]ArtifactType` resource defines artifact processing capabilities within ARC by:

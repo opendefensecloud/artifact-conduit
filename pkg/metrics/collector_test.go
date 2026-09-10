@@ -75,6 +75,25 @@ func aw(namespace, name, artifactType string, cron bool, phase arcv1alpha1.Workf
 	return obj
 }
 
+// endpoint builds an Endpoint carrying the given Ready condition status. An
+// empty status means the condition is absent, as it is before the controller
+// has first observed the object.
+func endpoint(namespace, name string, ready metav1.ConditionStatus) *arcv1alpha1.Endpoint {
+	obj := &arcv1alpha1.Endpoint{
+		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: name},
+	}
+	if ready != "" {
+		obj.Status.Conditions = []metav1.Condition{{
+			Type:               arcv1alpha1.EndpointConditionReady,
+			Status:             ready,
+			Reason:             "Test",
+			LastTransitionTime: metav1.Now(),
+		}}
+	}
+
+	return obj
+}
+
 // cronWorkflow builds a cron ArtifactWorkflow that has already run, so both
 // freshness timestamps are populated.
 func cronWorkflow(namespace, name, artifactType string, scheduled, completed int64) *arcv1alpha1.ArtifactWorkflow {
@@ -261,6 +280,28 @@ arc_artifactworkflow_last_success_timestamp_seconds{artifact_type="oci",namespac
 `
 		Expect(testutil.CollectAndCompare(collector, strings.NewReader(expectedSuccess),
 			"arc_artifactworkflow_last_success_timestamp_seconds")).To(Succeed())
+	})
+
+	It("should count endpoints by namespace and readiness", func() {
+		client := fake.NewClientBuilder().WithScheme(newScheme()).WithObjects(
+			endpoint("team-a", "ready-one", metav1.ConditionTrue),
+			endpoint("team-a", "ready-two", metav1.ConditionTrue),
+			endpoint("team-a", "broken", metav1.ConditionFalse),
+			endpoint("team-b", "fresh", ""),
+		).Build()
+
+		collector := NewCollector(client)
+		collector.isLeader.Store(true)
+
+		expected := `
+# HELP arc_endpoints Number of Endpoints currently in each readiness state. This is a current state count, not a cumulative total.
+# TYPE arc_endpoints gauge
+arc_endpoints{namespace="team-a",ready="false"} 1
+arc_endpoints{namespace="team-a",ready="true"} 2
+arc_endpoints{namespace="team-b",ready="unknown"} 1
+`
+
+		Expect(testutil.CollectAndCompare(collector, strings.NewReader(expected), "arc_endpoints")).To(Succeed())
 	})
 
 	It("should gather cleanly with cron workflows sharing a namespace and type", func() {
