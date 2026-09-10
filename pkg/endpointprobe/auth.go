@@ -130,7 +130,7 @@ func (p *Prober) bearerHop(ctx context.Context, challenge string, t Target, prim
 	resp, err := p.do(ctx, http.MethodGet, u.String(), t)
 	if err != nil {
 		return Check{metav1.ConditionUnknown, ReasonInconclusive,
-			fmt.Sprintf("could not reach the token service: %v", err)}
+			fmt.Sprintf("could not reach the token service: %v", truncate(err.Error(), messageTruncateLimit))}
 	}
 	defer drainAndClose(resp)
 

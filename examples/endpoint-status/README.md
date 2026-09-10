@@ -13,8 +13,12 @@ $ kubectl get endpoints.arc.opendefense.cloud -n endpoint-status-demo
 Note the fully-qualified resource name. Plain `kubectl get endpoints` resolves
 to **core/v1 Endpoints**, which is a different resource entirely.
 
-Give the controller a few seconds. The probes have a 5s timeout each and the
-DNS-failure case has to time out before it reports.
+Give the controller a few seconds. Each probe is bounded by a 5s timeout, so a
+result can take up to that long to appear, an unreachable host that neither
+answers nor refuses is what actually consumes the budget. Most cases resolve far
+faster: `dns-failure` uses a `.invalid` name, which RFC 6761 reserves and
+resolvers answer with an immediate NXDOMAIN, and `target-denied` is refused at
+dial time without any network call at all.
 
 To force a re-probe:
 
