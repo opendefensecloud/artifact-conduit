@@ -1,7 +1,7 @@
 {
   "uid": "arc-overview",
   "title": "ARC / Overview",
-  "description": "Reference dashboard for Artifact Conduit. Health and throughput of the API Server and the controller manager. Shipped with the ARC Helm chart as a starting point, not a finished observability product.",
+  "description": "Reference dashboard for Artifact Conduit. Is ARC up, and is work getting through. Shipped with the ARC Helm chart as a starting point, not a finished observability product.",
   "tags": [
     "arc",
     "artifact-conduit"
@@ -86,7 +86,7 @@
     {
       "type": "stat",
       "title": "Components up",
-      "description": "Scrape targets reporting up, across the API Server and the controller manager. Two on a default install.",
+      "description": "Scrape targets reporting up. Two on a default install, the API Server and the controller manager.",
       "id": 2,
       "datasource": {
         "type": "prometheus",
@@ -151,8 +151,8 @@
     },
     {
       "type": "stat",
-      "title": "Leader",
-      "description": "1 when this replica holds the lease. Only present when controller.args.leaderElect is on, which the chart leaves off by default, so an empty panel on a single replica install is expected.",
+      "title": "API Server 5xx ratio",
+      "description": "Server errors as a share of all ARC API Server requests over 5m. Filtered to ARC, the control plane API Server emits the same metric names.",
       "id": 3,
       "datasource": {
         "type": "prometheus",
@@ -162,72 +162,6 @@
         "h": 4,
         "w": 5,
         "x": 5,
-        "y": 1
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "max(leader_election_master_status{name=\"arc.opendefense.cloud\"})",
-          "legendFormat": "",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      }
-    },
-    {
-      "type": "stat",
-      "title": "API Server 5xx ratio",
-      "description": "Server errors as a share of all ARC API Server requests over 5m. Filtered to ARC, the control plane API Server emits the same metric names.",
-      "id": 4,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 10,
         "y": 1
       },
       "targets": [
@@ -289,7 +223,7 @@
       "type": "stat",
       "title": "API Server p99",
       "description": "99th percentile request latency of the ARC API Server over 5m.",
-      "id": 5,
+      "id": 4,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -297,7 +231,7 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 15,
+        "x": 10,
         "y": 1
       },
       "targets": [
@@ -357,8 +291,78 @@
     },
     {
       "type": "stat",
+      "title": "Queued items",
+      "description": "Items waiting in ARC's reconcile queues. Sustained growth means the controller is falling behind.",
+      "id": 5,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 15,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "sum(workqueue_depth{app_kubernetes_io_part_of=\"arc\"}) or vector(0)",
+          "legendFormat": "",
+          "range": true,
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2,
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      }
+    },
+    {
+      "type": "stat",
       "title": "Collector errors",
-      "description": "Cache reads that failed while collecting ARC state. Non zero means the gauges below are stale or missing, not that ARC is idle.",
+      "description": "Cache reads that failed while collecting ARC state. Non zero means the panels below are stale or missing, not that ARC is idle.",
       "id": 6,
       "datasource": {
         "type": "prometheus",
@@ -465,20 +469,20 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "lineWidth": 2,
             "fillOpacity": 15,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
+            "axisSoftMin": 0,
             "stacking": {
               "mode": "normal",
               "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
+            }
           }
         },
         "overrides": []
@@ -499,7 +503,7 @@
     {
       "type": "timeseries",
       "title": "ArtifactWorkflows by phase",
-      "description": "Workflows grouped by the phase ARC mirrors from Argo. Unknown is a freshly created workflow that has not started.",
+      "description": "Workflows grouped by the phase ARC mirrors from Argo. Unknown is a freshly created workflow that has not started yet.",
       "id": 9,
       "datasource": {
         "type": "prometheus",
@@ -527,20 +531,20 @@
       "fieldConfig": {
         "defaults": {
           "unit": "short",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "lineWidth": 2,
             "fillOpacity": 15,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
+            "axisSoftMin": 0,
             "stacking": {
               "mode": "normal",
               "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
+            }
           }
         },
         "overrides": []
@@ -561,14 +565,14 @@
     {
       "type": "stat",
       "title": "Success ratio 5m",
-      "description": "Share of single run workflows completing successfully. Cron workflows are not counted here, see the freshness panel.",
+      "description": "Share of single run workflows completing successfully. Cron workflows are not counted here, see the freshness table. Blank until something has completed.",
       "id": 10,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 6,
         "x": 0,
         "y": 13
@@ -630,15 +634,15 @@
     },
     {
       "type": "timeseries",
-      "title": "Completion rate by result",
-      "description": "Single run workflows reaching a terminal phase, per second.",
+      "title": "Duration p99 by artifact type",
+      "description": "Argo execution time of single run workflows, 99th percentile. This metric carries no namespace label, so it ignores the namespace variable while its neighbours honour it.",
       "id": 11,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 9,
         "x": 6,
         "y": 13
@@ -650,92 +654,8 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (result) (rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"}[$__rate_interval]))",
-          "legendFormat": "{{result}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ops",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Duration by artifact type",
-      "description": "Argo execution time of single run workflows. This metric carries no namespace label, so these three series ignore the namespace variable while the panels around them honour it.",
-      "id": 12,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 15,
-        "y": 13
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "histogram_quantile(0.50, sum by (le, artifact_type) (rate(arc_artifactworkflow_duration_seconds_bucket{artifact_type=~\"$artifact_type\"}[$__rate_interval])))",
-          "legendFormat": "p50 {{artifact_type}}",
-          "range": true,
-          "editorMode": "code"
-        },
-        {
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "histogram_quantile(0.90, sum by (le, artifact_type) (rate(arc_artifactworkflow_duration_seconds_bucket{artifact_type=~\"$artifact_type\"}[$__rate_interval])))",
-          "legendFormat": "p90 {{artifact_type}}",
-          "range": true,
-          "editorMode": "code"
-        },
-        {
-          "refId": "C",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
           "expr": "histogram_quantile(0.99, sum by (le, artifact_type) (rate(arc_artifactworkflow_duration_seconds_bucket{artifact_type=~\"$artifact_type\"}[$__rate_interval])))",
-          "legendFormat": "p99 {{artifact_type}}",
+          "legendFormat": "{{artifact_type}}",
           "range": true,
           "editorMode": "code"
         }
@@ -743,20 +663,20 @@
       "fieldConfig": {
         "defaults": {
           "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "lineWidth": 2,
             "fillOpacity": 0,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
+            "axisSoftMin": 0,
             "stacking": {
               "mode": "none",
               "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
+            }
           }
         },
         "overrides": []
@@ -777,17 +697,17 @@
     {
       "type": "table",
       "title": "Top failing artifact types",
-      "description": "Non successful completions over 15m, worst first.",
-      "id": 13,
+      "description": "Non successful completions over 15m, worst first. Empty is the healthy state.",
+      "id": 12,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 19
+        "w": 9,
+        "x": 15,
+        "y": 13
       },
       "targets": [
         {
@@ -838,17 +758,17 @@
     {
       "type": "timeseries",
       "title": "Reconcile errors by reason",
-      "description": "Classified reconcile failures. The reason matches the Kubernetes Event reason for the same failure, so kubectl describe shows the same word. Retry inflated, a permanently failing reconcile increments on every backoff.",
-      "id": 14,
+      "description": "Why reconciles fail. The reason matches the Kubernetes Event reason for the same failure, so kubectl describe shows the same word. Retry inflated, a permanently failing reconcile increments on every backoff.",
+      "id": 13,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 19
+        "w": 12,
+        "x": 0,
+        "y": 20
       },
       "targets": [
         {
@@ -866,20 +786,20 @@
       "fieldConfig": {
         "defaults": {
           "unit": "ops",
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "lineWidth": 2,
             "fillOpacity": 0,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
+            "axisSoftMin": 0,
             "stacking": {
               "mode": "none",
               "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
+            }
           }
         },
         "overrides": []
@@ -900,17 +820,17 @@
     {
       "type": "table",
       "title": "Cron freshness",
-      "description": "Time since the last successful run of each cron workflow group. Reduced to the oldest per namespace and artifact type, so one stalled workflow is not masked by a healthy sibling. A group that has never succeeded does not appear.",
-      "id": 15,
+      "description": "Time since the last successful run of each cron workflow group. Reduced to the oldest per namespace and artifact type, so a stalled workflow is not masked by a healthy sibling. A group that has never succeeded does not appear.",
+      "id": 14,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 19
+        "w": 12,
+        "x": 12,
+        "y": 20
       },
       "targets": [
         {
@@ -977,415 +897,6 @@
           }
         }
       ]
-    },
-    {
-      "type": "row",
-      "title": "Reconciler internals",
-      "id": 16,
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "panels": []
-    },
-    {
-      "type": "timeseries",
-      "title": "Reconcile error rate",
-      "description": "controller-runtime reconcile errors per second.",
-      "id": 17,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 0,
-        "y": 27
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (controller) (rate(controller_runtime_reconcile_errors_total[$__rate_interval]))",
-          "legendFormat": "{{controller}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ops",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Workqueue depth",
-      "description": "Items waiting. Sustained growth means the reconciler is falling behind.",
-      "id": 18,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 6,
-        "y": 27
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (name) (workqueue_depth)",
-          "legendFormat": "{{name}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Reconcile p99",
-      "description": "99th percentile reconcile duration.",
-      "id": 19,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 27
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "histogram_quantile(0.99, sum by (le, controller) (rate(controller_runtime_reconcile_time_seconds_bucket[$__rate_interval])))",
-          "legendFormat": "{{controller}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Workers active vs max",
-      "description": "Active workers meeting the ceiling means the pool is saturated.",
-      "id": 20,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 18,
-        "y": 27
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (controller) (controller_runtime_active_workers)",
-          "legendFormat": "active {{controller}}",
-          "range": true,
-          "editorMode": "code"
-        },
-        {
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (controller) (controller_runtime_max_concurrent_reconciles)",
-          "legendFormat": "max {{controller}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "row",
-      "title": "Runtime",
-      "id": 21,
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 33
-      },
-      "panels": []
-    },
-    {
-      "type": "timeseries",
-      "title": "Goroutines",
-      "description": "Go runtime goroutines per ARC component.",
-      "id": 22,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 0,
-        "y": 34
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (app_kubernetes_io_component) (go_goroutines{app_kubernetes_io_part_of=\"arc\"})",
-          "legendFormat": "{{app_kubernetes_io_component}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Resident memory",
-      "description": "Process RSS per ARC component.",
-      "id": 23,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 34
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "sum by (app_kubernetes_io_component) (process_resident_memory_bytes{app_kubernetes_io_part_of=\"arc\"})",
-          "legendFormat": "{{app_kubernetes_io_component}}",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bytes",
-          "custom": {
-            "lineWidth": 2,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "pointSize": 8,
-            "spanNulls": false,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            },
-            "axisSoftMin": 0
-          },
-          "color": {
-            "mode": "palette-classic"
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      }
     }
   ]
 }
