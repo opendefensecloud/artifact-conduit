@@ -237,7 +237,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", code=~\"5..\"}[5m]))\n  / clamp_min(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\"}[5m])), 1)",
+          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", code=~\"5..\"}[5m])) or vector(0))\n  / clamp_min(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\"}[5m])), 1)",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -377,7 +377,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(arc_collector_errors_total[5m]))",
+          "expr": "sum(rate(arc_collector_errors_total[5m])) or vector(0)",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
