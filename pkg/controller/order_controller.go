@@ -74,7 +74,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrlResult, nil
 		}
 
-		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
 	// Update last reconcile time
@@ -97,7 +97,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update order status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 
@@ -111,7 +111,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
 
@@ -124,9 +124,29 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.V(1).Info("Adding finalizer to Order")
 			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to add finalizer")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
+			return ctrlResult, nil
+		}
+	}
+
+	// Garbage collect the Order once its TTL has elapsed since creation. The
+	// finalizer added above makes sure the artifact workflows are cleaned up
+	// before the Order is finally removed. A zero TTL retains the Order
+	// indefinitely, matching the TTLAfterFinished/TTLAfterFailed convention.
+	if order.Spec.TTL != nil && order.Spec.TTL.Duration > 0 {
+		expiresAt := order.CreationTimestamp.Add(order.Spec.TTL.Duration)
+		if remaining := time.Until(expiresAt); remaining > 0 {
+			// Not expired yet; make sure we come back to delete it on time.
+			ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
+		} else {
+			log.V(1).Info("Order TTL expired, deleting", "ttl", order.Spec.TTL.Duration.String())
+			r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, ReasonDeleting, "Delete", "Order TTL of %s expired, deleting", order.Spec.TTL.Duration.String())
+			if err := r.Delete(ctx, order); client.IgnoreNotFound(err) != nil {
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete expired order")
+			}
+
 			return ctrlResult, nil
 		}
 	}
@@ -152,7 +172,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Update last force time
 		order.Status.LastForceAt = metav1.Now()
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrlResult, errLogAndWrap(log, err, "failed to update last force time")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
 		}
 		// Return without requeue; the update event will trigger reconciliation again
 		return ctrlResult, nil
@@ -175,10 +195,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonComputationFailed, "Compute", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 			}
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
 		}
 		desiredAWs[daw.sha] = *daw
 	}
@@ -229,7 +249,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalid, "Fetch", "Failed to fetch ArtifactWorkflow: %v", sha)
 			metrics.RecordReconcileError(ControllerOrder, ReasonInvalid)
 
-			return ctrlResult, errLogAndWrap(log, err, "")
+			return ctrl.Result{}, errLogAndWrap(log, err, "")
 		}
 		if artifactWorkflow.Name != "" {
 			// Cleanup finished workflows if TTLAfterFinished is set.
@@ -240,10 +260,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLAfterFinished.Duration {
+					// Compute the remainder once so that the check and the
+					// requeue cannot disagree about whether the TTL is expired.
+					if remaining := artifactWorkflow.Spec.TTLAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time); remaining > 0 {
 						// If TTL is set but not expired keep the workflow.
 						// Requeue when the next TTL expires
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time)
+						ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
 						continue
 					}
 				}
@@ -257,9 +279,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLAfterFailed.Duration {
+					// Compute the remainder once so that the check and the
+					// requeue cannot disagree about whether the TTL is expired.
+					if remaining := artifactWorkflow.Spec.TTLAfterFailed.Duration - time.Since(awStatus.FailureTime.Time); remaining > 0 {
 						// If TTL is set but not expired keep the workflow.
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFailed.Duration - time.Since(awStatus.FailureTime.Time)
+						ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
 						continue
 					}
 				} else {
@@ -281,7 +305,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonHydrationFailed, "Hydrate", "Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err)
 			metrics.RecordReconcileError(ControllerOrder, ReasonHydrationFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
 		}
 
 		// Set owner references
@@ -289,7 +313,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonHydrationFailed, "Hydrate", "Failed to set controller reference for artifact workflow: %v", err)
 			metrics.RecordReconcileError(ControllerOrder, ReasonHydrationFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to set controller reference")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
 		}
 
 		// Create artifact workflow
@@ -301,7 +325,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonCreationFailed, "Create", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
 			metrics.RecordReconcileError(ControllerOrder, ReasonCreationFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to create artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to create artifact workflow")
 		} else {
 			r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Created", "Create", "Created artifact workflow '%s' for artifact index %d", aw.Name, daw.index)
 			log.V(1).Info("Created artifact workflow", "artifactWorkflow", aw.Name)
@@ -326,7 +350,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
 			metrics.RecordReconcileError(ControllerOrder, ReasonDeletionFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		// Update status
@@ -345,7 +369,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", "Failed to delete finished artifact workflow '%s': %v", sha, err)
 			metrics.RecordReconcileError(ControllerOrder, ReasonDeletionFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		log.V(1).Info("Deleted finished artifact workflow", "artifactWorkflow", sha)
@@ -367,10 +391,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			delete(order.Status.ArtifactWorkflows, sha)
 			log.V(1).Info("Artifact workflow not found, deleting from status.", "artifactWorkflow", sha)
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 			}
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		orderAWStatus := order.Status.ArtifactWorkflows[sha]
 
@@ -396,7 +420,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			order.Status.ArtifactWorkflows[sha] = aws
 		}
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
 	}
 
