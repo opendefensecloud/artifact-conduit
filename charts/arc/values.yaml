@@ -527,3 +527,24 @@ rbac:
   #   - apiGroups: [""]
   #     resources: ["secrets"]
   #     verbs: ["get", "list"]
+
+# Grafana dashboards shipped with the chart
+dashboards:
+  # -- Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up
+  enabled: false
+  # -- Label key the Grafana sidecar watches for
+  labelKey: grafana_dashboard
+  # -- Label value the Grafana sidecar watches for
+  labelValue: "1"
+  # -- Namespace for the ConfigMaps, defaults to the release namespace. The
+  # kube-prometheus-stack sidecar only watches its own namespace unless it runs
+  # with sidecar.dashboards.searchNamespace=ALL.
+  namespace: ""
+  # -- Annotation key naming the Grafana folder
+  folderAnnotation: grafana_folder
+  # -- Grafana folder name, empty uses Grafana's default folder
+  folder: ""
+  # -- Additional labels for the dashboard ConfigMaps
+  extraLabels: {}
+  # -- Additional annotations for the dashboard ConfigMaps
+  annotations: {}

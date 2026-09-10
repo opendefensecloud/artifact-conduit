@@ -400,6 +400,14 @@ If you're currently using Kustomize to deploy ARC:
 | controller.serviceAccount.name | string | `""` | Service account name (auto-generated if not set) |
 | controller.tolerations | list | `[]` | Tolerations for pod assignment |
 | createNamespace | bool | `false` | Create namespace if it doesn't exist |
+| dashboards.annotations | object | `{}` | Additional annotations for the dashboard ConfigMaps |
+| dashboards.enabled | bool | `false` | Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up |
+| dashboards.extraLabels | object | `{}` | Additional labels for the dashboard ConfigMaps |
+| dashboards.folder | string | `""` | Grafana folder name, empty uses Grafana's default folder |
+| dashboards.folderAnnotation | string | `"grafana_folder"` | Annotation key naming the Grafana folder |
+| dashboards.labelKey | string | `"grafana_dashboard"` | Label key the Grafana sidecar watches for |
+| dashboards.labelValue | string | `"1"` | Label value the Grafana sidecar watches for |
+| dashboards.namespace | string | `""` | Namespace for the ConfigMaps, defaults to the release namespace. The kube-prometheus-stack sidecar only watches its own namespace unless it runs with sidecar.dashboards.searchNamespace=ALL. |
 | etcd.affinity | object | `{}` | Affinity for pod assignment |
 | etcd.args.advertiseClientUrls | string | `"http://localhost:2379"` | Advertise client URLs |
 | etcd.args.dataDir | string | `"/etcd-data-dir/default.etcd"` | Data directory |
