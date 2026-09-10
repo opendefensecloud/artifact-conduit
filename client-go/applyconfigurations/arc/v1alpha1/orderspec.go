@@ -24,7 +24,8 @@ type OrderSpecApplyConfiguration struct {
 	// workflows it created. The TTL is measured from creation regardless of
 	// workflow progress: if it elapses while an artifact workflow is still
 	// pending or running, that workflow is deleted mid-execution, interrupting
-	// the in-flight transfer. If unset, the Order is retained indefinitely.
+	// the in-flight transfer. If unset or zero, the Order is retained
+	// indefinitely.
 	TTL *v1.Duration `json:"ttl,omitempty"`
 }
 

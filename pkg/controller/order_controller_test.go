@@ -367,6 +367,14 @@ var _ = Describe("OrderController", func() {
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
+			// The artifact workflow has to exist before the TTL elapses, otherwise
+			// its absence below would not prove that it was cleaned up.
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
 			// Once the TTL elapses, the order should be garbage collected together
 			// with the artifact workflows it created.
 			Eventually(func() bool {
@@ -374,11 +382,39 @@ var _ = Describe("OrderController", func() {
 				return apierrors.IsNotFound(err)
 			}).Should(BeTrue())
 
-			awList := &arcv1alpha1.ArtifactWorkflowList{}
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
 			}).Should(Equal(0))
+		})
+
+		It("should not garbage collect an order with a zero TTL", func() {
+			createEndpoints("src-1", "dst-1")
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-ttl-zero",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					TTL: &metav1.Duration{Duration: 0},
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// A zero TTL retains the order indefinitely, the same way a zero
+			// TTLAfterFinished/TTLAfterFailed keeps an artifact workflow.
+			Consistently(func() error {
+				return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+			}).Should(Succeed())
 		})
 
 		It("should not garbage collect an order before its TTL has elapsed", func() {
