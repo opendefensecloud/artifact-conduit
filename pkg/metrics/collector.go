@@ -5,6 +5,7 @@ package metrics
 
 import (
 	"context"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -50,6 +51,12 @@ var (
 			"Where several cron ArtifactWorkflows share a namespace and artifact type, the oldest of their timestamps is reported.",
 		[]string{"namespace", "artifact_type"}, nil,
 	)
+
+	endpointsDesc = prometheus.NewDesc(
+		"arc_endpoints",
+		"Number of Endpoints currently in each readiness state. This is a current state count, not a cumulative total.",
+		[]string{"namespace", "ready"}, nil,
+	)
 )
 
 // Collector reports current ARC state by reading the manager cache at scrape
@@ -78,6 +85,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- workflowsDesc
 	ch <- lastScheduledDesc
 	ch <- lastSuccessDesc
+	ch <- endpointsDesc
 }
 
 // Collect implements prometheus.Collector.
@@ -91,6 +99,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 
 	c.collectOrders(ctx, ch)
 	c.collectWorkflows(ctx, ch)
+	c.collectEndpoints(ctx, ch)
 }
 
 func (c *Collector) collectOrders(ctx context.Context, ch chan<- prometheus.Metric) {
@@ -112,6 +121,39 @@ func (c *Collector) collectOrders(ctx context.Context, ch chan<- prometheus.Metr
 	for k, count := range counts {
 		ch <- prometheus.MustNewConstMetric(ordersDesc, prometheus.GaugeValue, float64(count), k.namespace, k.phase)
 	}
+}
+
+func (c *Collector) collectEndpoints(ctx context.Context, ch chan<- prometheus.Metric) {
+	endpoints := &arcv1alpha1.EndpointList{}
+	if err := c.reader.List(ctx, endpoints); err != nil {
+		RecordCollectorError("endpoints")
+
+		return
+	}
+
+	type key struct{ namespace, ready string }
+
+	counts := map[key]int{}
+	for i := range endpoints.Items {
+		counts[key{endpoints.Items[i].Namespace, endpointReadyLabel(&endpoints.Items[i])}]++
+	}
+
+	for k, count := range counts {
+		ch <- prometheus.MustNewConstMetric(endpointsDesc, prometheus.GaugeValue, float64(count), k.namespace, k.ready)
+	}
+}
+
+// endpointReadyLabel reports the Ready condition as a label value. An Endpoint
+// the controller has not yet observed has no condition at all, which is
+// reported as unknown rather than dropped.
+func endpointReadyLabel(ep *arcv1alpha1.Endpoint) string {
+	for _, c := range ep.Status.Conditions {
+		if c.Type == arcv1alpha1.EndpointConditionReady {
+			return strings.ToLower(string(c.Status))
+		}
+	}
+
+	return "unknown"
 }
 
 func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.Metric) {

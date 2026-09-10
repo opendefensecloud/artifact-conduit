@@ -778,6 +778,9 @@ func Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in *arc.EndpointSpec, out
 }
 
 func autoConvert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, out *arc.EndpointStatus, s conversion.Scope) error {
+	out.Conditions = *(*[]v1.Condition)(unsafe.Pointer(&in.Conditions))
+	out.ObservedGeneration = in.ObservedGeneration
+	out.LastProbeTime = (*v1.Time)(unsafe.Pointer(in.LastProbeTime))
 	return nil
 }
 
@@ -787,6 +790,9 @@ func Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, o
 }
 
 func autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointStatus, out *EndpointStatus, s conversion.Scope) error {
+	out.Conditions = *(*[]v1.Condition)(unsafe.Pointer(&in.Conditions))
+	out.ObservedGeneration = in.ObservedGeneration
+	out.LastProbeTime = (*v1.Time)(unsafe.Pointer(in.LastProbeTime))
 	return nil
 }
 

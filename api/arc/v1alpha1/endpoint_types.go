@@ -34,8 +34,37 @@ type EndpointSpec struct {
 	Usage EndpointUsage `json:"usage"`
 }
 
+// Endpoint condition types reported in EndpointStatus.Conditions.
+const (
+	// EndpointConditionValidated reports whether the Endpoint's configuration
+	// resolves: its Secret exists and its type is claimed by an ArtifactType.
+	EndpointConditionValidated = "Validated"
+	// EndpointConditionReachable reports whether the target answered at all.
+	// Any HTTP response counts, including 401.
+	EndpointConditionReachable = "Reachable"
+	// EndpointConditionAuthenticated reports whether the Endpoint's credentials
+	// were accepted. Unknown means ARC cannot verify credentials of this shape,
+	// which is not a failure.
+	EndpointConditionAuthenticated = "Authenticated"
+	// EndpointConditionReady summarises the others.
+	EndpointConditionReady = "Ready"
+)
+
 // EndpointStatus defines the observed state of Endpoint
 type EndpointStatus struct {
+	// Conditions represent the latest available observations of the Endpoint's state.
+	// +optional
+	// +patchStrategy=merge
+	// +patchMergeKey=type
+	// +listType=map
+	// +listMapKey=type
+	Conditions []metav1.Condition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
+	// ObservedGeneration is the .metadata.generation the conditions were computed from.
+	// +optional
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// LastProbeTime is when the connection to spec.remoteURL was last attempted.
+	// +optional
+	LastProbeTime *metav1.Time `json:"lastProbeTime,omitempty"`
 }
 
 // +genclient

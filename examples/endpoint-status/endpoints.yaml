@@ -1,0 +1,155 @@
+# Endpoint status demonstration.
+#
+# Every Endpoint below is named for the status it should reach. Apply the whole
+# file, wait a few seconds for the controller to probe, then:
+#
+#   kubectl get endpoints.arc.opendefense.cloud -n endpoint-status-demo
+#
+# See README.md for the expected outcome of each and what it proves.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: endpoint-status-demo
+---
+# The controller only calls an Endpoint's type "known" if some ArtifactType or
+# ClusterArtifactType accepts it in a position its usage allows. This one claims
+# the types used below, so `Validated` can reach True.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: ClusterArtifactType
+metadata:
+  name: endpoint-status-demo
+spec:
+  rules:
+    srcTypes: [oci, blob]
+    dstTypes: [oci, blob]
+  parameters: []
+  workflowTemplateRef:
+    name: does-not-need-to-exist-for-status
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bad-creds
+  namespace: endpoint-status-demo
+stringData:
+  username: nobody
+  password: definitely-not-a-real-token
+---
+# A blob endpoint's credentials are AWS keys, which ARC cannot verify: it speaks
+# basic auth and the Docker token flow, not SigV4.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-creds
+  namespace: endpoint-status-demo
+stringData:
+  AWS_ACCESS_KEY_ID: KEYEXAMPLE
+  AWS_SECRET_ACCESS_KEY: EXAMPLEKEY
+---
+# 1. Ready=True. A public registry, probed anonymously.
+#    Reachable=True; Authenticated=Unknown/NoCredentials, which does NOT block
+#    Ready — ARC did not check, which is different from the check failing.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: ready-anonymous
+  namespace: endpoint-status-demo
+spec:
+  type: oci
+  remoteURL: quay.io
+  usage: PullOnly
+---
+# 2. Validated=False/SecretNotFound. No such Secret in this namespace.
+#    The probe is skipped entirely — there is nothing to tell the user that
+#    they cannot already see.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: secret-missing
+  namespace: endpoint-status-demo
+spec:
+  type: oci
+  remoteURL: quay.io
+  secretRef:
+    name: no-such-secret
+  usage: PullOnly
+---
+# 3. Validated=False/UnknownType. No ArtifactType claims "not-a-real-type".
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: type-unknown
+  namespace: endpoint-status-demo
+spec:
+  type: not-a-real-type
+  remoteURL: quay.io
+  usage: PullOnly
+---
+# 4. Reachable=False/DNSFailure -> Ready=False.
+#    .invalid is reserved by RFC 2606 and never resolves.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: dns-failure
+  namespace: endpoint-status-demo
+spec:
+  type: oci
+  remoteURL: https://arc-endpoint-demo.invalid
+  usage: PullOnly
+---
+# 5. Reachable=False/TargetDenied -> Ready=False.
+#    SECURITY: 8081 is the controller-manager's own health port, and 0.0.0.0 is
+#    routed to loopback by Linux.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: target-denied
+  namespace: endpoint-status-demo
+spec:
+  type: oci
+  remoteURL: http://0.0.0.0:8081
+  usage: PullOnly
+---
+# 6. Reachable=Unknown/UnsupportedScheme -> Ready=UNKNOWN, not True.
+#    ARC cannot probe s3://, so it says so rather than claiming the endpoint is
+#    usable.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: scheme-unsupported
+  namespace: endpoint-status-demo
+spec:
+  type: blob
+  remoteURL: s3://my-bucket
+  usage: PullOnly
+---
+# 7. Authenticated=False/Unauthorized -> Ready=False.
+#    ghcr.io answers /v2/ with a Bearer challenge; ARC makes exactly one hop to
+#    the named realm with these credentials, and the token service rejects them.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: auth-rejected
+  namespace: endpoint-status-demo
+spec:
+  type: oci
+  remoteURL: ghcr.io
+  secretRef:
+    name: bad-creds
+  usage: PullOnly
+---
+# 8. Authenticated=Unknown/UnsupportedAuthScheme -> Ready=True.
+#    The Secret has no username/password, so ARC cannot verify these credentials.
+#    Unknown, never False: reporting False would be a lie about the user's keys.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: auth-unverifiable
+  namespace: endpoint-status-demo
+spec:
+  type: blob
+  remoteURL: https://s3.us-west-2.amazonaws.com
+  secretRef:
+    name: s3-creds
+  usage: PullOnly

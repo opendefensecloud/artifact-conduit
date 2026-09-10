@@ -302,6 +302,11 @@ EndpointStatus defines the observed state of Endpoint
 _Appears in:_
 - [Endpoint](#endpoint)
 
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#condition-v1-meta) array_ | Conditions represent the latest available observations of the Endpoint's state. |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | ObservedGeneration is the .metadata.generation the conditions were computed from. |  | Optional: \{\} <br /> |
+| `lastProbeTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastProbeTime is when the connection to spec.remoteURL was last attempted. |  | Optional: \{\} <br /> |
 
 
 #### EndpointUsage

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"maps"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,10 +28,48 @@ import (
 	metricserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/endpointprobe"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+// probeStub stands in for the real endpoint probe. The envtest suite must never
+// make a real network connection, and counting calls per target URL is how the
+// probe-gating tests prove an unchanged resync causes no outbound traffic.
+type probeStub struct {
+	mu     sync.Mutex
+	calls  map[string]int
+	result endpointprobe.Result
+}
+
+func (s *probeStub) Probe(_ context.Context, t endpointprobe.Target) endpointprobe.Result {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.calls == nil {
+		s.calls = map[string]int{}
+	}
+	s.calls[t.RemoteURL]++
+
+	return s.result
+}
+
+func (s *probeStub) CallsFor(remoteURL string) int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.calls[remoteURL]
+}
+
+func (s *probeStub) SetResult(r endpointprobe.Result) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.result = r
+}
+
+var stubProbe = &probeStub{}
 
 const (
 	pollingInterval      = 400 * time.Millisecond
@@ -112,6 +151,12 @@ var _ = BeforeSuite(func() {
 		ClientSet: testclient.NewClientset(),
 		Scheme:    mgr.GetScheme(),
 		Recorder:  fakeRecorder,
+	}).SetupWithManager(mgr)).To(Succeed())
+	Expect((&EndpointReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: fakeRecorder,
+		Probe:    stubProbe.Probe,
 	}).SetupWithManager(mgr)).To(Succeed())
 
 	go func() {
