@@ -171,7 +171,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", code=~\"5..\"}[5m])) or vector(0))\n  / clamp_min(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\"}[5m])), 1)",
+          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", code=~\"5..\"}[5m])) or vector(0))\n  / sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\"}[5m]))",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -292,7 +292,7 @@
     {
       "type": "stat",
       "title": "Collector errors",
-      "description": "Cache reads that failed while collecting ARC state. Non zero means the panels below are stale or missing, not that ARC is idle.",
+      "description": "Cache reads that failed while collecting ARC state in the last 5m. Non zero means the panels below are stale or missing, not that ARC is idle.",
       "id": 5,
       "datasource": {
         "type": "prometheus",
@@ -311,7 +311,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(arc_collector_errors_total[5m])) or vector(0)",
+          "expr": "sum(increase(arc_collector_errors_total[5m])) or vector(0)",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -514,7 +514,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result=\"succeeded\"}[5m]))\n  / clamp_min(sum(rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"}[5m])), 1)",
+          "expr": "(sum(rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result=\"succeeded\"}[5m])) or vector(0))\n  / sum(rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"}[5m]))",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -646,7 +646,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "topk(5, sum by (artifact_type) (rate(arc_artifactworkflow_completions_total{result!=\"succeeded\"}[15m])))",
+          "expr": "topk(5, sum by (artifact_type) (rate(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result!=\"succeeded\"}[15m])))",
           "instant": true,
           "format": "table",
           "editorMode": "code"
