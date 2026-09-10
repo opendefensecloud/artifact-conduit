@@ -10,6 +10,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
     {{- end }}
 spec:
+  targetLabels:
+    - app.kubernetes.io/part-of
+    - app.kubernetes.io/component
   selector:
     matchLabels:
       {{- include "arc.controller.selectorLabels" . | nindent 6 }}
@@ -34,6 +37,7 @@ spec:
     - port: http
       scheme: http
     {{- end }}
+      honorLabels: {{ .Values.controller.metrics.serviceMonitor.honorLabels }}
       interval: {{ .Values.controller.metrics.serviceMonitor.interval }}
       scrapeTimeout: {{ .Values.controller.metrics.serviceMonitor.scrapeTimeout }}
 {{- end }}

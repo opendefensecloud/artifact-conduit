@@ -87,6 +87,44 @@ apiserver:
     # -- Service annotations
     annotations: {}
 
+  # Metrics configuration. The API Server always serves /metrics on its secure
+  # port, these settings only control whether Prometheus scrapes it.
+  metrics:
+    # ServiceMonitor for Prometheus Operator
+    serviceMonitor:
+      # -- Enable ServiceMonitor for the API Server
+      enabled: false
+      # -- Scrape interval
+      interval: 30s
+      # -- Scrape timeout
+      scrapeTimeout: 10s
+      # -- Keep the target's own metric labels rather than letting Prometheus rename them
+      honorLabels: true
+      # -- Additional labels for ServiceMonitor
+      additionalLabels: {}
+
+      tlsConfig:
+        # -- Skip verification of the API Server certificate. Off by default, the
+        # scrape verifies against the cert-manager issued CA and the service DNS
+        # name below. Only set this true if you run without cert-manager.
+        insecureSkipVerify: false
+        caSecret:
+          # -- Secret holding the CA bundle, defaults to the chart's certificate Secret
+          name: ""
+          # -- Key within that Secret
+          key: ca.crt
+        # -- Expected server name, defaults to the API Server service DNS name
+        serverName: ""
+
+      # Bearer token for the scrape. The API Server enforces authn/authz on
+      # /metrics, so reference a Secret in the release namespace holding a token
+      # for an identity bound to the {release name}-apiserver-metrics-reader ClusterRole.
+      tokenSecret:
+        # -- Name of the Secret containing the scrape bearer token
+        name: ""
+        # -- Key within the Secret that holds the token
+        key: token
+
   # -- Resource limits and requests
   resources:
     limits:
@@ -186,8 +224,9 @@ controller:
   args:
     # -- Health probe bind address
     healthProbeBindAddress: ":8081"
-    # -- Metrics bind address (set to "0" to disable, ":8443" for HTTPS)
-    metricsBindAddress: "0"
+    # -- Metrics bind address. Only used when controller.metrics.enabled is true,
+    # the deployment passes 0 otherwise, so this is the port rather than a switch.
+    metricsBindAddress: ":8443"
     # -- Serve metrics securely via HTTPS
     metricsSecure: true
     # -- Enable HTTP/2 for metrics server
@@ -245,6 +284,9 @@ controller:
       interval: 30s
       # -- Scrape timeout
       scrapeTimeout: 10s
+      # -- Keep the target's own metric labels. ARC's `namespace` label names the
+      # Order's namespace. Without this Prometheus renames it to `exported_namespace`.
+      honorLabels: true
       # -- Additional labels for ServiceMonitor
       additionalLabels: {}
 
@@ -485,3 +527,24 @@ rbac:
   #   - apiGroups: [""]
   #     resources: ["secrets"]
   #     verbs: ["get", "list"]
+
+# Grafana dashboards shipped with the chart
+dashboards:
+  # -- Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up
+  enabled: false
+  # -- Label key the Grafana sidecar watches for
+  labelKey: grafana_dashboard
+  # -- Label value the Grafana sidecar watches for
+  labelValue: "1"
+  # -- Namespace for the ConfigMaps, defaults to the release namespace. The
+  # kube-prometheus-stack sidecar only watches its own namespace unless it runs
+  # with sidecar.dashboards.searchNamespace=ALL.
+  namespace: ""
+  # -- Annotation key naming the Grafana folder
+  folderAnnotation: grafana_folder
+  # -- Grafana folder name, empty uses Grafana's default folder
+  folder: ""
+  # -- Additional labels for the dashboard ConfigMaps
+  extraLabels: {}
+  # -- Additional annotations for the dashboard ConfigMaps
+  annotations: {}

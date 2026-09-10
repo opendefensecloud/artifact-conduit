@@ -1,6 +1,6 @@
 # Observability & Monitoring
 
-ARC exposes [controller-runtime](https://book.kubebuilder.io/reference/metrics-reference.html) Prometheus metrics and Kubernetes health probes. There are no ARC-specific custom metrics; alerting is built on the standard reconciler signals for the `order` and `artifactworkflow` controllers.
+ARC exposes Prometheus metrics and Kubernetes health probes. The controller manager emits ARC's own metrics for Orders and ArtifactWorkflows alongside the standard [controller-runtime](https://book.kubebuilder.io/reference/metrics-reference.html) reconciler signals, and the API Server exposes the usual Kubernetes API server metrics. A reference dashboard ships with the Helm chart.
 
 ## Enabling the Metrics Endpoint
 
@@ -87,7 +87,19 @@ Always exposed on port `8081`:
 
 ## Top Health Signals
 
-Monitor these metrics to catch a degraded controller. Each metric carries a `controller` label; watch both `order` and `artifactworkflow`.
+Start here. These answer whether ARC is doing its job.
+
+| Metric | Signal |
+|--------|--------|
+| `arc_orders` | Orders sitting in `Failed`, or a `Pending` count that never drains |
+| `arc_artifactworkflow_completions_total` | Success ratio dropping, by `result` |
+| `arc_reconcile_errors_total` | Which failure `reason` dominates |
+| `arc_artifactworkflow_last_success_timestamp_seconds` | `time() - <metric> > threshold` catches a cron sync that stopped running |
+| `arc_collector_errors_total` | Non zero means the gauges above are stale, not that ARC is idle |
+
+The controller-runtime signals below are second line diagnostics, useful once you
+know something is wrong. Each carries a `controller` label; watch both `order` and
+`artifactworkflow`.
 
 | Metric | Signal |
 |--------|--------|
@@ -96,7 +108,49 @@ Monitor these metrics to catch a degraded controller. Each metric carries a `con
 | `controller_runtime_reconcile_time_seconds` | High p99 latency — reconciles are slow |
 | `controller_runtime_active_workers` | Equals `controller_runtime_max_concurrent_reconciles` — worker pool saturated |
 
-## Full Metric Catalog
+## ARC Metric Catalog
+
+Emitted by the controller manager. No label carries an object name or a message, so
+cardinality stays bounded by namespaces and artifact types.
+
+| Metric | Type | Labels | Description |
+|--------|------|--------|-------------|
+| `arc_orders` | Gauge | `namespace`, `phase` | Orders currently in each aggregate phase |
+| `arc_artifactworkflows` | Gauge | `namespace`, `artifact_type`, `mode`, `phase` | ArtifactWorkflows currently in each phase |
+| `arc_artifactworkflow_completions_total` | Counter | `namespace`, `artifact_type`, `result` | Single run workflows reaching a terminal phase |
+| `arc_artifactworkflow_duration_seconds` | Histogram | `artifact_type`, `result` | Argo execution time of single run workflows |
+| `arc_artifactworkflow_last_scheduled_timestamp_seconds` | Gauge | `namespace`, `artifact_type` | Cron only, when the group was last scheduled |
+| `arc_artifactworkflow_last_success_timestamp_seconds` | Gauge | `namespace`, `artifact_type` | Cron only, when the group last succeeded |
+| `arc_reconcile_errors_total` | Counter | `controller`, `reason` | Classified reconcile failures |
+| `arc_collector_errors_total` | Counter | `resource` | Cache reads that failed while collecting the gauges |
+
+The gauges are read from the controller's cache at scrape time rather than tracked in
+the reconcile loop, so a deleted Order stops being counted with no bookkeeping. They
+are emitted sparsely: a phase with no objects produces no series at all, so a panel
+must not read an absent series as zero.
+
+### Things that look like bugs and are not
+
+- **An Order containing a cron artifact never settles.** It reads `Running` while a run
+  is in flight and `Succeeded` between runs. `Running` means "has work in flight", not
+  "unhealthy".
+- **Completions and duration cover single run workflows only.** Cron completion data in
+  ARC is a copy of Argo's cumulative counters, which jump by more than one and reset on
+  a force reconcile, so counting them would be dishonest. Use the freshness timestamps
+  for cron health instead.
+- **`arc_reconcile_errors_total` is retry inflated.** A permanently failing reconcile
+  increments its reason on every backoff. Fine for `rate()` and for "which reason
+  dominates", misleading as a count of distinct failures.
+- **The freshness gauges reduce to the oldest** in each `(namespace, artifact_type)`
+  group, so a stalled workflow is never masked by a healthy sibling. A group that has
+  never succeeded contributes no series.
+- **ArtifactWorkflows created before this feature report `artifact_type="unknown"`.**
+  The label is stamped at creation and existing objects are never relabelled. For cron
+  workflows, which are never recreated, this is permanent.
+- **`reason` matches the Kubernetes Event.** The same word appears in
+  `kubectl describe order`.
+
+## Full controller-runtime Metric Catalog
 
 All metrics are emitted per controller (`order`, `artifactworkflow`) or workqueue (`name=order|artifactworkflow`).
 
@@ -113,6 +167,63 @@ All metrics are emitted per controller (`order`, `artifactworkflow`) or workqueu
 | `workqueue_work_duration_seconds` | Histogram | `name` | Processing time per item |
 | `workqueue_retries_total` | Counter | `name` | Requeues due to error/rate-limit |
 | `rest_client_requests_total` | Counter | `code`, `method`, `host` | Kubernetes API calls from the controller |
+
+## Scraping the API Server
+
+The ARC API Server always serves `/metrics` on its secure port. Nothing scrapes it until
+you turn the ServiceMonitor on:
+
+```yaml
+apiserver:
+  metrics:
+    serviceMonitor:
+      enabled: true
+      tokenSecret:
+        name: arc-metrics-scrape-token
+```
+
+TLS verification is on by default and resolves the cert-manager issued CA and the
+service DNS name on its own. Rendering fails with an explicit message if you enable
+verification while running without cert-manager, rather than producing a ServiceMonitor
+that silently cannot connect.
+
+A scrape reaches the Service directly rather than through the aggregation layer, so the
+API Server authenticates the bearer token itself. The chart binds `system:auth-delegator`
+to the API Server ServiceAccount when this monitor is enabled, and creates an unbound
+`{release-name}-apiserver-metrics-reader` ClusterRole. Wire a scrape identity to it the
+same way as for the controller above, using `arc-apiserver-metrics-reader` as the role.
+
+`apiserver_request_total` and `workqueue_depth` are also emitted by the Kubernetes
+control plane. Both ServiceMonitors set `targetLabels`, so every ARC series carries
+`app_kubernetes_io_part_of="arc"` and `app_kubernetes_io_component`. Filter on those or
+your queries will mix ARC together with the control plane.
+
+Both monitors also set `honorLabels: true`. ARC's `namespace` label names the Order's
+namespace, and without this Prometheus renames it to `exported_namespace`.
+
+## Reference Dashboard
+
+A Grafana dashboard ships with the chart, off by default:
+
+```yaml
+dashboards:
+  enabled: true
+```
+
+It renders as a ConfigMap labelled for the Grafana sidecar. **The kube-prometheus-stack
+sidecar only watches its own namespace by default**, so either install Grafana with
+`sidecar.dashboards.searchNamespace=ALL` or set `dashboards.namespace` to the namespace
+Grafana runs in. Without one of those the ConfigMap is created, nothing appears in
+Grafana, and there is no error to go on.
+
+Four sections: whether ARC is up, whether work is getting through, reconciler internals,
+and runtime. It is a starting point rather than a finished observability product, so
+copy it into your own folder before editing.
+
+There is no container restart panel. That needs
+`kube_pod_container_status_restarts_total` from kube-state-metrics, which a chart
+shipped dashboard cannot assume is installed. If you run it, the query is
+`sum by (pod) (kube_pod_container_status_restarts_total{namespace="arc-system"})`.
 
 ## Workflow Execution Failures
 

@@ -3,7 +3,7 @@
 
 // Package metrics exposes ARC domain metrics on the controller manager's
 // existing Prometheus endpoint. Current state is reported by a collector that
-// reads the manager cache at scrape time; flow and failures are recorded from
+// reads the manager cache at scrape time. Flow and failures are recorded from
 // the reconcile path.
 package metrics
 
