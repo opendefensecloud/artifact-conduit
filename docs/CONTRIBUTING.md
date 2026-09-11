@@ -107,8 +107,6 @@ See [the pull request template](https://github.com/opendefensecloud/artifact-con
 ### Other Contributions
 
 * [Reviewing PRs](#reviewing-prs)
-* Responding to questions in the [Slack](#slack) channels
-* Responding to questions in [Github Discussions](https://github.com/opendefensecloud/artifact-conduit/discussions)
 * [Triaging new bugs](#triaging-bugs)
 
 #### Reviewing PRs
