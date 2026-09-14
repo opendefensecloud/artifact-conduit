@@ -199,7 +199,14 @@ control plane. Both ServiceMonitors set `targetLabels`, so every ARC series carr
 your queries will mix ARC together with the control plane.
 
 Both monitors also set `honorLabels: true`. ARC's `namespace` label names the Order's
-namespace, and without this Prometheus renames it to `exported_namespace`.
+namespace, and without this Prometheus renames it to `exported_namespace`. Note that
+`namespace` therefore means two different things on the same endpoint: on ARC's own
+metrics it is the Order's namespace, on everything else Prometheus still attaches the
+namespace ARC runs in. Filter on `app_kubernetes_io_part_of` when you want the latter.
+
+The setting is new and defaults on, but it only takes effect where a metric carries a
+label the target also sets. Nothing ARC exposed before the domain metrics did, so
+existing series and any query against them are unaffected.
 
 ## Reference Dashboard
 
