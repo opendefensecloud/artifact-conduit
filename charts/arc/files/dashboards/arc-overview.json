@@ -86,7 +86,7 @@
     {
       "type": "stat",
       "title": "Components up",
-      "description": "Scrape targets reporting up. Two on a default install, the API Server and the controller manager.",
+      "description": "Components with at least one healthy target, over the number of components seen in the last 24h. The denominator is learned from history rather than hardcoded, which keeps it right at any replica count and, unlike a ratio over currently present targets, still counts a component whose pods are all gone: that case drops the targets from both sides and would otherwise read 100%. A component removed on purpose reads degraded until it ages out of the window.",
       "id": 2,
       "datasource": {
         "type": "prometheus",
@@ -105,7 +105,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum(up{app_kubernetes_io_part_of=\"arc\"})",
+          "expr": "count(count by (app_kubernetes_io_component) (up{app_kubernetes_io_part_of=\"arc\"} == 1))\n  / count(count by (app_kubernetes_io_component) (max_over_time(up{app_kubernetes_io_part_of=\"arc\"}[24h])))",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -113,7 +113,7 @@
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "percentunit",
           "decimals": 2,
           "color": {
             "mode": "thresholds"
@@ -126,8 +126,12 @@
                 "value": null
               },
               {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
                 "color": "green",
-                "value": 2
+                "value": 1
               }
             ]
           }

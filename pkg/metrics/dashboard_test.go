@@ -56,6 +56,9 @@ var promqlBuiltins = map[string]bool{
 	"increase": true, "delta": true, "vector": true, "scalar": true, "absent": true,
 	"on": true, "ignoring": true, "group_left": true, "group_right": true,
 	"and": true, "or": true, "unless": true, "offset": true,
+	"max_over_time": true, "min_over_time": true, "avg_over_time": true,
+	"sum_over_time": true, "count_over_time": true, "last_over_time": true,
+	"present_over_time": true,
 }
 
 var labelNames = map[string]bool{
