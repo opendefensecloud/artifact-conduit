@@ -390,7 +390,7 @@
     {
       "type": "timeseries",
       "title": "Orders outstanding",
-      "description": "Orders that are not done and fine, by an aggregate phase derived from the workflows they own. Succeeded is excluded, it only accumulates and there is nothing to act on. Failures stay because an Order that failed is still a problem you own. For outcomes over time use the throughput panel below.",
+      "description": "Orders that are not done and fine, by an aggregate phase derived from the workflows they own. Each line is that phase on its own, not a running total, so a line reads the same as its tooltip. Succeeded is excluded, it only accumulates and there is nothing to act on. Failures stay because an Order that failed is still a problem you own. For outcomes over time use the throughput panel below.",
       "id": 7,
       "datasource": {
         "type": "prometheus",
@@ -423,13 +423,13 @@
           },
           "custom": {
             "lineWidth": 2,
-            "fillOpacity": 15,
+            "fillOpacity": 0,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
             "axisSoftMin": 0,
             "stacking": {
-              "mode": "normal",
+              "mode": "none",
               "group": "A"
             }
           }
@@ -452,7 +452,7 @@
     {
       "type": "timeseries",
       "title": "ArtifactWorkflows outstanding",
-      "description": "Workflows that are not done and fine, by the phase ARC mirrors from Argo. Unknown is a freshly created workflow that has not started yet. Succeeded is excluded, see the throughput panel below for outcomes over time.",
+      "description": "Workflows that are not done and fine, by the phase ARC mirrors from Argo. Each line is that phase on its own, not a running total. Unknown is a freshly created workflow that has not started yet. Succeeded is excluded, see the throughput panel below for outcomes over time.",
       "id": 8,
       "datasource": {
         "type": "prometheus",
@@ -485,13 +485,13 @@
           },
           "custom": {
             "lineWidth": 2,
-            "fillOpacity": 15,
+            "fillOpacity": 0,
             "showPoints": "never",
             "pointSize": 8,
             "spanNulls": false,
             "axisSoftMin": 0,
             "stacking": {
-              "mode": "normal",
+              "mode": "none",
               "group": "A"
             }
           }
@@ -514,7 +514,7 @@
     {
       "type": "timeseries",
       "title": "Workflow throughput by result",
-      "description": "Single run workflows reaching a terminal phase, per second. This is where outcomes over time live: a burst of failures shows as a peak here, where the gauges above would only show a backlog draining.",
+      "description": "Single run workflows reaching a terminal phase, per second. This is where outcomes over time live: a burst of failures shows as a peak here, where the gauges above would only show a backlog draining. Stacked on purpose, unlike the gauges above: the bands add up to the total completion rate, so read a band by its thickness rather than against the axis.",
       "id": 9,
       "datasource": {
         "type": "prometheus",
