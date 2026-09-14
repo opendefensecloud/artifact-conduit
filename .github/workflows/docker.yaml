@@ -119,21 +119,28 @@ jobs:
         if: ${{ env.ACT != 'true' }}
         env:
           COSIGN_EXPERIMENTAL: 1
+          TAGS: ${{ steps.meta.outputs.tags }}
+          DIGEST: ${{ steps.image.outputs.digest }}
+          REPO: ${{ github.repository }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
-          IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
-          for tag in "${TAGS[@]}"; do
+          IFS=',' read -ra TAG_LIST <<< "$TAGS"
+          for tag in "${TAG_LIST[@]}"; do
             cosign sign \
-              -a "repo=${{ github.repository }}" \
-              -a "workflow=${{ github.workflow }}" \
-              -a "sha=${{ github.sha }}" \
+              -a "repo=$REPO" \
+              -a "workflow=$WORKFLOW_NAME" \
+              -a "sha=$COMMIT_SHA" \
               --yes \
-              "$tag"@${{ steps.image.outputs.digest }}
+              "$tag@$DIGEST"
           done
       - name: Extract first tag
         id: first-tag
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
         run: |
-          IFS=$'\n' read -ra TAGS <<< "${{ steps.meta.outputs.tags }}"
-          echo "tag=${TAGS[0]}" >> $GITHUB_OUTPUT
+          IFS=$'\n' read -ra TAG_LIST <<< "$TAGS"
+          echo "tag=${TAG_LIST[0]}" >> "$GITHUB_OUTPUT"
       - name: Generate SBOM
         if: ${{ env.ACT != 'true' }}
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
