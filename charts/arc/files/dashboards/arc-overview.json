@@ -740,7 +740,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "topk(5, sum by (artifact_type) (increase(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result!=\"succeeded\"}[15m])))",
+          "expr": "topk(5, sum by (artifact_type) (increase(arc_artifactworkflow_completions_total{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\", result!=\"succeeded\"}[15m])) > 0)",
           "instant": true,
           "format": "table",
           "editorMode": "code"
@@ -773,7 +773,15 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "__name__": true
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "endpoint": true,
+              "service": true,
+              "pod": true,
+              "container": true,
+              "app_kubernetes_io_part_of": true,
+              "app_kubernetes_io_component": true
             }
           }
         }
@@ -916,7 +924,15 @@
           "options": {
             "excludeByName": {
               "Time": true,
-              "__name__": true
+              "__name__": true,
+              "job": true,
+              "instance": true,
+              "endpoint": true,
+              "service": true,
+              "pod": true,
+              "container": true,
+              "app_kubernetes_io_part_of": true,
+              "app_kubernetes_io_component": true
             }
           }
         }
