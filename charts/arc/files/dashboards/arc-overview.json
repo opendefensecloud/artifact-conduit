@@ -171,7 +171,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", code=~\"5..\"}[5m])) or vector(0))\n  / sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\"}[5m]))",
+          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\", code=~\"5..\"}[5m])) or vector(0))\n  / sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[5m]))",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
@@ -222,7 +222,7 @@
     {
       "type": "stat",
       "title": "API Server p99",
-      "description": "99th percentile request latency of the ARC API Server over 5m.",
+      "description": "99th percentile request latency of the ARC API Server over 5m. WATCH, WATCHLIST and CONNECT are excluded: they stay open for their whole timeout and would park the quantile there.",
       "id": 4,
       "datasource": {
         "type": "prometheus",
@@ -241,7 +241,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(apiserver_request_duration_seconds_bucket{app_kubernetes_io_part_of=\"arc\"}[5m])))",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(apiserver_request_duration_seconds_bucket{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[5m])))",
           "legendFormat": "",
           "range": true,
           "editorMode": "code"
