@@ -93,8 +93,8 @@
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 5,
+        "h": 7,
+        "w": 4,
         "x": 0,
         "y": 1
       },
@@ -151,157 +151,17 @@
     },
     {
       "type": "stat",
-      "title": "API Server 5xx ratio",
-      "description": "Server errors as a share of all ARC API Server requests over 5m. Filtered to ARC, the control plane API Server emits the same metric names.",
+      "title": "Collector errors",
+      "description": "Cache reads that failed while collecting ARC state in the last 5m. Non zero means the gauges below are stale or missing, not that ARC is idle.",
       "id": 3,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
       },
       "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 5,
-        "y": 1
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\", code=~\"5..\"}[5m])) or vector(0))\n  / sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[5m]))",
-          "legendFormat": "",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percentunit",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 0.01
-              },
-              {
-                "color": "red",
-                "value": 0.05
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      }
-    },
-    {
-      "type": "stat",
-      "title": "API Server p99",
-      "description": "99th percentile request latency of the ARC API Server over 5m. WATCH, WATCHLIST and CONNECT are excluded: they stay open for their whole timeout and would park the quantile there.",
-      "id": 4,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 5,
-        "x": 10,
-        "y": 1
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(apiserver_request_duration_seconds_bucket{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[5m])))",
-          "legendFormat": "",
-          "range": true,
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "decimals": 2,
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 1
-              },
-              {
-                "color": "red",
-                "value": 5
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "colorMode": "value",
-        "graphMode": "area",
-        "textMode": "auto",
-        "justifyMode": "auto",
-        "orientation": "auto"
-      }
-    },
-    {
-      "type": "stat",
-      "title": "Collector errors",
-      "description": "Cache reads that failed while collecting ARC state in the last 5m. Non zero means the panels below are stale or missing, not that ARC is idle.",
-      "id": 5,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 9,
-        "x": 15,
+        "h": 7,
+        "w": 4,
+        "x": 4,
         "y": 1
       },
       "targets": [
@@ -356,6 +216,161 @@
       }
     },
     {
+      "type": "timeseries",
+      "title": "API Server 5xx ratio",
+      "description": "Server errors as a share of ARC API Server requests. Filtered to ARC, the control plane API Server emits the same metric names. Watch style verbs are excluded, they are long lived by design.",
+      "id": 4,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "(sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\", code=~\"5..\"}[$__rate_interval])) or vector(0))\n  / sum(rate(apiserver_request_total{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[$__rate_interval]))",
+          "legendFormat": "5xx ratio",
+          "range": true,
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "pointSize": 8,
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "API Server latency",
+      "description": "Request latency of the ARC API Server. WATCH, WATCHLIST and CONNECT are excluded: a watch stays open for its whole timeout, so including them parks the quantile near that timeout instead of anywhere near real request latency.",
+      "id": 5,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(apiserver_request_duration_seconds_bucket{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[$__rate_interval])))",
+          "legendFormat": "p99",
+          "range": true,
+          "editorMode": "code"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(apiserver_request_duration_seconds_bucket{app_kubernetes_io_part_of=\"arc\", verb!~\"WATCH|WATCHLIST|CONNECT\"}[$__rate_interval])))",
+          "legendFormat": "p50",
+          "range": true,
+          "editorMode": "code"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "pointSize": 8,
+            "spanNulls": false,
+            "axisSoftMin": 0,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
       "type": "row",
       "title": "Is work getting through",
       "id": 6,
@@ -364,7 +379,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "panels": []
     },
@@ -381,7 +396,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 9
       },
       "targets": [
         {
@@ -443,7 +458,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 9
       },
       "targets": [
         {
@@ -505,7 +520,7 @@
         "h": 7,
         "w": 6,
         "x": 0,
-        "y": 13
+        "y": 16
       },
       "targets": [
         {
@@ -575,7 +590,7 @@
         "h": 7,
         "w": 9,
         "x": 6,
-        "y": 13
+        "y": 16
       },
       "targets": [
         {
@@ -637,7 +652,7 @@
         "h": 7,
         "w": 9,
         "x": 15,
-        "y": 13
+        "y": 16
       },
       "targets": [
         {
@@ -698,7 +713,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 23
       },
       "targets": [
         {
@@ -760,7 +775,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 23
       },
       "targets": [
         {
@@ -837,7 +852,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 30
       },
       "panels": []
     },
@@ -854,7 +869,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 28
+        "y": 31
       },
       "targets": [
         {
@@ -916,7 +931,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 28
+        "y": 31
       },
       "targets": [
         {
@@ -974,7 +989,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 37
       },
       "panels": []
     },
@@ -991,7 +1006,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 35
+        "y": 38
       },
       "targets": [
         {
