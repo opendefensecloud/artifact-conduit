@@ -86,7 +86,7 @@
     {
       "type": "stat",
       "title": "Components up",
-      "description": "Components with at least one healthy target, over the number of components seen in the last 24h. The denominator is learned from history rather than hardcoded, which keeps it right at any replica count and, unlike a ratio over currently present targets, still counts a component whose pods are all gone: that case drops the targets from both sides and would otherwise read 100%. A component removed on purpose reads degraded until it ages out of the window.",
+      "description": "Components with a healthy target, against those seen in the last 24h. Below 100% means one is down or gone. A component removed on purpose reads degraded until it ages out.",
       "id": 2,
       "datasource": {
         "type": "prometheus",
@@ -156,7 +156,7 @@
     {
       "type": "stat",
       "title": "Collector errors",
-      "description": "Cache reads that failed while collecting ARC state in the last 5m. Non zero means the gauges below are stale or missing, not that ARC is idle.",
+      "description": "Cache reads that failed while collecting ARC state in the last 5m. Non zero means the gauges below are stale, not that ARC is idle.",
       "id": 3,
       "datasource": {
         "type": "prometheus",
@@ -222,7 +222,7 @@
     {
       "type": "timeseries",
       "title": "API Server 5xx ratio",
-      "description": "Server errors as a share of ARC API Server requests. Filtered to ARC, the control plane API Server emits the same metric names. Watch style verbs are excluded, they are long lived by design.",
+      "description": "Server errors as a share of ARC API Server requests. Watch style verbs are excluded, they stay open by design.",
       "id": 4,
       "datasource": {
         "type": "prometheus",
@@ -304,7 +304,7 @@
     {
       "type": "timeseries",
       "title": "API Server latency",
-      "description": "Request latency of the ARC API Server. WATCH, WATCHLIST and CONNECT are excluded: a watch stays open for its whole timeout, so including them parks the quantile near that timeout instead of anywhere near real request latency.",
+      "description": "Request latency of the ARC API Server. WATCH, WATCHLIST and CONNECT are excluded: they stay open for their whole timeout and would park the quantile there.",
       "id": 5,
       "datasource": {
         "type": "prometheus",
@@ -390,7 +390,7 @@
     {
       "type": "timeseries",
       "title": "Orders outstanding",
-      "description": "Orders that are not done and fine, by an aggregate phase derived from the workflows they own. Each line is that phase on its own, not a running total, so a line reads the same as its tooltip. Succeeded is excluded, it only accumulates and there is nothing to act on. Failures stay because an Order that failed is still a problem you own. For outcomes over time use the throughput panel below.",
+      "description": "Orders still needing attention, by an aggregate phase derived from the workflows they own. Succeeded is excluded, it only accumulates. For outcomes over time see the throughput panel.",
       "id": 7,
       "datasource": {
         "type": "prometheus",
@@ -452,7 +452,7 @@
     {
       "type": "timeseries",
       "title": "ArtifactWorkflows outstanding",
-      "description": "Workflows that are not done and fine, by the phase ARC mirrors from Argo. Each line is that phase on its own, not a running total. Unknown is a freshly created workflow that has not started yet. Succeeded is excluded, see the throughput panel below for outcomes over time.",
+      "description": "Workflows still needing attention, by the phase ARC mirrors from Argo. Unknown means created but not yet started. Succeeded is excluded.",
       "id": 8,
       "datasource": {
         "type": "prometheus",
@@ -514,7 +514,7 @@
     {
       "type": "timeseries",
       "title": "Workflow throughput by result",
-      "description": "Single run workflows reaching a terminal phase, per second. This is where outcomes over time live: a burst of failures shows as a peak here, where the gauges above would only show a backlog draining. Stacked on purpose, unlike the gauges above: the bands add up to the total completion rate, so read a band by its thickness rather than against the axis.",
+      "description": "Single run workflows reaching a terminal phase, per second. Stacked: the bands add up to the total rate, so read a band by its thickness, not against the axis.",
       "id": 9,
       "datasource": {
         "type": "prometheus",
@@ -576,7 +576,7 @@
     {
       "type": "timeseries",
       "title": "Success ratio",
-      "description": "Share of single run workflows completing successfully. Cron workflows are not counted here, see the freshness table. Blank while nothing has completed in the window, which is not the same as zero percent.",
+      "description": "Share of single run workflows completing successfully. Cron runs are not counted, see the freshness table. Blank means nothing completed in the window, which is not zero percent.",
       "id": 10,
       "datasource": {
         "type": "prometheus",
@@ -659,7 +659,7 @@
     {
       "type": "timeseries",
       "title": "Duration p99 by artifact type",
-      "description": "Argo execution time of single run workflows, 99th percentile. This metric carries no namespace label, so it ignores the namespace variable while its neighbours honour it.",
+      "description": "Argo execution time of single run workflows, 99th percentile. This metric has no namespace label, so the namespace variable does not apply to it.",
       "id": 11,
       "datasource": {
         "type": "prometheus",
@@ -790,7 +790,7 @@
     {
       "type": "timeseries",
       "title": "Reconcile errors by reason",
-      "description": "Why reconciles fail. The reason matches the Kubernetes Event reason for the same failure, so kubectl describe shows the same word. Retry inflated, a permanently failing reconcile increments on every backoff.",
+      "description": "Why reconciles fail. The reason matches the Kubernetes Event reason, so kubectl describe shows the same word. Retry inflated: a permanent failure increments on every backoff.",
       "id": 13,
       "datasource": {
         "type": "prometheus",
@@ -852,7 +852,7 @@
     {
       "type": "table",
       "title": "Cron freshness",
-      "description": "Time since the last successful run of each cron workflow group. Reduced to the oldest per namespace and artifact type, so a stalled workflow is not masked by a healthy sibling. A group that has never succeeded does not appear.",
+      "description": "Time since each cron group last succeeded, oldest per namespace and artifact type so a stall is not masked by a healthy sibling. A group that never succeeded does not appear.",
       "id": 14,
       "datasource": {
         "type": "prometheus",
@@ -954,7 +954,7 @@
     {
       "type": "timeseries",
       "title": "Workqueue depth",
-      "description": "Items waiting in ARC's reconcile queues. Filtered to ARC, other controllers in the cluster emit the same metric. Sustained growth means the controller is falling behind.",
+      "description": "Items waiting in ARC's reconcile queues. Sustained growth means the controller is falling behind.",
       "id": 16,
       "datasource": {
         "type": "prometheus",
@@ -1091,7 +1091,7 @@
     {
       "type": "timeseries",
       "title": "Resident memory",
-      "description": "Process RSS per ARC component. The collector reads the whole cache on every scrape, so this is where a large install shows up first.",
+      "description": "Process RSS per ARC component. The collector reads the whole cache on every scrape, so a large install shows here first.",
       "id": 19,
       "datasource": {
         "type": "prometheus",
