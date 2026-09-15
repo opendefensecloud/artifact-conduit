@@ -21,6 +21,7 @@ var arcMetrics = []string{
 	"arc_artifactworkflows",
 	"arc_artifactworkflow_last_scheduled_timestamp_seconds",
 	"arc_artifactworkflow_last_success_timestamp_seconds",
+	"arc_artifactworkflow_schedule_interval_seconds",
 	"arc_artifactworkflow_completions_total",
 	"arc_artifactworkflow_duration_seconds",
 	"arc_artifactworkflow_duration_seconds_bucket",
@@ -73,6 +74,7 @@ var identifier = regexp.MustCompile(`[a-zA-Z_][a-zA-Z0-9_]*`)
 // interpolate replaces the Grafana template constructs, which are not PromQL.
 var interpolate = strings.NewReplacer(
 	"$__rate_interval", "5m",
+	"$__range", "6h",
 	"$namespace", "default",
 	"$artifact_type", "oci",
 	"${datasource}", "prometheus",
