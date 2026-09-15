@@ -2,7 +2,7 @@
 
 ## How To Provide Feedback
 
-Please [raise an issue in Github](https://github.com/opendefensecloud/artifact-conduit/issues).
+Please report bugs, suggestions or post questions by [raising an issue on GitHub](https://github.com/opendefensecloud/artifact-conduit/issues). Please report security vulnerabilities privately via the [Security tab](https://github.com/opendefensecloud/artifact-conduit/security/advisories/new), per the [security policy](https://github.com/opendefensecloud/.github/blob/main/SECURITY.md).
 
 ## Code of Conduct
 
