@@ -121,6 +121,7 @@ cardinality stays bounded by namespaces and artifact types.
 | `arc_artifactworkflow_duration_seconds` | Histogram | `artifact_type`, `result` | Argo execution time of single run workflows |
 | `arc_artifactworkflow_last_scheduled_timestamp_seconds` | Gauge | `namespace`, `artifact_type` | Cron only, when the group was last scheduled |
 | `arc_artifactworkflow_last_success_timestamp_seconds` | Gauge | `namespace`, `artifact_type` | Cron only, when the group last succeeded |
+| `arc_artifactworkflow_schedule_interval_seconds` | Gauge | `namespace`, `artifact_type` | Cron only, how long the group was meant to wait after that success |
 | `arc_reconcile_errors_total` | Counter | `controller`, `reason` | Classified reconcile failures |
 | `arc_collector_errors_total` | Counter | `resource` | Cache reads that failed while collecting the gauges |
 
@@ -144,6 +145,11 @@ must not read an absent series as zero.
 - **The freshness gauges reduce to the oldest** in each `(namespace, artifact_type)`
   group, so a stalled workflow is never masked by a healthy sibling. A group that has
   never succeeded contributes no series.
+- **`arc_artifactworkflow_schedule_interval_seconds` is measured from the last success,
+  not from the schedule.** It is the wait that was expected after that particular run, so
+  on an uneven schedule such as `0 9,17 * * *` it reports eight hours after the morning
+  run and sixteen after the evening one. Subtracting it from the elapsed time gives how
+  far the next run is overdue; reading it as "the period" will mislead.
 - **ArtifactWorkflows created before this feature report `artifact_type="unknown"`.**
   The label is stamped at creation and existing objects are never relabelled. For cron
   workflows, which are never recreated, this is permanent.

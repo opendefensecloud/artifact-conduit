@@ -144,7 +144,6 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 	// Held in step with succeeded so the interval belongs to the workflow whose
 	// timestamp is reported, not to whichever sibling happened to be listed last.
 	intervals := map[cronKey]int64{}
-	now := time.Now()
 
 	for i := range workflows.Items {
 		workflow := &workflows.Items[i]
@@ -179,7 +178,9 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 		// stop.
 		if workflow.Status.Succeeded > 0 && !workflow.Status.CompletionTime.IsZero() {
 			if keepOldest(succeeded, cron, workflow.Status.CompletionTime.Unix()) {
-				if seconds, ok := ScheduleInterval(workflow.Spec.Cron, now); ok {
+				// Anchored on the run being reported, not on scrape time, so an
+				// uneven schedule gives the gap that followed this success.
+				if seconds, ok := ScheduleInterval(workflow.Spec.Cron, workflow.Status.CompletionTime.Time); ok {
 					intervals[cron] = seconds
 				} else {
 					delete(intervals, cron)

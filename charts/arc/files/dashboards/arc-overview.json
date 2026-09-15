@@ -786,7 +786,7 @@
     {
       "type": "table",
       "title": "Cron freshness",
-      "description": "Time since each cron group last succeeded, against the interval it declares. Overdue is the difference, so a positive number is late whatever the schedule. Reduced to the oldest per namespace and artifact type, so a stall is not masked by a healthy sibling. A group that never succeeded does not appear.",
+      "description": "Time since each cron group last succeeded, against the wait its schedule expected after that run. Overdue is the difference, so a positive number is late whatever the schedule. Interval is measured from the success, not the nominal period, which is what keeps Overdue exact on an uneven schedule. Reduced to the oldest per namespace and artifact type, so a stall is not masked by a healthy sibling. A group that never succeeded does not appear.",
       "id": 13,
       "datasource": {
         "type": "prometheus",
