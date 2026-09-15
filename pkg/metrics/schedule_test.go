@@ -106,7 +106,7 @@ var _ = Describe("ScheduleInterval", func() {
 		}, monday)
 
 		Expect(ok).To(BeTrue())
-		Expect(tokyo).To(Equal(int64(15*3600)))
+		Expect(tokyo).To(Equal(int64(15 * 3600)))
 
 		utc, ok := ScheduleInterval(&arcv1alpha1.Cron{Schedules: midnight}, monday)
 
