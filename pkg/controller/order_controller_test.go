@@ -359,7 +359,10 @@ var _ = Describe("OrderController", func() {
 					Namespace: ns.Name,
 				},
 				Spec: arcv1alpha1.OrderSpec{
-					TTL: &metav1.Duration{Duration: 3 * time.Second},
+					// Derived from the suite constants: the first Eventually below has
+					// to observe the artifact workflow before the TTL elapses, and the
+					// second one has to observe the deletion within its own timeout.
+					TTL: &metav1.Duration{Duration: eventuallyTimeout / 2},
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
 					},
@@ -388,62 +391,37 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(0))
 		})
 
-		It("should not garbage collect an order with a zero TTL", func() {
-			createEndpoints("src-1", "dst-1")
-			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-ttl-zero",
-					Namespace: ns.Name,
-				},
-				Spec: arcv1alpha1.OrderSpec{
-					TTL: &metav1.Duration{Duration: 0},
-					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+		DescribeTable("should not garbage collect the order",
+			func(name string, ttl time.Duration) {
+				createEndpoints("src-1", "dst-1")
+				order := &arcv1alpha1.Order{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: ns.Name,
 					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, order)).To(Succeed())
-
-			awList := &arcv1alpha1.ArtifactWorkflowList{}
-			Eventually(func() int {
-				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
-				return len(awList.Items)
-			}).Should(Equal(1))
-
-			// A zero TTL retains the order indefinitely, the same way a zero
-			// TTLAfterFinished/TTLAfterFailed keeps an artifact workflow.
-			Consistently(func() error {
-				return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
-			}).Should(Succeed())
-		})
-
-		It("should not garbage collect an order before its TTL has elapsed", func() {
-			createEndpoints("src-1", "dst-1")
-			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-ttl-not-expired",
-					Namespace: ns.Name,
-				},
-				Spec: arcv1alpha1.OrderSpec{
-					TTL: &metav1.Duration{Duration: time.Hour},
-					Artifacts: []arcv1alpha1.OrderArtifact{
-						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					Spec: arcv1alpha1.OrderSpec{
+						TTL: &metav1.Duration{Duration: ttl},
+						Artifacts: []arcv1alpha1.OrderArtifact{
+							{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						},
 					},
-				},
-			}
-			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+				}
+				Expect(k8sClient.Create(ctx, order)).To(Succeed())
 
-			awList := &arcv1alpha1.ArtifactWorkflowList{}
-			Eventually(func() int {
-				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
-				return len(awList.Items)
-			}).Should(Equal(1))
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				Eventually(func() int {
+					_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+					return len(awList.Items)
+				}).Should(Equal(1))
 
-			// The order should still be present after some reconciles since its TTL is far in the future.
-			Consistently(func() error {
-				return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
-			}).Should(Succeed())
-		})
+				Consistently(func() error {
+					return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				}).Should(Succeed())
+			},
+			// A zero TTL retains the order indefinitely, like a zero TTLAfterFinished.
+			Entry("with a zero TTL", "test-order-ttl-zero", time.Duration(0)),
+			Entry("before its TTL has elapsed", "test-order-ttl-not-expired", time.Hour),
+		)
 
 		It("should delete artifact workflows when order is completed successfully", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")

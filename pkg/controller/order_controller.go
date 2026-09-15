@@ -83,7 +83,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
-		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonDeleting, "Delete", "Order is being deleted, cleaning up artifact workflows")
+		r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, ReasonDeleting, "Delete", "Order is being deleted, cleaning up artifact workflows")
 
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
@@ -132,9 +132,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	}
 
 	// Garbage collect the Order once its TTL has elapsed since creation. The
-	// finalizer added above makes sure the artifact workflows are cleaned up
-	// before the Order is finally removed. A zero TTL retains the Order
-	// indefinitely, matching the TTLAfterFinished/TTLAfterFailed convention.
+	// finalizer added above triggers deletion of the artifact workflows, the
+	// ownerReference reaps whatever is left. A zero TTL retains the Order
+	// indefinitely, like a zero TTLAfterFinished. Unset is the opposite though:
+	// an unset TTLAfterFinished deletes immediately.
 	if order.Spec.TTL != nil && order.Spec.TTL.Duration > 0 {
 		expiresAt := order.CreationTimestamp.Add(order.Spec.TTL.Duration)
 		if remaining := time.Until(expiresAt); remaining > 0 {
