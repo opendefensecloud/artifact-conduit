@@ -50,6 +50,13 @@ var (
 			"Where several cron ArtifactWorkflows share a namespace and artifact type, the oldest of their timestamps is reported.",
 		[]string{"namespace", "artifact_type"}, nil,
 	)
+
+	scheduleIntervalDesc = prometheus.NewDesc(
+		"arc_artifactworkflow_schedule_interval_seconds",
+		"Declared gap between runs of a cron ArtifactWorkflow, the shortest across its schedules. "+
+			"Reported for the same workflow as the last success timestamp, so the two can be subtracted.",
+		[]string{"namespace", "artifact_type"}, nil,
+	)
 )
 
 // Collector reports current ARC state by reading the manager cache at scrape
@@ -78,6 +85,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- workflowsDesc
 	ch <- lastScheduledDesc
 	ch <- lastSuccessDesc
+	ch <- scheduleIntervalDesc
 }
 
 // Collect implements prometheus.Collector.
@@ -133,6 +141,11 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 	scheduled := map[cronKey]int64{}
 	succeeded := map[cronKey]int64{}
 
+	// Held in step with succeeded so the interval belongs to the workflow whose
+	// timestamp is reported, not to whichever sibling happened to be listed last.
+	intervals := map[cronKey]int64{}
+	now := time.Now()
+
 	for i := range workflows.Items {
 		workflow := &workflows.Items[i]
 		artifactType := ArtifactTypeOf(workflow)
@@ -165,7 +178,13 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 		// non zero value is what makes CompletionTime a success rather than a
 		// stop.
 		if workflow.Status.Succeeded > 0 && !workflow.Status.CompletionTime.IsZero() {
-			keepOldest(succeeded, cron, workflow.Status.CompletionTime.Unix())
+			if keepOldest(succeeded, cron, workflow.Status.CompletionTime.Unix()) {
+				if seconds, ok := ScheduleInterval(workflow.Spec.Cron, now); ok {
+					intervals[cron] = seconds
+				} else {
+					delete(intervals, cron)
+				}
+			}
 		}
 	}
 
@@ -176,6 +195,7 @@ func (c *Collector) collectWorkflows(ctx context.Context, ch chan<- prometheus.M
 
 	emitCronTimestamps(ch, lastScheduledDesc, scheduled)
 	emitCronTimestamps(ch, lastSuccessDesc, succeeded)
+	emitCronTimestamps(ch, scheduleIntervalDesc, intervals)
 }
 
 // cronKey is the label tuple of the cron timestamp gauges. It is coarser than
@@ -185,13 +205,16 @@ type cronKey struct{ namespace, artifactType string }
 // keepOldest reduces a group of timestamps to its minimum. The oldest value is
 // the one a staleness alert has to see: taking the newest would let a healthy
 // workflow mask a stalled sibling in the same group, which is the failure these
-// gauges exist to catch.
-func keepOldest(timestamps map[cronKey]int64, key cronKey, seconds int64) {
+// gauges exist to catch. It reports whether the value was taken, so a caller can
+// keep another field in step with the workflow that won.
+func keepOldest(timestamps map[cronKey]int64, key cronKey, seconds int64) bool {
 	if current, ok := timestamps[key]; ok && current <= seconds {
-		return
+		return false
 	}
 
 	timestamps[key] = seconds
+
+	return true
 }
 
 func emitCronTimestamps(ch chan<- prometheus.Metric, desc *prometheus.Desc, timestamps map[cronKey]int64) {
