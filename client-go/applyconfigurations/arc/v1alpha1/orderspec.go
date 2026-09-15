@@ -25,7 +25,9 @@ type OrderSpecApplyConfiguration struct {
 	// workflow progress: if it elapses while an artifact workflow is still
 	// pending or running, that workflow is deleted mid-execution, interrupting
 	// the in-flight transfer. If unset or zero, the Order is retained
-	// indefinitely.
+	// indefinitely. Note that an unset TTLAfterFinished behaves the other way
+	// around and deletes immediately. With a cron schedule the TTL still counts
+	// from creation, so the Order is deleted in the middle of its schedule.
 	TTL *v1.Duration `json:"ttl,omitempty"`
 }
 
