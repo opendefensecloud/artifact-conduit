@@ -33,7 +33,7 @@ The hosted version of the documentation can be found at <https://arc.opendefense
 
 ## Contributing
 
-We'd love to get feedback from you. Please report bugs, suggestions or post questions by [opening an issue](https://github.com/opendefensecloud/artifact-conduit/issues). Please report security vulnerabilities privately via the [Security tab](https://github.com/opendefensecloud/artifact-conduit/security/advisories/new), per the [security policy](https://github.com/opendefensecloud/.github/blob/main/SECURITY.md).
+We'd love to get feedback from you. See the [Contributing Guide](docs/CONTRIBUTING.md) for how to [report bugs, suggestions, questions and security vulnerabilities](docs/CONTRIBUTING.md#how-to-provide-feedback) and for our development workflow. Everyone participating is expected to follow our [Code of Conduct](docs/CODE_OF_CONDUCT.md).
 
 ## License
 
