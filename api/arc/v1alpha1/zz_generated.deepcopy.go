@@ -626,6 +626,11 @@ func (in *OrderSpec) DeepCopyInto(out *OrderSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.TTL != nil {
+		in, out := &in.TTL, &out.TTL
+		*out = new(v1.Duration)
+		**out = **in
+	}
 	return
 }
 
