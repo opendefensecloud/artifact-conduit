@@ -136,7 +136,7 @@ func (p *Prober) Probe(ctx context.Context, t Target) Result {
 	u, err := targetURL(t.RemoteURL)
 	if err != nil {
 		return Result{
-			Reachable:     Check{metav1.ConditionUnknown, ReasonUnsupportedScheme, err.Error()},
+			Reachable:     Check{metav1.ConditionUnknown, ReasonUnsupportedScheme, truncate(err.Error(), messageTruncateLimit)},
 			Authenticated: Check{metav1.ConditionUnknown, ReasonInconclusive, "target was not probed"},
 		}
 	}
@@ -268,17 +268,17 @@ func classifyTransportError(err error) Check {
 
 	switch {
 	case errors.As(err, &deniedErr):
-		return Check{metav1.ConditionFalse, ReasonTargetDenied, deniedErr.Error()}
+		return Check{metav1.ConditionFalse, ReasonTargetDenied, truncate(deniedErr.Error(), messageTruncateLimit)}
 	case errors.As(err, &dnsErr):
-		return Check{metav1.ConditionFalse, ReasonDNSFailure, dnsErr.Error()}
+		return Check{metav1.ConditionFalse, ReasonDNSFailure, truncate(dnsErr.Error(), messageTruncateLimit)}
 	case errors.As(err, &certErr):
-		return Check{metav1.ConditionFalse, ReasonTLSError, certErr.Error()}
+		return Check{metav1.ConditionFalse, ReasonTLSError, truncate(certErr.Error(), messageTruncateLimit)}
 	case errors.Is(err, context.DeadlineExceeded), os.IsTimeout(err):
-		return Check{metav1.ConditionFalse, ReasonTimeout, err.Error()}
+		return Check{metav1.ConditionFalse, ReasonTimeout, truncate(err.Error(), messageTruncateLimit)}
 	case errors.Is(err, syscall.ECONNREFUSED):
-		return Check{metav1.ConditionFalse, ReasonConnectionRefused, err.Error()}
+		return Check{metav1.ConditionFalse, ReasonConnectionRefused, truncate(err.Error(), messageTruncateLimit)}
 	default:
-		return Check{metav1.ConditionFalse, ReasonProbeFailed, err.Error()}
+		return Check{metav1.ConditionFalse, ReasonProbeFailed, truncate(err.Error(), messageTruncateLimit)}
 	}
 }
 

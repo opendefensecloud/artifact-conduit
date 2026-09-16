@@ -76,6 +76,10 @@ func DefaultDenyCIDRsString() string {
 }
 
 func denied(deny []netip.Prefix, ip netip.Addr) bool {
+	if ip.Zone() != "" {
+		ip = ip.WithZone("")
+	}
+
 	ip = ip.Unmap()
 	for _, p := range deny {
 		if p.Contains(ip) {

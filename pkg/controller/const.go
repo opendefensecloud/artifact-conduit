@@ -27,7 +27,7 @@ const (
 	ControllerArtifactWorkflow = "artifactworkflow"
 )
 
-// ReasonDeleting is the Event reason for the informational warning emitted while
+// ReasonDeleting is the Event reason for the informational event emitted while
 // an order's deletion is in progress. It is not a failure, so it is not counted
 // on arc_reconcile_errors_total.
 const ReasonDeleting = "Deleting"

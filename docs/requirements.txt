@@ -6,7 +6,7 @@ mkdocs-panzoom-plugin == 0.5.2
 mkdocs-awesome-nav == 3.3.0
 
 pillow ==12.3.0
-cairosvg == 2.9.0
+cairosvg ==2.9.1
 mike == 2.2.0
 
 # Pinned transitive dependency; introduced to patch GHSA-65pc-fj4g-8rjx

@@ -46,7 +46,7 @@ An `Endpoint` reports what ARC has observed about it in `status.conditions`.
 | Condition | Meaning |
 | --- | --- |
 | `Validated` | The referenced `Secret` exists and the `Endpoint`'s type is accepted by some `ArtifactType` or `ClusterArtifactType` in a position its usage allows. |
-| `Reachable` | The target answered. Any HTTP response counts, including `401` — the point of this condition is that something is listening. |
+| `Reachable` | The target answered. Any HTTP non 404 / 5xx response counts. The point of this condition is that something is listening. |
 | `Authenticated` | `True` means the target demanded credentials and accepted the configured ones. ARC never sends credentials on the first request — only once the target's own response challenges for them. |
 | `Ready` | A summary of the others, and the column `kubectl get endpoints.arc.opendefense.cloud` prints. |
 
@@ -93,13 +93,20 @@ the controller-manager Deployment is the boundary to rely on.
 
 The probe also reads the `username`/`password` keys of the `Secret` an
 `Endpoint` references and sends them as Basic auth to the `remoteURL` the
-`Endpoint` names — both chosen by whoever created the `Endpoint`. `create` on
-`endpoints.arc.opendefense.cloud` must therefore be treated as equivalent to
-`get` on `Secrets` in the same namespace: anyone who can create an `Endpoint`
-can point it at a server they control and have that Secret's credentials
-delivered to it. RBAC that grants `Endpoint` creation without also granting
-Secret read is not a safe boundary. Egress `NetworkPolicy` on the
-controller-manager is the control for where those credentials may travel.
+`Endpoint` names — both chosen by whoever created the `Endpoint`. The first
+probe is always sent anonymously, even if the `Secret` contains credentials.
+Credentials are only sent if the initial anonymous probe responds with a
+status indicating that authentication is required. This is to close the gap
+between a public api that responds successfully no matter the credentials,
+which can therefore not be checked on validity, and private endpoints that 
+require authentication and therefore validate the credentials by necessity.
+`create` on `endpoints.arc.opendefense.cloud` must therefore be treated as
+equivalent to `get` on `Secrets` in the same namespace: anyone who can
+create an `Endpoint` can point it at a server they control and have that 
+Secret's credentials delivered to it. RBAC that grants `Endpoint` creation
+without also granting Secret read is not a safe boundary. Egress
+`NetworkPolicy` on the controller-manager is the control for where those
+credentials may travel.
 
 ## The `ClusterArtifactType` and `ArtifactType`
 

@@ -1507,11 +1507,17 @@ func schema_arc_api_arc_v1alpha1_OrderSpec(ref common.ReferenceCallback) common.
 							},
 						},
 					},
+					"ttl": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TTL specifies how long the Order is retained after its creation. Once the duration has elapsed since the Order's creationTimestamp, the Order is automatically deleted (garbage collected) together with the artifact workflows it created. The TTL is measured from creation regardless of workflow progress: if it elapses while an artifact workflow is still pending or running, that workflow is deleted mid-execution, interrupting the in-flight transfer. If unset or zero, the Order is retained indefinitely. Note that an unset TTLAfterFinished behaves the other way around and deletes immediately. With a cron schedule the TTL still counts from creation, so the Order is deleted in the middle of its schedule.",
+							Ref:         ref(metav1.Duration{}.OpenAPIModelName()),
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			v1alpha1.OrderArtifact{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName()},
+			v1alpha1.OrderArtifact{}.OpenAPIModelName(), v1alpha1.OrderDefaults{}.OpenAPIModelName(), metav1.Duration{}.OpenAPIModelName()},
 	}
 }
 

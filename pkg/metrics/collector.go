@@ -147,6 +147,10 @@ func (c *Collector) collectEndpoints(ctx context.Context, ch chan<- prometheus.M
 // the controller has not yet observed has no condition at all, which is
 // reported as unknown rather than dropped.
 func endpointReadyLabel(ep *arcv1alpha1.Endpoint) string {
+	if ep.Status.ObservedGeneration != ep.Generation {
+
+		return "unknown"
+	}
 	for _, c := range ep.Status.Conditions {
 		if c.Type == arcv1alpha1.EndpointConditionReady {
 			return strings.ToLower(string(c.Status))

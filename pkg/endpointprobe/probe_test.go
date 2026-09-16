@@ -117,6 +117,35 @@ func proberFor(srv *httptest.Server) *Prober {
 	return p
 }
 
+// proberForDialerTest returns a Prober built from New(DefaultDenyCIDRs) —
+// with guardedDialContext, and the real default deny list, intact — that
+// additionally trusts srv's TLS certificate, so a test can reach an
+// httptest.NewTLSServer target far enough for the dialer itself to be the
+// thing that refuses a denied address.
+//
+// proberFor must NOT be used for this: it replaces client.Transport wholesale
+// with srv.Client().Transport, which discards guardedDialContext entirely.
+// A test asserting "the denied address was never dialed" would then pass
+// even if guardedDialContext were deleted from the codebase, because nothing
+// wired to the deny list would be in the request path at all. Do not
+// "simplify" this back to proberFor.
+func proberForDialerTest(srv *httptest.Server) *Prober {
+	p := New(DefaultDenyCIDRs)
+
+	transport, ok := p.client.Transport.(*http.Transport)
+	if !ok {
+		panic("New's client.Transport is no longer *http.Transport; update proberForDialerTest")
+	}
+	srvTransport, ok := srv.Client().Transport.(*http.Transport)
+	if !ok {
+		panic("httptest server's client.Transport is not *http.Transport")
+	}
+
+	transport.TLSClientConfig = srvTransport.TLSClientConfig.Clone()
+
+	return p
+}
+
 func TestProbeSchemelessHostUsesRegistryPing(t *testing.T) {
 	var path atomic.Value
 	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -303,7 +332,7 @@ func TestAuthUnsupportedSecretShapeIsUnknown(t *testing.T) {
 }
 
 func TestAuthAcceptedCredentials(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		u, p, ok := r.BasicAuth()
 		if !ok || u != "alice" || p != "s3cret" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -326,7 +355,7 @@ func TestAuthAcceptedCredentials(t *testing.T) {
 }
 
 func TestAuthRejectedCredentials(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
 	defer srv.Close()
@@ -343,6 +372,65 @@ func TestAuthRejectedCredentials(t *testing.T) {
 	}
 	if got.Reachable.Status != metav1.ConditionTrue {
 		t.Fatalf("a 401 still proves reachability: %+v", got.Reachable)
+	}
+}
+
+func TestAuthRefusesCredentialsOverHTTP(t *testing.T) {
+	var sawAuthHeader atomic.Bool
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, _, ok := r.BasicAuth(); ok {
+			sawAuthHeader.Store(true)
+		}
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{
+		RemoteURL: srv.URL, HasSecret: true, Username: "alice", Password: "s3cret",
+	})
+
+	if got.Authenticated.Status != metav1.ConditionUnknown {
+		t.Fatalf("want Unknown, got %+v", got.Authenticated)
+	}
+	if got.Authenticated.Reason != ReasonInconclusive {
+		t.Fatalf("want %s, got %s", ReasonInconclusive, got.Authenticated.Reason)
+	}
+	if !strings.Contains(got.Authenticated.Message, "refusing to send credentials") {
+		t.Fatalf("want message to mention refusing to send credentials, got %q", got.Authenticated.Message)
+	}
+	if sawAuthHeader.Load() {
+		t.Fatal("credentials must never be sent over plaintext http, on any request")
+	}
+}
+
+func TestAuthBearerRealmOverHTTPRefusesCredentials(t *testing.T) {
+	var realmHits atomic.Int64
+	realmSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		realmHits.Add(1)
+	}))
+	defer realmSrv.Close()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=%q", realmSrv.URL))
+		w.WriteHeader(http.StatusUnauthorized)
+	}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{
+		RemoteURL: srv.URL, HasSecret: true, Username: "alice", Password: "s3cret",
+	})
+
+	if got.Authenticated.Status != metav1.ConditionUnknown {
+		t.Fatalf("want Unknown, got %+v", got.Authenticated)
+	}
+	if got.Authenticated.Reason != ReasonInconclusive {
+		t.Fatalf("want %s, got %s", ReasonInconclusive, got.Authenticated.Reason)
+	}
+	if !strings.Contains(got.Authenticated.Message, "refusing to send credentials") {
+		t.Fatalf("want message to mention refusing to send credentials, got %q", got.Authenticated.Message)
+	}
+	if n := realmHits.Load(); n != 0 {
+		t.Fatalf("must not dial the realm when credentials would travel over http, got %d requests", n)
 	}
 }
 
@@ -369,7 +457,7 @@ func TestAuthPublicRegistryCredentialsNotExercised(t *testing.T) {
 func TestAuthPublicRegistryDoesNotSendCredentials(t *testing.T) {
 	var sawAuthHeader atomic.Bool
 	var requests atomic.Int64
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if requests.Add(1) == 1 {
 			_, _, ok := r.BasicAuth()
 			sawAuthHeader.Store(ok)
@@ -391,7 +479,7 @@ func TestAuthPublicRegistryDoesNotSendCredentials(t *testing.T) {
 
 func TestAuthBearerChallengeAccepted(t *testing.T) {
 	var tokenHits atomic.Int64
-	tokenSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	tokenSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenHits.Add(1)
 		if u, p, _ := r.BasicAuth(); u != "alice" || p != "s3cret" {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -405,7 +493,7 @@ func TestAuthBearerChallengeAccepted(t *testing.T) {
 	}))
 	defer tokenSrv.Close()
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("WWW-Authenticate",
 			fmt.Sprintf("Bearer realm=%q,service=%q", tokenSrv.URL, "registry.example"))
 		w.WriteHeader(http.StatusUnauthorized)
@@ -425,12 +513,12 @@ func TestAuthBearerChallengeAccepted(t *testing.T) {
 }
 
 func TestAuthBearerChallengeRejected(t *testing.T) {
-	tokenSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	tokenSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	defer tokenSrv.Close()
 
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("WWW-Authenticate", fmt.Sprintf("Bearer realm=%q", tokenSrv.URL))
 		w.WriteHeader(http.StatusUnauthorized)
 	}))
@@ -558,14 +646,18 @@ func nonLoopbackIP(t *testing.T) string {
 }
 
 // TestAuthBearerRealmDeniedNotDialed proves the guarded dialer covers the
-// Bearer hop, not just the primary request. The realm binds to loopback,
-// which DefaultDenyCIDRs refuses; the primary target binds to a non-loopback
-// local address so the probe still reaches it and the challenge is issued.
+// Bearer hop, not just the primary request. The realm is TLS specifically so
+// that it passes do's https credential gate (an http realm would be refused
+// there, before the dialer is ever consulted, and the test would then prove
+// nothing about the dialer). The realm still binds to loopback, which
+// DefaultDenyCIDRs refuses, so it is the guarded dialer — not the gate —
+// that must refuse it. The primary target binds to a non-loopback local
+// address so the probe still reaches it and the challenge is issued.
 func TestAuthBearerRealmDeniedNotDialed(t *testing.T) {
 	primaryIP := nonLoopbackIP(t)
 
 	var tokenHits atomic.Int64
-	tokenSrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	tokenSrv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenHits.Add(1)
 	}))
 	defer tokenSrv.Close()
@@ -584,7 +676,7 @@ func TestAuthBearerRealmDeniedNotDialed(t *testing.T) {
 	primary.Start()
 	defer primary.Close()
 
-	got := New(DefaultDenyCIDRs).Probe(context.Background(), Target{
+	got := proberForDialerTest(tokenSrv).Probe(context.Background(), Target{
 		RemoteURL: primary.URL, HasSecret: true, Username: "alice", Password: "s3cret",
 	})
 

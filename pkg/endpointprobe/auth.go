@@ -121,7 +121,7 @@ func bearerChallenge(resp *http.Response) string {
 func challengeParams(challenge string) map[string]string {
 	out := map[string]string{}
 	for _, m := range challengeParam.FindAllStringSubmatch(challenge, -1) {
-		out[m[1]] = m[2]
+		out[strings.ToLower(m[1])] = m[2]
 	}
 
 	return out
