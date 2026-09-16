@@ -59,6 +59,8 @@ const (
 	ReasonTargetDenied      = "TargetDenied"
 	ReasonUnsupportedScheme = "UnsupportedScheme"
 	ReasonProbeFailed       = "ProbeFailed"
+	ReasonNotFound          = "NotFound"
+	ReasonServerError       = "ServerError"
 )
 
 // Authenticated reasons.
@@ -68,6 +70,10 @@ const (
 	ReasonNoCredentials         = "NoCredentials"
 	ReasonUnsupportedAuthScheme = "UnsupportedAuthScheme"
 	ReasonInconclusive          = "Inconclusive"
+	// ReasonNotExercised means the target served the anonymous probe request
+	// itself, so the configured credentials were never sent and never
+	// verified.
+	ReasonNotExercised = "NotExercised"
 )
 
 var errUnsupportedScheme = errors.New("only http and https targets can be probed")
@@ -138,7 +144,10 @@ func (p *Prober) Probe(ctx context.Context, t Target) Result {
 	ctx, cancel := context.WithTimeout(ctx, probeTimeout)
 	defer cancel()
 
-	resp, err := p.do(ctx, http.MethodGet, u.String(), t)
+	// The first request is always anonymous. Credentials are only sent once
+	// the target actually challenges for them (see authenticated in
+	// auth.go)
+	resp, err := p.do(ctx, http.MethodGet, u.String(), t, false)
 	if err != nil {
 		return Result{
 			Reachable:     classifyTransportError(err),
@@ -148,12 +157,41 @@ func (p *Prober) Probe(ctx context.Context, t Target) Result {
 	defer drainAndClose(resp)
 
 	return Result{
-		Reachable: Check{
+		Reachable:     classifyReachable(u, resp),
+		Authenticated: p.authenticated(ctx, resp, t, u),
+	}
+}
+
+// classifyReachable turns a received response into a Reachable verdict.
+//
+// Any response at all is evidence a working server answered — 1xx/2xx/3xx,
+// and 4xx including 401/403 (the normal registry auth handshake) and
+// 400/405/429 (a working server rejecting or throttling the request) are all
+// True. 404 and 5xx are the exceptions: they are reported Unknown rather than
+// True, because they are exactly the responses a target that is not actually
+// a working service would also produce.
+func classifyReachable(u *url.URL, resp *http.Response) Check {
+	switch {
+	case resp.StatusCode == http.StatusNotFound:
+		return Check{
+			metav1.ConditionUnknown,
+			ReasonNotFound,
+			fmt.Sprintf("%s did not serve %s (%s); a bare host is probed at the OCI ping endpoint "+
+				"/v2/, so a 404 there commonly means the target is not a registry at all",
+				u.Host, truncate(u.Path, messageTruncateLimit), truncate(resp.Status, messageTruncateLimit)),
+		}
+	case resp.StatusCode >= http.StatusInternalServerError:
+		return Check{
+			metav1.ConditionUnknown,
+			ReasonServerError,
+			fmt.Sprintf("%s responded with %s", u.Host, truncate(resp.Status, messageTruncateLimit)),
+		}
+	default:
+		return Check{
 			metav1.ConditionTrue,
 			ReasonReachable,
 			fmt.Sprintf("%s responded with %s", u.Host, truncate(resp.Status, messageTruncateLimit)),
-		},
-		Authenticated: p.authenticated(ctx, resp, t, u.Scheme),
+		}
 	}
 }
 
@@ -171,16 +209,19 @@ func truncate(s string, limit int) string {
 	return string(runes[:limit]) + "…(truncated)"
 }
 
-// do issues one request, attaching basic auth when the Target carries
-// credentials in a shape the probe can use.
-func (p *Prober) do(ctx context.Context, method, rawURL string, t Target) (*http.Response, error) {
+// do issues one request. Basic auth is attached only when authenticate is
+// true and the Target carries credentials in a shape the probe can use.
+func (p *Prober) do(ctx context.Context, method, rawURL string, t Target, authenticate bool) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", userAgent)
 
-	if t.usableCredentials() {
+	if authenticate && t.usableCredentials() {
+		if req.URL.Scheme != "https" {
+			return nil, fmt.Errorf("refusing to send credentials over %s", req.URL.Scheme)
+		}
 		req.SetBasicAuth(t.Username, t.Password)
 	}
 

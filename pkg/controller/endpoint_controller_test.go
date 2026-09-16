@@ -448,4 +448,76 @@ var _ = Describe("EndpointController", func() {
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(2))
 	})
+
+	It("should drop the probe conditions and lastProbeTime when validation fails", func() {
+		createTypeAccepting("oci")
+		secret := createSecret("creds-invalidated")
+		url := "https://registry.example/invalidated"
+		ep := createEndpoint("oci", "creds-invalidated", url)
+
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReachable)).
+			Should(Equal("True/Reachable"))
+
+		Expect(k8sClient.Delete(ctx, secret)).To(Succeed())
+
+		// Validation now fails, so the stale probe verdicts must be dropped
+		// rather than left describing a Secret that no longer exists.
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionValidated)).
+			Should(Equal("False/SecretNotFound"))
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReachable)).
+			Should(Equal("absent"))
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionAuthenticated)).
+			Should(Equal("absent"))
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReady)).
+			Should(Equal("False/SecretNotFound"))
+		Eventually(func() *metav1.Time {
+			fresh := &arcv1alpha1.Endpoint{}
+			if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh); err != nil {
+				return nil
+			}
+
+			return fresh.Status.LastProbeTime
+		}).Should(BeNil())
+	})
+
+	It("should re-probe when a deleted ClusterArtifactType is recreated with the spec and secret unchanged", func() {
+		endpointType := "recreate-guard-type"
+		cat := &arcv1alpha1.ClusterArtifactType{
+			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-recreate-"},
+			Spec: arcv1alpha1.ArtifactTypeSpec{
+				Rules: arcv1alpha1.ArtifactTypeRules{
+					SrcTypes: []string{endpointType},
+					DstTypes: []string{endpointType},
+				},
+				WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{Name: "dummy"},
+			},
+		}
+		Expect(k8sClient.Create(ctx, cat)).To(Succeed())
+
+		createSecret("creds-recreate-guard")
+		url := "https://registry.example/recreate-guard"
+		ep := createEndpoint(endpointType, "creds-recreate-guard", url)
+
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReachable)).
+			Should(Equal("True/Reachable"))
+		callsBefore := stubProbe.CallsFor(url)
+
+		Expect(k8sClient.Delete(ctx, cat)).To(Succeed())
+
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionValidated)).
+			Should(Equal("False/UnknownType"))
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReachable)).
+			Should(Equal("absent"))
+
+		recreated := &arcv1alpha1.ClusterArtifactType{
+			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-recreate-"},
+			Spec:       cat.Spec,
+		}
+		Expect(k8sClient.Create(ctx, recreated)).To(Succeed())
+		DeferCleanup(k8sClient.Delete, ctx, recreated)
+
+		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionReachable)).
+			Should(Equal("True/Reachable"))
+		Expect(stubProbe.CallsFor(url)).To(BeNumerically(">", callsBefore))
+	})
 })

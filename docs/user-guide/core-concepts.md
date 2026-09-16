@@ -47,14 +47,16 @@ An `Endpoint` reports what ARC has observed about it in `status.conditions`.
 | --- | --- |
 | `Validated` | The referenced `Secret` exists and the `Endpoint`'s type is accepted by some `ArtifactType` or `ClusterArtifactType` in a position its usage allows. |
 | `Reachable` | The target answered. Any HTTP response counts, including `401` — the point of this condition is that something is listening. |
-| `Authenticated` | The credentials were accepted. |
+| `Authenticated` | `True` means the target demanded credentials and accepted the configured ones. ARC never sends credentials on the first request — only once the target's own response challenges for them. |
 | `Ready` | A summary of the others, and the column `kubectl get endpoints.arc.opendefense.cloud` prints. |
 
 `Authenticated` is `Unknown` rather than `False` when ARC cannot verify
 credentials of that shape — an S3 `Secret` holding `AWS_ACCESS_KEY_ID` and
-`AWS_SECRET_ACCESS_KEY`, for example. `Unknown` does not prevent an `Endpoint`
-from becoming `Ready`: it records that ARC did not check, not that the check
-failed.
+`AWS_SECRET_ACCESS_KEY`, for example; or the target served the probe request
+without ever asking for credentials, so the configured ones were never exercised
+(a public registry that ignores credentials entirely is the common case).
+`Unknown` does not prevent an `Endpoint` from becoming `Ready`: it records
+that ARC did not check, or had nothing to check, not that the check failed.
 
 ```console
 $ kubectl get endpoints.arc.opendefense.cloud

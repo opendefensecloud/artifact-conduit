@@ -188,6 +188,57 @@ func TestProbeDoesNotFollowRedirects(t *testing.T) {
 	}
 }
 
+func TestProbeNotFoundIsUnknown(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{RemoteURL: srv.URL})
+
+	if got.Reachable.Status != metav1.ConditionUnknown {
+		t.Fatalf("a 404 is not evidence of a working service: want Reachable Unknown, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonNotFound {
+		t.Fatalf("want reason %s, got %s", ReasonNotFound, got.Reachable.Reason)
+	}
+}
+
+func TestProbeServerErrorIsUnknown(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{RemoteURL: srv.URL})
+
+	if got.Reachable.Status != metav1.ConditionUnknown {
+		t.Fatalf("a 503 is not evidence of a working service: want Reachable Unknown, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonServerError {
+		t.Fatalf("want reason %s, got %s", ReasonServerError, got.Reachable.Reason)
+	}
+}
+
+func TestProbeOtherFourXXStillReachable(t *testing.T) {
+	for _, code := range []int{http.StatusBadRequest, http.StatusTooManyRequests} {
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(code)
+		}))
+
+		got := proberFor(srv).Probe(context.Background(), Target{RemoteURL: srv.URL})
+
+		if got.Reachable.Status != metav1.ConditionTrue {
+			t.Fatalf("status %d: want Reachable True, got %+v", code, got.Reachable)
+		}
+		if got.Reachable.Reason != ReasonReachable {
+			t.Fatalf("status %d: want reason %s, got %s", code, ReasonReachable, got.Reachable.Reason)
+		}
+
+		srv.Close()
+	}
+}
+
 func TestProbeRefusesDeniedTargetWithoutDialing(t *testing.T) {
 	var hits atomic.Int64
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -292,6 +343,49 @@ func TestAuthRejectedCredentials(t *testing.T) {
 	}
 	if got.Reachable.Status != metav1.ConditionTrue {
 		t.Fatalf("a 401 still proves reachability: %+v", got.Reachable)
+	}
+}
+
+// TestAuthPublicRegistryCredentialsNotExercised covers a public registry
+// that ignores credentials entirely and serves 200 to everyone. Reporting
+// Authenticated=True here would be a lie: the server never examined the
+// configured username and password.
+func TestAuthPublicRegistryCredentialsNotExercised(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{
+		RemoteURL: srv.URL, HasSecret: true, Username: "alice", Password: "s3cret",
+	})
+
+	if got.Authenticated.Status != metav1.ConditionUnknown {
+		t.Fatalf("want Unknown, got %+v", got.Authenticated)
+	}
+	if got.Authenticated.Reason != ReasonNotExercised {
+		t.Fatalf("want %s, got %s", ReasonNotExercised, got.Authenticated.Reason)
+	}
+}
+
+func TestAuthPublicRegistryDoesNotSendCredentials(t *testing.T) {
+	var sawAuthHeader atomic.Bool
+	var requests atomic.Int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if requests.Add(1) == 1 {
+			_, _, ok := r.BasicAuth()
+			sawAuthHeader.Store(ok)
+		}
+	}))
+	defer srv.Close()
+
+	got := proberFor(srv).Probe(context.Background(), Target{
+		RemoteURL: srv.URL, HasSecret: true, Username: "alice", Password: "s3cret",
+	})
+
+	if got.Authenticated.Reason != ReasonNotExercised {
+		t.Fatalf("want %s, got %s", ReasonNotExercised, got.Authenticated.Reason)
+	}
+	if sawAuthHeader.Load() {
+		t.Fatal("the first request must be anonymous: credentials were sent to a target that never asked for them")
 	}
 }
 

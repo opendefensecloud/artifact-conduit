@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlcontroller "sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -51,6 +52,13 @@ type probeStamp struct {
 	secretRV   string
 	forceAt    time.Time
 }
+
+// endpointMaxConcurrentReconciles bounds how many Endpoints this controller
+// reconciles at once. The probe is network-bound and capped at 5s, so with the
+// controller-runtime default of one worker, reconciliation is strictly serial:
+// on a restart, with the in-memory probe cache empty, N Endpoints that all time
+// out converge only after roughly 5*N seconds.
+const endpointMaxConcurrentReconciles = 4
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints/status,verbs=get;update;patch
@@ -86,6 +94,10 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if validated.Status == metav1.ConditionTrue {
 		r.probeEndpoint(ctx, log, endpoint, secret)
+	} else {
+		meta.RemoveStatusCondition(&endpoint.Status.Conditions, arcv1alpha1.EndpointConditionReachable)
+		meta.RemoveStatusCondition(&endpoint.Status.Conditions, arcv1alpha1.EndpointConditionAuthenticated)
+		endpoint.Status.LastProbeTime = nil
 	}
 
 	setReadyCondition(endpoint)
@@ -376,6 +388,7 @@ func (r *EndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(&corev1.Secret{}, handler.EnqueueRequestsFromMapFunc(r.endpointsForSecret)).
 		Watches(&arcv1alpha1.ClusterArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.allEndpoints)).
 		Watches(&arcv1alpha1.ArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.allEndpoints)).
+		WithOptions(ctrlcontroller.Options{MaxConcurrentReconciles: endpointMaxConcurrentReconciles}).
 		Complete(r)
 }
 
