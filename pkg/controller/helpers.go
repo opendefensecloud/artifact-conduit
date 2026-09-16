@@ -130,6 +130,19 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 	}
 }
 
+// earliestRequeue returns the soonest of two requeue durations, treating a
+// non-positive value as "no requeue requested".
+func earliestRequeue(a, b time.Duration) time.Duration {
+	if a <= 0 {
+		return b
+	}
+	if b <= 0 {
+		return a
+	}
+
+	return min(a, b)
+}
+
 // GetForceAtAnnotationValue returns the time specified in the force reconcile annotation, or zero time if not present.
 func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
 	annotations := o.GetAnnotations()
