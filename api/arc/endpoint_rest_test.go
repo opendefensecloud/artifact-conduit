@@ -29,10 +29,8 @@ var _ = Describe("Endpoint Strategy", func() {
 		Context("when validating remoteURL", func() {
 			It("should accept Endpoint with valid remoteURL", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com/api",
 						Type:      "http",
@@ -45,10 +43,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should reject Endpoint with empty remoteURL", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "",
 						Type:      "http",
@@ -71,10 +67,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 				for _, url := range testURLs {
 					endpoint := &arc.Endpoint{
-						ObjectMeta: metav1.ObjectMeta{
-							Name:      "test-endpoint",
-							Namespace: "default",
-						},
+						Name:      "test-endpoint",
+						Namespace: "default",
 						Spec: arc.EndpointSpec{
 							RemoteURL: url,
 						},
@@ -88,10 +82,8 @@ var _ = Describe("Endpoint Strategy", func() {
 		Context("when validating optional fields", func() {
 			It("should accept Endpoint with only remoteURL", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 					},
@@ -103,10 +95,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept Endpoint with all fields populated", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "oci",
@@ -123,10 +113,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept Endpoint with Type set", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "http",
@@ -139,10 +127,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept Endpoint with SecretRef set", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						SecretRef: corev1.LocalObjectReference{
@@ -157,10 +143,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept Endpoint with Usage set", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Usage:     "pull",
@@ -177,20 +161,16 @@ var _ = Describe("Endpoint Strategy", func() {
 		Context("when updating Endpoint", func() {
 			It("should accept update with valid remoteURL", func() {
 				oldEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://old.example.com",
 					},
 				}
 
 				newEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://new.example.com",
 					},
@@ -202,20 +182,16 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should reject update with empty remoteURL", func() {
 				oldEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 					},
 				}
 
 				newEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "",
 					},
@@ -229,10 +205,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept update changing other fields", func() {
 				oldEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "http",
@@ -240,10 +214,8 @@ var _ = Describe("Endpoint Strategy", func() {
 				}
 
 				newEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "oci",
@@ -257,20 +229,16 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept update adding optional fields", func() {
 				oldEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 					},
 				}
 
 				newEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "oci",
@@ -287,10 +255,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should accept update removing optional fields", func() {
 				oldEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 						Type:      "oci",
@@ -302,10 +268,8 @@ var _ = Describe("Endpoint Strategy", func() {
 				}
 
 				newEndpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 					},
@@ -321,12 +285,10 @@ var _ = Describe("Endpoint Strategy", func() {
 		Context("for single Endpoint", func() {
 			It("should convert Endpoint to table with correct columns", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:              "test-endpoint",
-						Namespace:         "default",
-						ResourceVersion:   "12345",
-						CreationTimestamp: metav1.Now(),
-					},
+					Name:              "test-endpoint",
+					Namespace:         "default",
+					ResourceVersion:   "12345",
+					CreationTimestamp: metav1.Now(),
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com/api",
 						Type:      "http",
@@ -365,10 +327,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should convert Endpoint with minimal fields", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "https://example.com",
 					},
@@ -388,10 +348,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should convert Endpoint with only usage", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "oci://registry.example.com/repo",
 						Usage:     "pull",
@@ -412,10 +370,8 @@ var _ = Describe("Endpoint Strategy", func() {
 
 			It("should convert Endpoint with only secret", func() {
 				endpoint := &arc.Endpoint{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-endpoint",
-						Namespace: "default",
-					},
+					Name:      "test-endpoint",
+					Namespace: "default",
 					Spec: arc.EndpointSpec{
 						RemoteURL: "s3://bucket-name/path",
 						SecretRef: corev1.LocalObjectReference{
