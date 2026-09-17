@@ -60,9 +60,7 @@ var _ = Describe("Helper Functions", func() {
 	Describe("awName", func() {
 		It("should generate artifact workflow name", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "test-order",
-				},
+				Name: "test-order",
 			}
 
 			result := awName(order, "abc123")
@@ -104,12 +102,10 @@ var _ = Describe("Helper Functions", func() {
 	Describe("awObjectMeta", func() {
 		It("should create artifact workflow object metadata", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "test-ns",
-					Name:      "test-order",
-					Labels: map[string]string{
-						"app": "test",
-					},
+				Namespace: "test-ns",
+				Name:      "test-order",
+				Labels: map[string]string{
+					"app": "test",
 				},
 			}
 
@@ -122,11 +118,9 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should stamp the artifact type label", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "team-a",
-					Name:      "nightly",
-					Labels:    map[string]string{"owner": "platform"},
-				},
+				Namespace: "team-a",
+				Name:      "nightly",
+				Labels:    map[string]string{"owner": "platform"},
 			}
 
 			meta := awObjectMeta(order, "abc123", "oci")
@@ -139,11 +133,9 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should not mutate the order's own labels", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "team-a",
-					Name:      "nightly",
-					Labels:    map[string]string{"owner": "platform"},
-				},
+				Namespace: "team-a",
+				Name:      "nightly",
+				Labels:    map[string]string{"owner": "platform"},
 			}
 
 			awObjectMeta(order, "abc123", "oci")
@@ -154,7 +146,7 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should skip the artifact type label when the value is not a valid label", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+				Namespace: "team-a", Name: "nightly",
 			}
 
 			// 64 characters, one over the label value limit. The workflow still
@@ -168,7 +160,7 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should work when the order has no labels", func() {
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+				Namespace: "team-a", Name: "nightly",
 			}
 
 			meta := awObjectMeta(order, "abc123", "helm")
@@ -179,13 +171,11 @@ var _ = Describe("Helper Functions", func() {
 		It("should drop inherited artifact type label when artifact type is invalid", func() {
 			longType := strings.Repeat("x", 64)
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "team-a",
-					Name:      "nightly",
-					Labels: map[string]string{
-						"owner":                       "platform",
-						arcv1alpha1.LabelArtifactType: "inherited-type",
-					},
+				Namespace: "team-a",
+				Name:      "nightly",
+				Labels: map[string]string{
+					"owner":                       "platform",
+					arcv1alpha1.LabelArtifactType: "inherited-type",
 				},
 			}
 
@@ -201,15 +191,13 @@ var _ = Describe("Helper Functions", func() {
 	Describe("workflowObjectMeta", func() {
 		It("should create workflow object metadata from artifact workflow", func() {
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: "test-ns",
-					Name:      "test-aw",
-					Labels: map[string]string{
-						"key": "value",
-					},
-					Annotations: map[string]string{
-						"annotation": "data",
-					},
+				Namespace: "test-ns",
+				Name:      "test-aw",
+				Labels: map[string]string{
+					"key": "value",
+				},
+				Annotations: map[string]string{
+					"annotation": "data",
 				},
 			}
 

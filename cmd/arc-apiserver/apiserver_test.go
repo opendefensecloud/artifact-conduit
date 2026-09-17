@@ -5,7 +5,6 @@ package main_test
 
 import (
 	"go.opendefense.cloud/kit/envtest"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
@@ -25,11 +24,9 @@ var _ = Describe("Order", func() {
 		It("should allow creating an order", func() {
 			By("creating a test order")
 			order = &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:    ns.Name,
-					GenerateName: "test-",
-				},
-				Spec: arcv1alpha1.OrderSpec{},
+				Namespace:    ns.Name,
+				GenerateName: "test-",
+				Spec:         arcv1alpha1.OrderSpec{},
 			}
 			Expect(k8sClient.Create(ctx, order)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
@@ -53,11 +50,9 @@ var _ = Describe("ArtifactWorkflow", func() {
 		It("should allow creating a artifact workflow", func() {
 			By("creating a test artifact workflow")
 			frag = &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:    ns.Name,
-					GenerateName: "test-",
-				},
-				Spec: arcv1alpha1.ArtifactWorkflowSpec{},
+				Namespace:    ns.Name,
+				GenerateName: "test-",
+				Spec:         arcv1alpha1.ArtifactWorkflowSpec{},
 			}
 			Expect(k8sClient.Create(ctx, frag)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(frag), frag)).To(Succeed())
@@ -81,10 +76,8 @@ var _ = Describe("Endpoint", func() {
 		It("should allow creating an endpoint", func() {
 			By("creating a test endpoint")
 			ep = &arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:    ns.Name,
-					GenerateName: "test-",
-				},
+				Namespace:    ns.Name,
+				GenerateName: "test-",
 				Spec: arcv1alpha1.EndpointSpec{
 					RemoteURL: "test",
 				},
@@ -111,11 +104,9 @@ var _ = Describe("ArtifactType", func() {
 		It("should allow creating an artifact type definition", func() {
 			By("creating a test artifact type definition")
 			atd = &arcv1alpha1.ArtifactType{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace:    ns.Name,
-					GenerateName: "test-",
-				},
-				Spec: arcv1alpha1.ArtifactTypeSpec{},
+				Namespace:    ns.Name,
+				GenerateName: "test-",
+				Spec:         arcv1alpha1.ArtifactTypeSpec{},
 			}
 			Expect(k8sClient.Create(ctx, atd)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(atd), atd)).To(Succeed())
@@ -138,10 +129,8 @@ var _ = Describe("ClusterArtifactType", func() {
 		It("should allow creating an artifact type definition", func() {
 			By("creating a test artifact type definition")
 			atd = &arcv1alpha1.ClusterArtifactType{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "test-",
-				},
-				Spec: arcv1alpha1.ArtifactTypeSpec{},
+				GenerateName: "test-",
+				Spec:         arcv1alpha1.ArtifactTypeSpec{},
 			}
 			Expect(k8sClient.Create(ctx, atd)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(atd), atd)).To(Succeed())

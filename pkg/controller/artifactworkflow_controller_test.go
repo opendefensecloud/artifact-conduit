@@ -28,10 +28,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		createSecrets = func(names ...string) {
 			for _, name := range names {
 				secret := corev1.Secret{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: ns.Name,
-					},
+					Name:      name,
+					Namespace: ns.Name,
 					StringData: map[string]string{
 						"testkey": name,
 					},
@@ -45,10 +43,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should create Workflow for ArtifactWorkflow without secrets", func() {
 			awName := "no-secrets"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -78,10 +74,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			dstSecret := "dst"
 			createSecrets(srcSecret, dstSecret)
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -106,18 +100,14 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			Expect(wf.Spec.Volumes).To(ConsistOf([]corev1.Volume{
 				{
 					Name: "dst-secret-vol",
-					VolumeSource: corev1.VolumeSource{
-						Secret: &corev1.SecretVolumeSource{
-							SecretName: dstSecret,
-						},
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: dstSecret,
 					},
 				},
 				{
 					Name: "src-secret-vol",
-					VolumeSource: corev1.VolumeSource{
-						Secret: &corev1.SecretVolumeSource{
-							SecretName: srcSecret,
-						},
+					Secret: &corev1.SecretVolumeSource{
+						SecretName: srcSecret,
 					},
 				},
 			}))
@@ -128,10 +118,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			before := counterValue("arc_reconcile_errors_total", errLabels)
 
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      "missing-secret",
-				},
+				Namespace: ns.Name,
+				Name:      "missing-secret",
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					SrcSecretRef:        corev1.LocalObjectReference{Name: "does-not-exist"},
@@ -152,10 +140,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should track Workflow status changes of created ArtifactWorkflows", func() {
 			awName := "track-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -200,10 +186,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 
 			awName := "count-completion"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -231,10 +215,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should track failed Workflow information of created ArtifactWorkflows", func() {
 			awName := "track-failed-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -296,10 +278,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should track error Workflow status of created ArtifactWorkflows", func() {
 			awName := "track-error-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -334,10 +314,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should track pending Workflow status of created ArtifactWorkflows", func() {
 			awName := "track-pending-status"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -366,10 +344,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should handle force reconcile annotation", func() {
 			awName := "force-reconcile"
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
@@ -419,10 +395,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 		It("should support cron schedules", Label("cron"), func() {
 			awName := "cron-schedule"
 			aw := arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: arcv1alpha1.ArtifactWorkflowSpec{
 					WorkflowTemplateRef: at.Spec.WorkflowTemplateRef,
 					Cron: &arcv1alpha1.Cron{
@@ -445,10 +419,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 
 			// Simulate Argo Workflows creating a Workflow on cron schedule
 			wf := wfv1alpha1.Workflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: wfv1alpha1.WorkflowSpec{
 					WorkflowTemplateRef: cwf.Spec.WorkflowSpec.WorkflowTemplateRef,
 				},
@@ -509,10 +481,8 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			// Simulate workflow succeeding (replace policy creates new run)
 			Expect(k8sClient.Delete(ctx, &wf)).To(Succeed())
 			wf2 := wfv1alpha1.Workflow{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: ns.Name,
-					Name:      awName,
-				},
+				Namespace: ns.Name,
+				Name:      awName,
 				Spec: wfv1alpha1.WorkflowSpec{
 					WorkflowTemplateRef: cwf.Spec.WorkflowSpec.WorkflowTemplateRef,
 				},
@@ -583,10 +553,8 @@ var _ = Describe("newCompletion", func() {
 
 	It("should take the duration from the argo workflow", func() {
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "team-a",
-				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
-			},
+			Namespace: "team-a",
+			Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
 		}
 		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
 
@@ -606,10 +574,8 @@ var _ = Describe("newCompletion", func() {
 
 	It("should record a zero length duration when start and finish share the same second", func() {
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "team-a",
-				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
-			},
+			Namespace: "team-a",
+			Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
 		}
 		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
 
@@ -627,10 +593,8 @@ var _ = Describe("newCompletion", func() {
 
 	It("should not record a duration when finish precedes start", func() {
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "team-a",
-				Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
-			},
+			Namespace: "team-a",
+			Labels:    map[string]string{arcv1alpha1.LabelArtifactType: "oci"},
 		}
 		aw.Status.Phase = arcv1alpha1.WorkflowSucceeded
 
@@ -645,7 +609,7 @@ var _ = Describe("newCompletion", func() {
 	})
 
 	It("should record a failure without a duration when argo has no timestamps", func() {
-		aw := &arcv1alpha1.ArtifactWorkflow{ObjectMeta: metav1.ObjectMeta{Namespace: "team-a"}}
+		aw := &arcv1alpha1.ArtifactWorkflow{Namespace: "team-a"}
 		aw.Status.Phase = arcv1alpha1.WorkflowFailed
 
 		completion := newCompletion(aw, &wfv1alpha1.Workflow{})
