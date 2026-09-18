@@ -1,0 +1,89 @@
+---
+# Hand-authored APIResourceSchema — workarounds for autogeneration failures (see #442).
+# Fixes: empty EndpointStatus → preserve-unknown-fields; added /status subresource.
+# Immutable: bumps metadata.name on schema changes.
+apiVersion: apis.kcp.io/v1alpha1
+kind: APIResourceSchema
+metadata:
+  name: vcf11840f.endpoints.arc.opendefense.cloud
+  labels:
+    syncagent.kcp.io/agent-name: arc
+  annotations:
+    syncagent.kcp.io/agent-name: arc
+    syncagent.kcp.io/source-generation: "0"
+spec:
+  group: arc.opendefense.cloud
+  nameValidation: DNS1123Subdomain
+  names:
+    kind: Endpoint
+    listKind: EndpointList
+    plural: endpoints
+    singular: endpoint
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      description: Endpoint is the Schema for the endpoints API
+      type: object
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: EndpointSpec specifies a single artifact which is translated
+            into a corresponding Workflow based on its type.
+          type: object
+          required:
+          - type
+          - remoteURL
+          - usage
+          properties:
+            type:
+              description: Type specifies which ArtifactType is used to process this
+                artifact.
+              type: string
+            remoteURL:
+              description: RemoteURL defines the URL which is used to interact with
+                the endpoint.
+              type: string
+            usage:
+              description: |-
+                Usage defines how the endpoint is allowed to be used.
+
+                Possible enum values:
+                 - `"All"` means the endpoint can be used with all kinds of usage patterns.
+                 - `"PullOnly"` means the endpoint can only be used to pull data.
+                 - `"PushOnly"` means the endpoint can only be used to push data.
+              type: string
+              enum:
+              - All
+              - PullOnly
+              - PushOnly
+            secretRef:
+              description: SecretRef specifies the secret containing the relevant
+                credentials for the endpoint.
+              type: object
+              properties:
+                name:
+                  description: 'Name of the referent. This field is effectively required,
+                    but due to backwards compatibility is allowed to be empty. Instances
+                    of this type with an empty value here are almost certainly wrong.
+                    More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names'
+                  type: string
+        status:
+          description: EndpointStatus defines the observed state of Endpoint
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+    served: true
+    storage: true
+    subresources:
+      status: {}

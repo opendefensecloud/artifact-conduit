@@ -1,0 +1,9 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: kcp
+  namespace: arc-system
+spec:
+  interval: 1h
+  url: https://kcp-dev.github.io/helm-charts
