@@ -72,17 +72,19 @@ func ResultFor(phase arcv1alpha1.WorkflowPhase) (string, bool) {
 	}
 }
 
-// InitCompletions creates the completion series for a workflow at zero, before
+// InitCompletions creates both series a completion writes to at zero, before
 // anything has completed. rate and increase are blind to the first increment
 // otherwise: they read the difference between samples inside the range, and a
-// series that is born holding 1 and stays there never shows a difference. On a
-// quiet install that is every failure anyone is likely to look at.
+// series that is born holding its first value and stays there never shows a
+// difference. On a quiet install that is every run anyone is likely to look at,
+// and it empties the duration quantile as readily as the failure count.
 //
 // Safe to call on every reconcile. Creating a child that already exists is a
 // map lookup and leaves its value alone.
 func InitCompletions(namespace, artifactType string) {
 	for _, result := range []string{ResultSucceeded, ResultFailed, ResultError} {
 		completions.WithLabelValues(namespace, artifactType, result)
+		duration.WithLabelValues(artifactType, result)
 	}
 }
 

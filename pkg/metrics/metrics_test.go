@@ -122,6 +122,38 @@ var _ = Describe("Recording helpers", func() {
 		Expect(count(ResultFailed)).To(Equal(1.0), "the first failure is now a 0 to 1 increase, not a series appearing at 1")
 	})
 
+	It("should create the duration series at zero as well", func() {
+		observations := func(artifactType, result string) int64 {
+			families, err := ctrlmetrics.Registry.Gather()
+			Expect(err).NotTo(HaveOccurred())
+
+			for _, mf := range families {
+				if mf.GetName() != "arc_artifactworkflow_duration_seconds" {
+					continue
+				}
+
+				for _, m := range mf.GetMetric() {
+					if hasLabel(m.GetLabel(), "artifact_type", artifactType) && hasLabel(m.GetLabel(), "result", result) {
+						return int64(m.GetHistogram().GetSampleCount())
+					}
+				}
+			}
+
+			return -1
+		}
+
+		Expect(observations("helm", ResultSucceeded)).To(Equal(int64(-1)), "precondition: the histogram must not exist yet")
+
+		InitCompletions("team-duration", "helm")
+
+		// Without this the buckets appear already holding the first observation,
+		// which leaves histogram_quantile with nothing to work from.
+		Expect(observations("helm", ResultSucceeded)).To(Equal(int64(0)))
+
+		ObserveDuration("helm", ResultSucceeded, 30)
+		Expect(observations("helm", ResultSucceeded)).To(Equal(int64(1)))
+	})
+
 	It("should leave an existing count alone when re-initialised", func() {
 		RecordCompletion("team-reinit", "oci", ResultSucceeded)
 		InitCompletions("team-reinit", "oci")
