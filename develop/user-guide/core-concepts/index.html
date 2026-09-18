@@ -796,6 +796,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-arc-probes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When ARC probes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-ready-does-not-promise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Ready does not promise
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1952,6 +1991,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Status">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#when-arc-probes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When ARC probes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-ready-does-not-promise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Ready does not promise
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2050,6 +2128,80 @@ The <code>Endpoint</code> resource is a namespace-scoped configuration object th
 <h4 id="all">All<a class="headerlink" href="#all" title="Permanent link">¶</a></h4>
 <p>The Endpoint can be used as both a source and a destination. This is the most flexible mode and is the default if <code>usage</code> is not specified.</p>
 <p><strong>Use Case</strong>: Internal registries that serve as intermediate storage or cache layers.</p>
+<h3 id="status">Status<a class="headerlink" href="#status" title="Permanent link">¶</a></h3>
+<p>An <code>Endpoint</code> reports what ARC has observed about it in <code>status.conditions</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Validated</code></td>
+<td>The referenced <code>Secret</code> exists and the <code>Endpoint</code>'s type is accepted by some <code>ArtifactType</code> or <code>ClusterArtifactType</code> in a position its usage allows.</td>
+</tr>
+<tr>
+<td><code>Reachable</code></td>
+<td>The target answered. Any HTTP non 404 / 5xx response counts. The point of this condition is that something is listening.</td>
+</tr>
+<tr>
+<td><code>Authenticated</code></td>
+<td><code>True</code> means the target demanded credentials and accepted the configured ones. ARC never sends credentials on the first request — only once the target's own response challenges for them.</td>
+</tr>
+<tr>
+<td><code>Ready</code></td>
+<td>A summary of the others, and the column <code>kubectl get endpoints.arc.opendefense.cloud</code> prints.</td>
+</tr>
+</tbody>
+</table>
+<p><code>Authenticated</code> is <code>Unknown</code> rather than <code>False</code> when ARC cannot verify
+credentials of that shape — an S3 <code>Secret</code> holding <code>AWS_ACCESS_KEY_ID</code> and
+<code>AWS_SECRET_ACCESS_KEY</code>, for example; or the target served the probe request
+without ever asking for credentials, so the configured ones were never exercised
+(a public registry that ignores credentials entirely is the common case).
+<code>Unknown</code> does not prevent an <code>Endpoint</code> from becoming <code>Ready</code>: it records
+that ARC did not check, or had nothing to check, not that the check failed.</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>kubectl<span class="w"> </span>get<span class="w"> </span>endpoints.arc.opendefense.cloud
+<span class="go">NAME       CREATED AT   REMOTE URL           USAGE      SECRET       READY   MESSAGE</span>
+<span class="go">registry   2d           gcr.io               PullOnly   gcr-creds    True</span>
+<span class="go">mirror     5h           https://zot.local    PushOnly   zot-creds    False   credentials rejected (401)</span>
+</code></pre></div>
+<h4 id="when-arc-probes">When ARC probes<a class="headerlink" href="#when-arc-probes" title="Permanent link">¶</a></h4>
+<p>The connection test runs when there is a reason to believe the answer changed:
+on creation, when <code>spec</code> changes, and when the referenced <code>Secret</code> changes.
+There is no periodic re-probe, so an <code>Endpoint</code> nobody touches produces no
+outbound traffic.</p>
+<p>To re-check on demand, set the force annotation to the current Unix timestamp:</p>
+<div class="highlight"><pre><span></span><code><span class="gp">$ </span>kubectl<span class="w"> </span>annotate<span class="w"> </span>endpoints.arc.opendefense.cloud<span class="w"> </span>registry<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>arc.opendefense.cloud/force-at<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span><span class="w"> </span>--overwrite
+</code></pre></div>
+<h4 id="what-ready-does-not-promise">What Ready does not promise<a class="headerlink" href="#what-ready-does-not-promise" title="Permanent link">¶</a></h4>
+<p>The probe runs from ARC's controller-manager, using its network position and
+its identity. The workflow pods that carry out an <code>Order</code> run under a different
+ServiceAccount and may be subject to different egress rules. <code>Ready=True</code> is
+therefore strong evidence that an <code>Order</code> will succeed, not a guarantee of it.</p>
+<p>Operators should also note that the probe connects to a URL supplied by the
+consumer. ARC refuses loopback and link-local addresses by default — configurable
+with the controller-manager's <code>--probe-deny-cidrs</code> flag — but a NetworkPolicy on
+the controller-manager Deployment is the boundary to rely on.</p>
+<p>The probe also reads the <code>username</code>/<code>password</code> keys of the <code>Secret</code> an
+<code>Endpoint</code> references and sends them as Basic auth to the <code>remoteURL</code> the
+<code>Endpoint</code> names — both chosen by whoever created the <code>Endpoint</code>. The first
+probe is always sent anonymously, even if the <code>Secret</code> contains credentials.
+Credentials are only sent if the initial anonymous probe responds with a
+status indicating that authentication is required. This is to close the gap
+between a public api that responds successfully no matter the credentials,
+which can therefore not be checked on validity, and private endpoints that 
+require authentication and therefore validate the credentials by necessity.
+<code>create</code> on <code>endpoints.arc.opendefense.cloud</code> must therefore be treated as
+equivalent to <code>get</code> on <code>Secrets</code> in the same namespace: anyone who can
+create an <code>Endpoint</code> can point it at a server they control and have that 
+Secret's credentials delivered to it. RBAC that grants <code>Endpoint</code> creation
+without also granting Secret read is not a safe boundary. Egress
+<code>NetworkPolicy</code> on the controller-manager is the control for where those
+credentials may travel.</p>
 <h2 id="the-clusterartifacttype-and-artifacttype">The <code>ClusterArtifactType</code> and <code>ArtifactType</code><a class="headerlink" href="#the-clusterartifacttype-and-artifacttype" title="Permanent link">¶</a></h2>
 <p>The <code>[Cluster]ArtifactType</code> resource defines artifact processing capabilities within ARC by:</p>
 <ol>

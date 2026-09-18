@@ -2956,6 +2956,36 @@
 <p>EndpointStatus defines the observed state of Endpoint</p>
 <p><em>Appears in:</em>
 - <a href="#endpoint">Endpoint</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conditions</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#condition-v1-meta">Condition</a> array</em></td>
+<td>Conditions represent the latest available observations of the Endpoint's state.</td>
+<td></td>
+<td>Optional: {} <br></td>
+</tr>
+<tr>
+<td><code>observedGeneration</code> <em>integer</em></td>
+<td>ObservedGeneration is the .metadata.generation the conditions were computed from.</td>
+<td></td>
+<td>Optional: {} <br></td>
+</tr>
+<tr>
+<td><code>lastProbeTime</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta">Time</a></em></td>
+<td>LastProbeTime is when the connection to spec.remoteURL was last attempted.</td>
+<td></td>
+<td>Optional: {} <br></td>
+</tr>
+</tbody>
+</table>
 <h4 id="endpointusage">EndpointUsage<a class="headerlink" href="#endpointusage" title="Permanent link">¶</a></h4>
 <p><em>Underlying type:</em> <em>string</em></p>
 <p>EndpointUsage is the usage of the endpoint.</p>
