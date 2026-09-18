@@ -481,4 +481,20 @@ var _ = Describe("Helper Functions", func() {
 			Expect(err.Error()).To(ContainSubstring("invalid force reconcile annotation"))
 		})
 	})
+
+	Describe("earliestRequeue", func() {
+		DescribeTable("should return the soonest positive duration",
+			func(a, b, want time.Duration) {
+				Expect(earliestRequeue(a, b)).To(Equal(want))
+			},
+			Entry("both zero", time.Duration(0), time.Duration(0), time.Duration(0)),
+			Entry("first zero", time.Duration(0), time.Minute, time.Minute),
+			Entry("second zero", time.Minute, time.Duration(0), time.Minute),
+			Entry("first negative", -time.Second, time.Minute, time.Minute),
+			Entry("second negative", time.Minute, -time.Second, time.Minute),
+			Entry("first sooner", time.Second, time.Minute, time.Second),
+			Entry("second sooner", time.Minute, time.Second, time.Second),
+			Entry("equal", time.Minute, time.Minute, time.Minute),
+		)
+	})
 })

@@ -17,6 +17,10 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-24.04
+    # helm comes from the flake (dev-kit's defaultPkgs).
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -24,10 +28,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Set up Helm
-        uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      - name: Set up nix with the shared Cachix cache
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
         with:
-          version: 'v4.2.4'
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
 
       - name: Lint Helm charts
         run: |

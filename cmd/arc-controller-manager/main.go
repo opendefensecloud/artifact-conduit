@@ -8,6 +8,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
@@ -27,6 +28,7 @@ import (
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/controller"
+	"go.opendefense.cloud/arc/pkg/endpointprobe"
 	arcmetrics "go.opendefense.cloud/arc/pkg/metrics"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -51,6 +53,7 @@ func main() {
 		prefixAllocationTimeout, volumeBindTimeout, virtualIPBindTimeout time.Duration
 		networkInterfaceBindTimeout                                      time.Duration
 		tlsOpts                                                          []func(*tls.Config)
+		probeDenyCIDRs                                                   string
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
@@ -72,6 +75,9 @@ func main() {
 	flag.DurationVar(&volumeBindTimeout, "volume-bind-timeout", 10*time.Second, "Time to wait until considering a volume bind to be failed.")
 	flag.DurationVar(&virtualIPBindTimeout, "virtual-ip-bind-timeout", 10*time.Second, "Time to wait until considering a virtual ip bind to be failed.")
 	flag.DurationVar(&networkInterfaceBindTimeout, "network-interface-bind-timeout", 10*time.Second, "Time to wait until considering a network interface bind to be failed.")
+	flag.StringVar(&probeDenyCIDRs, "probe-deny-cidrs", endpointprobe.DefaultDenyCIDRsString(),
+		"Comma-separated CIDRs the Endpoint probe refuses to connect to. "+
+			"Set to an empty string to disable the check and rely solely on NetworkPolicy.")
 
 	opts := zap.Options{
 		Development: true,
@@ -147,6 +153,12 @@ func main() {
 		})
 	}
 
+	denyCIDRs, err := endpointprobe.ParseDenyCIDRs(strings.Split(probeDenyCIDRs, ","))
+	if err != nil {
+		setupLog.Error(err, "invalid --probe-deny-cidrs")
+		os.Exit(1)
+	}
+
 	config := ctrl.GetConfigOrDie()
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
 		Logger:                 logger,
@@ -206,6 +218,16 @@ func main() {
 		Recorder:  mgr.GetEventRecorder("artifact-workflow-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
+		os.Exit(1)
+	}
+
+	if err := (&controller.EndpointReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorder("endpoint-controller"),
+		Probe:    endpointprobe.New(denyCIDRs).Probe,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Endpoint")
 		os.Exit(1)
 	}
 

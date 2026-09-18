@@ -18,6 +18,7 @@ import (
 // from a histogram. Keep it in step with metrics.go and collector.go.
 var arcMetrics = []string{
 	"arc_orders",
+	"arc_endpoints",
 	"arc_artifactworkflows",
 	"arc_artifactworkflow_last_scheduled_timestamp_seconds",
 	"arc_artifactworkflow_last_success_timestamp_seconds",

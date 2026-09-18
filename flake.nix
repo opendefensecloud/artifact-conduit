@@ -12,7 +12,7 @@
     };
 
     dev-kit = {
-      url = "github:opendefensecloud/dev-kit";
+      url = "github:opendefensecloud/dev-kit/v2.2.0";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.go-overlay.follows = "go-overlay";
       inputs.flake-utils.follows = "flake-utils";
@@ -29,7 +29,6 @@
           inherit system;
           goVersion = "1.26.6";
           packages = [
-            pkgs.cosign
             pkgs.trivy
           ];
           preCommitHooks = {

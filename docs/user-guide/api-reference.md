@@ -302,6 +302,11 @@ EndpointStatus defines the observed state of Endpoint
 _Appears in:_
 - [Endpoint](#endpoint)
 
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#condition-v1-meta) array_ | Conditions represent the latest available observations of the Endpoint's state. |  | Optional: \{\} <br /> |
+| `observedGeneration` _integer_ | ObservedGeneration is the .metadata.generation the conditions were computed from. |  | Optional: \{\} <br /> |
+| `lastProbeTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastProbeTime is when the connection to spec.remoteURL was last attempted. |  | Optional: \{\} <br /> |
 
 
 #### EndpointUsage
@@ -420,6 +425,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `defaults` _[OrderDefaults](#orderdefaults)_ | Defaults sets up defaults for all artifacts. |  | Optional: \{\} <br /> |
 | `artifacts` _[OrderArtifact](#orderartifact) array_ | Artifacts lists all artifacts, that will be processed by this Order. |  |  |
+| `ttl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | TTL specifies how long the Order is retained after its creation. Once the<br />duration has elapsed since the Order's creationTimestamp, the Order is<br />automatically deleted (garbage collected) together with the artifact<br />workflows it created. The TTL is measured from creation regardless of<br />workflow progress: if it elapses while an artifact workflow is still<br />pending or running, that workflow is deleted mid-execution, interrupting<br />the in-flight transfer. If unset or zero, the Order is retained<br />indefinitely. Note that an unset TTLAfterFinished behaves the other way<br />around and deletes immediately. With a cron schedule the TTL still counts<br />from creation, so the Order is deleted in the middle of its schedule. |  | Optional: \{\} <br /> |
 
 
 #### OrderStatus
