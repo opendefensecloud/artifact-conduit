@@ -6,7 +6,6 @@
 package v1alpha1
 
 import (
-	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -19,8 +18,8 @@ import (
 type EndpointApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *EndpointSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *arcv1alpha1.EndpointStatus     `json:"status,omitempty"`
+	Spec                             *EndpointSpecApplyConfiguration   `json:"spec,omitempty"`
+	Status                           *EndpointStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // Endpoint constructs a declarative configuration of the Endpoint type for use with
@@ -205,8 +204,8 @@ func (b *EndpointApplyConfiguration) WithSpec(value *EndpointSpecApplyConfigurat
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *EndpointApplyConfiguration) WithStatus(value arcv1alpha1.EndpointStatus) *EndpointApplyConfiguration {
-	b.Status = &value
+func (b *EndpointApplyConfiguration) WithStatus(value *EndpointStatusApplyConfiguration) *EndpointApplyConfiguration {
+	b.Status = value
 	return b
 }
 

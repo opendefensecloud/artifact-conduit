@@ -45,6 +45,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &arcv1alpha1.EndpointApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EndpointSpec"):
 		return &arcv1alpha1.EndpointSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EndpointStatus"):
+		return &arcv1alpha1.EndpointStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Order"):
 		return &arcv1alpha1.OrderApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("OrderArtifact"):

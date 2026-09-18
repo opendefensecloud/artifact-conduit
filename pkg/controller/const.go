@@ -31,3 +31,23 @@ const (
 // an order's deletion is in progress. It is not a failure, so it is not counted
 // on arc_reconcile_errors_total.
 const ReasonDeleting = "Deleting"
+
+// ControllerEndpoint is the controller label on arc_reconcile_errors_total.
+const ControllerEndpoint = "endpoint"
+
+// ReasonUpdateFailed is the Event reason and error label for a failed status write.
+const ReasonUpdateFailed = "UpdateFailed"
+
+// ReasonValidationFailed is the error label for a genuine client error (not a
+// missing Secret or unknown type) encountered while resolving an Endpoint's
+// references.
+const ReasonValidationFailed = "ValidationFailed"
+
+// Endpoint condition reasons. These are part of the API a consumer reads, so
+// they are CamelCase and stable.
+const (
+	ReasonEndpointValid    = "Valid"
+	ReasonSecretNotFound   = "SecretNotFound"
+	ReasonUnknownType      = "UnknownType"
+	ReasonEndpointNotReady = "NotReady"
+)

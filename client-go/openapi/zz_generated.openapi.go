@@ -1180,8 +1180,49 @@ func schema_arc_api_arc_v1alpha1_EndpointStatus(ref common.ReferenceCallback) co
 			SchemaProps: spec.SchemaProps{
 				Description: "EndpointStatus defines the observed state of Endpoint",
 				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"conditions": {
+						VendorExtensible: spec.VendorExtensible{
+							Extensions: spec.Extensions{
+								"x-kubernetes-list-map-keys": []interface{}{
+									"type",
+								},
+								"x-kubernetes-list-type":       "map",
+								"x-kubernetes-patch-merge-key": "type",
+								"x-kubernetes-patch-strategy":  "merge",
+							},
+						},
+						SchemaProps: spec.SchemaProps{
+							Description: "Conditions represent the latest available observations of the Endpoint's state.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref(metav1.Condition{}.OpenAPIModelName()),
+									},
+								},
+							},
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ObservedGeneration is the .metadata.generation the conditions were computed from.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"lastProbeTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LastProbeTime is when the connection to spec.remoteURL was last attempted.",
+							Ref:         ref(metav1.Time{}.OpenAPIModelName()),
+						},
+					},
+				},
 			},
 		},
+		Dependencies: []string{
+			metav1.Condition{}.OpenAPIModelName(), metav1.Time{}.OpenAPIModelName()},
 	}
 }
 
