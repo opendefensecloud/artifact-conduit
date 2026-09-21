@@ -45,7 +45,7 @@ var _ = Describe("EndpointController", func() {
 
 	createTypeAccepting := func(endpointType string) *arcv1alpha1.ClusterArtifactType {
 		cat := &arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-"},
+			GenerateName: "cat-",
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				Rules: arcv1alpha1.ArtifactTypeRules{
 					SrcTypes: []string{endpointType},
@@ -65,7 +65,7 @@ var _ = Describe("EndpointController", func() {
 	// the InNamespace List branch of typeIsKnown and the ArtifactType watch.
 	createNamespacedTypeAccepting := func(endpointType string) *arcv1alpha1.ArtifactType {
 		at := &arcv1alpha1.ArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "at-", Namespace: ns.Name},
+			GenerateName: "at-", Namespace: ns.Name,
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				Rules: arcv1alpha1.ArtifactTypeRules{
 					SrcTypes: []string{endpointType},
@@ -82,7 +82,7 @@ var _ = Describe("EndpointController", func() {
 
 	createSecret := func(name string) *corev1.Secret {
 		secret := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: ns.Name},
+			Name: name, Namespace: ns.Name,
 			StringData: map[string]string{"username": "alice", "password": "s3cret"},
 		}
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
@@ -92,7 +92,7 @@ var _ = Describe("EndpointController", func() {
 
 	createEndpoint := func(endpointType, secretName, remoteURL string) *arcv1alpha1.Endpoint {
 		ep := &arcv1alpha1.Endpoint{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "ep-", Namespace: ns.Name},
+			GenerateName: "ep-", Namespace: ns.Name,
 			Spec: arcv1alpha1.EndpointSpec{
 				Type:      endpointType,
 				RemoteURL: remoteURL,
@@ -170,7 +170,7 @@ var _ = Describe("EndpointController", func() {
 
 	It("should respect usage when matching the type", func() {
 		cat := &arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-src-only-"},
+			GenerateName: "cat-src-only-",
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				// The type is only ever a source. DstTypes has to be a non-empty
 				// list that excludes it: an empty list matches any type (mirroring
@@ -205,7 +205,7 @@ var _ = Describe("EndpointController", func() {
 
 	It("should accept any type when the ArtifactType's rules are unrestricted", func() {
 		cat := &arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-open-"},
+			GenerateName: "cat-open-",
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				// Empty SrcTypes/DstTypes means "any type", matching
 				// order_controller.go's `len(...) > 0 && !slices.Contains(...)`
@@ -483,7 +483,7 @@ var _ = Describe("EndpointController", func() {
 	It("should re-probe when a deleted ClusterArtifactType is recreated with the spec and secret unchanged", func() {
 		endpointType := "recreate-guard-type"
 		cat := &arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-recreate-"},
+			GenerateName: "cat-recreate-",
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				Rules: arcv1alpha1.ArtifactTypeRules{
 					SrcTypes: []string{endpointType},
@@ -510,8 +510,8 @@ var _ = Describe("EndpointController", func() {
 			Should(Equal("absent"))
 
 		recreated := &arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{GenerateName: "cat-recreate-"},
-			Spec:       cat.Spec,
+			GenerateName: "cat-recreate-",
+			Spec:         cat.Spec,
 		}
 		Expect(k8sClient.Create(ctx, recreated)).To(Succeed())
 		DeferCleanup(k8sClient.Delete, ctx, recreated)

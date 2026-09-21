@@ -80,7 +80,7 @@ func aw(namespace, name, artifactType string, cron bool, phase arcv1alpha1.Workf
 // has first observed the object.
 func endpoint(namespace, name string, ready metav1.ConditionStatus) *arcv1alpha1.Endpoint {
 	obj := &arcv1alpha1.Endpoint{
-		ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: name},
+		Namespace: namespace, Name: name,
 	}
 	if ready != "" {
 		obj.Status.Conditions = []metav1.Condition{{
