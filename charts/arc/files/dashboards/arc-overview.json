@@ -452,7 +452,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
+        "w": 6,
         "x": 0,
         "y": 16
       },
@@ -506,7 +506,7 @@
     {
       "type": "timeseries",
       "title": "Success ratio",
-      "description": "Share of single run workflows completing successfully. Cron runs are not counted, see the freshness table. Blank means nothing completed in the window, which is not zero percent.",
+      "description": "Share of single run workflows completing successfully. Cron runs are not counted, they report their own success rather than a completion. Blank means nothing completed in the window, which is not zero percent.",
       "id": 9,
       "datasource": {
         "type": "prometheus",
@@ -514,8 +514,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 8,
+        "w": 6,
+        "x": 6,
         "y": 16
       },
       "targets": [
@@ -597,8 +597,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 16,
+        "w": 6,
+        "x": 12,
         "y": 16
       },
       "targets": [
@@ -659,9 +659,9 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 0,
-        "y": 23
+        "w": 6,
+        "x": 18,
+        "y": 16
       },
       "targets": [
         {
@@ -722,148 +722,15 @@
       ]
     },
     {
-      "type": "table",
-      "title": "Cron freshness",
-      "description": "Time since each cron group last succeeded, against the wait its schedule expected after that run. Overdue is the difference, so a positive number is late whatever the schedule. Interval is measured from the success, not the nominal period, which is what keeps Overdue exact on an uneven schedule. Reduced to the oldest per namespace and artifact type, so a stall is not masked by a healthy sibling. A group that never succeeded does not appear.",
-      "id": 12,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 16,
-        "x": 8,
-        "y": 23
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "max by (namespace, artifact_type) (\n  time() - arc_artifactworkflow_last_success_timestamp_seconds{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"})",
-          "instant": true,
-          "format": "table",
-          "editorMode": "code"
-        },
-        {
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "max by (namespace, artifact_type) (\n  arc_artifactworkflow_schedule_interval_seconds{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"})",
-          "instant": true,
-          "format": "table",
-          "editorMode": "code"
-        },
-        {
-          "refId": "C",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "expr": "max by (namespace, artifact_type) (\n  (time() - arc_artifactworkflow_last_success_timestamp_seconds{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"})\n  - arc_artifactworkflow_schedule_interval_seconds{namespace=~\"$namespace\", artifact_type=~\"$artifact_type\"})",
-          "instant": true,
-          "format": "table",
-          "editorMode": "code"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            }
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Overdue"
-            },
-            "properties": [
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-text"
-                }
-              },
-              {
-                "id": "thresholds",
-                "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {
-                      "color": "green",
-                      "value": null
-                    },
-                    {
-                      "color": "red",
-                      "value": 1
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "options": {
-        "showHeader": true,
-        "sortBy": [
-          {
-            "displayName": "Overdue",
-            "desc": true
-          }
-        ]
-      },
-      "transformations": [
-        {
-          "id": "merge",
-          "options": {}
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "__name__": true,
-              "job": true,
-              "instance": true,
-              "endpoint": true,
-              "service": true,
-              "pod": true,
-              "container": true,
-              "app_kubernetes_io_part_of": true,
-              "app_kubernetes_io_component": true
-            },
-            "renameByName": {
-              "namespace": "Namespace",
-              "artifact_type": "Artifact type",
-              "Value #A": "Elapsed",
-              "Value #B": "Interval",
-              "Value #C": "Overdue"
-            }
-          }
-        }
-      ]
-    },
-    {
       "type": "row",
       "title": "Reconciler internals",
-      "id": 13,
+      "id": 12,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 23
       },
       "panels": []
     },
@@ -871,7 +738,7 @@
       "type": "timeseries",
       "title": "Workqueue depth",
       "description": "Items waiting in ARC's reconcile queues. Sustained growth means the controller is falling behind.",
-      "id": 14,
+      "id": 13,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -880,7 +747,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 31
+        "y": 24
       },
       "targets": [
         {
@@ -933,7 +800,7 @@
       "type": "timeseries",
       "title": "Reconcile p99",
       "description": "99th percentile reconcile duration per controller.",
-      "id": 15,
+      "id": 14,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -942,7 +809,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 31
+        "y": 24
       },
       "targets": [
         {
@@ -995,7 +862,7 @@
       "type": "timeseries",
       "title": "Reconcile errors by reason",
       "description": "Why reconciles fail. The reason matches the Kubernetes Event reason, so kubectl describe shows the same word. Retry inflated: a permanent failure increments on every backoff.",
-      "id": 16,
+      "id": 15,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1004,7 +871,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 31
+        "y": 24
       },
       "targets": [
         {
@@ -1056,13 +923,13 @@
     {
       "type": "row",
       "title": "Runtime",
-      "id": 17,
+      "id": 16,
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 30
       },
       "panels": []
     },
@@ -1070,7 +937,7 @@
       "type": "timeseries",
       "title": "Resident memory",
       "description": "Process RSS per ARC component. The collector reads the whole cache on every scrape, so a large install shows here first.",
-      "id": 18,
+      "id": 17,
       "datasource": {
         "type": "prometheus",
         "uid": "${datasource}"
@@ -1079,7 +946,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 31
       },
       "targets": [
         {

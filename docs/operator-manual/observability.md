@@ -94,7 +94,7 @@ Start here. These answer whether ARC is doing its job.
 | `arc_orders` | Orders sitting in `Failed`, or a `Pending` count that never drains |
 | `arc_artifactworkflow_completions_total` | Success ratio dropping, by `result` |
 | `arc_reconcile_errors_total` | Which failure `reason` dominates |
-| `arc_artifactworkflow_last_success_timestamp_seconds` | `time() - <metric> > threshold` catches a cron sync that stopped running |
+| `arc_artifactworkflow_last_success_timestamp_seconds` | A cron sync that stopped running. Alert when `time() - <metric>` exceeds `arc_artifactworkflow_schedule_interval_seconds` and no fixed threshold is needed |
 | `arc_collector_errors_total` | Non zero means the gauges above are stale, not that ARC is idle |
 
 The controller-runtime signals below are second line diagnostics, useful once you
@@ -232,6 +232,10 @@ Grafana, and there is no error to go on.
 Four sections: whether ARC is up, whether work is getting through, reconciler internals,
 and runtime. It is a starting point rather than a finished observability product, so
 copy it into your own folder before editing.
+
+Cron freshness is not a panel. Time since the last success reads as overdue while a run
+is still working, because the clock only resets on success, which is honest for an alert
+and misleading on a dashboard. The metrics are there to alert on, see the table above.
 
 There is no container restart panel. That needs
 `kube_pod_container_status_restarts_total` from kube-state-metrics, which a chart
