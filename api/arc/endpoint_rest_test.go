@@ -399,8 +399,9 @@ var _ = Describe("Endpoint Strategy", func() {
 	Describe("PrepareForCreate", func() {
 		It("should set generation to 1", func() {
 			endpoint := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default",
-				Spec: arc.EndpointSpec{RemoteURL: "https://example.com"},
+				Name:      "test-endpoint",
+				Namespace: "default",
+				Spec:      arc.EndpointSpec{RemoteURL: "https://example.com"},
 			}
 
 			endpoint.PrepareForCreate(ctx)
@@ -412,12 +413,16 @@ var _ = Describe("Endpoint Strategy", func() {
 	Describe("PrepareForUpdate", func() {
 		It("should increment generation when the spec changed", func() {
 			old := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 3,
-				Spec: arc.EndpointSpec{RemoteURL: "https://old.example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 3,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://old.example.com"},
 			}
 			updated := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 3,
-				Spec: arc.EndpointSpec{RemoteURL: "https://new.example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 3,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://new.example.com"},
 			}
 
 			updated.PrepareForUpdate(ctx, old)
@@ -427,13 +432,17 @@ var _ = Describe("Endpoint Strategy", func() {
 
 		It("should not increment generation when the spec is unchanged", func() {
 			old := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 3,
-				Spec: arc.EndpointSpec{RemoteURL: "https://example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 3,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://example.com"},
 			}
 			updated := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 3,
-				Status: arc.EndpointStatus{ObservedGeneration: 3},
-				Spec:   arc.EndpointSpec{RemoteURL: "https://example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 3,
+				Status:     arc.EndpointStatus{ObservedGeneration: 3},
+				Spec:       arc.EndpointSpec{RemoteURL: "https://example.com"},
 			}
 
 			updated.PrepareForUpdate(ctx, old)
@@ -443,20 +452,26 @@ var _ = Describe("Endpoint Strategy", func() {
 
 		It("should not let a stale or zeroed incoming generation reset the count", func() {
 			old := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 5,
-				Spec: arc.EndpointSpec{RemoteURL: "https://example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 5,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://example.com"},
 			}
 
 			unchangedSpec := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 0,
-				Spec: arc.EndpointSpec{RemoteURL: "https://example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 0,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://example.com"},
 			}
 			unchangedSpec.PrepareForUpdate(ctx, old)
 			Expect(unchangedSpec.Generation).To(Equal(int64(5)))
 
 			changedSpec := &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default", Generation: 0,
-				Spec: arc.EndpointSpec{RemoteURL: "https://changed.example.com"},
+				Name:       "test-endpoint",
+				Namespace:  "default",
+				Generation: 0,
+				Spec:       arc.EndpointSpec{RemoteURL: "https://changed.example.com"},
 			}
 			changedSpec.PrepareForUpdate(ctx, old)
 			Expect(changedSpec.Generation).To(Equal(int64(6)))
@@ -495,7 +510,8 @@ var _ = Describe("Endpoint Strategy", func() {
 	Describe("ConvertToTable", func() {
 		newEndpoint := func(conds ...metav1.Condition) *arc.Endpoint {
 			return &arc.Endpoint{
-				Name: "test-endpoint", Namespace: "default",
+				Name:      "test-endpoint",
+				Namespace: "default",
 				Spec: arc.EndpointSpec{
 					RemoteURL: "https://example.com",
 					Type:      "oci",

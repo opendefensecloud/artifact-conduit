@@ -65,7 +65,8 @@ var _ = Describe("EndpointController", func() {
 	// the InNamespace List branch of typeIsKnown and the ArtifactType watch.
 	createNamespacedTypeAccepting := func(endpointType string) *arcv1alpha1.ArtifactType {
 		at := &arcv1alpha1.ArtifactType{
-			GenerateName: "at-", Namespace: ns.Name,
+			GenerateName: "at-",
+			Namespace:    ns.Name,
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				Rules: arcv1alpha1.ArtifactTypeRules{
 					SrcTypes: []string{endpointType},
@@ -82,7 +83,8 @@ var _ = Describe("EndpointController", func() {
 
 	createSecret := func(name string) *corev1.Secret {
 		secret := &corev1.Secret{
-			Name: name, Namespace: ns.Name,
+			Name:       name,
+			Namespace:  ns.Name,
 			StringData: map[string]string{"username": "alice", "password": "s3cret"},
 		}
 		Expect(k8sClient.Create(ctx, secret)).To(Succeed())
@@ -92,7 +94,8 @@ var _ = Describe("EndpointController", func() {
 
 	createEndpoint := func(endpointType, secretName, remoteURL string) *arcv1alpha1.Endpoint {
 		ep := &arcv1alpha1.Endpoint{
-			GenerateName: "ep-", Namespace: ns.Name,
+			GenerateName: "ep-",
+			Namespace:    ns.Name,
 			Spec: arcv1alpha1.EndpointSpec{
 				Type:      endpointType,
 				RemoteURL: remoteURL,

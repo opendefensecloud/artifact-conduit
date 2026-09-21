@@ -62,8 +62,9 @@ func newScheme() *runtime.Scheme {
 
 func aw(namespace, name, artifactType string, cron bool, phase arcv1alpha1.WorkflowPhase) *arcv1alpha1.ArtifactWorkflow {
 	obj := &arcv1alpha1.ArtifactWorkflow{
-		Namespace: namespace, Name: name,
-		Status: arcv1alpha1.ArtifactWorkflowStatus{WorkflowStatus: arcv1alpha1.WorkflowStatus{Phase: phase}},
+		Namespace: namespace,
+		Name:      name,
+		Status:    arcv1alpha1.ArtifactWorkflowStatus{WorkflowStatus: arcv1alpha1.WorkflowStatus{Phase: phase}},
 	}
 	if artifactType != "" {
 		obj.Labels = map[string]string{arcv1alpha1.LabelArtifactType: artifactType}
@@ -80,7 +81,8 @@ func aw(namespace, name, artifactType string, cron bool, phase arcv1alpha1.Workf
 // has first observed the object.
 func endpoint(namespace, name string, ready metav1.ConditionStatus) *arcv1alpha1.Endpoint {
 	obj := &arcv1alpha1.Endpoint{
-		Namespace: namespace, Name: name,
+		Namespace: namespace,
+		Name:      name,
 	}
 	if ready != "" {
 		obj.Status.Conditions = []metav1.Condition{{
@@ -200,7 +202,8 @@ arc_artifactworkflows{artifact_type="oci",mode="single",namespace="team-a",phase
 
 	It("should roll orders up to an aggregate phase", func() {
 		order := &arcv1alpha1.Order{
-			Namespace: "team-a", Name: "nightly",
+			Namespace: "team-a",
+			Name:      "nightly",
 			Status: arcv1alpha1.OrderStatus{
 				ArtifactWorkflows: map[string]arcv1alpha1.OrderArtifactWorkflowStatus{
 					"a": {WorkflowStatus: arcv1alpha1.WorkflowStatus{Phase: arcv1alpha1.WorkflowSucceeded}},

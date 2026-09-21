@@ -146,7 +146,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should skip the artifact type label when the value is not a valid label", func() {
 			order := &arcv1alpha1.Order{
-				Namespace: "team-a", Name: "nightly",
+				Namespace: "team-a",
+				Name:      "nightly",
 			}
 
 			// 64 characters, one over the label value limit. The workflow still
@@ -160,7 +161,8 @@ var _ = Describe("Helper Functions", func() {
 
 		It("should work when the order has no labels", func() {
 			order := &arcv1alpha1.Order{
-				Namespace: "team-a", Name: "nightly",
+				Namespace: "team-a",
+				Name:      "nightly",
 			}
 
 			meta := awObjectMeta(order, "abc123", "helm")
