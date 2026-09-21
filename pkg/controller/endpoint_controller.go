@@ -46,11 +46,26 @@ type EndpointReconciler struct {
 	probed map[types.NamespacedName]probeStamp
 }
 
-// probeStamp is the set of inputs that can change a probe's answer.
+// probeStamp is the set of inputs that can change a probe's answer, plus
+// whether the resulting conditions made it to the API.
 type probeStamp struct {
 	generation int64
 	secretRV   string
 	forceAt    time.Time
+
+	// resultWritten records that the probe's conditions reached the API. Until
+	// they have, a concurrent reconcile reads an Endpoint that still carries no
+	// Reachable condition, and must not mistake that for the result having been
+	// lost — otherwise it probes again with identical inputs.
+	resultWritten bool
+}
+
+// sameInputs compares only what can change the probe's answer, so the
+// bookkeeping in resultWritten does not count as a change.
+func (s probeStamp) sameInputs(other probeStamp) bool {
+	return s.generation == other.generation &&
+		s.secretRV == other.secretRV &&
+		s.forceAt.Equal(other.forceAt)
 }
 
 // endpointMaxConcurrentReconciles bounds how many Endpoints this controller
@@ -104,6 +119,10 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	endpoint.Status.ObservedGeneration = endpoint.Generation
 
 	if equality.Semantic.DeepEqual(original.Status, endpoint.Status) {
+		// Nothing to write because the result already matches what is stored, so
+		// it is in the API just as surely as after an update.
+		r.markProbeWritten(req.NamespacedName, endpoint)
+
 		return ctrl.Result{}, nil
 	}
 
@@ -116,6 +135,7 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update endpoint status")
 	}
 
+	r.markProbeWritten(req.NamespacedName, endpoint)
 	r.recordReadyTransition(original, endpoint)
 
 	return ctrl.Result{}, nil
@@ -304,7 +324,11 @@ func (r *EndpointReconciler) shouldProbe(ep *arcv1alpha1.Endpoint, secret *corev
 
 	missingResult := meta.FindStatusCondition(ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable) == nil
 
-	if last, seen := r.probed[key]; !missingResult && seen && last == current {
+	// A missing result only justifies a re-probe once the previous one is known
+	// to have been written: that is the lost-status case. Before the write, the
+	// absence just means this reconcile raced the one that probed.
+	if last, seen := r.probed[key]; seen && last.sameInputs(current) &&
+		(!missingResult || !last.resultWritten) {
 		return false
 	}
 
@@ -314,6 +338,23 @@ func (r *EndpointReconciler) shouldProbe(ep *arcv1alpha1.Endpoint, secret *corev
 	r.probed[key] = current
 
 	return true
+}
+
+// markProbeWritten records that the probe's conditions are in the API, which is
+// what lets a later reconcile tell a lost result from one that has not landed
+// yet. A no-op when this reconcile did not probe.
+func (r *EndpointReconciler) markProbeWritten(key types.NamespacedName, ep *arcv1alpha1.Endpoint) {
+	if meta.FindStatusCondition(ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable) == nil {
+		return
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if last, seen := r.probed[key]; seen && !last.resultWritten {
+		last.resultWritten = true
+		r.probed[key] = last
+	}
 }
 
 func (r *EndpointReconciler) forgetProbe(key types.NamespacedName) {
