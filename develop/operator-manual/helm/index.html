@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2842,6 +2842,72 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <td>Liveness probe configuration</td>
 </tr>
 <tr>
+<td>apiserver.metrics.serviceMonitor.additionalLabels</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Additional labels for ServiceMonitor</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Enable ServiceMonitor for the API Server</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.honorLabels</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Keep the target's own metric labels rather than letting Prometheus rename them</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.interval</td>
+<td>string</td>
+<td><code>"30s"</code></td>
+<td>Scrape interval</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.scrapeTimeout</td>
+<td>string</td>
+<td><code>"10s"</code></td>
+<td>Scrape timeout</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tlsConfig.caSecret.key</td>
+<td>string</td>
+<td><code>"ca.crt"</code></td>
+<td>Key within that Secret</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Secret holding the CA bundle, defaults to the chart's certificate Secret</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Skip verification of the API Server certificate. Off by default, the scrape verifies against the cert-manager issued CA and the service DNS name below. Only set this true if you run without cert-manager.</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tlsConfig.serverName</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Expected server name, defaults to the API Server service DNS name</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tokenSecret.key</td>
+<td>string</td>
+<td><code>"token"</code></td>
+<td>Key within the Secret that holds the token</td>
+</tr>
+<tr>
+<td>apiserver.metrics.serviceMonitor.tokenSecret.name</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Name of the Secret containing the scrape bearer token</td>
+</tr>
+<tr>
 <td>apiserver.nameOverride</td>
 <td>string</td>
 <td><code>""</code></td>
@@ -3060,8 +3126,8 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <tr>
 <td>controller.args.metricsBindAddress</td>
 <td>string</td>
-<td><code>"0"</code></td>
-<td>Metrics bind address (set to "0" to disable, ":8443" for HTTPS)</td>
+<td><code>":8443"</code></td>
+<td>Metrics bind address. Only used when controller.metrics.enabled is true, the deployment passes 0 otherwise, so this is the port rather than a switch.</td>
 </tr>
 <tr>
 <td>controller.args.metricsSecure</td>
@@ -3220,6 +3286,12 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <td>Enable ServiceMonitor</td>
 </tr>
 <tr>
+<td>controller.metrics.serviceMonitor.honorLabels</td>
+<td>bool</td>
+<td><code>true</code></td>
+<td>Keep the target's own metric labels. ARC's <code>namespace</code> label names the Order's namespace. Without this Prometheus renames it to <code>exported_namespace</code>.</td>
+</tr>
+<tr>
 <td>controller.metrics.serviceMonitor.interval</td>
 <td>string</td>
 <td><code>"30s"</code></td>
@@ -3326,6 +3398,54 @@ kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </
 <td>bool</td>
 <td><code>false</code></td>
 <td>Create namespace if it doesn't exist</td>
+</tr>
+<tr>
+<td>dashboards.annotations</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Additional annotations for the dashboard ConfigMaps</td>
+</tr>
+<tr>
+<td>dashboards.enabled</td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up</td>
+</tr>
+<tr>
+<td>dashboards.extraLabels</td>
+<td>object</td>
+<td><code>{}</code></td>
+<td>Additional labels for the dashboard ConfigMaps</td>
+</tr>
+<tr>
+<td>dashboards.folder</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Grafana folder name, empty uses Grafana's default folder</td>
+</tr>
+<tr>
+<td>dashboards.folderAnnotation</td>
+<td>string</td>
+<td><code>"grafana_folder"</code></td>
+<td>Annotation key naming the Grafana folder</td>
+</tr>
+<tr>
+<td>dashboards.labelKey</td>
+<td>string</td>
+<td><code>"grafana_dashboard"</code></td>
+<td>Label key the Grafana sidecar watches for</td>
+</tr>
+<tr>
+<td>dashboards.labelValue</td>
+<td>string</td>
+<td><code>"1"</code></td>
+<td>Label value the Grafana sidecar watches for</td>
+</tr>
+<tr>
+<td>dashboards.namespace</td>
+<td>string</td>
+<td><code>""</code></td>
+<td>Namespace for the ConfigMaps, defaults to the release namespace. The kube-prometheus-stack sidecar only watches its own namespace unless it runs with sidecar.dashboards.searchNamespace=ALL.</td>
 </tr>
 <tr>
 <td>etcd.affinity</td>

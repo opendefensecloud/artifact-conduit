@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1119,10 +1119,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-metric-catalog" class="md-nav__link">
+  <a href="#arc-metric-catalog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Full Metric Catalog
+        ARC Metric Catalog
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ARC Metric Catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#things-that-look-like-bugs-and-are-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Things that look like bugs and are not
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-controller-runtime-metric-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full controller-runtime Metric Catalog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scraping-the-api-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scraping the API Server
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference Dashboard
       
     </span>
   </a>
@@ -1887,10 +1937,60 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#full-metric-catalog" class="md-nav__link">
+  <a href="#arc-metric-catalog" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Full Metric Catalog
+        ARC Metric Catalog
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ARC Metric Catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#things-that-look-like-bugs-and-are-not" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Things that look like bugs and are not
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#full-controller-runtime-metric-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full controller-runtime Metric Catalog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scraping-the-api-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scraping the API Server
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference Dashboard
       
     </span>
   </a>
@@ -1942,7 +2042,7 @@
 
 
 <h1 id="observability-monitoring">Observability &amp; Monitoring<a class="headerlink" href="#observability-monitoring" title="Permanent link">¶</a></h1>
-<p>ARC exposes <a href="https://book.kubebuilder.io/reference/metrics-reference.html">controller-runtime</a> Prometheus metrics and Kubernetes health probes. There are no ARC-specific custom metrics; alerting is built on the standard reconciler signals for the <code>order</code> and <code>artifactworkflow</code> controllers.</p>
+<p>ARC exposes Prometheus metrics and Kubernetes health probes. The controller manager emits ARC's own metrics for Orders and ArtifactWorkflows alongside the standard <a href="https://book.kubebuilder.io/reference/metrics-reference.html">controller-runtime</a> reconciler signals, and the API Server exposes the usual Kubernetes API server metrics. A reference dashboard ships with the Helm chart.</p>
 <h2 id="enabling-the-metrics-endpoint">Enabling the Metrics Endpoint<a class="headerlink" href="#enabling-the-metrics-endpoint" title="Permanent link">¶</a></h2>
 <p>Metrics are <strong>disabled by default</strong>. Enable them via Helm:</p>
 <blockquote>
@@ -2033,7 +2133,40 @@
 </tbody>
 </table>
 <h2 id="top-health-signals">Top Health Signals<a class="headerlink" href="#top-health-signals" title="Permanent link">¶</a></h2>
-<p>Monitor these metrics to catch a degraded controller. Each metric carries a <code>controller</code> label; watch both <code>order</code> and <code>artifactworkflow</code>.</p>
+<p>Start here. These answer whether ARC is doing its job.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arc_orders</code></td>
+<td>Orders sitting in <code>Failed</code>, or a <code>Pending</code> count that never drains</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_completions_total</code></td>
+<td>Success ratio dropping, by <code>result</code></td>
+</tr>
+<tr>
+<td><code>arc_reconcile_errors_total</code></td>
+<td>Which failure <code>reason</code> dominates</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_last_success_timestamp_seconds</code></td>
+<td>A cron sync that stopped running. Alert when <code>time() - &lt;metric&gt;</code> exceeds <code>arc_artifactworkflow_schedule_interval_seconds</code> and no fixed threshold is needed</td>
+</tr>
+<tr>
+<td><code>arc_collector_errors_total</code></td>
+<td>Non zero means the gauges above are stale, not that ARC is idle</td>
+</tr>
+</tbody>
+</table>
+<p>The controller-runtime signals below are second line diagnostics, useful once you
+know something is wrong. Each carries a <code>controller</code> label; watch both <code>order</code> and
+<code>artifactworkflow</code>.</p>
 <table>
 <thead>
 <tr>
@@ -2060,7 +2193,106 @@
 </tr>
 </tbody>
 </table>
-<h2 id="full-metric-catalog">Full Metric Catalog<a class="headerlink" href="#full-metric-catalog" title="Permanent link">¶</a></h2>
+<h2 id="arc-metric-catalog">ARC Metric Catalog<a class="headerlink" href="#arc-metric-catalog" title="Permanent link">¶</a></h2>
+<p>Emitted by the controller manager. No label carries an object name or a message, so
+cardinality stays bounded by namespaces and artifact types.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Type</th>
+<th>Labels</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>arc_orders</code></td>
+<td>Gauge</td>
+<td><code>namespace</code>, <code>phase</code></td>
+<td>Orders currently in each aggregate phase</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflows</code></td>
+<td>Gauge</td>
+<td><code>namespace</code>, <code>artifact_type</code>, <code>mode</code>, <code>phase</code></td>
+<td>ArtifactWorkflows currently in each phase</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_completions_total</code></td>
+<td>Counter</td>
+<td><code>namespace</code>, <code>artifact_type</code>, <code>result</code></td>
+<td>Single run workflows reaching a terminal phase</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>artifact_type</code>, <code>result</code></td>
+<td>Argo execution time of single run workflows</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_last_scheduled_timestamp_seconds</code></td>
+<td>Gauge</td>
+<td><code>namespace</code>, <code>artifact_type</code></td>
+<td>Cron only, when the group was last scheduled</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_last_success_timestamp_seconds</code></td>
+<td>Gauge</td>
+<td><code>namespace</code>, <code>artifact_type</code></td>
+<td>Cron only, when the group last succeeded</td>
+</tr>
+<tr>
+<td><code>arc_artifactworkflow_schedule_interval_seconds</code></td>
+<td>Gauge</td>
+<td><code>namespace</code>, <code>artifact_type</code></td>
+<td>Cron only, how long the group was meant to wait after that success</td>
+</tr>
+<tr>
+<td><code>arc_reconcile_errors_total</code></td>
+<td>Counter</td>
+<td><code>controller</code>, <code>reason</code></td>
+<td>Classified reconcile failures</td>
+</tr>
+<tr>
+<td><code>arc_collector_errors_total</code></td>
+<td>Counter</td>
+<td><code>resource</code></td>
+<td>Cache reads that failed while collecting the gauges</td>
+</tr>
+</tbody>
+</table>
+<p>The gauges are read from the controller's cache at scrape time rather than tracked in
+the reconcile loop, so a deleted Order stops being counted with no bookkeeping. They
+are emitted sparsely: a phase with no objects produces no series at all, so a panel
+must not read an absent series as zero.</p>
+<h3 id="things-that-look-like-bugs-and-are-not">Things that look like bugs and are not<a class="headerlink" href="#things-that-look-like-bugs-and-are-not" title="Permanent link">¶</a></h3>
+<ul>
+<li><strong>An Order containing a cron artifact never settles.</strong> It reads <code>Running</code> while a run
+  is in flight and <code>Succeeded</code> between runs. <code>Running</code> means "has work in flight", not
+  "unhealthy".</li>
+<li><strong>Completions and duration cover single run workflows only.</strong> Cron completion data in
+  ARC is a copy of Argo's cumulative counters, which jump by more than one and reset on
+  a force reconcile, so counting them would be dishonest. Use the freshness timestamps
+  for cron health instead.</li>
+<li><strong><code>arc_reconcile_errors_total</code> is retry inflated.</strong> A permanently failing reconcile
+  increments its reason on every backoff. Fine for <code>rate()</code> and for "which reason
+  dominates", misleading as a count of distinct failures.</li>
+<li><strong>The freshness gauges reduce to the oldest</strong> in each <code>(namespace, artifact_type)</code>
+  group, so a stalled workflow is never masked by a healthy sibling. A group that has
+  never succeeded contributes no series.</li>
+<li><strong><code>arc_artifactworkflow_schedule_interval_seconds</code> is measured from the last success,
+  not from the schedule.</strong> It is the wait that was expected after that particular run, so
+  on an uneven schedule such as <code>0 9,17 * * *</code> it reports eight hours after the morning
+  run and sixteen after the evening one. Subtracting it from the elapsed time gives how
+  far the next run is overdue; reading it as "the period" will mislead.</li>
+<li><strong>ArtifactWorkflows created before this feature report <code>artifact_type="unknown"</code>.</strong>
+  The label is stamped at creation and existing objects are never relabelled. For cron
+  workflows, which are never recreated, this is permanent.</li>
+<li><strong><code>reason</code> matches the Kubernetes Event.</strong> The same word appears in
+  <code>kubectl describe order</code>.</li>
+</ul>
+<h2 id="full-controller-runtime-metric-catalog">Full controller-runtime Metric Catalog<a class="headerlink" href="#full-controller-runtime-metric-catalog" title="Permanent link">¶</a></h2>
 <p>All metrics are emitted per controller (<code>order</code>, <code>artifactworkflow</code>) or workqueue (<code>name=order|artifactworkflow</code>).</p>
 <table>
 <thead>
@@ -2140,6 +2372,57 @@
 </tr>
 </tbody>
 </table>
+<h2 id="scraping-the-api-server">Scraping the API Server<a class="headerlink" href="#scraping-the-api-server" title="Permanent link">¶</a></h2>
+<p>The ARC API Server always serves <code>/metrics</code> on its secure port. Nothing scrapes it until
+you turn the ServiceMonitor on:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiserver</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">metrics</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">serviceMonitor</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">      </span><span class="nt">tokenSecret</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">arc-metrics-scrape-token</span>
+</code></pre></div>
+<p>TLS verification is on by default and resolves the cert-manager issued CA and the
+service DNS name on its own. Rendering fails with an explicit message if you enable
+verification while running without cert-manager, rather than producing a ServiceMonitor
+that silently cannot connect.</p>
+<p>A scrape reaches the Service directly rather than through the aggregation layer, so the
+API Server authenticates the bearer token itself. The chart binds <code>system:auth-delegator</code>
+to the API Server ServiceAccount when this monitor is enabled, and creates an unbound
+<code>{release-name}-apiserver-metrics-reader</code> ClusterRole. Wire a scrape identity to it the
+same way as for the controller above, using <code>arc-apiserver-metrics-reader</code> as the role.</p>
+<p><code>apiserver_request_total</code> and <code>workqueue_depth</code> are also emitted by the Kubernetes
+control plane. Both ServiceMonitors set <code>targetLabels</code>, so every ARC series carries
+<code>app_kubernetes_io_part_of="arc"</code> and <code>app_kubernetes_io_component</code>. Filter on those or
+your queries will mix ARC together with the control plane.</p>
+<p>Both monitors also set <code>honorLabels: true</code>. ARC's <code>namespace</code> label names the Order's
+namespace, and without this Prometheus renames it to <code>exported_namespace</code>. Note that
+<code>namespace</code> therefore means two different things on the same endpoint: on ARC's own
+metrics it is the Order's namespace, on everything else Prometheus still attaches the
+namespace ARC runs in. Filter on <code>app_kubernetes_io_part_of</code> when you want the latter.</p>
+<p>The setting is new and defaults on, but it only takes effect where a metric carries a
+label the target also sets. Nothing ARC exposed before the domain metrics did, so
+existing series and any query against them are unaffected.</p>
+<h2 id="reference-dashboard">Reference Dashboard<a class="headerlink" href="#reference-dashboard" title="Permanent link">¶</a></h2>
+<p>A Grafana dashboard ships with the chart, off by default:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">dashboards</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<p>It renders as a ConfigMap labelled for the Grafana sidecar. <strong>The kube-prometheus-stack
+sidecar only watches its own namespace by default</strong>, so either install Grafana with
+<code>sidecar.dashboards.searchNamespace=ALL</code> or set <code>dashboards.namespace</code> to the namespace
+Grafana runs in. Without one of those the ConfigMap is created, nothing appears in
+Grafana, and there is no error to go on.</p>
+<p>Four sections: whether ARC is up, whether work is getting through, reconciler internals,
+and runtime. It is a starting point rather than a finished observability product, so
+copy it into your own folder before editing.</p>
+<p>Cron freshness is not a panel. Time since the last success reads as overdue while a run
+is still working, because the clock only resets on success, which is honest for an alert
+and misleading on a dashboard. The metrics are there to alert on, see the table above.</p>
+<p>There is no container restart panel. That needs
+<code>kube_pod_container_status_restarts_total</code> from kube-state-metrics, which a chart
+shipped dashboard cannot assume is installed. If you run it, the query is
+<code>sum by (pod) (kube_pod_container_status_restarts_total{namespace="arc-system"})</code>.</p>
 <h2 id="workflow-execution-failures">Workflow Execution Failures<a class="headerlink" href="#workflow-execution-failures" title="Permanent link">¶</a></h2>
 <p>ARC's controller-runtime metrics cover controller health only — whether ARC successfully handed work to Argo Workflows. Workflow-level failures (a workflow that ran but produced a <code>Failed</code> or <code>Error</code> outcome) are owned by Argo and are visible through its own Prometheus metrics, which include per-namespace workflow counts broken down by phase.</p>
 <p>Add Argo's metrics endpoint to your Prometheus scrape config alongside ARC's, then monitor workflow failures there rather than here. Consult the <a href="https://argo-workflows.readthedocs.io/en/latest/metrics/">Argo Workflows metrics documentation</a> for details.</p>
