@@ -74,6 +74,9 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		handler = NewCronWorkflowHandler(r, log, aw)
 	} else {
 		handler = NewSingleWorkflowHandler(r, log, aw)
+		// Only single mode reaches RecordCompletion, so only single mode needs
+		// the series to exist before the first completion lands on it.
+		metrics.InitCompletions(aw.Namespace, metrics.ArtifactTypeOf(aw))
 	}
 
 	// Update last reconcile time

@@ -3,7 +3,7 @@
 
 // Package metrics exposes ARC domain metrics on the controller manager's
 // existing Prometheus endpoint. Current state is reported by a collector that
-// reads the manager cache at scrape time; flow and failures are recorded from
+// reads the manager cache at scrape time. Flow and failures are recorded from
 // the reconcile path.
 package metrics
 
@@ -69,6 +69,22 @@ func ResultFor(phase arcv1alpha1.WorkflowPhase) (string, bool) {
 		return ResultError, true
 	default:
 		return "", false
+	}
+}
+
+// InitCompletions creates both series a completion writes to at zero, before
+// anything has completed. rate and increase are blind to the first increment
+// otherwise: they read the difference between samples inside the range, and a
+// series that is born holding its first value and stays there never shows a
+// difference. On a quiet install that is every run anyone is likely to look at,
+// and it empties the duration quantile as readily as the failure count.
+//
+// Safe to call on every reconcile. Creating a child that already exists is a
+// map lookup and leaves its value alone.
+func InitCompletions(namespace, artifactType string) {
+	for _, result := range []string{ResultSucceeded, ResultFailed, ResultError} {
+		completions.WithLabelValues(namespace, artifactType, result)
+		duration.WithLabelValues(artifactType, result)
 	}
 }
 
