@@ -50,6 +50,7 @@ export TRUSTMANAGER_VERSION := v0.24.0
 
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
+LICENSE_PATTERN := *\.go
 
 .PHONY: codegen
 codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
@@ -59,7 +60,7 @@ codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 
 .PHONY: fmt
 fmt: $(GOLANGCI_LINT) ## Add license headers and format code
-	$(MAKE) addlicense license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='*\.go'
+	$(MAKE) addlicense license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
 	$(GO) fmt ./...
 	$(GOLANGCI_LINT) run --fix
 
@@ -68,7 +69,7 @@ lint: lint-no-golangci golangci-lint ## Run linters
 
 .PHONY: lint-no-golangci
 lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
-	$(MAKE) addlicense-check license=apache comment='$(LICENSE_COMMENT)' pattern='*\.go'
+	$(MAKE) addlicense-check license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
 
 .PHONY: test
 test: $(SETUP_ENVTEST) $(GINKGO) envtest-binaries-sideload ## Run all tests
