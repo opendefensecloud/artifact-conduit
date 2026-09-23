@@ -19,6 +19,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/client/interceptor"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/endpointprobe"
@@ -329,6 +330,105 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.ProbedSecretVersion).To(BeEmpty())
 			Expect(stored.Status.ProbedForceAt).To(BeNil())
 			Expect(stub.CallsFor(remoteURL)).To(BeZero())
+		})
+	})
+
+	Describe("endpointsForType", func() {
+		var (
+			ctx    context.Context
+			scheme *runtime.Scheme
+		)
+
+		endpoint := func(name, namespace, endpointType string) *arcv1alpha1.Endpoint {
+			return &arcv1alpha1.Endpoint{
+				ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+				Spec: arcv1alpha1.EndpointSpec{
+					Type: endpointType, RemoteURL: remoteURL, Usage: arcv1alpha1.EndpointUsageAll,
+				},
+			}
+		}
+
+		names := func(requests []reconcile.Request) []string {
+			out := make([]string, 0, len(requests))
+			for _, req := range requests {
+				out = append(out, req.Name)
+			}
+
+			return out
+		}
+
+		BeforeEach(func() {
+			ctx = context.Background()
+			scheme = runtime.NewScheme()
+			Expect(arcv1alpha1.AddToScheme(scheme)).To(Succeed())
+		})
+
+		reconcilerWith := func(objs ...client.Object) *EndpointReconciler {
+			return &EndpointReconciler{
+				Client: fake.NewClientBuilder().WithScheme(scheme).WithObjects(objs...).Build(),
+			}
+		}
+
+		It("should re-queue only the Endpoints whose type the rules mention", func() {
+			r := reconcilerWith(
+				endpoint("ep-oci", epNS, "oci"),
+				endpoint("ep-helm", epNS, "helm"),
+				endpoint("ep-blob", epNS, "blob"),
+			)
+
+			requests := r.endpointsForType(ctx, &arcv1alpha1.ClusterArtifactType{
+				ObjectMeta: metav1.ObjectMeta{Name: "cat"},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					Rules: arcv1alpha1.ArtifactTypeRules{
+						SrcTypes: []string{"oci"},
+						DstTypes: []string{"helm"},
+					},
+				},
+			})
+
+			Expect(names(requests)).To(ConsistOf("ep-oci", "ep-helm"))
+		})
+
+		It("should re-queue everything for rules that name no types", func() {
+			r := reconcilerWith(
+				endpoint("ep-oci", epNS, "oci"),
+				endpoint("ep-helm", epNS, "helm"),
+			)
+
+			// Empty means "any type in that position", so such rules can change
+			// the verdict for any Endpoint: see endpointTypeAccepted.
+			requests := r.endpointsForType(ctx, &arcv1alpha1.ClusterArtifactType{
+				ObjectMeta: metav1.ObjectMeta{Name: "cat"},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					Rules: arcv1alpha1.ArtifactTypeRules{DstTypes: []string{"oci"}},
+				},
+			})
+
+			Expect(names(requests)).To(ConsistOf("ep-oci", "ep-helm"))
+		})
+
+		It("should keep a namespaced ArtifactType to its own namespace", func() {
+			r := reconcilerWith(
+				endpoint("ep-here", epNS, "oci"),
+				endpoint("ep-elsewhere", "other-ns", "oci"),
+			)
+
+			requests := r.endpointsForType(ctx, &arcv1alpha1.ArtifactType{
+				ObjectMeta: metav1.ObjectMeta{Name: "at", Namespace: epNS},
+				Spec: arcv1alpha1.ArtifactTypeSpec{
+					Rules: arcv1alpha1.ArtifactTypeRules{
+						SrcTypes: []string{"oci"},
+						DstTypes: []string{"oci"},
+					},
+				},
+			})
+
+			Expect(names(requests)).To(ConsistOf("ep-here"))
+		})
+
+		It("should ignore an object that is not an artifact type", func() {
+			Expect(reconcilerWith(endpoint("ep-oci", epNS, "oci")).
+				endpointsForType(ctx, &corev1.Secret{})).To(BeEmpty())
 		})
 	})
 })

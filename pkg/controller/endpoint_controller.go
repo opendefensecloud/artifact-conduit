@@ -496,8 +496,8 @@ func (r *EndpointReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&arcv1alpha1.Endpoint{}).
 		Watches(&corev1.Secret{}, handler.EnqueueRequestsFromMapFunc(r.endpointsForSecret)).
-		Watches(&arcv1alpha1.ClusterArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.allEndpoints)).
-		Watches(&arcv1alpha1.ArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.allEndpoints)).
+		Watches(&arcv1alpha1.ClusterArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.endpointsForType)).
+		Watches(&arcv1alpha1.ArtifactType{}, handler.EnqueueRequestsFromMapFunc(r.endpointsForType)).
 		WithOptions(ctrlcontroller.Options{MaxConcurrentReconciles: endpointMaxConcurrentReconciles}).
 		Complete(r)
 }
@@ -521,21 +521,61 @@ func (r *EndpointReconciler) endpointsForSecret(ctx context.Context, obj client.
 	return requests
 }
 
-// allEndpoints re-queues every Endpoint. ArtifactType rules are cluster-wide
-// inputs to validation, so a new one can make a previously unknown type known.
-func (r *EndpointReconciler) allEndpoints(ctx context.Context, _ client.Object) []reconcile.Request {
-	endpoints := &arcv1alpha1.EndpointList{}
-	if err := r.List(ctx, endpoints); err != nil {
+// endpointsForType re-queues the Endpoints whose validation an artifact type's
+// rules can actually change, rather than every Endpoint in the cluster: a type
+// appearing, changing or going away can make an unknown type known or the
+// reverse, but only for the types its rules mention.
+//
+// This is correct across updates because controller-runtime maps both the old and
+// the new object of an update event, so rules that stop mentioning a type still
+// re-queue the Endpoints that were relying on them.
+func (r *EndpointReconciler) endpointsForType(ctx context.Context, obj client.Object) []reconcile.Request {
+	rules, ok := artifactTypeRules(obj)
+	if !ok {
 		return nil
 	}
+
+	var opts []client.ListOption
+	if namespace := obj.GetNamespace(); namespace != "" {
+		// A namespaced ArtifactType is only consulted for Endpoints beside it.
+		opts = append(opts, client.InNamespace(namespace))
+	}
+
+	endpoints := &arcv1alpha1.EndpointList{}
+	if err := r.List(ctx, endpoints, opts...); err != nil {
+		return nil
+	}
+
+	// Rules that name no types accept every type in that position, so they can
+	// affect any Endpoint: see endpointTypeAccepted.
+	anyType := len(rules.SrcTypes) == 0 || len(rules.DstTypes) == 0
 
 	requests := make([]reconcile.Request, 0, len(endpoints.Items))
 	for i := range endpoints.Items {
 		ep := &endpoints.Items[i]
+
+		if !anyType &&
+			!slices.Contains(rules.SrcTypes, ep.Spec.Type) &&
+			!slices.Contains(rules.DstTypes, ep.Spec.Type) {
+			continue
+		}
+
 		requests = append(requests, reconcile.Request{
 			NamespacedName: namespacedName(ep.Namespace, ep.Name),
 		})
 	}
 
 	return requests
+}
+
+// artifactTypeRules reads the validation rules off either kind of artifact type.
+func artifactTypeRules(obj client.Object) (arcv1alpha1.ArtifactTypeRules, bool) {
+	switch t := obj.(type) {
+	case *arcv1alpha1.ArtifactType:
+		return t.Spec.Rules, true
+	case *arcv1alpha1.ClusterArtifactType:
+		return t.Spec.Rules, true
+	default:
+		return arcv1alpha1.ArtifactTypeRules{}, false
+	}
 }
