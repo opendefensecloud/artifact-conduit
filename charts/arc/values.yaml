@@ -235,6 +235,16 @@ controller:
     leaderElect: false
     # -- Pprof bind address (empty to disable)
     pprofBindAddress: ""
+    # -- How long an Endpoint probe result is treated as current, e.g. `15m`.
+    # Once it expires the Endpoint is probed again, which is the only way a
+    # target that went down is noticed. Empty keeps the controller default of
+    # `0`: probes happen only on a spec, Secret or force-annotation change.
+    endpointProbeTTL: ""
+    # -- CIDRs the Endpoint probe refuses to connect to. Leave `null` to keep the
+    # controller's own list, which covers loopback and link-local. Set it to an
+    # empty string to disable the check and rely solely on NetworkPolicy — the
+    # probe connects to a URL the consumer chose, so that is a deliberate choice.
+    probeDenyCIDRs: null
 
   # -- Additional command-line arguments as key-value pairs
   extraArgs: {}

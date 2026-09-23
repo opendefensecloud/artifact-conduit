@@ -96,8 +96,8 @@ condition is only ever as fresh as the last reason to probe. Set
 
 ```yaml
 controller:
-  extraArgs:
-    endpoint-probe-ttl: 15m
+  args:
+    endpointProbeTTL: 15m
 ```
 
 Expiry is spread across `Endpoint`s by up to 20% of the TTL, derived from each
@@ -112,9 +112,10 @@ ServiceAccount and may be subject to different egress rules. `Ready=True` is
 therefore strong evidence that an `Order` will succeed, not a guarantee of it.
 
 Operators should also note that the probe connects to a URL supplied by the
-consumer. ARC refuses loopback and link-local addresses by default — configurable
-with the controller-manager's `--probe-deny-cidrs` flag — but a NetworkPolicy on
-the controller-manager Deployment is the boundary to rely on.
+consumer. ARC refuses loopback and link-local addresses by default — replace that
+list with `controller.args.probeDenyCIDRs`, or set it to an empty string to turn
+the check off entirely — but a NetworkPolicy on the controller-manager Deployment
+is the boundary to rely on.
 
 The probe also reads the `username`/`password` keys of the `Secret` an
 `Endpoint` references and sends them as Basic auth to the `remoteURL` the
