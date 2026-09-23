@@ -19,7 +19,7 @@ APISERVER_IMG ?= apiserver:latest
 MANAGER_IMG ?= manager:latest
 DOCS_IMG ?= arc-docs:latest
 
-ENVTEST_K8S_VERSION ?= 1.36.1
+ENVTEST_K8S_VERSION ?= 1.37.0
 
 # Repo branch protection settings
 REPO_ADMIN_BYPASS := false
