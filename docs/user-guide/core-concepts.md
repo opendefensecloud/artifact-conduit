@@ -79,6 +79,31 @@ $ kubectl annotate endpoints.arc.opendefense.cloud registry \
     arc.opendefense.cloud/force-at="$(date +%s)" --overwrite
 ```
 
+What the last probe ran against is recorded in `status.probedGeneration`,
+`status.probedSecretVersion` and `status.probedForceAt`, next to the
+`status.lastProbeTime` it produced. Those are what the decision above is made
+from, so `Reachable` and its provenance always travel together: ARC never
+re-probes because it forgot, and a restart or a leader failover does not
+re-present every consumer's credentials.
+
+##### Re-probing on a schedule
+
+Reachability is a property of the world, not of the cluster: a target can go
+down or come back without anything here to observe, so by default a `Reachable`
+condition is only ever as fresh as the last reason to probe. Set
+`--endpoint-probe-ttl` to bound that staleness — the controller then re-probes an
+`Endpoint` whose result is older than the TTL, and nothing else changes:
+
+```yaml
+controller:
+  extraArgs:
+    endpoint-probe-ttl: 15m
+```
+
+Expiry is spread across `Endpoint`s by up to 20% of the TTL, derived from each
+one's UID, so a set applied together does not come due together. The default is
+`0`, which disables it.
+
 #### What Ready does not promise
 
 The probe runs from ARC's controller-manager, using its network position and
