@@ -307,6 +307,9 @@ _Appears in:_
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#condition-v1-meta) array_ | Conditions represent the latest available observations of the Endpoint's state. |  | Optional: \{\} <br /> |
 | `observedGeneration` _integer_ | ObservedGeneration is the .metadata.generation the conditions were computed from. |  | Optional: \{\} <br /> |
 | `lastProbeTime` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastProbeTime is when the connection to spec.remoteURL was last attempted. |  | Optional: \{\} <br /> |
+| `probedGeneration` _integer_ | ProbedGeneration is the .metadata.generation the last probe ran against.<br />With LastProbeTime it records what the probe result in the conditions was<br />produced from, so no reconcile has to remember it. |  | Optional: \{\} <br /> |
+| `probedSecretVersion` _string_ | ProbedSecretVersion is the .metadata.resourceVersion of the Secret whose<br />credentials the last probe used. The Secret is a separate object, so a<br />rotation can never move this Endpoint's generation. |  | Optional: \{\} <br /> |
+| `probedForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | ProbedForceAt is the force annotation value the last probe honoured.<br />Annotations do not move the generation either. |  | Optional: \{\} <br /> |
 
 
 #### EndpointUsage

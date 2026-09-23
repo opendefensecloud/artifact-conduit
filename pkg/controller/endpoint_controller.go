@@ -6,8 +6,9 @@ package controller
 import (
 	"context"
 	"fmt"
+	"hash/fnv"
+	"math"
 	"slices"
-	"sync"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -17,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/events"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -40,25 +40,40 @@ type EndpointReconciler struct {
 	// call so the envtest suite can substitute a stub and never open a socket.
 	Probe func(context.Context, endpointprobe.Target) endpointprobe.Result
 
-	// probed remembers what each Endpoint looked like when it was last probed.
-	// in-memory, so a restart re-probes every Endpoint once
-	mu     sync.Mutex
-	probed map[types.NamespacedName]probeStamp
-}
-
-// probeStamp is the set of inputs that can change a probe's answer.
-type probeStamp struct {
-	generation int64
-	secretRV   string
-	forceAt    time.Time
+	// ProbeTTL is how long a probe result is treated as current. Reachability is
+	// a property of the world rather than of the cluster, so nothing here
+	// observes a target going down; without a TTL a result stays as it was until
+	// the spec, the Secret or the force annotation changes. Zero disables it,
+	// which is the default and matches the documented "no periodic re-probe".
+	ProbeTTL time.Duration
 }
 
 // endpointMaxConcurrentReconciles bounds how many Endpoints this controller
 // reconciles at once. The probe is network-bound and capped at 5s, so with the
 // controller-runtime default of one worker, reconciliation is strictly serial:
-// on a restart, with the in-memory probe cache empty, N Endpoints that all time
-// out converge only after roughly 5*N seconds.
+// N Endpoints that all time out converge only after roughly 5*N seconds.
 const endpointMaxConcurrentReconciles = 4
+
+// Why an Endpoint is being probed, reported in the log line that precedes the
+// probe so that "why did this re-probe?" is answerable from the logs.
+const (
+	reasonUnprobed      = "unprobed"
+	reasonResultLost    = "result-lost"
+	reasonSpecChanged   = "spec-changed"
+	reasonSecretChanged = "secret-changed"
+	reasonForced        = "forced"
+	reasonStale         = "stale"
+)
+
+const (
+	// probeJitterFraction is how much of the TTL a per-Endpoint offset may add,
+	// so that Endpoints created together do not all go stale together.
+	probeJitterFraction = 0.2
+
+	// probeRequeueFloor keeps a requeue from becoming a busy loop if the
+	// deadline has already passed by the time it is computed.
+	probeRequeueFloor = time.Second
+)
 
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints,verbs=get;list;watch
 //+kubebuilder:rbac:groups=arc.opendefense.cloud,resources=endpoints/status,verbs=get;update;patch
@@ -70,8 +85,6 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	endpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, req.NamespacedName, endpoint); err != nil {
 		if apierrors.IsNotFound(err) {
-			r.forgetProbe(req.NamespacedName)
-
 			return ctrl.Result{}, nil
 		}
 
@@ -79,8 +92,6 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 
 	if !endpoint.DeletionTimestamp.IsZero() {
-		r.forgetProbe(req.NamespacedName)
-
 		return ctrl.Result{}, nil
 	}
 
@@ -92,33 +103,36 @@ func (r *EndpointReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	}
 	meta.SetStatusCondition(&endpoint.Status.Conditions, validated)
 
+	var requeueAfter time.Duration
 	if validated.Status == metav1.ConditionTrue {
-		r.probeEndpoint(ctx, log, endpoint, secret)
+		requeueAfter = r.probeEndpoint(ctx, log, endpoint, secret)
 	} else {
 		meta.RemoveStatusCondition(&endpoint.Status.Conditions, arcv1alpha1.EndpointConditionReachable)
 		meta.RemoveStatusCondition(&endpoint.Status.Conditions, arcv1alpha1.EndpointConditionAuthenticated)
-		endpoint.Status.LastProbeTime = nil
+		// The result is gone, so the record of what produced it must go with it:
+		// they are one fact, and a record without a result reads as "lost".
+		clearProbeRecord(endpoint)
 	}
 
 	setReadyCondition(endpoint)
 	endpoint.Status.ObservedGeneration = endpoint.Generation
 
 	if equality.Semantic.DeepEqual(original.Status, endpoint.Status) {
-		return ctrl.Result{}, nil
+		return ctrl.Result{RequeueAfter: requeueAfter}, nil
 	}
 
 	if err := r.Status().Update(ctx, endpoint); err != nil {
 		metrics.RecordReconcileError(ControllerEndpoint, ReasonUpdateFailed)
-		// The probe's result did not reach the API, so do not remember having
-		// probed: the retry has to run it again.
-		r.forgetProbe(req.NamespacedName)
 
+		// Nothing to unwind: the probe's record travels with its result in the
+		// same status write, so a write that did not land leaves both absent and
+		// the retry reads that as "unprobed".
 		return ctrl.Result{}, errLogAndWrap(log, err, "failed to update endpoint status")
 	}
 
 	r.recordReadyTransition(original, endpoint)
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{RequeueAfter: requeueAfter}, nil
 }
 
 // validate resolves the Endpoint's references.
@@ -263,64 +277,160 @@ func setReadyCondition(ep *arcv1alpha1.Endpoint) {
 		ReasonEndpointValid, "endpoint is usable"))
 }
 
+// probeEndpoint probes the target when the Endpoint's own record says the result
+// it carries is no longer the one its inputs call for, and records what the probe
+// ran against. It reports when to look at this Endpoint again, or zero for never.
+//
+// The gate is what keeps a quiet cluster quiet: without it every resync and every
+// ArtifactType event would send the consumer's credentials over the network
+// again. It is a cache, so a miss costs one redundant probe and nothing else —
+// notably, a reconcile reading a cached copy older than our own last write sees
+// no record, probes once more, and its stale write then loses the conflict.
 func (r *EndpointReconciler) probeEndpoint(
 	ctx context.Context, log logr.Logger, ep *arcv1alpha1.Endpoint, secret *corev1.Secret,
-) {
+) time.Duration {
 	forceAt, err := GetForceAtAnnotationValue(ep)
 	if err != nil {
 		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
 	}
 
-	if !r.shouldProbe(ep, secret, forceAt) {
-		return
+	ttl := r.effectiveProbeTTL(ep)
+
+	if reason := probeReason(ep, secretVersion(secret), forceAt, ttl); reason != "" {
+		log.V(1).Info("Probing endpoint", "reason", reason)
+
+		result := r.Probe(ctx, targetFor(ep, secret))
+
+		now := metav1.Now().Rfc3339Copy()
+		ep.Status.LastProbeTime = &now
+		ep.Status.ProbedGeneration = ep.Generation
+		ep.Status.ProbedSecretVersion = secretVersion(secret)
+		ep.Status.ProbedForceAt = forceAtRecord(forceAt)
+
+		meta.SetStatusCondition(&ep.Status.Conditions,
+			checkCondition(arcv1alpha1.EndpointConditionReachable, result.Reachable))
+		meta.SetStatusCondition(&ep.Status.Conditions,
+			checkCondition(arcv1alpha1.EndpointConditionAuthenticated, result.Authenticated))
 	}
 
-	result := r.Probe(ctx, targetFor(ep, secret))
-
-	now := metav1.Now()
-	ep.Status.LastProbeTime = &now
-	meta.SetStatusCondition(&ep.Status.Conditions,
-		checkCondition(arcv1alpha1.EndpointConditionReachable, result.Reachable))
-	meta.SetStatusCondition(&ep.Status.Conditions,
-		checkCondition(arcv1alpha1.EndpointConditionAuthenticated, result.Authenticated))
+	return untilProbeStale(ep, ttl)
 }
 
-// shouldProbe reports whether anything that could change the probe's answer has
-// changed since the last probe, or the object has no probe result to show for
-// one, and records the new state if so.
-//
-// This gate is what keeps an idle cluster silent. Without it every informer
-// resync would send the consumer's credentials over the network again.
-func (r *EndpointReconciler) shouldProbe(ep *arcv1alpha1.Endpoint, secret *corev1.Secret, forceAt time.Time) bool {
-	current := probeStamp{generation: ep.Generation, forceAt: forceAt}
-	if secret != nil {
-		current.secretRV = secret.ResourceVersion
+// probeReason reports why this Endpoint needs probing, or "" for not at all.
+// Every case is an independent question; the order decides only which reason is
+// reported when more than one applies, so the most specific comes first.
+func probeReason(ep *arcv1alpha1.Endpoint, secretRV string, forceAt time.Time, ttl time.Duration) string {
+	if ep.Status.LastProbeTime == nil {
+		// Never probed, or the record was cleared because the type or the Secret
+		// stopped resolving.
+		return reasonUnprobed
 	}
 
-	key := namespacedName(ep.Namespace, ep.Name)
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	missingResult := meta.FindStatusCondition(ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable) == nil
-
-	if last, seen := r.probed[key]; !missingResult && seen && last == current {
-		return false
+	if meta.FindStatusCondition(ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable) == nil {
+		// Probed, but the result is no longer in status. LastProbeTime and the
+		// condition are written in one update, so this pair can only mean the
+		// result was lost — never that our own write is not visible yet.
+		return reasonResultLost
 	}
 
-	if r.probed == nil {
-		r.probed = map[types.NamespacedName]probeStamp{}
+	if ep.Generation != ep.Status.ProbedGeneration {
+		// Compared for difference, not order: a generation that somehow runs
+		// ahead of the object (restore from backup, delete and recreate) must
+		// probe once rather than wedge.
+		return reasonSpecChanged
 	}
-	r.probed[key] = current
 
-	return true
+	if secretRV != ep.Status.ProbedSecretVersion {
+		// resourceVersion is opaque, so this too is only ever compared for
+		// equality. The Secret is a separate object, so a rotation can never
+		// move this Endpoint's generation.
+		return reasonSecretChanged
+	}
+
+	if !recordedForceAt(ep).Equal(forceAt) {
+		// Equal rather than ==: the latter compares a time.Time's monotonic
+		// reading and location, not the instant. Annotations do not move the
+		// generation either.
+		return reasonForced
+	}
+
+	if ttl > 0 && time.Since(ep.Status.LastProbeTime.Time) > ttl {
+		return reasonStale
+	}
+
+	return ""
 }
 
-func (r *EndpointReconciler) forgetProbe(key types.NamespacedName) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+// untilProbeStale reports how long this Endpoint's result stays current, which is
+// how long until the reconcile has to come back. Zero means no TTL is configured
+// and nothing has to come back: a spec, Secret or annotation change arrives as a
+// watch event, but a target going down does not.
+func untilProbeStale(ep *arcv1alpha1.Endpoint, ttl time.Duration) time.Duration {
+	if ttl <= 0 || ep.Status.LastProbeTime == nil {
+		return 0
+	}
 
-	delete(r.probed, key)
+	return max(ttl-time.Since(ep.Status.LastProbeTime.Time), probeRequeueFloor)
+}
+
+// effectiveProbeTTL spreads the configured TTL by a per-Endpoint offset, so that
+// a fleet applied together — and therefore probed together — does not expire
+// together and saturate the workers with one registry's worth of probes. Derived
+// from the UID rather than drawn at random, so the deadline stays put across
+// reconciles and restarts, and so probeReason and untilProbeStale always agree
+// on it: if they disagreed, a requeue would fire and find nothing to do.
+func (r *EndpointReconciler) effectiveProbeTTL(ep *arcv1alpha1.Endpoint) time.Duration {
+	if r.ProbeTTL <= 0 {
+		return 0
+	}
+
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(ep.UID))
+	offset := float64(r.ProbeTTL) * probeJitterFraction * (float64(h.Sum32()) / float64(math.MaxUint32))
+
+	return r.ProbeTTL + time.Duration(offset)
+}
+
+// clearProbeRecord drops the probe result's provenance. It is called wherever the
+// result itself is removed, because a record left behind without a result reads
+// as "the result was lost".
+func clearProbeRecord(ep *arcv1alpha1.Endpoint) {
+	ep.Status.LastProbeTime = nil
+	ep.Status.ProbedGeneration = 0
+	ep.Status.ProbedSecretVersion = ""
+	ep.Status.ProbedForceAt = nil
+}
+
+// recordedForceAt is the force annotation value the last probe honoured, or the
+// zero time if it never honoured one.
+func recordedForceAt(ep *arcv1alpha1.Endpoint) time.Time {
+	if ep.Status.ProbedForceAt == nil {
+		return time.Time{}
+	}
+
+	return ep.Status.ProbedForceAt.Time
+}
+
+// forceAtRecord stores a force annotation value, truncated to the precision the
+// API round-trips at so that the value read back compares equal to this one.
+func forceAtRecord(forceAt time.Time) *metav1.Time {
+	if forceAt.IsZero() {
+		return nil
+	}
+
+	stored := metav1.NewTime(forceAt).Rfc3339Copy()
+
+	return &stored
+}
+
+// secretVersion is the resourceVersion of the Secret a probe would use, or "" for
+// an Endpoint that references none.
+func secretVersion(secret *corev1.Secret) string {
+	if secret == nil {
+		return ""
+	}
+
+	return secret.ResourceVersion
 }
 
 // targetFor builds the probe input. The username and password keys are the
