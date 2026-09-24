@@ -373,6 +373,31 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.LastProbeTime).NotTo(BeNil())
 		})
 
+		It("should not probe in a loop for an Endpoint without a generation", func() {
+			ep := probedEndpoint()
+			// The API never serves generation 0 — PrepareForCreate starts at 1 — so
+			// this is unreachable today. It is asserted because recording a zero
+			// against a zero reads as "no record" again, and the pass that writes
+			// the record is what triggers the next one.
+			ep.Generation = 0
+			ep.Status.ProbedGeneration = 0
+
+			c := fake.NewClientBuilder().WithScheme(scheme).
+				WithObjects(ep, secret, cat).
+				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+
+			stub.SetResult(reachableResult())
+			r := reconcilerFor(c)
+			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
+
+			for range 5 {
+				_, err := r.Reconcile(ctx, key)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			Expect(stub.CallsFor(remoteURL)).To(BeNumerically("<=", 1))
+		})
+
 		It("should not probe in a loop for a force value it cannot record", func() {
 			ep := probedEndpoint()
 			// Unix seconds far past year 9999: a typo, or a consumer pasting
