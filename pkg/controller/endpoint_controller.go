@@ -294,6 +294,15 @@ func (r *EndpointReconciler) probeEndpoint(
 	if err != nil {
 		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
 	}
+	if !recordableForceAt(forceAt) {
+		// Honouring it would be a loop: the record cannot hold this value, so it
+		// reads back absent, the annotation looks unhandled on the next pass, and
+		// the probe's own status write triggers that pass. One consumer typo
+		// would re-present their credentials for as long as the annotation stood.
+		log.V(1).Info("Force reconcile annotation out of range, ignoring", "forceAt", forceAt)
+
+		forceAt = time.Time{}
+	}
 
 	ttl := r.effectiveProbeTTL(ep)
 
@@ -438,6 +447,15 @@ func recordedForceAt(ep *arcv1alpha1.Endpoint) time.Time {
 	}
 
 	return ep.Status.ProbedForceAt.Time
+}
+
+// recordableForceAt reports whether a force annotation value survives being
+// recorded. The record holds a metav1.Time, which serialises as RFC3339 and
+// collapses to the zero time beyond year 9999, so a value past that would come
+// back absent however often it was honoured. Asking the serialisation rather than
+// bounding the year keeps the two from drifting apart.
+func recordableForceAt(forceAt time.Time) bool {
+	return forceAt.IsZero() || forceAt.Equal(forceAtRecord(forceAt).Time)
 }
 
 // forceAtRecord stores a force annotation value, truncated to the precision the
