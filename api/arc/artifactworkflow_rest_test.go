@@ -7,7 +7,6 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
 	"go.opendefense.cloud/arc/api/arc"
@@ -29,10 +28,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 		Context("when validating parameters", func() {
 			It("should accept ArtifactWorkflow with no parameters", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters:          []arc.ArtifactWorkflowParameter{},
@@ -45,10 +42,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should accept ArtifactWorkflow with unique parameters", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -65,10 +60,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject ArtifactWorkflow with two duplicate parameters", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -95,10 +88,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject ArtifactWorkflow with three duplicate parameters", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -128,10 +119,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject ArtifactWorkflow with multiple different duplicate parameters", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -159,10 +148,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should handle parameters with same value but different names", func() {
 				workflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -190,10 +177,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 		Context("when validating spec immutability", func() {
 			It("should accept update when spec is unchanged", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -212,10 +197,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject update when spec.Type is changed", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -236,10 +219,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject update when parameters are changed", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -262,10 +243,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject update when parameters are added", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -287,10 +266,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject update when parameters are removed", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -314,10 +291,8 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 
 			It("should reject update when any part of spec is modified", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 					Spec: arc.ArtifactWorkflowSpec{
 						WorkflowTemplateRef: arc.ArtifactTypeTemplateRef{Name: "test"},
 						Parameters: []arc.ArtifactWorkflowParameter{
@@ -342,16 +317,12 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 		Context("when validating object type", func() {
 			It("should return internal error for non-ArtifactWorkflow old object", func() {
 				newWorkflow := &arc.ArtifactWorkflow{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-workflow",
-						Namespace: "default",
-					},
+					Name:      "test-workflow",
+					Namespace: "default",
 				}
 
 				notAWorkflow := &arc.ArtifactType{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "not-a-workflow",
-					},
+					Name: "not-a-workflow",
 				}
 
 				errs := newWorkflow.ValidateUpdate(ctx, notAWorkflow)

@@ -15,7 +15,6 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/events"
@@ -172,9 +171,7 @@ func setupTest(ctx context.Context) *corev1.Namespace {
 
 	BeforeEach(func() {
 		*ns = corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "testns-",
-			},
+			GenerateName: "testns-",
 		}
 		Expect(k8sClient.Create(ctx, ns)).To(Succeed(), "failed to create test namespace")
 	})
@@ -193,9 +190,7 @@ func setupClusterArtifactType(ctx context.Context) *arcv1alpha1.ClusterArtifactT
 
 	BeforeEach(func() {
 		*at = arcv1alpha1.ClusterArtifactType{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "at-",
-			},
+			GenerateName: "at-",
 			Spec: arcv1alpha1.ArtifactTypeSpec{
 				Parameters: []arcv1alpha1.ArtifactWorkflowParameter{
 					{

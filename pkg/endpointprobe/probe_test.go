@@ -39,8 +39,7 @@ func TestGuardedDialRefusesLinkLocalMetadata(t *testing.T) {
 
 	_, err := dial(context.Background(), "tcp", "169.254.169.254:80")
 
-	var denied *DeniedError
-	if !errors.As(err, &denied) {
+	if _, ok := errors.AsType[*DeniedError](err); !ok {
 		t.Fatalf("want DeniedError for cloud metadata address, got %v", err)
 	}
 }
@@ -52,8 +51,7 @@ func TestGuardedDialRefusesUnspecifiedIPv4(t *testing.T) {
 
 	_, err := dial(context.Background(), "tcp", "0.0.0.0:9")
 
-	var denied *DeniedError
-	if !errors.As(err, &denied) {
+	if _, ok := errors.AsType[*DeniedError](err); !ok {
 		t.Fatalf("want DeniedError for 0.0.0.0, got %v", err)
 	}
 }
@@ -63,8 +61,7 @@ func TestGuardedDialRefusesUnspecifiedIPv6(t *testing.T) {
 
 	_, err := dial(context.Background(), "tcp", "[::]:9")
 
-	var denied *DeniedError
-	if !errors.As(err, &denied) {
+	if _, ok := errors.AsType[*DeniedError](err); !ok {
 		t.Fatalf("want DeniedError for ::, got %v", err)
 	}
 }
