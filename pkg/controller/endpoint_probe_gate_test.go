@@ -147,6 +147,20 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(probeReason(ep, "10", time.Time{}, 0)).To(Equal(reasonSecretChanged))
 		})
 
+		It("should settle after honouring a force dated in the future", func() {
+			forced := time.Now().Add(time.Hour).Truncate(time.Second)
+			ep := probedEndpoint()
+
+			Expect(probeReason(ep, secretRV, forced, 0)).To(Equal(reasonForced))
+
+			// Recording the value rather than the moment it was acted on is what
+			// settles this. Comparing against "when did I last force?" would stay
+			// true until the clock caught up with the annotation, forcing all the
+			// way there — which is what the Order controller does today.
+			ep.Status.ProbedForceAt = forceAtRecord(forced)
+			Expect(probeReason(ep, secretRV, forced, 0)).To(BeEmpty())
+		})
+
 		It("should probe when the force annotation is set", func() {
 			forced := time.Now().Truncate(time.Second)
 
