@@ -163,6 +163,23 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(probeReason(ep, secretRV, forced, 0)).To(BeEmpty())
 		})
 
+		It("should only accept a force value the record can hold", func() {
+			Expect(recordableForceAt(time.Time{})).To(BeTrue())
+			Expect(recordableForceAt(time.Now().Truncate(time.Second))).To(BeTrue())
+			Expect(recordableForceAt(time.Unix(253402300799, 0))).To(BeTrue(), "9999-12-31 is the edge")
+
+			// A metav1.Time past year 9999 serialises to null, so the record would
+			// read back absent no matter how often the annotation was honoured.
+			Expect(recordableForceAt(time.Unix(253402300800, 0))).To(BeFalse())
+			Expect(recordableForceAt(time.Unix(99999999999999, 0))).To(BeFalse())
+
+			// Sub-second values are rejected too, deliberately. The annotation is
+			// Unix seconds so this cannot happen today, but the gate compares the
+			// value as parsed, and a record truncated away from it would look
+			// unhandled forever. Ignoring such a force is the safe direction.
+			Expect(recordableForceAt(time.Unix(1790000000, 500))).To(BeFalse())
+		})
+
 		It("should probe once the result is older than the TTL", func() {
 			ep := probedEndpoint()
 
@@ -354,6 +371,30 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.ProbedGeneration).To(Equal(int64(7)))
 			Expect(stored.Status.ProbedSecretVersion).To(Equal(secretRV))
 			Expect(stored.Status.LastProbeTime).NotTo(BeNil())
+		})
+
+		It("should not probe in a loop for a force value it cannot record", func() {
+			ep := probedEndpoint()
+			// Unix seconds far past year 9999: a typo, or a consumer pasting
+			// milliseconds. The record cannot hold it, so honouring it would look
+			// unhandled on every pass — and the probe's own status write is what
+			// triggers the next pass.
+			ep.Annotations = map[string]string{AnnotationForceAt: "99999999999999"}
+
+			c := fake.NewClientBuilder().WithScheme(scheme).
+				WithObjects(ep, secret, cat).
+				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+
+			stub.SetResult(reachableResult())
+			r := reconcilerFor(c)
+			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
+
+			for range 3 {
+				_, err := r.Reconcile(ctx, key)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			Expect(stub.CallsFor(remoteURL)).To(BeZero())
 		})
 
 		It("should probe an upgraded Endpoint exactly once", func() {
