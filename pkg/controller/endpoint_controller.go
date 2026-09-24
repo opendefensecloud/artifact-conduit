@@ -356,11 +356,17 @@ func probeReason(ep *arcv1alpha1.Endpoint, secretRV string, forceAt time.Time, t
 		return reasonResultLost
 	}
 
-	if ep.Status.ProbedGeneration == 0 {
-		// An Endpoint is created at generation 1, so a zero here cannot be a
-		// generation: it is a status written before this record existed, by a
-		// version that kept the inputs in memory. Costs one probe per Endpoint
-		// once, on the upgrade that introduced the fields.
+	if ep.Status.ProbedGeneration == 0 && ep.Generation != 0 {
+		// An Endpoint is created at generation 1, so a zero recorded against a
+		// real generation cannot be one: it is a status written before this record
+		// existed, by a version that kept the inputs in memory. Costs one probe
+		// per Endpoint once, on the upgrade that introduced the fields.
+		//
+		// Both being zero is a different thing, and the reason for the guard: the
+		// API never serves generation 0, but were one to appear, recording it
+		// would store a zero again and this branch would probe on every pass. The
+		// comparison below reads the two as equal instead, and the first spec
+		// change gives the object a real generation.
 		return reasonUnrecorded
 	}
 
