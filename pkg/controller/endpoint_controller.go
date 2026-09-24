@@ -59,6 +59,7 @@ const endpointMaxConcurrentReconciles = 4
 const (
 	reasonUnprobed      = "unprobed"
 	reasonResultLost    = "result-lost"
+	reasonUnrecorded    = "unrecorded"
 	reasonSpecChanged   = "spec-changed"
 	reasonSecretChanged = "secret-changed"
 	reasonForced        = "forced"
@@ -299,21 +300,34 @@ func (r *EndpointReconciler) probeEndpoint(
 	if reason := probeReason(ep, secretVersion(secret), forceAt, ttl); reason != "" {
 		log.V(1).Info("Probing endpoint", "reason", reason)
 
-		result := r.Probe(ctx, targetFor(ep, secret))
-
-		now := metav1.Now().Rfc3339Copy()
-		ep.Status.LastProbeTime = &now
-		ep.Status.ProbedGeneration = ep.Generation
-		ep.Status.ProbedSecretVersion = secretVersion(secret)
-		ep.Status.ProbedForceAt = forceAtRecord(forceAt)
-
-		meta.SetStatusCondition(&ep.Status.Conditions,
-			checkCondition(arcv1alpha1.EndpointConditionReachable, result.Reachable))
-		meta.SetStatusCondition(&ep.Status.Conditions,
-			checkCondition(arcv1alpha1.EndpointConditionAuthenticated, result.Authenticated))
+		recordProbe(ep, r.Probe(ctx, targetFor(ep, secret)), secretVersion(secret), forceAt)
 	}
 
 	return untilProbeStale(ep, ttl)
+}
+
+// recordProbe writes a probe's result and the record of what produced it.
+//
+// It is one function because they are one fact, and the gate reads them as a
+// pair: a record with no result beside it means the result was lost, while
+// neither present means never probed — which is also how a cached copy older
+// than our own write reads, and why re-probing it costs one probe rather than
+// wedging. Write one without the other and that distinction is gone, so the
+// only other place either may be touched is clearProbeRecord, which removes
+// both.
+func recordProbe(
+	ep *arcv1alpha1.Endpoint, result endpointprobe.Result, secretRV string, forceAt time.Time,
+) {
+	now := metav1.Now().Rfc3339Copy()
+	ep.Status.LastProbeTime = &now
+	ep.Status.ProbedGeneration = ep.Generation
+	ep.Status.ProbedSecretVersion = secretRV
+	ep.Status.ProbedForceAt = forceAtRecord(forceAt)
+
+	meta.SetStatusCondition(&ep.Status.Conditions,
+		checkCondition(arcv1alpha1.EndpointConditionReachable, result.Reachable))
+	meta.SetStatusCondition(&ep.Status.Conditions,
+		checkCondition(arcv1alpha1.EndpointConditionAuthenticated, result.Authenticated))
 }
 
 // probeReason reports why this Endpoint needs probing, or "" for not at all.
@@ -331,6 +345,14 @@ func probeReason(ep *arcv1alpha1.Endpoint, secretRV string, forceAt time.Time, t
 		// condition are written in one update, so this pair can only mean the
 		// result was lost — never that our own write is not visible yet.
 		return reasonResultLost
+	}
+
+	if ep.Status.ProbedGeneration == 0 {
+		// An Endpoint is created at generation 1, so a zero here cannot be a
+		// generation: it is a status written before this record existed, by a
+		// version that kept the inputs in memory. Costs one probe per Endpoint
+		// once, on the upgrade that introduced the fields.
+		return reasonUnrecorded
 	}
 
 	if ep.Generation != ep.Status.ProbedGeneration {
@@ -386,9 +408,16 @@ func (r *EndpointReconciler) effectiveProbeTTL(ep *arcv1alpha1.Endpoint) time.Du
 
 	h := fnv.New32a()
 	_, _ = h.Write([]byte(ep.UID))
-	offset := float64(r.ProbeTTL) * probeJitterFraction * (float64(h.Sum32()) / float64(math.MaxUint32))
+	offset := time.Duration(float64(r.ProbeTTL) * probeJitterFraction * (float64(h.Sum32()) / float64(math.MaxUint32)))
 
-	return r.ProbeTTL + time.Duration(offset)
+	if r.ProbeTTL > math.MaxInt64-offset {
+		// Only reachable for a TTL of some 240 years, but the consequence of
+		// wrapping would be a negative deadline, i.e. a probe on every single
+		// reconcile: fail towards the configured value instead.
+		return r.ProbeTTL
+	}
+
+	return r.ProbeTTL + offset
 }
 
 // clearProbeRecord drops the probe result's provenance. It is called wherever the

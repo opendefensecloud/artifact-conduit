@@ -255,4 +255,7 @@ var _ = Describe("ARC", Ordered, func() {
 			}).Should(Succeed())
 		})
 	})
+
+	// Declared last so it runs after the chart install and the fixtures above.
+	endpointControllerSpecs()
 })

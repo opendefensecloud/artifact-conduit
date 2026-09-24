@@ -6,6 +6,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"math"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -105,6 +106,16 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonResultLost))
 		})
 
+		It("should probe an Endpoint whose status predates the record", func() {
+			ep := probedEndpoint()
+			// What the previous version left behind: a probe time and a result,
+			// but no record of what they were produced from.
+			ep.Status.ProbedGeneration = 0
+			ep.Status.ProbedSecretVersion = ""
+
+			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonUnrecorded))
+		})
+
 		It("should probe when the spec has moved on", func() {
 			ep := probedEndpoint()
 			ep.Generation = 4
@@ -193,6 +204,14 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 		It("should not spread anything when the TTL is disabled", func() {
 			Expect((&EndpointReconciler{}).effectiveProbeTTL(probedEndpoint())).To(BeZero())
 		})
+
+		It("should not wrap a TTL too large to spread", func() {
+			r := &EndpointReconciler{ProbeTTL: time.Duration(math.MaxInt64)}
+
+			// Wrapping would give a negative deadline, which reads as stale on
+			// every reconcile: a probe per reconcile, for every Endpoint.
+			Expect(r.effectiveProbeTTL(probedEndpoint())).To(BeNumerically(">", 0))
+		})
 	})
 
 	Describe("Reconcile", func() {
@@ -237,6 +256,32 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 				Probe:    stub.Probe,
 			}
 		}
+
+		It("should ask to be called back only when a TTL is configured", func() {
+			// Nothing else wakes an Endpoint whose spec, Secret and annotations are
+			// all untouched, so if this requeue is ever dropped the TTL silently
+			// stops working and no other assertion here would notice.
+			c := fake.NewClientBuilder().WithScheme(scheme).
+				WithObjects(probedEndpoint(), secret, cat).
+				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
+
+			withoutTTL, err := reconcilerFor(c).Reconcile(ctx, key)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(withoutTTL.RequeueAfter).To(BeZero())
+
+			r := reconcilerFor(c)
+			r.ProbeTTL = time.Hour
+			withTTL, err := r.Reconcile(ctx, key)
+			Expect(err).NotTo(HaveOccurred())
+
+			// Derived from the same function the gate uses, not from ProbeTTL: the
+			// requeue and the staleness test have to agree on the spread deadline,
+			// or the callback arrives to find nothing to do and asks again.
+			Expect(withTTL.RequeueAfter).To(BeNumerically(
+				"~", r.effectiveProbeTTL(probedEndpoint())-time.Minute, 10*time.Second))
+			Expect(stub.CallsFor(remoteURL)).To(BeZero())
+		})
 
 		It("should not probe an Endpoint a previous process already probed", func() {
 			c := fake.NewClientBuilder().WithScheme(scheme).
@@ -309,6 +354,87 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.ProbedGeneration).To(Equal(int64(7)))
 			Expect(stored.Status.ProbedSecretVersion).To(Equal(secretRV))
 			Expect(stored.Status.LastProbeTime).NotTo(BeNil())
+		})
+
+		It("should probe an upgraded Endpoint exactly once", func() {
+			ep := probedEndpoint()
+			ep.Status.ProbedGeneration = 0
+			ep.Status.ProbedSecretVersion = ""
+
+			c := fake.NewClientBuilder().WithScheme(scheme).
+				WithObjects(ep, secret, cat).
+				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+
+			stub.SetResult(reachableResult())
+			r := reconcilerFor(c)
+			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
+
+			// The upgrade costs the fleet one probe each. It must not cost two:
+			// the first reconcile writes the record the second one reads.
+			for range 3 {
+				_, err := r.Reconcile(ctx, key)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			Expect(stub.CallsFor(remoteURL)).To(Equal(1))
+		})
+
+		It("should never write a probe time without a result, or the reverse", func() {
+			// The whole design rests on this pair being written together: it is
+			// what lets a record without a result mean "lost" while a cached copy
+			// older than our own write reads as "unprobed". Anything that writes
+			// one without the other re-opens that ambiguity.
+			starts := map[string]func() *arcv1alpha1.Endpoint{
+				"unprobed": func() *arcv1alpha1.Endpoint {
+					ep := probedEndpoint()
+					clearProbeRecord(ep)
+					meta.RemoveStatusCondition(&ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable)
+
+					return ep
+				},
+				"result lost": func() *arcv1alpha1.Endpoint {
+					ep := probedEndpoint()
+					meta.RemoveStatusCondition(&ep.Status.Conditions, arcv1alpha1.EndpointConditionReachable)
+
+					return ep
+				},
+				"record predates the fields": func() *arcv1alpha1.Endpoint {
+					ep := probedEndpoint()
+					ep.Status.ProbedGeneration = 0
+
+					return ep
+				},
+				"spec moved on": func() *arcv1alpha1.Endpoint {
+					ep := probedEndpoint()
+					ep.Generation = 9
+
+					return ep
+				},
+				"current": probedEndpoint,
+			}
+
+			for name, start := range starts {
+				By(name)
+
+				c := fake.NewClientBuilder().WithScheme(scheme).
+					WithObjects(start(), secret, cat).
+					WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+
+				stub.SetResult(reachableResult())
+
+				_, err := reconcilerFor(c).Reconcile(ctx, ctrl.Request{
+					NamespacedName: namespacedName(epNS, epName),
+				})
+				Expect(err).NotTo(HaveOccurred(), name)
+
+				stored := &arcv1alpha1.Endpoint{}
+				Expect(c.Get(ctx, namespacedName(epNS, epName), stored)).To(Succeed())
+
+				hasTime := stored.Status.LastProbeTime != nil
+				hasResult := meta.FindStatusCondition(
+					stored.Status.Conditions, arcv1alpha1.EndpointConditionReachable) != nil
+				Expect(hasTime).To(Equal(hasResult), name)
+			}
 		})
 
 		It("should drop the record when validation stops resolving", func() {
