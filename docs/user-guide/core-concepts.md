@@ -67,10 +67,16 @@ mirror     5h           https://zot.local    PushOnly   zot-creds    False   cre
 
 #### When ARC probes
 
-The connection test runs when there is a reason to believe the answer changed:
-on creation, when `spec` changes, and when the referenced `Secret` changes.
-There is no periodic re-probe, so an `Endpoint` nobody touches produces no
-outbound traffic.
+The connection test runs when there is a reason to believe the answer changed: on
+creation, when `spec` changes, when the referenced `Secret` changes, when
+validation starts resolving again after it had failed, and when the result is
+missing from the status it was written to. By default there is no periodic
+re-probe, so an `Endpoint` nobody touches produces no outbound traffic — see
+[Re-probing on a schedule](#re-probing-on-a-schedule) to bound how stale a result
+may become.
+
+Upgrading from a version that kept this in memory costs one probe per `Endpoint`,
+once: their status carries a result but not yet a record of what produced it.
 
 To re-check on demand, set the force annotation to the current Unix timestamp:
 
