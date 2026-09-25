@@ -1,0 +1,8 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: unknown-type
+spec:
+  type: not-a-real-type
+  remoteURL: registry.example
+  usage: All

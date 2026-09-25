@@ -1218,6 +1218,27 @@ func schema_arc_api_arc_v1alpha1_EndpointStatus(ref common.ReferenceCallback) co
 							Ref:         ref(metav1.Time{}.OpenAPIModelName()),
 						},
 					},
+					"probedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ProbedGeneration is the .metadata.generation the last probe ran against. With LastProbeTime it records what the probe result in the conditions was produced from, so no reconcile has to remember it.",
+							Type:        []string{"integer"},
+							Format:      "int64",
+						},
+					},
+					"probedSecretVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ProbedSecretVersion is the .metadata.resourceVersion of the Secret whose credentials the last probe used. The Secret is a separate object, so a rotation can never move this Endpoint's generation.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"probedForceAt": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ProbedForceAt is the force annotation value the last probe honoured, as the annotation spelled it. Held as a string because it is compared for change and never for order, like ProbedSecretVersion — annotations do not move the generation, so nothing else would notice one. A value that does not parse as a Unix timestamp is ignored rather than recorded here.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},

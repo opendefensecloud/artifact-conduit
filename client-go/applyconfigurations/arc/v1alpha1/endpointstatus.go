@@ -21,6 +21,20 @@ type EndpointStatusApplyConfiguration struct {
 	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
 	// LastProbeTime is when the connection to spec.remoteURL was last attempted.
 	LastProbeTime *metav1.Time `json:"lastProbeTime,omitempty"`
+	// ProbedGeneration is the .metadata.generation the last probe ran against.
+	// With LastProbeTime it records what the probe result in the conditions was
+	// produced from, so no reconcile has to remember it.
+	ProbedGeneration *int64 `json:"probedGeneration,omitempty"`
+	// ProbedSecretVersion is the .metadata.resourceVersion of the Secret whose
+	// credentials the last probe used. The Secret is a separate object, so a
+	// rotation can never move this Endpoint's generation.
+	ProbedSecretVersion *string `json:"probedSecretVersion,omitempty"`
+	// ProbedForceAt is the force annotation value the last probe honoured, as the
+	// annotation spelled it. Held as a string because it is compared for change
+	// and never for order, like ProbedSecretVersion — annotations do not move the
+	// generation, so nothing else would notice one. A value that does not parse as
+	// a Unix timestamp is ignored rather than recorded here.
+	ProbedForceAt *string `json:"probedForceAt,omitempty"`
 }
 
 // EndpointStatusApplyConfiguration constructs a declarative configuration of the EndpointStatus type for use with
@@ -55,5 +69,29 @@ func (b *EndpointStatusApplyConfiguration) WithObservedGeneration(value int64) *
 // If called multiple times, the LastProbeTime field is set to the value of the last call.
 func (b *EndpointStatusApplyConfiguration) WithLastProbeTime(value metav1.Time) *EndpointStatusApplyConfiguration {
 	b.LastProbeTime = &value
+	return b
+}
+
+// WithProbedGeneration sets the ProbedGeneration field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProbedGeneration field is set to the value of the last call.
+func (b *EndpointStatusApplyConfiguration) WithProbedGeneration(value int64) *EndpointStatusApplyConfiguration {
+	b.ProbedGeneration = &value
+	return b
+}
+
+// WithProbedSecretVersion sets the ProbedSecretVersion field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProbedSecretVersion field is set to the value of the last call.
+func (b *EndpointStatusApplyConfiguration) WithProbedSecretVersion(value string) *EndpointStatusApplyConfiguration {
+	b.ProbedSecretVersion = &value
+	return b
+}
+
+// WithProbedForceAt sets the ProbedForceAt field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ProbedForceAt field is set to the value of the last call.
+func (b *EndpointStatusApplyConfiguration) WithProbedForceAt(value string) *EndpointStatusApplyConfiguration {
+	b.ProbedForceAt = &value
 	return b
 }

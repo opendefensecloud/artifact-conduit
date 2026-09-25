@@ -69,6 +69,15 @@ spec:
             {{- if .Values.controller.args.pprofBindAddress }}
             - --pprof-bind-address={{ .Values.controller.args.pprofBindAddress }}
             {{- end }}
+            {{- if .Values.controller.args.endpointProbeTTL }}
+            - --endpoint-probe-ttl={{ .Values.controller.args.endpointProbeTTL }}
+            {{- end }}
+            {{- if not (kindIs "invalid" .Values.controller.args.probeDenyCIDRs) }}
+            {{- /* An empty string is meaningful here: it disables the check.
+                   Only an unset value may fall through to the controller's own
+                   list, so this tests for null rather than for truthiness. */}}
+            - {{ printf "--probe-deny-cidrs=%s" .Values.controller.args.probeDenyCIDRs | quote }}
+            {{- end }}
             {{- range $key, $value := .Values.controller.extraArgs }}
             - --{{ $key }}={{ $value }}
             {{- end }}

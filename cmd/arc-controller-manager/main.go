@@ -54,6 +54,7 @@ func main() {
 		networkInterfaceBindTimeout                                      time.Duration
 		tlsOpts                                                          []func(*tls.Config)
 		probeDenyCIDRs                                                   string
+		endpointProbeTTL                                                 time.Duration
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
@@ -78,6 +79,10 @@ func main() {
 	flag.StringVar(&probeDenyCIDRs, "probe-deny-cidrs", endpointprobe.DefaultDenyCIDRsString(),
 		"Comma-separated CIDRs the Endpoint probe refuses to connect to. "+
 			"Set to an empty string to disable the check and rely solely on NetworkPolicy.")
+	flag.DurationVar(&endpointProbeTTL, "endpoint-probe-ttl", 0,
+		"How long an Endpoint probe result is treated as current. Once it expires the Endpoint is "+
+			"probed again, which is the only way a target going down is noticed. Zero disables it, so "+
+			"probes happen only on a spec, Secret or force-annotation change.")
 
 	opts := zap.Options{
 		Development: true,
@@ -226,6 +231,7 @@ func main() {
 		Scheme:   mgr.GetScheme(),
 		Recorder: mgr.GetEventRecorder("endpoint-controller"),
 		Probe:    endpointprobe.New(denyCIDRs).Probe,
+		ProbeTTL: endpointProbeTTL,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Endpoint")
 		os.Exit(1)
