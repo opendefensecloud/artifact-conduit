@@ -75,10 +75,13 @@ type EndpointStatus struct {
 	// rotation can never move this Endpoint's generation.
 	// +optional
 	ProbedSecretVersion string `json:"probedSecretVersion,omitempty"`
-	// ProbedForceAt is the force annotation value the last probe honoured.
-	// Annotations do not move the generation either.
+	// ProbedForceAt is the force annotation value the last probe honoured, as the
+	// annotation spelled it. Held as a string because it is compared for change
+	// and never for order, like ProbedSecretVersion -- annotations do not move the
+	// generation, so nothing else would notice one. A value that does not parse as
+	// a Unix timestamp is ignored rather than recorded here.
 	// +optional
-	ProbedForceAt *metav1.Time `json:"probedForceAt,omitempty"`
+	ProbedForceAt string `json:"probedForceAt,omitempty"`
 }
 
 // +genclient

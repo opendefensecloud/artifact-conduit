@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"strconv"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
@@ -87,14 +88,14 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 
 	Describe("probeReason", func() {
 		It("should not probe an Endpoint whose record matches its inputs", func() {
-			Expect(probeReason(probedEndpoint(), secretRV, time.Time{}, 0)).To(BeEmpty())
+			Expect(probeReason(probedEndpoint(), secretRV, "", 0)).To(BeEmpty())
 		})
 
 		It("should probe an Endpoint that has never been probed", func() {
 			ep := probedEndpoint()
 			ep.Status.LastProbeTime = nil
 
-			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonUnprobed))
+			Expect(probeReason(ep, secretRV, "", 0)).To(Equal(reasonUnprobed))
 		})
 
 		It("should probe when the result is gone but the record remains", func() {
@@ -103,7 +104,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 
 			// A cached copy older than our own write has neither, because both are
 			// written in one update: that reads as unprobed, not as lost.
-			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonResultLost))
+			Expect(probeReason(ep, secretRV, "", 0)).To(Equal(reasonResultLost))
 		})
 
 		It("should probe an Endpoint whose status predates the record", func() {
@@ -113,14 +114,14 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			ep.Status.ProbedGeneration = 0
 			ep.Status.ProbedSecretVersion = ""
 
-			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonUnrecorded))
+			Expect(probeReason(ep, secretRV, "", 0)).To(Equal(reasonUnrecorded))
 		})
 
 		It("should probe when the spec has moved on", func() {
 			ep := probedEndpoint()
 			ep.Generation = 4
 
-			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonSpecChanged))
+			Expect(probeReason(ep, secretRV, "", 0)).To(Equal(reasonSpecChanged))
 		})
 
 		It("should probe when the generation is behind the record, not only ahead", func() {
@@ -129,13 +130,13 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 
 			// Compared for difference rather than order, so a record that somehow
 			// runs ahead probes once instead of wedging forever.
-			Expect(probeReason(ep, secretRV, time.Time{}, 0)).To(Equal(reasonSpecChanged))
+			Expect(probeReason(ep, secretRV, "", 0)).To(Equal(reasonSpecChanged))
 		})
 
 		It("should probe when the Secret has been rotated", func() {
 			// The Secret is a separate object, so this can never be visible in the
 			// Endpoint's generation.
-			Expect(probeReason(probedEndpoint(), "101", time.Time{}, 0)).To(Equal(reasonSecretChanged))
+			Expect(probeReason(probedEndpoint(), "101", "", 0)).To(Equal(reasonSecretChanged))
 		})
 
 		It("should probe when a resourceVersion rolls over a digit", func() {
@@ -144,11 +145,11 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 
 			// "10" sorts before "9": ordering comparisons would read this as
 			// unchanged and skip a probe that was owed.
-			Expect(probeReason(ep, "10", time.Time{}, 0)).To(Equal(reasonSecretChanged))
+			Expect(probeReason(ep, "10", "", 0)).To(Equal(reasonSecretChanged))
 		})
 
 		It("should settle after honouring a force dated in the future", func() {
-			forced := time.Now().Add(time.Hour).Truncate(time.Second)
+			forced := strconv.FormatInt(time.Now().Add(time.Hour).Unix(), 10)
 			ep := probedEndpoint()
 
 			Expect(probeReason(ep, secretRV, forced, 0)).To(Equal(reasonForced))
@@ -157,48 +158,31 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			// settles this. Comparing against "when did I last force?" would stay
 			// true until the clock caught up with the annotation, forcing all the
 			// way there — which is what the Order controller does today.
-			ep.Status.ProbedForceAt = forceAtRecord(forced)
+			ep.Status.ProbedForceAt = forced
 			Expect(probeReason(ep, secretRV, forced, 0)).To(BeEmpty())
 		})
 
 		It("should probe when the force annotation is set", func() {
-			forced := time.Now().Truncate(time.Second)
+			forced := strconv.FormatInt(time.Now().Unix(), 10)
 
 			Expect(probeReason(probedEndpoint(), secretRV, forced, 0)).To(Equal(reasonForced))
 		})
 
 		It("should not probe again for a force value it already honoured", func() {
-			forced := time.Now().Truncate(time.Second)
+			forced := strconv.FormatInt(time.Now().Unix(), 10)
 			ep := probedEndpoint()
-			ep.Status.ProbedForceAt = forceAtRecord(forced)
+			ep.Status.ProbedForceAt = forced
 
 			// The stored value has been through the API's precision, so this only
 			// holds if the comparison is by instant rather than by struct.
 			Expect(probeReason(ep, secretRV, forced, 0)).To(BeEmpty())
 		})
 
-		It("should only accept a force value the record can hold", func() {
-			Expect(recordableForceAt(time.Time{})).To(BeTrue())
-			Expect(recordableForceAt(time.Now().Truncate(time.Second))).To(BeTrue())
-			Expect(recordableForceAt(time.Unix(253402300799, 0))).To(BeTrue(), "9999-12-31 is the edge")
-
-			// A metav1.Time past year 9999 serialises to null, so the record would
-			// read back absent no matter how often the annotation was honoured.
-			Expect(recordableForceAt(time.Unix(253402300800, 0))).To(BeFalse())
-			Expect(recordableForceAt(time.Unix(99999999999999, 0))).To(BeFalse())
-
-			// Sub-second values are rejected too, deliberately. The annotation is
-			// Unix seconds so this cannot happen today, but the gate compares the
-			// value as parsed, and a record truncated away from it would look
-			// unhandled forever. Ignoring such a force is the safe direction.
-			Expect(recordableForceAt(time.Unix(1790000000, 500))).To(BeFalse())
-		})
-
 		It("should probe once the result is older than the TTL", func() {
 			ep := probedEndpoint()
 
-			Expect(probeReason(ep, secretRV, time.Time{}, time.Hour)).To(BeEmpty())
-			Expect(probeReason(ep, secretRV, time.Time{}, 30*time.Second)).To(Equal(reasonStale))
+			Expect(probeReason(ep, secretRV, "", time.Hour)).To(BeEmpty())
+			Expect(probeReason(ep, secretRV, "", 30*time.Second)).To(Equal(reasonStale))
 		})
 	})
 
@@ -387,6 +371,32 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.LastProbeTime).NotTo(BeNil())
 		})
 
+		It("should ignore a force annotation that is not a timestamp", func() {
+			ep := probedEndpoint()
+			ep.Annotations = map[string]string{AnnotationForceAt: "Cheeseburger"}
+
+			c := fake.NewClientBuilder().WithScheme(scheme).
+				WithObjects(ep, secret, cat).
+				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
+
+			stub.SetResult(reachableResult())
+			r := reconcilerFor(c)
+			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
+
+			for range 3 {
+				_, err := r.Reconcile(ctx, key)
+				Expect(err).NotTo(HaveOccurred())
+			}
+
+			// There is nothing to honour in it, and status is read by people: the
+			// record holds timestamps the user wrote, not whatever they wrote.
+			Expect(stub.CallsFor(remoteURL)).To(BeZero())
+
+			stored := &arcv1alpha1.Endpoint{}
+			Expect(c.Get(ctx, namespacedName(epNS, epName), stored)).To(Succeed())
+			Expect(stored.Status.ProbedForceAt).NotTo(Equal("Cheeseburger"))
+		})
+
 		It("should not probe in a loop for an Endpoint without a generation", func() {
 			ep := probedEndpoint()
 			// The API never serves generation 0 — PrepareForCreate starts at 1 — so
@@ -410,30 +420,6 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			}
 
 			Expect(stub.CallsFor(remoteURL)).To(BeNumerically("<=", 1))
-		})
-
-		It("should not probe in a loop for a force value it cannot record", func() {
-			ep := probedEndpoint()
-			// Unix seconds far past year 9999: a typo, or a consumer pasting
-			// milliseconds. The record cannot hold it, so honouring it would look
-			// unhandled on every pass — and the probe's own status write is what
-			// triggers the next pass.
-			ep.Annotations = map[string]string{AnnotationForceAt: "99999999999999"}
-
-			c := fake.NewClientBuilder().WithScheme(scheme).
-				WithObjects(ep, secret, cat).
-				WithStatusSubresource(&arcv1alpha1.Endpoint{}).Build()
-
-			stub.SetResult(reachableResult())
-			r := reconcilerFor(c)
-			key := ctrl.Request{NamespacedName: namespacedName(epNS, epName)}
-
-			for range 3 {
-				_, err := r.Reconcile(ctx, key)
-				Expect(err).NotTo(HaveOccurred())
-			}
-
-			Expect(stub.CallsFor(remoteURL)).To(BeZero())
 		})
 
 		It("should probe an upgraded Endpoint exactly once", func() {
@@ -534,7 +520,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(stored.Status.LastProbeTime).To(BeNil())
 			Expect(stored.Status.ProbedGeneration).To(BeZero())
 			Expect(stored.Status.ProbedSecretVersion).To(BeEmpty())
-			Expect(stored.Status.ProbedForceAt).To(BeNil())
+			Expect(stored.Status.ProbedForceAt).To(BeEmpty())
 			Expect(stub.CallsFor(remoteURL)).To(BeZero())
 		})
 	})

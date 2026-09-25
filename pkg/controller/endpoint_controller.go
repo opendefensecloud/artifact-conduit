@@ -290,18 +290,16 @@ func setReadyCondition(ep *arcv1alpha1.Endpoint) {
 func (r *EndpointReconciler) probeEndpoint(
 	ctx context.Context, log logr.Logger, ep *arcv1alpha1.Endpoint, secret *corev1.Secret,
 ) time.Duration {
-	forceAt, err := GetForceAtAnnotationValue(ep)
-	if err != nil {
+	// Recorded as written, because the gate asks only whether it changed since the
+	// last probe — but validated first, through the same helper the other
+	// controllers use, so that what lands in status is a timestamp somebody could
+	// have meant. A value that is not one is ignored rather than recorded: there
+	// is nothing to honour in it, and status is read by people.
+	forceAt := ep.Annotations[AnnotationForceAt]
+	if _, err := GetForceAtAnnotationValue(ep); err != nil {
 		log.V(1).Error(err, "Invalid force reconcile annotation, ignoring")
-	}
-	if !recordableForceAt(forceAt) {
-		// Honouring it would be a loop: the record cannot hold this value, so it
-		// reads back absent, the annotation looks unhandled on the next pass, and
-		// the probe's own status write triggers that pass. One consumer typo
-		// would re-present their credentials for as long as the annotation stood.
-		log.V(1).Info("Force reconcile annotation out of range, ignoring", "forceAt", forceAt)
 
-		forceAt = time.Time{}
+		forceAt = ""
 	}
 
 	ttl := r.effectiveProbeTTL(ep)
@@ -325,13 +323,13 @@ func (r *EndpointReconciler) probeEndpoint(
 // only other place either may be touched is clearProbeRecord, which removes
 // both.
 func recordProbe(
-	ep *arcv1alpha1.Endpoint, result endpointprobe.Result, secretRV string, forceAt time.Time,
+	ep *arcv1alpha1.Endpoint, result endpointprobe.Result, secretRV, forceAt string,
 ) {
 	now := metav1.Now().Rfc3339Copy()
 	ep.Status.LastProbeTime = &now
 	ep.Status.ProbedGeneration = ep.Generation
 	ep.Status.ProbedSecretVersion = secretRV
-	ep.Status.ProbedForceAt = forceAtRecord(forceAt)
+	ep.Status.ProbedForceAt = forceAt
 
 	meta.SetStatusCondition(&ep.Status.Conditions,
 		checkCondition(arcv1alpha1.EndpointConditionReachable, result.Reachable))
@@ -342,7 +340,7 @@ func recordProbe(
 // probeReason reports why this Endpoint needs probing, or "" for not at all.
 // Every case is an independent question; the order decides only which reason is
 // reported when more than one applies, so the most specific comes first.
-func probeReason(ep *arcv1alpha1.Endpoint, secretRV string, forceAt time.Time, ttl time.Duration) string {
+func probeReason(ep *arcv1alpha1.Endpoint, secretRV, forceAt string, ttl time.Duration) string {
 	if ep.Status.LastProbeTime == nil {
 		// Never probed, or the record was cleared because the type or the Secret
 		// stopped resolving.
@@ -384,10 +382,9 @@ func probeReason(ep *arcv1alpha1.Endpoint, secretRV string, forceAt time.Time, t
 		return reasonSecretChanged
 	}
 
-	if !recordedForceAt(ep).Equal(forceAt) {
-		// Equal rather than ==: the latter compares a time.Time's monotonic
-		// reading and location, not the instant. Annotations do not move the
-		// generation either.
+	if forceAt != ep.Status.ProbedForceAt {
+		// Compared verbatim, like the Secret version above: annotations do not
+		// move the generation, so nothing else would notice this.
 		return reasonForced
 	}
 
@@ -442,38 +439,7 @@ func clearProbeRecord(ep *arcv1alpha1.Endpoint) {
 	ep.Status.LastProbeTime = nil
 	ep.Status.ProbedGeneration = 0
 	ep.Status.ProbedSecretVersion = ""
-	ep.Status.ProbedForceAt = nil
-}
-
-// recordedForceAt is the force annotation value the last probe honoured, or the
-// zero time if it never honoured one.
-func recordedForceAt(ep *arcv1alpha1.Endpoint) time.Time {
-	if ep.Status.ProbedForceAt == nil {
-		return time.Time{}
-	}
-
-	return ep.Status.ProbedForceAt.Time
-}
-
-// recordableForceAt reports whether a force annotation value survives being
-// recorded. The record holds a metav1.Time, which serialises as RFC3339 and
-// collapses to the zero time beyond year 9999, so a value past that would come
-// back absent however often it was honoured. Asking the serialisation rather than
-// bounding the year keeps the two from drifting apart.
-func recordableForceAt(forceAt time.Time) bool {
-	return forceAt.IsZero() || forceAt.Equal(forceAtRecord(forceAt).Time)
-}
-
-// forceAtRecord stores a force annotation value, truncated to the precision the
-// API round-trips at so that the value read back compares equal to this one.
-func forceAtRecord(forceAt time.Time) *metav1.Time {
-	if forceAt.IsZero() {
-		return nil
-	}
-
-	stored := metav1.NewTime(forceAt).Rfc3339Copy()
-
-	return &stored
+	ep.Status.ProbedForceAt = ""
 }
 
 // secretVersion is the resourceVersion of the Secret a probe would use, or "" for
