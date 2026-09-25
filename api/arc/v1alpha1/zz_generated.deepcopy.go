@@ -488,10 +488,6 @@ func (in *EndpointStatus) DeepCopyInto(out *EndpointStatus) {
 		in, out := &in.LastProbeTime, &out.LastProbeTime
 		*out = (*in).DeepCopy()
 	}
-	if in.ProbedForceAt != nil {
-		in, out := &in.ProbedForceAt, &out.ProbedForceAt
-		*out = (*in).DeepCopy()
-	}
 	return
 }
 
