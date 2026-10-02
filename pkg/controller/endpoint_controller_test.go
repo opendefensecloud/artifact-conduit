@@ -101,6 +101,13 @@ var _ = Describe("EndpointController", func() {
 			},
 		}
 		Expect(k8sClient.Create(ctx, ep)).To(Succeed())
+		// The ClusterArtifactType this Endpoint needs is deleted when the spec
+		// ends, and envtest runs no namespace controller, so without this the
+		// Endpoint outlives its type: it reconciles as UnknownType, loses its
+		// probe result, and probes again the moment a later spec creates a type
+		// accepting the same kind. That churn is what makes neighbouring specs
+		// lose their races.
+		DeferCleanup(k8sClient.Delete, ctx, ep)
 
 		return ep
 	}
@@ -261,10 +268,17 @@ var _ = Describe("EndpointController", func() {
 		Eventually(verdictOf(ep, arcv1alpha1.EndpointConditionValidated)).
 			Should(Equal("True/Valid"))
 
-		fresh := &arcv1alpha1.Endpoint{}
-		Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh)).To(Succeed())
-		fresh.Spec.RemoteURL = "https://registry.example/changed"
-		Expect(k8sClient.Update(ctx, fresh)).To(Succeed())
+		// Racing the reconciler's own status write, which bumps the resource
+		// version: re-read and retry rather than failing the spec on a 409.
+		Eventually(func() error {
+			fresh := &arcv1alpha1.Endpoint{}
+			if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh); err != nil {
+				return err
+			}
+			fresh.Spec.RemoteURL = "https://registry.example/changed"
+
+			return k8sClient.Update(ctx, fresh)
+		}).Should(Succeed())
 
 		// A main-resource update must not blank the status: that is CopyStatusTo
 		// doing its job in the apiserver strategy.
@@ -407,10 +421,15 @@ var _ = Describe("EndpointController", func() {
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(1))
 
-		fresh := &arcv1alpha1.Endpoint{}
-		Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh)).To(Succeed())
-		fresh.Spec.Usage = arcv1alpha1.EndpointUsagePullOnly
-		Expect(k8sClient.Update(ctx, fresh)).To(Succeed())
+		Eventually(func() error {
+			fresh := &arcv1alpha1.Endpoint{}
+			if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh); err != nil {
+				return err
+			}
+			fresh.Spec.Usage = arcv1alpha1.EndpointUsagePullOnly
+
+			return k8sClient.Update(ctx, fresh)
+		}).Should(Succeed())
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(2))
 	})
@@ -423,10 +442,15 @@ var _ = Describe("EndpointController", func() {
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(1))
 
-		fresh := &corev1.Secret{}
-		Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(secret), fresh)).To(Succeed())
-		fresh.StringData = map[string]string{"username": "alice", "password": "rotated"}
-		Expect(k8sClient.Update(ctx, fresh)).To(Succeed())
+		Eventually(func() error {
+			fresh := &corev1.Secret{}
+			if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(secret), fresh); err != nil {
+				return err
+			}
+			fresh.StringData = map[string]string{"username": "alice", "password": "rotated"}
+
+			return k8sClient.Update(ctx, fresh)
+		}).Should(Succeed())
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(2))
 	})
@@ -439,12 +463,17 @@ var _ = Describe("EndpointController", func() {
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(1))
 
-		fresh := &arcv1alpha1.Endpoint{}
-		Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh)).To(Succeed())
-		fresh.Annotations = map[string]string{
-			AnnotationForceAt: strconv.FormatInt(time.Now().Unix(), 10),
-		}
-		Expect(k8sClient.Update(ctx, fresh)).To(Succeed())
+		Eventually(func() error {
+			fresh := &arcv1alpha1.Endpoint{}
+			if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(ep), fresh); err != nil {
+				return err
+			}
+			fresh.Annotations = map[string]string{
+				AnnotationForceAt: strconv.FormatInt(time.Now().Unix(), 10),
+			}
+
+			return k8sClient.Update(ctx, fresh)
+		}).Should(Succeed())
 
 		Eventually(func() int { return stubProbe.CallsFor(url) }).Should(Equal(2))
 	})

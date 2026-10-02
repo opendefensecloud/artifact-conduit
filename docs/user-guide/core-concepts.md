@@ -67,10 +67,16 @@ mirror     5h           https://zot.local    PushOnly   zot-creds    False   cre
 
 #### When ARC probes
 
-The connection test runs when there is a reason to believe the answer changed:
-on creation, when `spec` changes, and when the referenced `Secret` changes.
-There is no periodic re-probe, so an `Endpoint` nobody touches produces no
-outbound traffic.
+The connection test runs when there is a reason to believe the answer changed: on
+creation, when `spec` changes, when the referenced `Secret` changes, when
+validation starts resolving again after it had failed, and when the result is
+missing from the status it was written to. By default there is no periodic
+re-probe, so an `Endpoint` nobody touches produces no outbound traffic — see
+[Re-probing on a schedule](#re-probing-on-a-schedule) to bound how stale a result
+may become.
+
+Upgrading from a version that kept this in memory costs one probe per `Endpoint`,
+once: their status carries a result but not yet a record of what produced it.
 
 To re-check on demand, set the force annotation to the current Unix timestamp:
 
@@ -78,6 +84,31 @@ To re-check on demand, set the force annotation to the current Unix timestamp:
 $ kubectl annotate endpoints.arc.opendefense.cloud registry \
     arc.opendefense.cloud/force-at="$(date +%s)" --overwrite
 ```
+
+What the last probe ran against is recorded in `status.probedGeneration`,
+`status.probedSecretVersion` and `status.probedForceAt`, next to the
+`status.lastProbeTime` it produced. Those are what the decision above is made
+from, so `Reachable` and its provenance always travel together: ARC never
+re-probes because it forgot, and a restart or a leader failover does not
+re-present every consumer's credentials.
+
+##### Re-probing on a schedule
+
+Reachability is a property of the world, not of the cluster: a target can go
+down or come back without anything here to observe, so by default a `Reachable`
+condition is only ever as fresh as the last reason to probe. Set
+`--endpoint-probe-ttl` to bound that staleness — the controller then re-probes an
+`Endpoint` whose result is older than the TTL, and nothing else changes:
+
+```yaml
+controller:
+  args:
+    endpointProbeTTL: 15m
+```
+
+Expiry is spread across `Endpoint`s by up to 20% of the TTL, derived from each
+one's UID, so a set applied together does not come due together. The default is
+`0`, which disables it.
 
 #### What Ready does not promise
 
@@ -87,9 +118,10 @@ ServiceAccount and may be subject to different egress rules. `Ready=True` is
 therefore strong evidence that an `Order` will succeed, not a guarantee of it.
 
 Operators should also note that the probe connects to a URL supplied by the
-consumer. ARC refuses loopback and link-local addresses by default — configurable
-with the controller-manager's `--probe-deny-cidrs` flag — but a NetworkPolicy on
-the controller-manager Deployment is the boundary to rely on.
+consumer. ARC refuses loopback and link-local addresses by default — replace that
+list with `controller.args.probeDenyCIDRs`, or set it to an empty string to turn
+the check off entirely — but a NetworkPolicy on the controller-manager Deployment
+is the boundary to rely on.
 
 The probe also reads the `username`/`password` keys of the `Secret` an
 `Endpoint` references and sends them as Basic auth to the `remoteURL` the
