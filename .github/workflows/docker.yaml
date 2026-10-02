@@ -175,7 +175,11 @@ jobs:
 
   test-e2e:
     needs: buildAndPush
-    if: needs.buildAndPush.result == 'success'
+    if: |
+      needs.buildAndPush.result == 'success' && (
+        github.event_name != 'pull_request' ||
+        contains(toJSON(github.event.pull_request.labels), '"ok-to-e2e"')
+      )
     uses: ./.github/workflows/test-e2e.yaml
     with:
       image-tag: ${{ needs.buildAndPush.outputs.image-tag }}
