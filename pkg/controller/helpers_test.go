@@ -1,9 +1,10 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package controller
 
 import (
+	"strings"
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
@@ -112,10 +113,88 @@ var _ = Describe("Helper Functions", func() {
 				},
 			}
 
-			result := awObjectMeta(order, "sha123")
+			result := awObjectMeta(order, "sha123", "oci")
 			Expect(result.Namespace).To(Equal("test-ns"))
 			Expect(result.Name).To(Equal("test-order-sha123"))
 			Expect(result.Labels).To(HaveKeyWithValue("app", "test"))
+			Expect(result.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "oci"))
+		})
+
+		It("should stamp the artifact type label", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels:    map[string]string{"owner": "platform"},
+				},
+			}
+
+			meta := awObjectMeta(order, "abc123", "oci")
+
+			Expect(meta.Namespace).To(Equal("team-a"))
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).To(HaveKeyWithValue("owner", "platform"))
+			Expect(meta.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "oci"))
+		})
+
+		It("should not mutate the order's own labels", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels:    map[string]string{"owner": "platform"},
+				},
+			}
+
+			awObjectMeta(order, "abc123", "oci")
+
+			Expect(order.Labels).To(HaveLen(1))
+			Expect(order.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
+		})
+
+		It("should skip the artifact type label when the value is not a valid label", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+			}
+
+			// 64 characters, one over the label value limit. The workflow still
+			// has to be creatable, so the label is left off rather than
+			// truncated to a type that does not exist.
+			meta := awObjectMeta(order, "abc123", strings.Repeat("a", 64))
+
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
+		})
+
+		It("should work when the order has no labels", func() {
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{Namespace: "team-a", Name: "nightly"},
+			}
+
+			meta := awObjectMeta(order, "abc123", "helm")
+
+			Expect(meta.Labels).To(HaveKeyWithValue(arcv1alpha1.LabelArtifactType, "helm"))
+		})
+
+		It("should drop inherited artifact type label when artifact type is invalid", func() {
+			longType := strings.Repeat("x", 64)
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "team-a",
+					Name:      "nightly",
+					Labels: map[string]string{
+						"owner":                       "platform",
+						arcv1alpha1.LabelArtifactType: "inherited-type",
+					},
+				},
+			}
+
+			meta := awObjectMeta(order, "abc123", longType)
+
+			Expect(meta.Namespace).To(Equal("team-a"))
+			Expect(meta.Name).To(Equal("nightly-abc123"))
+			Expect(meta.Labels).To(HaveKeyWithValue("owner", "platform"))
+			Expect(meta.Labels).NotTo(HaveKey(arcv1alpha1.LabelArtifactType))
 		})
 	})
 
@@ -401,5 +480,21 @@ var _ = Describe("Helper Functions", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("invalid force reconcile annotation"))
 		})
+	})
+
+	Describe("earliestRequeue", func() {
+		DescribeTable("should return the soonest positive duration",
+			func(a, b, want time.Duration) {
+				Expect(earliestRequeue(a, b)).To(Equal(want))
+			},
+			Entry("both zero", time.Duration(0), time.Duration(0), time.Duration(0)),
+			Entry("first zero", time.Duration(0), time.Minute, time.Minute),
+			Entry("second zero", time.Minute, time.Duration(0), time.Minute),
+			Entry("first negative", -time.Second, time.Minute, time.Minute),
+			Entry("second negative", time.Minute, -time.Second, time.Minute),
+			Entry("first sooner", time.Second, time.Minute, time.Second),
+			Entry("second sooner", time.Minute, time.Second, time.Second),
+			Entry("equal", time.Minute, time.Minute, time.Minute),
+		)
 	})
 })

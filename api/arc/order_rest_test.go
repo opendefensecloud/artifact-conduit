@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package arc_test
@@ -78,6 +78,52 @@ var _ = Describe("Order Strategy", func() {
 				Expect(errs).To(HaveLen(1))
 				Expect(errs[0].Type).To(Equal(field.ErrorTypeRequired))
 				Expect(errs[0].Field).To(Equal("spec.artifacts[0].type"))
+			})
+
+			It("should accept Order with a non-negative TTL", func() {
+				order := &arc.Order{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-order",
+						Namespace: "default",
+					},
+					Spec: arc.OrderSpec{
+						TTL: &metav1.Duration{Duration: time.Hour},
+						Artifacts: []arc.OrderArtifact{
+							{
+								Type:   "container-image",
+								SrcRef: corev1.LocalObjectReference{Name: "docker-endpoint"},
+								DstRef: corev1.LocalObjectReference{Name: "registry-endpoint"},
+							},
+						},
+					},
+				}
+
+				errs := order.Validate(ctx)
+				Expect(errs).To(BeEmpty())
+			})
+
+			It("should reject Order with a negative TTL", func() {
+				order := &arc.Order{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "test-order",
+						Namespace: "default",
+					},
+					Spec: arc.OrderSpec{
+						TTL: &metav1.Duration{Duration: -time.Hour},
+						Artifacts: []arc.OrderArtifact{
+							{
+								Type:   "container-image",
+								SrcRef: corev1.LocalObjectReference{Name: "docker-endpoint"},
+								DstRef: corev1.LocalObjectReference{Name: "registry-endpoint"},
+							},
+						},
+					},
+				}
+
+				errs := order.Validate(ctx)
+				Expect(errs).To(HaveLen(1))
+				Expect(errs[0].Type).To(Equal(field.ErrorTypeInvalid))
+				Expect(errs[0].Field).To(Equal("spec.ttl"))
 			})
 
 			It("should reject Order with artifact missing srcRef when no default src", func() {

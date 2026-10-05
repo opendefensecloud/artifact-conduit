@@ -307,6 +307,17 @@ If you're currently using Kustomize to deploy ARC:
 | apiserver.image.tag | string | `""` | API Server image tag (defaults to chart appVersion if not set) |
 | apiserver.imagePullSecrets | list | `[]` | Image pull secrets for API Server |
 | apiserver.livenessProbe | object | `{"httpGet":{"path":"/healthz","port":8443,"scheme":"HTTPS"},"initialDelaySeconds":20,"periodSeconds":20}` | Liveness probe configuration |
+| apiserver.metrics.serviceMonitor.additionalLabels | object | `{}` | Additional labels for ServiceMonitor |
+| apiserver.metrics.serviceMonitor.enabled | bool | `false` | Enable ServiceMonitor for the API Server |
+| apiserver.metrics.serviceMonitor.honorLabels | bool | `true` | Keep the target's own metric labels rather than letting Prometheus rename them |
+| apiserver.metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
+| apiserver.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
+| apiserver.metrics.serviceMonitor.tlsConfig.caSecret.key | string | `"ca.crt"` | Key within that Secret |
+| apiserver.metrics.serviceMonitor.tlsConfig.caSecret.name | string | `""` | Secret holding the CA bundle, defaults to the chart's certificate Secret |
+| apiserver.metrics.serviceMonitor.tlsConfig.insecureSkipVerify | bool | `false` | Skip verification of the API Server certificate. Off by default, the scrape verifies against the cert-manager issued CA and the service DNS name below. Only set this true if you run without cert-manager. |
+| apiserver.metrics.serviceMonitor.tlsConfig.serverName | string | `""` | Expected server name, defaults to the API Server service DNS name |
+| apiserver.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |
+| apiserver.metrics.serviceMonitor.tokenSecret.name | string | `""` | Name of the Secret containing the scrape bearer token |
 | apiserver.nameOverride | string | `""` | Override API Server name |
 | apiserver.nodeSelector | object | `{}` | Node selector for pod assignment |
 | apiserver.podAnnotations | object | `{}` | Pod annotations |
@@ -343,7 +354,7 @@ If you're currently using Kustomize to deploy ARC:
 | controller.args.enableHTTP2 | bool | `false` | Enable HTTP/2 for metrics server |
 | controller.args.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | controller.args.leaderElect | bool | `false` | Enable leader election (set to true for HA) |
-| controller.args.metricsBindAddress | string | `"0"` | Metrics bind address (set to "0" to disable, ":8443" for HTTPS) |
+| controller.args.metricsBindAddress | string | `":8443"` | Metrics bind address. Only used when controller.metrics.enabled is true, the deployment passes 0 otherwise, so this is the port rather than a switch. |
 | controller.args.metricsSecure | bool | `true` | Serve metrics securely via HTTPS |
 | controller.args.pprofBindAddress | string | `""` | Pprof bind address (empty to disable) |
 | controller.command | list | `["/arc-controller-manager"]` | Command to run in the container |
@@ -370,6 +381,7 @@ If you're currently using Kustomize to deploy ARC:
 | controller.metrics.service.type | string | `"ClusterIP"` | Metrics service type |
 | controller.metrics.serviceMonitor.additionalLabels | object | `{}` | Additional labels for ServiceMonitor |
 | controller.metrics.serviceMonitor.enabled | bool | `false` | Enable ServiceMonitor |
+| controller.metrics.serviceMonitor.honorLabels | bool | `true` | Keep the target's own metric labels. ARC's `namespace` label names the Order's namespace. Without this Prometheus renames it to `exported_namespace`. |
 | controller.metrics.serviceMonitor.interval | string | `"30s"` | Scrape interval |
 | controller.metrics.serviceMonitor.scrapeTimeout | string | `"10s"` | Scrape timeout |
 | controller.metrics.serviceMonitor.tokenSecret.key | string | `"token"` | Key within the Secret that holds the token |
@@ -388,6 +400,14 @@ If you're currently using Kustomize to deploy ARC:
 | controller.serviceAccount.name | string | `""` | Service account name (auto-generated if not set) |
 | controller.tolerations | list | `[]` | Tolerations for pod assignment |
 | createNamespace | bool | `false` | Create namespace if it doesn't exist |
+| dashboards.annotations | object | `{}` | Additional annotations for the dashboard ConfigMaps |
+| dashboards.enabled | bool | `false` | Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up |
+| dashboards.extraLabels | object | `{}` | Additional labels for the dashboard ConfigMaps |
+| dashboards.folder | string | `""` | Grafana folder name, empty uses Grafana's default folder |
+| dashboards.folderAnnotation | string | `"grafana_folder"` | Annotation key naming the Grafana folder |
+| dashboards.labelKey | string | `"grafana_dashboard"` | Label key the Grafana sidecar watches for |
+| dashboards.labelValue | string | `"1"` | Label value the Grafana sidecar watches for |
+| dashboards.namespace | string | `""` | Namespace for the ConfigMaps, defaults to the release namespace. The kube-prometheus-stack sidecar only watches its own namespace unless it runs with sidecar.dashboards.searchNamespace=ALL. |
 | etcd.affinity | object | `{}` | Affinity for pod assignment |
 | etcd.args.advertiseClientUrls | string | `"http://localhost:2379"` | Advertise client URLs |
 | etcd.args.dataDir | string | `"/etcd-data-dir/default.etcd"` | Data directory |

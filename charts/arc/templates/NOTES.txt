@@ -99,6 +99,31 @@ Check pods:
   ARC requires Argo Workflows to schedule orders.
 {{- end }}
 
+{{- if not .Values.dashboards.enabled }}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Observability
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Metrics and the reference dashboard are off by default. To turn on the whole
+path at once:
+
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+  apiserver:
+    metrics:
+      serviceMonitor:
+        enabled: true
+  dashboards:
+    enabled: true
+
+The Grafana sidecar only watches its own namespace by default. Either install
+Grafana with sidecar.dashboards.searchNamespace=ALL, or set dashboards.namespace
+to the namespace Grafana runs in, otherwise the dashboard never shows up.
+
+{{ end }}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Documentation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

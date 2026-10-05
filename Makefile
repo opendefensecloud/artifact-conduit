@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v1.0.13
+DEV_KIT_VERSION := v2.2.0
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -45,11 +45,12 @@ KIND_NODE_IMAGE ?= kindest/node:v$(patsubst v%,%,$(ENVTEST_K8S_VERSION))
 KIND_NODE_VERSION := $(lastword $(subst :, ,$(KIND_NODE_IMAGE)))
 
 export ARGO_WORKFLOWS_VERSION := $(shell awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $$2}' go.mod)
-export CERTMANAGER_VERSION := v1.21.1
+export CERTMANAGER_VERSION := v1.21.2
 export TRUSTMANAGER_VERSION := v0.24.0
 
 LICENSE := apache
 LICENSE_COMMENT := BWI GmbH and Artifact Conduit contributors
+LICENSE_PATTERN := *\.go
 
 .PHONY: codegen
 codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
@@ -59,7 +60,7 @@ codegen: $(OPENAPI_GEN) ## Run code generation, e.g. openapi
 
 .PHONY: fmt
 fmt: $(GOLANGCI_LINT) ## Add license headers and format code
-	$(MAKE) addlicense license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='*\.go'
+	$(MAKE) addlicense license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
 	$(GO) fmt ./...
 	$(GOLANGCI_LINT) run --fix
 
@@ -68,12 +69,7 @@ lint: lint-no-golangci golangci-lint ## Run linters
 
 .PHONY: lint-no-golangci
 lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
-	$(MAKE) addlicense-check license=apache comment='$(LICENSE_COMMENT)' pattern='*\.go'
-
-.PHONY: envtest-binaries-sideload
-envtest-binaries-sideload: $(SETUP_ENVTEST) ## Populate the envtest cache for ENVTEST_K8S_VERSION from upstream K8s/etcd releases when controller-tools hasn't packaged it
-	@SETUP_ENVTEST=$(SETUP_ENVTEST) BIN_DIR=$(LOCALBIN) YQ=$(YQ) \
-		bash hack/envtest-sideload.sh $(ENVTEST_K8S_VERSION)
+	$(MAKE) addlicense-check license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
 
 .PHONY: test
 test: $(SETUP_ENVTEST) $(GINKGO) envtest-binaries-sideload ## Run all tests

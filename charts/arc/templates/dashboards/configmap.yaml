@@ -1,0 +1,29 @@
+{{- if .Values.dashboards.enabled }}
+{{- range $path, $_ := .Files.Glob "files/dashboards/*.json" }}
+{{- $name := base $path | trimSuffix ".json" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "arc.fullname" $ }}-dashboard-{{ $name }}
+  namespace: {{ $.Values.dashboards.namespace | default (include "arc.namespace" $) }}
+  labels:
+    {{- include "arc.labels" $ | nindent 4 }}
+    {{ $.Values.dashboards.labelKey }}: {{ $.Values.dashboards.labelValue | quote }}
+    {{- with $.Values.dashboards.extraLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- if or $.Values.dashboards.folder $.Values.dashboards.annotations }}
+  annotations:
+    {{- with $.Values.dashboards.folder }}
+    {{ $.Values.dashboards.folderAnnotation }}: {{ . | quote }}
+    {{- end }}
+    {{- with $.Values.dashboards.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- end }}
+data:
+  {{ base $path }}: |
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}
+{{- end }}

@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package controller
@@ -24,6 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
+	"go.opendefense.cloud/arc/pkg/metrics"
 )
 
 const (
@@ -73,7 +74,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			return ctrlResult, nil
 		}
 
-		return ctrlResult, errLogAndWrap(log, err, "failed to get object")
+		return ctrl.Result{}, errLogAndWrap(log, err, "failed to get object")
 	}
 
 	// Update last reconcile time
@@ -82,20 +83,21 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	// Handle deletion: cleanup artifact workflows, then remove finalizer
 	if !order.DeletionTimestamp.IsZero() {
 		log.V(1).Info("Order is being deleted")
-		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "Deleting", "Delete", "Order is being deleted, cleaning up artifact workflows")
+		r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, ReasonDeleting, "Delete", "Order is being deleted, cleaning up artifact workflows")
 
 		// Cleanup all artifact workflows
 		if len(order.Status.ArtifactWorkflows) > 0 {
 			for sha := range order.Status.ArtifactWorkflows {
-				// Remove ArtifactWorkflow
+				// Remove ArtifactWorkflow. The artifact type label is not needed here since
+				// Delete matches targets by namespace and name, not labels.
 				aw := &arcv1alpha1.ArtifactWorkflow{
-					ObjectMeta: awObjectMeta(order, sha),
+					ObjectMeta: awObjectMeta(order, sha, ""),
 				}
 				_ = r.Delete(ctx, aw) // Ignore errors
 				delete(order.Status.ArtifactWorkflows, sha)
 			}
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update order status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update order status")
 			}
 			log.V(1).Info("Order artifact workflows cleaned up")
 
@@ -109,7 +111,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				return f == orderFinalizer
 			})
 			if err := r.Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to remove finalizer")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to remove finalizer")
 			}
 		}
 
@@ -122,9 +124,30 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			log.V(1).Info("Adding finalizer to Order")
 			order.Finalizers = append(order.Finalizers, orderFinalizer)
 			if err := r.Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to add finalizer")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to add finalizer")
 			}
 			// Return without requeue; the Update event will trigger reconciliation again
+			return ctrlResult, nil
+		}
+	}
+
+	// Garbage collect the Order once its TTL has elapsed since creation. The
+	// finalizer added above triggers deletion of the artifact workflows, the
+	// ownerReference reaps whatever is left. A zero TTL retains the Order
+	// indefinitely, like a zero TTLAfterFinished. Unset is the opposite though:
+	// an unset TTLAfterFinished deletes immediately.
+	if order.Spec.TTL != nil && order.Spec.TTL.Duration > 0 {
+		expiresAt := order.CreationTimestamp.Add(order.Spec.TTL.Duration)
+		if remaining := time.Until(expiresAt); remaining > 0 {
+			// Not expired yet; make sure we come back to delete it on time.
+			ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
+		} else {
+			log.V(1).Info("Order TTL expired, deleting", "ttl", order.Spec.TTL.Duration.String())
+			r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, ReasonDeleting, "Delete", "Order TTL of %s expired, deleting", order.Spec.TTL.Duration.String())
+			if err := r.Delete(ctx, order); client.IgnoreNotFound(err) != nil {
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete expired order")
+			}
+
 			return ctrlResult, nil
 		}
 	}
@@ -141,7 +164,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		for sha := range order.Status.ArtifactWorkflows {
 			// Remove Secret and ArtifactWorkflow
 			aw := &arcv1alpha1.ArtifactWorkflow{
-				ObjectMeta: awObjectMeta(order, sha),
+				ObjectMeta: awObjectMeta(order, sha, ""),
 			}
 			_ = r.Delete(ctx, aw) // Ignore errors
 			delete(order.Status.ArtifactWorkflows, sha)
@@ -150,7 +173,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Update last force time
 		order.Status.LastForceAt = metav1.Now()
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrlResult, errLogAndWrap(log, err, "failed to update last force time")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
 		}
 		// Return without requeue; the update event will trigger reconciliation again
 		return ctrlResult, nil
@@ -167,13 +190,16 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for i, artifact := range order.Spec.Artifacts {
 		daw, err := r.computeDesiredAW(ctx, log, order, &artifact, i)
 		if err != nil {
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "ComputationFailed", "Compute", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
+			// computeDesiredAW counts its own failures under the reason that
+			// describes them, so counting again here would report every one of
+			// them twice and shadow the specific reason with a generic sibling.
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonComputationFailed, "Compute", "Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			order.Status.Message = fmt.Sprintf("Failed to compute desired artifact workflow for artifact index %d: %v", i, err)
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 			}
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to compute desired artifact workflow")
 		}
 		desiredAWs[daw.sha] = *daw
 	}
@@ -221,8 +247,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Get ArtifactWorkflow object and check TTLs.
 		artifactWorkflow := &arcv1alpha1.ArtifactWorkflow{}
 		if err := r.Get(ctx, types.NamespacedName{Namespace: order.Namespace, Name: awName(order, sha)}, artifactWorkflow); err != nil && !apierrors.IsNotFound(err) {
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "Invalid", "Fetch", "Failed to fetch ArtifactWorkflow: %v", sha)
-			return ctrlResult, errLogAndWrap(log, err, "")
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalid, "Fetch", "Failed to fetch ArtifactWorkflow: %v", sha)
+			metrics.RecordReconcileError(ControllerOrder, ReasonInvalid)
+
+			return ctrl.Result{}, errLogAndWrap(log, err, "")
 		}
 		if artifactWorkflow.Name != "" {
 			// Cleanup finished workflows if TTLAfterFinished is set.
@@ -233,10 +261,12 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.CompletionTime.Time) < artifactWorkflow.Spec.TTLAfterFinished.Duration {
+					// Compute the remainder once so that the check and the
+					// requeue cannot disagree about whether the TTL is expired.
+					if remaining := artifactWorkflow.Spec.TTLAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time); remaining > 0 {
 						// If TTL is set but not expired keep the workflow.
 						// Requeue when the next TTL expires
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFinished.Duration - time.Since(awStatus.CompletionTime.Time)
+						ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
 						continue
 					}
 				}
@@ -250,9 +280,11 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 						// If TTL is zero keep the workflow.
 						continue
 					}
-					if time.Since(awStatus.FailureTime.Time) < artifactWorkflow.Spec.TTLAfterFailed.Duration {
+					// Compute the remainder once so that the check and the
+					// requeue cannot disagree about whether the TTL is expired.
+					if remaining := artifactWorkflow.Spec.TTLAfterFailed.Duration - time.Since(awStatus.FailureTime.Time); remaining > 0 {
 						// If TTL is set but not expired keep the workflow.
-						ctrlResult.RequeueAfter = artifactWorkflow.Spec.TTLAfterFailed.Duration - time.Since(awStatus.FailureTime.Time)
+						ctrlResult.RequeueAfter = earliestRequeue(ctrlResult.RequeueAfter, remaining)
 						continue
 					}
 				} else {
@@ -271,14 +303,18 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		daw := desiredAWs[sha]
 		aw, err := r.hydrateArtifactWorkflow(&daw)
 		if err != nil {
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "HydrationFailed", "Hydrate", "Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err)
-			return ctrlResult, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonHydrationFailed, "Hydrate", "Failed to hydrate artifact workflow for artifact index %d: %v", daw.index, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonHydrationFailed)
+
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to hydrate artifact workflow")
 		}
 
 		// Set owner references
 		if err := controllerutil.SetControllerReference(order, aw, r.Scheme); err != nil {
-			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "HydrationFailed", "Hydrate", "Failed to set controller reference for artifact workflow: %v", err)
-			return ctrlResult, errLogAndWrap(log, err, "failed to set controller reference")
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonHydrationFailed, "Hydrate", "Failed to set controller reference for artifact workflow: %v", err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonHydrationFailed)
+
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to set controller reference")
 		}
 
 		// Create artifact workflow
@@ -287,9 +323,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 				// Already created by a previous reconcile — that's fine
 				continue
 			}
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "CreationFailed", "Create", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonCreationFailed, "Create", "Failed to create artifact workflow for artifact index %d: %v", daw.index, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonCreationFailed)
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to create artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to create artifact workflow")
 		} else {
 			r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "Created", "Create", "Created artifact workflow '%s' for artifact index %d", aw.Name, daw.index)
 			log.V(1).Info("Created artifact workflow", "artifactWorkflow", aw.Name)
@@ -308,11 +345,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for _, sha := range deleteAWs {
 		// Does not exist anymore, let's clean up!
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: awObjectMeta(order, sha),
+			ObjectMeta: awObjectMeta(order, sha, ""),
 		}
 		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
-			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", "Failed to delete obsolete artifact workflow '%s': %v", sha, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonDeletionFailed)
+
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		// Update status
@@ -325,11 +364,13 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	for _, sha := range finishedAWs {
 		// Finished, let's clean up!
 		aw := &arcv1alpha1.ArtifactWorkflow{
-			ObjectMeta: awObjectMeta(order, sha),
+			ObjectMeta: awObjectMeta(order, sha, ""),
 		}
 		if err := r.Delete(ctx, aw); client.IgnoreNotFound(err) != nil {
-			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, "DeletionFailed", "Delete", "Failed to delete finished artifact workflow '%s': %v", sha, err)
-			return ctrlResult, errLogAndWrap(log, err, "failed to delete artifact workflow")
+			r.Recorder.Eventf(order, aw, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", "Failed to delete finished artifact workflow '%s': %v", sha, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonDeletionFailed)
+
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to delete artifact workflow")
 		}
 
 		log.V(1).Info("Deleted finished artifact workflow", "artifactWorkflow", sha)
@@ -351,10 +392,10 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			delete(order.Status.ArtifactWorkflows, sha)
 			log.V(1).Info("Artifact workflow not found, deleting from status.", "artifactWorkflow", sha)
 			if err := r.Status().Update(ctx, order); err != nil {
-				return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+				return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 			}
 
-			return ctrlResult, errLogAndWrap(log, err, "failed to get artifact workflow")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to get artifact workflow")
 		}
 		orderAWStatus := order.Status.ArtifactWorkflows[sha]
 
@@ -380,7 +421,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			order.Status.ArtifactWorkflows[sha] = aws
 		}
 		if err := r.Status().Update(ctx, order); err != nil {
-			return ctrlResult, errLogAndWrap(log, err, "failed to update status")
+			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update status")
 		}
 	}
 
@@ -424,25 +465,31 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 
 	srcEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, srcRefName), srcEndpoint); err != nil {
-		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidEndpoint", "FetchEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalidEndpoint, "FetchEndpoint", "Failed to fetch source endpoint '%s': %v", srcRefName, err)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidEndpoint)
+
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for source")
 	}
 	dstEndpoint := &arcv1alpha1.Endpoint{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, dstRefName), dstEndpoint); err != nil {
-		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidEndpoint", "FetchEndpoint", "Failed to fetch destination endpoint '%s': %v", dstRefName, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalidEndpoint, "FetchEndpoint", "Failed to fetch destination endpoint '%s': %v", dstRefName, err)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidEndpoint)
+
 		return nil, errLogAndWrap(log, err, "failed to fetch endpoint for destination")
 	}
 
 	// Validate that the endpoint usage is correct
 	if srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePullOnly && srcEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with source usage", srcEndpoint.Name, srcEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, srcEndpoint, corev1.EventTypeWarning, "InvalidEndpoint", "ValidateEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+		r.Recorder.Eventf(order, srcEndpoint, corev1.EventTypeWarning, ReasonInvalidEndpoint, "ValidateEndpoint", "Source endpoint '%s' has incompatible usage '%s'", srcEndpoint.Name, srcEndpoint.Spec.Usage)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidEndpoint)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsagePushOnly && dstEndpoint.Spec.Usage != arcv1alpha1.EndpointUsageAll {
 		err := fmt.Errorf("endpoint '%s' usage '%s' is not compatible with destination usage", dstEndpoint.Name, dstEndpoint.Spec.Usage)
-		r.Recorder.Eventf(order, dstEndpoint, corev1.EventTypeWarning, "InvalidEndpoint", "ValidateEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+		r.Recorder.Eventf(order, dstEndpoint, corev1.EventTypeWarning, ReasonInvalidEndpoint, "ValidateEndpoint", "Destination endpoint '%s' has incompatible usage '%s'", dstEndpoint.Name, dstEndpoint.Spec.Usage)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidEndpoint)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
@@ -450,7 +497,9 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// Validate against ArtifactType rules
 	artifactType := &arcv1alpha1.ArtifactType{}
 	if err := r.Get(ctx, namespacedName(order.Namespace, artifact.Type), artifactType); client.IgnoreNotFound(err) != nil {
-		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidArtifactType", "FetchArtifactType", "Failed to fetch ArtifactType '%s': %v", artifact.Type, err)
+		r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalidArtifactType, "FetchArtifactType", "Failed to fetch ArtifactType '%s': %v", artifact.Type, err)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidArtifactType)
+
 		return nil, errLogAndWrap(log, err, "failed to fetch referenced ArtifactType")
 	}
 	var (
@@ -460,6 +509,11 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	if artifactType.Name == "" { // was not found, let's check ClusterArtifactType
 		clusterArtifactType := &arcv1alpha1.ClusterArtifactType{}
 		if err := r.Get(ctx, namespacedName("", artifact.Type), clusterArtifactType); err != nil {
+			// No Event of its own is emitted here. The only Event this failure
+			// produces is the caller's ComputationFailed, so that is the reason
+			// the metric has to carry for the two to agree.
+			metrics.RecordReconcileError(ControllerOrder, ReasonComputationFailed)
+
 			return nil, errLogAndWrap(log, err, "failed to fetch ArtifactType or ClusterArtifactType")
 		}
 		artifactTypeSpec = &clusterArtifactType.Spec
@@ -473,13 +527,15 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 
 	if len(artifactTypeSpec.Rules.SrcTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.SrcTypes, srcEndpoint.Spec.Type) {
 		err := fmt.Errorf("source endpoint type '%s' is not allowed by ArtifactType rules", srcEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, "InvalidArtifactType", "ValidateArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
+		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, ReasonInvalidArtifactType, "ValidateArtifactType", "Source endpoint type '%s' is not allowed by ArtifactType '%s' rules", srcEndpoint.Spec.Type, artifact.Type)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidArtifactType)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
 	if len(artifactTypeSpec.Rules.DstTypes) > 0 && !slices.Contains(artifactTypeSpec.Rules.DstTypes, dstEndpoint.Spec.Type) {
 		err := fmt.Errorf("destination endpoint type '%s' is not allowed by ArtifactType rules", dstEndpoint.Spec.Type)
-		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, "InvalidArtifactType", "ValidateArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
+		r.Recorder.Eventf(order, artifactType, corev1.EventTypeWarning, ReasonInvalidArtifactType, "ValidateArtifactType", "Destination endpoint type '%s' is not allowed by ArtifactType '%s' rules", dstEndpoint.Spec.Type, artifact.Type)
+		metrics.RecordReconcileError(ControllerOrder, ReasonInvalidArtifactType)
 
 		return nil, errLogAndWrap(log, err, "artifact validation failed")
 	}
@@ -488,7 +544,9 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	srcSecret := &corev1.Secret{}
 	if srcEndpoint.Spec.SecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(order.Namespace, srcEndpoint.Spec.SecretRef.Name), srcSecret); err != nil {
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", "Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", "Failed to fetch source secret '%s': %v", srcEndpoint.Spec.SecretRef.Name, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonInvalidSecret)
+
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for source")
 		}
 	}
@@ -496,7 +554,9 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	dstSecret := &corev1.Secret{}
 	if dstEndpoint.Spec.SecretRef.Name != "" {
 		if err := r.Get(ctx, namespacedName(order.Namespace, dstEndpoint.Spec.SecretRef.Name), dstSecret); err != nil {
-			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, "InvalidSecret", "FetchSecret", "Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err)
+			r.Recorder.Eventf(order, nil, corev1.EventTypeWarning, ReasonInvalidSecret, "FetchSecret", "Failed to fetch destination secret '%s': %v", dstEndpoint.Spec.SecretRef.Name, err)
+			metrics.RecordReconcileError(ControllerOrder, ReasonInvalidSecret)
+
 			return nil, errLogAndWrap(log, err, "failed to fetch secret for destination")
 		}
 	}
@@ -521,6 +581,10 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	}
 
 	if err := json.NewEncoder(h).Encode(data); err != nil {
+		// Same as the ClusterArtifactType fetch above: the caller's
+		// ComputationFailed is the only Event this failure produces.
+		metrics.RecordReconcileError(ControllerOrder, ReasonComputationFailed)
+
 		return nil, errLogAndWrap(log, err, "failed to marshal artifact workflow data")
 	}
 
@@ -530,7 +594,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
 		index:       i,
-		objectMeta:  awObjectMeta(order, sha),
+		objectMeta:  awObjectMeta(order, sha, artifact.Type),
 		artifact:    artifact,
 		typeSpec:    artifactTypeSpec,
 		srcEndpoint: srcEndpoint,

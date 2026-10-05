@@ -2,7 +2,6 @@
 
 [![Build status](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml/badge.svg)](https://github.com/opendefensecloud/artifact-conduit/actions/workflows/golang.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/opendefensecloud/artifact-conduit/badge.svg?branch=main)](https://coveralls.io/github/opendefensecloud/artifact-conduit?branch=main)
-[![Go Report Card](https://goreportcard.com/badge/go.opendefense.cloud/arc)](https://goreportcard.com/report/go.opendefense.cloud/arc)
 [![Go Reference](https://pkg.go.dev/badge/go.opendefense.cloud/arc.svg)](https://pkg.go.dev/go.opendefense.cloud/arc)
 [![GitHub Release](https://img.shields.io/github/v/release/opendefensecloud/artifact-conduit)
 ](https://github.com/opendefensecloud/artifact-conduit/releases)
@@ -27,14 +26,14 @@ For detailed information have a look at [`/docs`](docs) or the live documentatio
 
 ## To start developing
 
-> ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/developer-guide/contributing.md)
+> ⚠️ Before contributing, make sure you read the [contribution guidelines](docs/CONTRIBUTING.md)
 
 Please see our documentation in the [`/docs`](docs) folder for more details.
 The hosted version of the documentation can be found at <https://arc.opendefense.cloud/>.
 
 ## Contributing
 
-We'd love to get feedback from you. Please report bugs, suggestions or post questions by opening an issue.
+We'd love to get feedback from you. See the [Contributing Guide](docs/CONTRIBUTING.md) for how to [report bugs, suggestions, questions and security vulnerabilities](docs/CONTRIBUTING.md#how-to-provide-feedback) and for our development workflow. Everyone participating is expected to follow our [Code of Conduct](docs/CODE_OF_CONDUCT.md).
 
 ## License
 

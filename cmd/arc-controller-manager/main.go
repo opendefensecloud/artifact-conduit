@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package main
@@ -8,6 +8,7 @@ import (
 	"flag"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
@@ -21,11 +22,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/certwatcher"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	ctrlmetrics "sigs.k8s.io/controller-runtime/pkg/metrics"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 	"go.opendefense.cloud/arc/pkg/controller"
+	"go.opendefense.cloud/arc/pkg/endpointprobe"
+	arcmetrics "go.opendefense.cloud/arc/pkg/metrics"
 
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
@@ -49,6 +53,7 @@ func main() {
 		prefixAllocationTimeout, volumeBindTimeout, virtualIPBindTimeout time.Duration
 		networkInterfaceBindTimeout                                      time.Duration
 		tlsOpts                                                          []func(*tls.Config)
+		probeDenyCIDRs                                                   string
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
@@ -70,6 +75,9 @@ func main() {
 	flag.DurationVar(&volumeBindTimeout, "volume-bind-timeout", 10*time.Second, "Time to wait until considering a volume bind to be failed.")
 	flag.DurationVar(&virtualIPBindTimeout, "virtual-ip-bind-timeout", 10*time.Second, "Time to wait until considering a virtual ip bind to be failed.")
 	flag.DurationVar(&networkInterfaceBindTimeout, "network-interface-bind-timeout", 10*time.Second, "Time to wait until considering a network interface bind to be failed.")
+	flag.StringVar(&probeDenyCIDRs, "probe-deny-cidrs", endpointprobe.DefaultDenyCIDRsString(),
+		"Comma-separated CIDRs the Endpoint probe refuses to connect to. "+
+			"Set to an empty string to disable the check and rely solely on NetworkPolicy.")
 
 	opts := zap.Options{
 		Development: true,
@@ -145,6 +153,12 @@ func main() {
 		})
 	}
 
+	denyCIDRs, err := endpointprobe.ParseDenyCIDRs(strings.Split(probeDenyCIDRs, ","))
+	if err != nil {
+		setupLog.Error(err, "invalid --probe-deny-cidrs")
+		os.Exit(1)
+	}
+
 	config := ctrl.GetConfigOrDie()
 	mgr, err := ctrl.NewManager(config, ctrl.Options{
 		Logger:                 logger,
@@ -166,6 +180,14 @@ func main() {
 			setupLog.Error(err, "unable to add metrics certificate watcher to manager")
 			os.Exit(1)
 		}
+	}
+
+	arcMetrics := arcmetrics.NewCollector(mgr.GetCache())
+	ctrlmetrics.Registry.MustRegister(arcMetrics)
+
+	if err := mgr.Add(arcMetrics); err != nil {
+		setupLog.Error(err, "unable to add metrics leader gate")
+		os.Exit(1)
 	}
 
 	if err := wfv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
@@ -196,6 +218,16 @@ func main() {
 		Recorder:  mgr.GetEventRecorder("artifact-workflow-controller"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ArtifactWorkflow")
+		os.Exit(1)
+	}
+
+	if err := (&controller.EndpointReconciler{
+		Client:   mgr.GetClient(),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorder("endpoint-controller"),
+		Probe:    endpointprobe.New(denyCIDRs).Probe,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Endpoint")
 		os.Exit(1)
 	}
 

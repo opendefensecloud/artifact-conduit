@@ -1,0 +1,16 @@
+# The Dockerfile only copies go.mod, go.sum, api/, client-go/, cmd/, pkg/ and
+# docs/requirements.txt. Everything else is context sent for nothing, and bin/
+# alone is hundreds of megabytes of downloaded tooling.
+bin/
+.git/
+.github/
+.claude/
+.direnv/
+.superpowers/
+.worktrees/
+charts/
+examples/
+hack/
+test/
+build/
+*.md

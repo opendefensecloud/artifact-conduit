@@ -58,6 +58,7 @@ rules:
   - arc.opendefense.cloud
   resources:
   - artifactworkflows/status
+  - endpoints/status
   - orders/status
   verbs:
   - get

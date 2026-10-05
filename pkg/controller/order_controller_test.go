@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package controller
@@ -12,6 +12,7 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -349,6 +350,78 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(0))
 		})
+
+		It("should garbage collect the order once its TTL has elapsed", func() {
+			createEndpoints("src-1", "dst-1")
+			order := &arcv1alpha1.Order{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-order-ttl",
+					Namespace: ns.Name,
+				},
+				Spec: arcv1alpha1.OrderSpec{
+					// Derived from the suite constants: the first Eventually below has
+					// to observe the artifact workflow before the TTL elapses, and the
+					// second one has to observe the deletion within its own timeout.
+					TTL: &metav1.Duration{Duration: eventuallyTimeout / 2},
+					Artifacts: []arcv1alpha1.OrderArtifact{
+						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+					},
+				},
+			}
+			Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+			// The artifact workflow has to exist before the TTL elapses, otherwise
+			// its absence below would not prove that it was cleaned up.
+			awList := &arcv1alpha1.ArtifactWorkflowList{}
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(1))
+
+			// Once the TTL elapses, the order should be garbage collected together
+			// with the artifact workflows it created.
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				return apierrors.IsNotFound(err)
+			}).Should(BeTrue())
+
+			Eventually(func() int {
+				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+				return len(awList.Items)
+			}).Should(Equal(0))
+		})
+
+		DescribeTable("should not garbage collect the order",
+			func(name string, ttl time.Duration) {
+				createEndpoints("src-1", "dst-1")
+				order := &arcv1alpha1.Order{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      name,
+						Namespace: ns.Name,
+					},
+					Spec: arcv1alpha1.OrderSpec{
+						TTL: &metav1.Duration{Duration: ttl},
+						Artifacts: []arcv1alpha1.OrderArtifact{
+							{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
+						},
+					},
+				}
+				Expect(k8sClient.Create(ctx, order)).To(Succeed())
+
+				awList := &arcv1alpha1.ArtifactWorkflowList{}
+				Eventually(func() int {
+					_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
+					return len(awList.Items)
+				}).Should(Equal(1))
+
+				Consistently(func() error {
+					return k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)
+				}).Should(Succeed())
+			},
+			// A zero TTL retains the order indefinitely, like a zero TTLAfterFinished.
+			Entry("with a zero TTL", "test-order-ttl-zero", time.Duration(0)),
+			Entry("before its TTL has elapsed", "test-order-ttl-not-expired", time.Hour),
+		)
 
 		It("should delete artifact workflows when order is completed successfully", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
@@ -911,6 +984,14 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when artifact type does not exist", func() {
+			// A missing ArtifactType/ClusterArtifactType is the one failure in
+			// computeDesiredAW with no Event of its own, so ComputationFailed,
+			// the reason its only Event carries, is what it counts under. Every
+			// other failure there counts under its own reason and is not
+			// counted a second time by the caller.
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonComputationFailed}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
+
 			createEndpoints("src-nonexistent", "dst-nonexistent")
 
 			// Create order referencing a non-existent artifact type
@@ -937,6 +1018,11 @@ var _ = Describe("OrderController", func() {
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch ArtifactType or ClusterArtifactType"))
 
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
+			}).Should(BeNumerically(">=", 1.0))
+
 			// Verify no artifact workflows were created
 			Consistently(func() int {
 				awList := &arcv1alpha1.ArtifactWorkflowList{}
@@ -947,6 +1033,9 @@ var _ = Describe("OrderController", func() {
 		})
 
 		It("should fail when source endpoint does not exist", func() {
+			errLabels := map[string]string{"controller": ControllerOrder, "reason": ReasonInvalidEndpoint}
+			before := counterValue("arc_reconcile_errors_total", errLabels)
+
 			createEndpoints("dst-only")
 
 			// Create order referencing a non-existent source endpoint
@@ -972,6 +1061,11 @@ var _ = Describe("OrderController", func() {
 				Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
 				return order.Status.Message
 			}).Should(ContainSubstring("failed to fetch endpoint for source"))
+
+			// Verify the reconcile error was counted under the matching reason
+			Eventually(func() float64 {
+				return counterValue("arc_reconcile_errors_total", errLabels) - before
+			}).Should(BeNumerically(">=", 1.0))
 
 			// Verify no artifact workflows were created
 			Consistently(func() int {
@@ -1167,5 +1261,18 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 		})
 
+	})
+})
+
+var _ = Describe("Reconcile error reasons", func() {
+	It("should use the same strings as the events", func() {
+		Expect(ReasonInvalidEndpoint).To(Equal("InvalidEndpoint"))
+		Expect(ReasonInvalidArtifactType).To(Equal("InvalidArtifactType"))
+		Expect(ReasonInvalidSecret).To(Equal("InvalidSecret"))
+		Expect(ReasonComputationFailed).To(Equal("ComputationFailed"))
+		Expect(ReasonHydrationFailed).To(Equal("HydrationFailed"))
+		Expect(ReasonCreationFailed).To(Equal("CreationFailed"))
+		Expect(ReasonDeletionFailed).To(Equal("DeletionFailed"))
+		Expect(ReasonInvalid).To(Equal("Invalid"))
 	})
 })

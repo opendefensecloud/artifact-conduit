@@ -1,4 +1,4 @@
-// Copyright 2025 BWI GmbH and Artifact Conduit contributors
+// Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
 package arc
@@ -88,6 +88,10 @@ func validateOrder(o *Order) field.ErrorList {
 		if err := validateCron(field.NewPath("spec", "defaults").Child("cron"), o.Spec.Defaults.Cron); err != nil {
 			allErrs = append(allErrs, err)
 		}
+	}
+
+	if o.Spec.TTL != nil && o.Spec.TTL.Duration < 0 {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("spec", "ttl"), o.Spec.TTL.Duration.String(), "ttl must not be negative"))
 	}
 
 	return allErrs
