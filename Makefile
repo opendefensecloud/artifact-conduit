@@ -157,8 +157,9 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/service-account.yaml
 
-	@echo -e "\nSETTING UP MINIO:\n"
-	$(HELM) upgrade --install --create-namespace --namespace=minio --repo=https://charts.min.io -f test/fixtures/dst-minio.yaml dst minio
+	@echo -e "\nSETTING UP GARAGE:\n"
+	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f test/fixtures/dst-garage.yaml
+	$(KUBECTL) wait deployment.apps/dst --context kind-$(KIND_CLUSTER_DEV) --for condition=Available --namespace garage --timeout 5m
 
 	@echo -e "\nSETTING UP ZOT:\n"
 	$(HELM) upgrade --install --create-namespace --namespace=zot --repo=https://zotregistry.dev/helm-charts -f test/fixtures/dst-zot.yaml dst zot

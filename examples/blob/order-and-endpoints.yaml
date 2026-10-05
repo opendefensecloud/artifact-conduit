@@ -22,7 +22,7 @@ metadata:
   name: internal-s3
 spec:
   type: s3 # Endpoint Type!
-  remoteURL: http://dst.minio:9000
+  remoteURL: http://dst.garage:3900
   secretRef:
     name: s3-secret
   usage: PushOnly
