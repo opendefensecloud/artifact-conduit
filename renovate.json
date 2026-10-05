@@ -8,7 +8,10 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["examples/*/cluster-workflow-template.yaml"],
+      "managerFilePatterns": [
+        "examples/*/cluster-workflow-template.yaml",
+        "test/fixtures/dst-garage.yaml"
+      ],
       "matchStrings": [
         "image:\\s*(?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)"
       ],
