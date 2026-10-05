@@ -173,8 +173,6 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			ep := probedEndpoint()
 			ep.Status.ProbedForceAt = forced
 
-			// The stored value has been through the API's precision, so this only
-			// holds if the comparison is by instant rather than by struct.
 			Expect(probeReason(ep, secretRV, forced, 0)).To(BeEmpty())
 		})
 
