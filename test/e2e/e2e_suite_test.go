@@ -23,8 +23,6 @@ const (
 	trustmanagerChart    = "oci://quay.io/jetstack/charts/trust-manager"
 	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
 
-	minioRepoUrl = "https://charts.min.io"
-
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
 
 	// Image names used when building from source (local development)
@@ -168,15 +166,15 @@ var _ = BeforeSuite(func() {
 	logf("Installing Zot...\n")
 	Expect(installZot()).To(Succeed(), "Failed to install Argo Workflows")
 
-	logf("Installing Minio...\n")
-	Expect(installMinio()).To(Succeed(), "Failed to install Minio")
+	logf("Installing SeaweedFS...\n")
+	Expect(installSeaweedFS()).To(Succeed(), "Failed to install SeaweedFS")
 })
 
 var _ = AfterSuite(func() {
 	cmd := exec.Command("kubectl", "delete", "namespace", "zot")
 	_, _ = run(cmd)
 
-	cmd = exec.Command("kubectl", "delete", "namespace", "minio")
+	cmd = exec.Command("kubectl", "delete", "namespace", "seaweedfs")
 	_, _ = run(cmd)
 
 	if kubeConfigPath != "" {
@@ -214,13 +212,21 @@ func loadImageToKindClusterWithName(name string) error {
 	return err
 }
 
-func installMinio() error {
+func installSeaweedFS() error {
 	dir, err := getProjectDir()
 	Expect(err).NotTo(HaveOccurred())
 
-	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=minio", fmt.Sprintf("--repo=%s", minioRepoUrl), "-f", filepath.Join(dir, "test", "fixtures", "dst-minio.yaml"), "dst", "minio")
+	cmd := exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "dst-seaweedfs.yaml"))
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	cmd = exec.Command("kubectl", "wait", "deployment.apps/dst",
+		"--for", "condition=Available",
+		"--namespace", "seaweedfs",
+		"--timeout", waitTimeout,
+	)
 	_, err = run(cmd)
-	Expect(err).NotTo(HaveOccurred())
 
 	return err
 }
