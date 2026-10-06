@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -816,6 +816,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="When ARC probes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-probing-on-a-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-probing on a schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2012,6 +2029,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="When ARC probes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#re-probing-on-a-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-probing on a schedule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -2169,23 +2203,48 @@ that ARC did not check, or had nothing to check, not that the check failed.</p>
 <span class="go">mirror     5h           https://zot.local    PushOnly   zot-creds    False   credentials rejected (401)</span>
 </code></pre></div>
 <h4 id="when-arc-probes">When ARC probes<a class="headerlink" href="#when-arc-probes" title="Permanent link">¶</a></h4>
-<p>The connection test runs when there is a reason to believe the answer changed:
-on creation, when <code>spec</code> changes, and when the referenced <code>Secret</code> changes.
-There is no periodic re-probe, so an <code>Endpoint</code> nobody touches produces no
-outbound traffic.</p>
+<p>The connection test runs when there is a reason to believe the answer changed: on
+creation, when <code>spec</code> changes, when the referenced <code>Secret</code> changes, when
+validation starts resolving again after it had failed, and when the result is
+missing from the status it was written to. By default there is no periodic
+re-probe, so an <code>Endpoint</code> nobody touches produces no outbound traffic — see
+<a href="#re-probing-on-a-schedule">Re-probing on a schedule</a> to bound how stale a result
+may become.</p>
+<p>Upgrading from a version that kept this in memory costs one probe per <code>Endpoint</code>,
+once: their status carries a result but not yet a record of what produced it.</p>
 <p>To re-check on demand, set the force annotation to the current Unix timestamp:</p>
 <div class="highlight"><pre><span></span><code><span class="gp">$ </span>kubectl<span class="w"> </span>annotate<span class="w"> </span>endpoints.arc.opendefense.cloud<span class="w"> </span>registry<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>arc.opendefense.cloud/force-at<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span><span class="w"> </span>--overwrite
 </code></pre></div>
+<p>What the last probe ran against is recorded in <code>status.probedGeneration</code>,
+<code>status.probedSecretVersion</code> and <code>status.probedForceAt</code>, next to the
+<code>status.lastProbeTime</code> it produced. Those are what the decision above is made
+from, so <code>Reachable</code> and its provenance always travel together: ARC never
+re-probes because it forgot, and a restart or a leader failover does not
+re-present every consumer's credentials.</p>
+<h5 id="re-probing-on-a-schedule">Re-probing on a schedule<a class="headerlink" href="#re-probing-on-a-schedule" title="Permanent link">¶</a></h5>
+<p>Reachability is a property of the world, not of the cluster: a target can go
+down or come back without anything here to observe, so by default a <code>Reachable</code>
+condition is only ever as fresh as the last reason to probe. Set
+<code>--endpoint-probe-ttl</code> to bound that staleness — the controller then re-probes an
+<code>Endpoint</code> whose result is older than the TTL, and nothing else changes:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">controller</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">args</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">endpointProbeTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15m</span>
+</code></pre></div>
+<p>Expiry is spread across <code>Endpoint</code>s by up to 20% of the TTL, derived from each
+one's UID, so a set applied together does not come due together. The default is
+<code>0</code>, which disables it.</p>
 <h4 id="what-ready-does-not-promise">What Ready does not promise<a class="headerlink" href="#what-ready-does-not-promise" title="Permanent link">¶</a></h4>
 <p>The probe runs from ARC's controller-manager, using its network position and
 its identity. The workflow pods that carry out an <code>Order</code> run under a different
 ServiceAccount and may be subject to different egress rules. <code>Ready=True</code> is
 therefore strong evidence that an <code>Order</code> will succeed, not a guarantee of it.</p>
 <p>Operators should also note that the probe connects to a URL supplied by the
-consumer. ARC refuses loopback and link-local addresses by default — configurable
-with the controller-manager's <code>--probe-deny-cidrs</code> flag — but a NetworkPolicy on
-the controller-manager Deployment is the boundary to rely on.</p>
+consumer. ARC refuses loopback and link-local addresses by default — replace that
+list with <code>controller.args.probeDenyCIDRs</code>, or set it to an empty string to turn
+the check off entirely — but a NetworkPolicy on the controller-manager Deployment
+is the boundary to rely on.</p>
 <p>The probe also reads the <code>username</code>/<code>password</code> keys of the <code>Secret</code> an
 <code>Endpoint</code> references and sends them as Basic auth to the <code>remoteURL</code> the
 <code>Endpoint</code> names — both chosen by whoever created the <code>Endpoint</code>. The first

@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1191,6 +1191,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#version-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#to-v030-every-endpoint-is-probed-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        To v0.3.0 — every Endpoint is probed once
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1786,6 +1814,34 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#version-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version notes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Version notes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#to-v030-every-endpoint-is-probed-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        To v0.3.0 — every Endpoint is probed once
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1822,6 +1878,16 @@
 <h1 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">¶</a></h1>
 <h2 id="helm">Helm<a class="headerlink" href="#helm" title="Permanent link">¶</a></h2>
 <p>See <a href="../helm/#upgrading">Helm installation</a> for more information.</p>
+<h2 id="version-notes">Version notes<a class="headerlink" href="#version-notes" title="Permanent link">¶</a></h2>
+<h3 id="to-v030-every-endpoint-is-probed-once">To v0.3.0 — every <code>Endpoint</code> is probed once<a class="headerlink" href="#to-v030-every-endpoint-is-probed-once" title="Permanent link">¶</a></h3>
+<p>The <code>EndpointReconciler</code> used to keep in memory what each probe had run against, and now
+records it in <code>status</code>. Endpoints carrying a result from an older version have no such record,
+so each is probed once on the first reconcile after the upgrade, and that probe re-sends the
+Endpoint's credentials to its target. It happens once per <code>Endpoint</code>, not per reconcile.</p>
+<p>Expect a burst proportional to how many Endpoints the cluster has, and a corresponding burst of
+requests at their registries. Nothing has to be done about it; the probes stop as soon as each
+record is written. <a href="../../user-guide/core-concepts/#when-arc-probes">When ARC probes</a> lists what
+causes a probe from then on.</p>
 
 
 
