@@ -352,11 +352,13 @@ If you're currently using Kustomize to deploy ARC:
 | commonLabels | object | `{}` | Common labels applied to all resources |
 | controller.affinity | object | `{}` | Affinity for pod assignment |
 | controller.args.enableHTTP2 | bool | `false` | Enable HTTP/2 for metrics server |
+| controller.args.endpointProbeTTL | string | `""` | How long an Endpoint probe result is treated as current, e.g. `15m`. Once it expires the Endpoint is probed again, which is the only way a target that went down is noticed. Empty keeps the controller default of `0`: probes happen only on a spec, Secret or force-annotation change. |
 | controller.args.healthProbeBindAddress | string | `":8081"` | Health probe bind address |
 | controller.args.leaderElect | bool | `false` | Enable leader election (set to true for HA) |
 | controller.args.metricsBindAddress | string | `":8443"` | Metrics bind address. Only used when controller.metrics.enabled is true, the deployment passes 0 otherwise, so this is the port rather than a switch. |
 | controller.args.metricsSecure | bool | `true` | Serve metrics securely via HTTPS |
 | controller.args.pprofBindAddress | string | `""` | Pprof bind address (empty to disable) |
+| controller.args.probeDenyCIDRs | string | `nil` | CIDRs the Endpoint probe refuses to connect to. Leave `null` to keep the controller's own list, which covers loopback and link-local. Set it to an empty string to disable the check and rely solely on NetworkPolicy — the probe connects to a URL the consumer chose, so that is a deliberate choice. |
 | controller.command | list | `["/arc-controller-manager"]` | Command to run in the container |
 | controller.enabled | bool | `true` | Enable Controller Manager deployment |
 | controller.extraArgs | object | `{}` | Additional command-line arguments as key-value pairs |
