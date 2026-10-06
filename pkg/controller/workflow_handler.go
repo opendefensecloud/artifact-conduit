@@ -10,7 +10,6 @@ import (
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -38,10 +37,8 @@ func NewSingleWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw
 
 func (h *SingleWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 	wf := wfv1alpha1.Workflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: h.aw.Namespace,
-			Name:      h.aw.Name,
-		},
+		Namespace: h.aw.Namespace,
+		Name:      h.aw.Name,
 	}
 	if err := h.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
 		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.aw.Name, err))
@@ -132,10 +129,8 @@ func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *
 
 func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 	cwf := wfv1alpha1.CronWorkflow{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: h.aw.Namespace,
-			Name:      h.aw.Name,
-		},
+		Namespace: h.aw.Namespace,
+		Name:      h.aw.Name,
 	}
 	if err := h.Delete(ctx, &cwf); client.IgnoreNotFound(err) != nil {
 		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
@@ -256,10 +251,8 @@ func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 
 func hydrateArgoWorkflowSpec(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) wfv1alpha1.WorkflowSpec {
 	srcVolume := corev1.Volume{
-		Name: "src-secret-vol",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
+		Name:     "src-secret-vol",
+		EmptyDir: &corev1.EmptyDirVolumeSource{},
 	}
 	if srcSecret.Name != "" {
 		srcVolume.VolumeSource = corev1.VolumeSource{
@@ -270,10 +263,8 @@ func hydrateArgoWorkflowSpec(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1
 	}
 
 	dstVolume := corev1.Volume{
-		Name: "dst-secret-vol",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
+		Name:     "dst-secret-vol",
+		EmptyDir: &corev1.EmptyDirVolumeSource{},
 	}
 	if dstSecret.Name != "" {
 		dstVolume.VolumeSource = corev1.VolumeSource{

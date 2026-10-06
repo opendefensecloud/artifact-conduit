@@ -14,8 +14,8 @@ func awStatuses(phases ...arcv1alpha1.WorkflowPhase) map[string]arcv1alpha1.Orde
 	out := map[string]arcv1alpha1.OrderArtifactWorkflowStatus{}
 	for i, phase := range phases {
 		out[string(rune('a'+i))] = arcv1alpha1.OrderArtifactWorkflowStatus{
-			WorkflowStatus: arcv1alpha1.WorkflowStatus{Phase: phase},
-			ArtifactIndex:  i,
+			Phase:         phase,
+			ArtifactIndex: i,
 		}
 	}
 

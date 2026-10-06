@@ -31,10 +31,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when validating artifacts without defaults", func() {
 			It("should accept Order with all required artifact fields", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -56,10 +54,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject Order with artifact missing type", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -82,10 +78,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept Order with a non-negative TTL", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						TTL: &metav1.Duration{Duration: time.Hour},
 						Artifacts: []arc.OrderArtifact{
@@ -104,10 +98,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject Order with a negative TTL", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						TTL: &metav1.Duration{Duration: -time.Hour},
 						Artifacts: []arc.OrderArtifact{
@@ -128,10 +120,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject Order with artifact missing srcRef when no default src", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -152,10 +142,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject Order with artifact missing dstRef when no default dst", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -176,10 +164,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject Order with artifact missing multiple required fields", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -208,10 +194,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when validating artifacts with defaults", func() {
 			It("should accept artifact without srcRef when default src is set", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Defaults: arc.OrderDefaults{
 							SrcRef: corev1.LocalObjectReference{
@@ -235,10 +219,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept artifact without dstRef when default dst is set", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Defaults: arc.OrderDefaults{
 							DstRef: corev1.LocalObjectReference{
@@ -262,10 +244,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept artifact without srcRef and dstRef when both defaults are set", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Defaults: arc.OrderDefaults{
 							SrcRef: corev1.LocalObjectReference{
@@ -289,10 +269,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept artifact with explicit srcRef overriding default", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Defaults: arc.OrderDefaults{
 							SrcRef: corev1.LocalObjectReference{
@@ -321,10 +299,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when validating multiple artifacts", func() {
 			It("should accept Order with multiple valid artifacts", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -364,10 +340,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should report errors for all invalid artifacts", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -421,10 +395,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when validating empty Order", func() {
 			It("should accept Order with no artifacts", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{},
 					},
@@ -436,11 +408,9 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept Order with nil artifacts", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
-					Spec: arc.OrderSpec{},
+					Name:      "test-order",
+					Namespace: "default",
+					Spec:      arc.OrderSpec{},
 				}
 
 				errs := order.Validate(ctx)
@@ -453,10 +423,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when updating Order", func() {
 			It("should use same validation rules as Validate", func() {
 				oldOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -473,10 +441,8 @@ var _ = Describe("Order Strategy", func() {
 				}
 
 				newOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -496,10 +462,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should accept valid update", func() {
 				oldOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -516,10 +480,8 @@ var _ = Describe("Order Strategy", func() {
 				}
 
 				newOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -544,10 +506,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should reject update with invalid artifact", func() {
 				oldOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -564,10 +524,8 @@ var _ = Describe("Order Strategy", func() {
 				}
 
 				newOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -591,10 +549,8 @@ var _ = Describe("Order Strategy", func() {
 
 			It("should validate updated artifact list", func() {
 				oldOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -611,10 +567,8 @@ var _ = Describe("Order Strategy", func() {
 				}
 
 				newOrder := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Artifacts: []arc.OrderArtifact{
 							{
@@ -647,10 +601,8 @@ var _ = Describe("Order Strategy", func() {
 		Context("when validating artifacts with cron schedules", func() {
 			It("should accept artifact with valid cron schedule", func() {
 				order := &arc.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      "test-order",
-						Namespace: "default",
-					},
+					Name:      "test-order",
+					Namespace: "default",
 					Spec: arc.OrderSpec{
 						Defaults: arc.OrderDefaults{
 							SrcRef: corev1.LocalObjectReference{
@@ -682,10 +634,8 @@ var _ = Describe("Order Strategy", func() {
 			})
 
 			everyMinuteOrder := &arc.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order",
-					Namespace: "default",
-				},
+				Name:      "test-order",
+				Namespace: "default",
 				Spec: arc.OrderSpec{
 					Defaults: arc.OrderDefaults{
 						SrcRef: corev1.LocalObjectReference{

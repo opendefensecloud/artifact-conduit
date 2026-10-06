@@ -33,20 +33,16 @@ var _ = Describe("OrderController", func() {
 		customAt       = setupClusterArtifactType(ctx)
 		createEndpoint = func(name, t string) *arcv1alpha1.Endpoint {
 			secret := corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: ns.Name,
-				},
+				Name:      name,
+				Namespace: ns.Name,
 				StringData: map[string]string{
 					"testkey": name,
 				},
 			}
 			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
 			endpoint := arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      name,
-					Namespace: ns.Name,
-				},
+				Name:      name,
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.EndpointSpec{
 					Type:      t,
 					RemoteURL: name,
@@ -72,10 +68,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			// Create test Order with multiple artifacts, no defaults
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-no-defaults",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-no-defaults",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -160,10 +154,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("default-src", "default-dst")
 			// Create test Order with defaults
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-with-defaults",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-with-defaults",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Defaults: arcv1alpha1.OrderDefaults{
 						SrcRef: corev1.LocalObjectReference{Name: "default-src"},
@@ -226,10 +218,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("default-src", "default-dst", "src-1", "dst-1")
 			// Create test Order with some artifacts using defaults, others specifying refs
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-mixed-defaults",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-mixed-defaults",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Defaults: arcv1alpha1.OrderDefaults{
 						SrcRef: corev1.LocalObjectReference{Name: "default-src"},
@@ -325,10 +315,8 @@ var _ = Describe("OrderController", func() {
 		It("should delete artifact workflows and secrets when order is deleted", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-delete",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-delete",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -354,10 +342,8 @@ var _ = Describe("OrderController", func() {
 		It("should garbage collect the order once its TTL has elapsed", func() {
 			createEndpoints("src-1", "dst-1")
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-ttl",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-ttl",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					// Derived from the suite constants: the first Eventually below has
 					// to observe the artifact workflow before the TTL elapses, and the
@@ -395,10 +381,8 @@ var _ = Describe("OrderController", func() {
 			func(name string, ttl time.Duration) {
 				createEndpoints("src-1", "dst-1")
 				order := &arcv1alpha1.Order{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      name,
-						Namespace: ns.Name,
-					},
+					Name:      name,
+					Namespace: ns.Name,
 					Spec: arcv1alpha1.OrderSpec{
 						TTL: &metav1.Duration{Duration: ttl},
 						Artifacts: []arcv1alpha1.OrderArtifact{
@@ -426,10 +410,8 @@ var _ = Describe("OrderController", func() {
 		It("should delete artifact workflows when order is completed successfully", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-cleanup-on-completion",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-cleanup-on-completion",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -475,10 +457,8 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-cleanup-on-completion",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-cleanup-on-completion",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: customAt.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -533,10 +513,8 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Update(ctx, customAt)).To(Succeed())
 
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-cleanup-on-completion",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-cleanup-on-completion",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: customAt.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -588,10 +566,8 @@ var _ = Describe("OrderController", func() {
 		It("should create a new artifact workflow and update status when an artifact is added", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-add-artifact",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-add-artifact",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -632,10 +608,8 @@ var _ = Describe("OrderController", func() {
 		It("should delete an artifact workflow and update status when an artifact is removed", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-remove-artifact",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-remove-artifact",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{Type: at1.Name, SrcRef: corev1.LocalObjectReference{Name: "src-1"}, DstRef: corev1.LocalObjectReference{Name: "dst-1"}},
@@ -672,10 +646,8 @@ var _ = Describe("OrderController", func() {
 
 		It("should work with endpoints without a secret", func() {
 			endpoint := arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "no-secret",
-					Namespace: ns.Name,
-				},
+				Name:      "no-secret",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.EndpointSpec{
 					Type:      "no-secret",
 					RemoteURL: "no-secret",
@@ -686,10 +658,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order using the no-secret endpoint as src and dst for artifacts
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-no-secret",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-no-secret",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -761,10 +731,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("src-1", "dst-1")
 			// Create test Order with multiple artifacts, no defaults
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-status-updates",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-status-updates",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -826,10 +794,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create test Order with an artifact referencing an ArtifactType with validation rules
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-artifacttype-validation",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-artifacttype-validation",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -864,19 +830,15 @@ var _ = Describe("OrderController", func() {
 		It("should fail when source endpoint has incompatible usage (PushOnly)", func() {
 			// Create endpoint with PushOnly usage (cannot be used as source)
 			secret := corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "push-only-secret",
-					Namespace: ns.Name,
-				},
+				Name:       "push-only-secret",
+				Namespace:  ns.Name,
 				StringData: map[string]string{"key": "value"},
 			}
 			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
 
 			pushOnlyEndpoint := arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "push-only-endpoint",
-					Namespace: ns.Name,
-				},
+				Name:      "push-only-endpoint",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.EndpointSpec{
 					Type:      "oci",
 					RemoteURL: "https://push-only.example.com",
@@ -891,10 +853,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order using push-only endpoint as source
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-push-only-src",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-push-only-src",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -925,19 +885,15 @@ var _ = Describe("OrderController", func() {
 		It("should fail when destination endpoint has incompatible usage (PullOnly)", func() {
 			// Create endpoint with PullOnly usage (cannot be used as destination)
 			secret := corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "pull-only-secret",
-					Namespace: ns.Name,
-				},
+				Name:       "pull-only-secret",
+				Namespace:  ns.Name,
 				StringData: map[string]string{"key": "value"},
 			}
 			Expect(k8sClient.Create(ctx, &secret)).To(Succeed())
 
 			pullOnlyEndpoint := arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "pull-only-endpoint",
-					Namespace: ns.Name,
-				},
+				Name:      "pull-only-endpoint",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.EndpointSpec{
 					Type:      "oci",
 					RemoteURL: "https://pull-only.example.com",
@@ -952,10 +908,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order using pull-only endpoint as destination
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-pull-only-dst",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-pull-only-dst",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -996,10 +950,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order referencing a non-existent artifact type
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-nonexistent-type",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-nonexistent-type",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -1040,10 +992,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order referencing a non-existent source endpoint
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-nonexistent-src",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-nonexistent-src",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -1081,10 +1031,8 @@ var _ = Describe("OrderController", func() {
 
 			// Create order referencing a non-existent destination endpoint
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-nonexistent-dst",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-nonexistent-dst",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -1114,10 +1062,8 @@ var _ = Describe("OrderController", func() {
 
 		It("should work with namespaced artifact type", func() {
 			at := &arcv1alpha1.ArtifactType{
-				ObjectMeta: metav1.ObjectMeta{
-					GenerateName: "at-",
-					Namespace:    ns.Name,
-				},
+				GenerateName: "at-",
+				Namespace:    ns.Name,
 				Spec: arcv1alpha1.ArtifactTypeSpec{
 					WorkflowTemplateRef: arcv1alpha1.ArtifactTypeTemplateRef{
 						Name: atValue,
@@ -1129,10 +1075,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("src-1", "dst-1")
 			// Create test Order with multiple artifacts, no defaults
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-no-defaults",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-no-defaults",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -1162,10 +1106,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("src-1", "dst-1")
 			// Create test Order with a single artifact
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-force-reconcile",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-force-reconcile",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{
@@ -1227,10 +1169,8 @@ var _ = Describe("OrderController", func() {
 			createEndpoints("src-1", "dst-1")
 			// Create test Order with a single artifact
 			order := &arcv1alpha1.Order{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "test-order-force-reconcile",
-					Namespace: ns.Name,
-				},
+				Name:      "test-order-force-reconcile",
+				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
 						{

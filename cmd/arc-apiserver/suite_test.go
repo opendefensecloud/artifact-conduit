@@ -11,7 +11,6 @@ import (
 
 	"go.opendefense.cloud/kit/envtest"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -77,9 +76,7 @@ func SetupTest(ctx context.Context) *corev1.Namespace {
 
 	BeforeEach(func() {
 		*ns = corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "testns-",
-			},
+			GenerateName: "testns-",
 		}
 		Expect(k8sClient.Create(ctx, ns)).To(Succeed(), "failed to create test namespace")
 		DeferCleanup(k8sClient.Delete, ctx, ns)

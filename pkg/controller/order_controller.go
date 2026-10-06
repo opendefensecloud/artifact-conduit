@@ -335,9 +335,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		// Update status
 		order.Status.ArtifactWorkflows[sha] = arcv1alpha1.OrderArtifactWorkflowStatus{
 			ArtifactIndex: daw.index,
-			WorkflowStatus: arcv1alpha1.WorkflowStatus{
-				Phase: arcv1alpha1.WorkflowUnknown,
-			},
+			Phase:         arcv1alpha1.WorkflowUnknown,
 		}
 	}
 

@@ -308,10 +308,8 @@ func (r *ArtifactWorkflowReconciler) findArtifactWorkflowsForWorkflowOwnedByCron
 
 		return []reconcile.Request{
 			{
-				NamespacedName: types.NamespacedName{
-					Name:      artifactWorkflowName,
-					Namespace: cronWorkflowNamespace,
-				},
+				Name:      artifactWorkflowName,
+				Namespace: cronWorkflowNamespace,
 			},
 		}
 	}
