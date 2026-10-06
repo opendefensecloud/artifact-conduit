@@ -62,12 +62,10 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 		probedAt := metav1.NewTime(time.Now().Add(-time.Minute)).Rfc3339Copy()
 
 		ep := &arcv1alpha1.Endpoint{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:       epName,
-				Namespace:  epNS,
-				UID:        "11111111-2222-3333-4444-555555555555",
-				Generation: 3,
-			},
+			Name:       epName,
+			Namespace:  epNS,
+			UID:        "11111111-2222-3333-4444-555555555555",
+			Generation: 3,
 			Spec: arcv1alpha1.EndpointSpec{
 				Type:      epType,
 				RemoteURL: remoteURL,
@@ -243,13 +241,11 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			Expect(arcv1alpha1.AddToScheme(scheme)).To(Succeed())
 
 			secret = &corev1.Secret{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "creds", Namespace: epNS, ResourceVersion: secretRV,
-				},
+				Name: "creds", Namespace: epNS, ResourceVersion: secretRV,
 				StringData: map[string]string{"username": "alice", "password": "s3cret"},
 			}
 			cat = &arcv1alpha1.ClusterArtifactType{
-				ObjectMeta: metav1.ObjectMeta{Name: "cat-oci"},
+				Name: "cat-oci",
 				Spec: arcv1alpha1.ArtifactTypeSpec{
 					Rules: arcv1alpha1.ArtifactTypeRules{
 						SrcTypes: []string{epType},
@@ -531,7 +527,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 
 		endpoint := func(name, namespace, endpointType string) *arcv1alpha1.Endpoint {
 			return &arcv1alpha1.Endpoint{
-				ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+				Name: name, Namespace: namespace,
 				Spec: arcv1alpha1.EndpointSpec{
 					Type: endpointType, RemoteURL: remoteURL, Usage: arcv1alpha1.EndpointUsageAll,
 				},
@@ -567,7 +563,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			)
 
 			requests := r.endpointsForType(ctx, &arcv1alpha1.ClusterArtifactType{
-				ObjectMeta: metav1.ObjectMeta{Name: "cat"},
+				Name: "cat",
 				Spec: arcv1alpha1.ArtifactTypeSpec{
 					Rules: arcv1alpha1.ArtifactTypeRules{
 						SrcTypes: []string{"oci"},
@@ -588,7 +584,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			// Empty means "any type in that position", so such rules can change
 			// the verdict for any Endpoint: see endpointTypeAccepted.
 			requests := r.endpointsForType(ctx, &arcv1alpha1.ClusterArtifactType{
-				ObjectMeta: metav1.ObjectMeta{Name: "cat"},
+				Name: "cat",
 				Spec: arcv1alpha1.ArtifactTypeSpec{
 					Rules: arcv1alpha1.ArtifactTypeRules{DstTypes: []string{"oci"}},
 				},
@@ -604,7 +600,7 @@ var _ = Describe("EndpointReconciler probe gate", func() {
 			)
 
 			requests := r.endpointsForType(ctx, &arcv1alpha1.ArtifactType{
-				ObjectMeta: metav1.ObjectMeta{Name: "at", Namespace: epNS},
+				Name: "at", Namespace: epNS,
 				Spec: arcv1alpha1.ArtifactTypeSpec{
 					Rules: arcv1alpha1.ArtifactTypeRules{
 						SrcTypes: []string{"oci"},
