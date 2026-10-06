@@ -12,15 +12,15 @@ import (
 // Interface provides access to all the informers in this group version.
 type Interface interface {
 	// ArtifactTypes returns a ArtifactTypeInformer.
-	ArtifactTypes() ArtifactTypeInformer
+	ArtifactTypes() TypedArtifactTypeInformer
 	// ArtifactWorkflows returns a ArtifactWorkflowInformer.
-	ArtifactWorkflows() ArtifactWorkflowInformer
+	ArtifactWorkflows() TypedArtifactWorkflowInformer
 	// ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
-	ClusterArtifactTypes() ClusterArtifactTypeInformer
+	ClusterArtifactTypes() TypedClusterArtifactTypeInformer
 	// Endpoints returns a EndpointInformer.
-	Endpoints() EndpointInformer
+	Endpoints() TypedEndpointInformer
 	// Orders returns a OrderInformer.
-	Orders() OrderInformer
+	Orders() TypedOrderInformer
 }
 
 type version struct {
@@ -34,27 +34,27 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// ArtifactTypes returns a ArtifactTypeInformer.
-func (v *version) ArtifactTypes() ArtifactTypeInformer {
+// ArtifactTypes returns a TypedArtifactTypeInformer.
+func (v *version) ArtifactTypes() TypedArtifactTypeInformer {
 	return &artifactTypeInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ArtifactWorkflows returns a ArtifactWorkflowInformer.
-func (v *version) ArtifactWorkflows() ArtifactWorkflowInformer {
+// ArtifactWorkflows returns a TypedArtifactWorkflowInformer.
+func (v *version) ArtifactWorkflows() TypedArtifactWorkflowInformer {
 	return &artifactWorkflowInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// ClusterArtifactTypes returns a ClusterArtifactTypeInformer.
-func (v *version) ClusterArtifactTypes() ClusterArtifactTypeInformer {
+// ClusterArtifactTypes returns a TypedClusterArtifactTypeInformer.
+func (v *version) ClusterArtifactTypes() TypedClusterArtifactTypeInformer {
 	return &clusterArtifactTypeInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
-// Endpoints returns a EndpointInformer.
-func (v *version) Endpoints() EndpointInformer {
+// Endpoints returns a TypedEndpointInformer.
+func (v *version) Endpoints() TypedEndpointInformer {
 	return &endpointInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
-// Orders returns a OrderInformer.
-func (v *version) Orders() OrderInformer {
+// Orders returns a TypedOrderInformer.
+func (v *version) Orders() TypedOrderInformer {
 	return &orderInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

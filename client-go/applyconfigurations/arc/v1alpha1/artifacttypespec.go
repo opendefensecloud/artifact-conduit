@@ -14,7 +14,7 @@ import (
 //
 // ArtifactTypeSpec specifies a type of artifact and describes the corresponding workflow.
 type ArtifactTypeSpecApplyConfiguration struct {
-	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
+	ArtifactWorkflowTTLSettingsApplyConfiguration `json:""`
 	// Rules defines a set of rules for this type.
 	Rules *ArtifactTypeRulesApplyConfiguration `json:"rules,omitempty"`
 	// Parameters defines extra parameters for the Workflow to use.

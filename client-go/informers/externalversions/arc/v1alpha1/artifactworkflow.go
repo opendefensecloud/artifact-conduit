@@ -21,11 +21,39 @@ import (
 )
 
 // ArtifactWorkflowInformer provides access to a shared informer and lister for
-// ArtifactWorkflows.
+// ArtifactWorkflows. Prefer using the type-safe variant (see [TypedArtifactWorkflowInformer]).
 type ArtifactWorkflowInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() arcv1alpha1.ArtifactWorkflowLister
 }
+
+// TypedArtifactWorkflowInformer provides access to a shared informer and lister for
+// ArtifactWorkflows, including the type-safe TypedInformer variant.
+// It is a superset of ArtifactWorkflowInformer.
+type TypedArtifactWorkflowInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() ArtifactWorkflowIndexInformer
+	Lister() arcv1alpha1.ArtifactWorkflowLister
+}
+
+// ArtifactWorkflowIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type ArtifactWorkflowIndexInformer cache.TypedSharedIndexInformer[*apiarcv1alpha1.ArtifactWorkflow]
+
+// ArtifactWorkflowHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for ArtifactWorkflow.
+type ArtifactWorkflowHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*apiarcv1alpha1.ArtifactWorkflow]
+
+// ArtifactWorkflowDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for ArtifactWorkflow.
+type ArtifactWorkflowDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*apiarcv1alpha1.ArtifactWorkflow]
+
+// ArtifactWorkflowFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for ArtifactWorkflow.
+type ArtifactWorkflowFilteringHandler = cache.TypedFilteringResourceEventHandler[*apiarcv1alpha1.ArtifactWorkflow]
+
+// ArtifactWorkflowIndexers is a specialization of [cache.TypedIndexers] for ArtifactWorkflow.
+type ArtifactWorkflowIndexers = cache.TypedIndexers[*apiarcv1alpha1.ArtifactWorkflow]
+
+// DeletedArtifactWorkflow is a specialization of [cache.DeletedObject] for ArtifactWorkflow.
+type DeletedArtifactWorkflow = cache.DeletedObject[*apiarcv1alpha1.ArtifactWorkflow]
 
 type artifactWorkflowInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -36,25 +64,49 @@ type artifactWorkflowInformer struct {
 // NewArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedArtifactWorkflowInformer]).
 func NewArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewArtifactWorkflowInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ArtifactWorkflowIndexers) ArtifactWorkflowIndexInformer {
+	return NewTypedArtifactWorkflowInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredArtifactWorkflowInformer]).
 func NewFilteredArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewArtifactWorkflowInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedArtifactWorkflowInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredArtifactWorkflowInformer constructs a new informer for ArtifactWorkflow type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredArtifactWorkflowInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ArtifactWorkflowIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) ArtifactWorkflowIndexInformer {
+	return NewTypedArtifactWorkflowInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewArtifactWorkflowInformerWithOptions constructs a new informer for ArtifactWorkflow type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedArtifactWorkflowInformerWithOptions]).
 func NewArtifactWorkflowInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedArtifactWorkflowInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedArtifactWorkflowInformerWithOptions constructs a new informer for ArtifactWorkflow type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedArtifactWorkflowInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) ArtifactWorkflowIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "arc.opendefense.cloud", Version: "v1alpha1", Resource: "artifactworkflows"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactWorkflow](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -87,17 +139,57 @@ func NewArtifactWorkflowInformerWithOptions(client versioned.Interface, namespac
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *artifactWorkflowInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewArtifactWorkflowInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedArtifactWorkflowInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *artifactWorkflowInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiarcv1alpha1.ArtifactWorkflow{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *artifactWorkflowInformer) TypedInformer() ArtifactWorkflowIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactWorkflow](f.factory.InformerFor(&apiarcv1alpha1.ArtifactWorkflow{}, f.defaultInformer))
 }
 
 func (f *artifactWorkflowInformer) Lister() arcv1alpha1.ArtifactWorkflowLister {
 	return arcv1alpha1.NewArtifactWorkflowLister(f.Informer().GetIndexer())
+}
+
+// ToTypedArtifactWorkflowInformer converts an untyped informer into a TypedArtifactWorkflowInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ArtifactWorkflow. If that is not the case, calling type-safe methods of the returned
+// TypedArtifactWorkflowInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedArtifactWorkflowInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedArtifactWorkflowInformer(informer ArtifactWorkflowInformer) TypedArtifactWorkflowInformer {
+	if informer, ok := informer.(TypedArtifactWorkflowInformer); ok {
+		return informer
+	}
+	return &artifactWorkflowTypedInformerAdapter{informer}
+}
+
+type artifactWorkflowTypedInformerAdapter struct {
+	ArtifactWorkflowInformer
+}
+
+func (a *artifactWorkflowTypedInformerAdapter) TypedInformer() ArtifactWorkflowIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactWorkflow](a.Informer())
+}
+
+// ToArtifactWorkflowIndexInformer converts an untyped informer into a ArtifactWorkflowIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ArtifactWorkflow. If that is not the case, calling type-safe methods of the returned
+// ArtifactWorkflowIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a ArtifactWorkflowIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToArtifactWorkflowIndexInformer(informer cache.SharedIndexInformer) ArtifactWorkflowIndexInformer {
+	if informer, ok := informer.(ArtifactWorkflowIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactWorkflow](informer)
 }

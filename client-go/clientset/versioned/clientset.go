@@ -16,7 +16,7 @@ import (
 )
 
 type Interface interface {
-	Discovery() discovery.DiscoveryInterface
+	Discovery() discovery.DiscoveryInterfaces
 	ArcV1alpha1() arcv1alpha1.ArcV1alpha1Interface
 }
 
@@ -32,7 +32,7 @@ func (c *Clientset) ArcV1alpha1() arcv1alpha1.ArcV1alpha1Interface {
 }
 
 // Discovery retrieves the DiscoveryClient
-func (c *Clientset) Discovery() discovery.DiscoveryInterface {
+func (c *Clientset) Discovery() discovery.DiscoveryInterfaces {
 	if c == nil {
 		return nil
 	}

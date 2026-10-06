@@ -12,7 +12,6 @@ import (
 	unsafe "unsafe"
 
 	arc "go.opendefense.cloud/arc/api/arc"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -352,8 +351,7 @@ func Convert_arc_ArtifactTypeList_To_v1alpha1_ArtifactTypeList(in *arc.ArtifactT
 }
 
 func autoConvert_v1alpha1_ArtifactTypeRules_To_arc_ArtifactTypeRules(in *ArtifactTypeRules, out *arc.ArtifactTypeRules, s conversion.Scope) error {
-	out.SrcTypes = *(*[]string)(unsafe.Pointer(&in.SrcTypes))
-	out.DstTypes = *(*[]string)(unsafe.Pointer(&in.DstTypes))
+	*out = *(*arc.ArtifactTypeRules)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -363,8 +361,7 @@ func Convert_v1alpha1_ArtifactTypeRules_To_arc_ArtifactTypeRules(in *ArtifactTyp
 }
 
 func autoConvert_arc_ArtifactTypeRules_To_v1alpha1_ArtifactTypeRules(in *arc.ArtifactTypeRules, out *ArtifactTypeRules, s conversion.Scope) error {
-	out.SrcTypes = *(*[]string)(unsafe.Pointer(&in.SrcTypes))
-	out.DstTypes = *(*[]string)(unsafe.Pointer(&in.DstTypes))
+	*out = *(*ArtifactTypeRules)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -374,16 +371,7 @@ func Convert_arc_ArtifactTypeRules_To_v1alpha1_ArtifactTypeRules(in *arc.Artifac
 }
 
 func autoConvert_v1alpha1_ArtifactTypeSpec_To_arc_ArtifactTypeSpec(in *ArtifactTypeSpec, out *arc.ArtifactTypeSpec, s conversion.Scope) error {
-	if err := Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
-	if err := Convert_v1alpha1_ArtifactTypeRules_To_arc_ArtifactTypeRules(&in.Rules, &out.Rules, s); err != nil {
-		return err
-	}
-	out.Parameters = *(*[]arc.ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
-	if err := Convert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
-		return err
-	}
+	*out = *(*arc.ArtifactTypeSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -393,16 +381,7 @@ func Convert_v1alpha1_ArtifactTypeSpec_To_arc_ArtifactTypeSpec(in *ArtifactTypeS
 }
 
 func autoConvert_arc_ArtifactTypeSpec_To_v1alpha1_ArtifactTypeSpec(in *arc.ArtifactTypeSpec, out *ArtifactTypeSpec, s conversion.Scope) error {
-	if err := Convert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
-	if err := Convert_arc_ArtifactTypeRules_To_v1alpha1_ArtifactTypeRules(&in.Rules, &out.Rules, s); err != nil {
-		return err
-	}
-	out.Parameters = *(*[]ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
-	if err := Convert_arc_ArtifactTypeTemplateRef_To_v1alpha1_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
-		return err
-	}
+	*out = *(*ArtifactTypeSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -412,6 +391,7 @@ func Convert_arc_ArtifactTypeSpec_To_v1alpha1_ArtifactTypeSpec(in *arc.ArtifactT
 }
 
 func autoConvert_v1alpha1_ArtifactTypeStatus_To_arc_ArtifactTypeStatus(in *ArtifactTypeStatus, out *arc.ArtifactTypeStatus, s conversion.Scope) error {
+	*out = *(*arc.ArtifactTypeStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -421,6 +401,7 @@ func Convert_v1alpha1_ArtifactTypeStatus_To_arc_ArtifactTypeStatus(in *ArtifactT
 }
 
 func autoConvert_arc_ArtifactTypeStatus_To_v1alpha1_ArtifactTypeStatus(in *arc.ArtifactTypeStatus, out *ArtifactTypeStatus, s conversion.Scope) error {
+	*out = *(*ArtifactTypeStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -430,8 +411,7 @@ func Convert_arc_ArtifactTypeStatus_To_v1alpha1_ArtifactTypeStatus(in *arc.Artif
 }
 
 func autoConvert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(in *ArtifactTypeTemplateRef, out *arc.ArtifactTypeTemplateRef, s conversion.Scope) error {
-	out.Name = in.Name
-	out.ClusterScope = in.ClusterScope
+	*out = *(*arc.ArtifactTypeTemplateRef)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -441,8 +421,7 @@ func Convert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(in 
 }
 
 func autoConvert_arc_ArtifactTypeTemplateRef_To_v1alpha1_ArtifactTypeTemplateRef(in *arc.ArtifactTypeTemplateRef, out *ArtifactTypeTemplateRef, s conversion.Scope) error {
-	out.Name = in.Name
-	out.ClusterScope = in.ClusterScope
+	*out = *(*ArtifactTypeTemplateRef)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -506,8 +485,7 @@ func Convert_arc_ArtifactWorkflowList_To_v1alpha1_ArtifactWorkflowList(in *arc.A
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowParameter_To_arc_ArtifactWorkflowParameter(in *ArtifactWorkflowParameter, out *arc.ArtifactWorkflowParameter, s conversion.Scope) error {
-	out.Name = in.Name
-	out.Value = in.Value
+	*out = *(*arc.ArtifactWorkflowParameter)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -517,8 +495,7 @@ func Convert_v1alpha1_ArtifactWorkflowParameter_To_arc_ArtifactWorkflowParameter
 }
 
 func autoConvert_arc_ArtifactWorkflowParameter_To_v1alpha1_ArtifactWorkflowParameter(in *arc.ArtifactWorkflowParameter, out *ArtifactWorkflowParameter, s conversion.Scope) error {
-	out.Name = in.Name
-	out.Value = in.Value
+	*out = *(*ArtifactWorkflowParameter)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -528,16 +505,7 @@ func Convert_arc_ArtifactWorkflowParameter_To_v1alpha1_ArtifactWorkflowParameter
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *ArtifactWorkflowSpec, out *arc.ArtifactWorkflowSpec, s conversion.Scope) error {
-	if err := Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
-	if err := Convert_v1alpha1_ArtifactTypeTemplateRef_To_arc_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
-		return err
-	}
-	out.Parameters = *(*[]arc.ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
-	out.SrcSecretRef = in.SrcSecretRef
-	out.DstSecretRef = in.DstSecretRef
-	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*arc.ArtifactWorkflowSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -547,16 +515,7 @@ func Convert_v1alpha1_ArtifactWorkflowSpec_To_arc_ArtifactWorkflowSpec(in *Artif
 }
 
 func autoConvert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.ArtifactWorkflowSpec, out *ArtifactWorkflowSpec, s conversion.Scope) error {
-	if err := Convert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(&in.ArtifactWorkflowTTLSettings, &out.ArtifactWorkflowTTLSettings, s); err != nil {
-		return err
-	}
-	if err := Convert_arc_ArtifactTypeTemplateRef_To_v1alpha1_ArtifactTypeTemplateRef(&in.WorkflowTemplateRef, &out.WorkflowTemplateRef, s); err != nil {
-		return err
-	}
-	out.Parameters = *(*[]ArtifactWorkflowParameter)(unsafe.Pointer(&in.Parameters))
-	out.SrcSecretRef = in.SrcSecretRef
-	out.DstSecretRef = in.DstSecretRef
-	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*ArtifactWorkflowSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -566,12 +525,7 @@ func Convert_arc_ArtifactWorkflowSpec_To_v1alpha1_ArtifactWorkflowSpec(in *arc.A
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *ArtifactWorkflowStatus, out *arc.ArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
-		return err
-	}
-	out.LastReconcileAt = in.LastReconcileAt
-	out.LastForceAt = in.LastForceAt
-	out.ActiveWorkflowRef = in.ActiveWorkflowRef
+	*out = *(*arc.ArtifactWorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -581,12 +535,7 @@ func Convert_v1alpha1_ArtifactWorkflowStatus_To_arc_ArtifactWorkflowStatus(in *A
 }
 
 func autoConvert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *arc.ArtifactWorkflowStatus, out *ArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_arc_WorkflowStatus_To_v1alpha1_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
-		return err
-	}
-	out.LastReconcileAt = in.LastReconcileAt
-	out.LastForceAt = in.LastForceAt
-	out.ActiveWorkflowRef = in.ActiveWorkflowRef
+	*out = *(*ArtifactWorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -596,8 +545,7 @@ func Convert_arc_ArtifactWorkflowStatus_To_v1alpha1_ArtifactWorkflowStatus(in *a
 }
 
 func autoConvert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSettings(in *ArtifactWorkflowTTLSettings, out *arc.ArtifactWorkflowTTLSettings, s conversion.Scope) error {
-	out.TTLAfterFinished = (*v1.Duration)(unsafe.Pointer(in.TTLAfterFinished))
-	out.TTLAfterFailed = (*v1.Duration)(unsafe.Pointer(in.TTLAfterFailed))
+	*out = *(*arc.ArtifactWorkflowTTLSettings)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -607,8 +555,7 @@ func Convert_v1alpha1_ArtifactWorkflowTTLSettings_To_arc_ArtifactWorkflowTTLSett
 }
 
 func autoConvert_arc_ArtifactWorkflowTTLSettings_To_v1alpha1_ArtifactWorkflowTTLSettings(in *arc.ArtifactWorkflowTTLSettings, out *ArtifactWorkflowTTLSettings, s conversion.Scope) error {
-	out.TTLAfterFinished = (*v1.Duration)(unsafe.Pointer(in.TTLAfterFinished))
-	out.TTLAfterFailed = (*v1.Duration)(unsafe.Pointer(in.TTLAfterFailed))
+	*out = *(*ArtifactWorkflowTTLSettings)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -672,10 +619,7 @@ func Convert_arc_ClusterArtifactTypeList_To_v1alpha1_ClusterArtifactTypeList(in 
 }
 
 func autoConvert_v1alpha1_Cron_To_arc_Cron(in *Cron, out *arc.Cron, s conversion.Scope) error {
-	out.Timezone = in.Timezone
-	out.StartingDeadlineSeconds = (*int64)(unsafe.Pointer(in.StartingDeadlineSeconds))
-	out.Schedules = *(*[]string)(unsafe.Pointer(&in.Schedules))
-	out.When = in.When
+	*out = *(*arc.Cron)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -685,10 +629,7 @@ func Convert_v1alpha1_Cron_To_arc_Cron(in *Cron, out *arc.Cron, s conversion.Sco
 }
 
 func autoConvert_arc_Cron_To_v1alpha1_Cron(in *arc.Cron, out *Cron, s conversion.Scope) error {
-	out.Timezone = in.Timezone
-	out.StartingDeadlineSeconds = (*int64)(unsafe.Pointer(in.StartingDeadlineSeconds))
-	out.Schedules = *(*[]string)(unsafe.Pointer(&in.Schedules))
-	out.When = in.When
+	*out = *(*Cron)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -752,10 +693,7 @@ func Convert_arc_EndpointList_To_v1alpha1_EndpointList(in *arc.EndpointList, out
 }
 
 func autoConvert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(in *EndpointSpec, out *arc.EndpointSpec, s conversion.Scope) error {
-	out.Type = in.Type
-	out.RemoteURL = in.RemoteURL
-	out.SecretRef = in.SecretRef
-	out.Usage = arc.EndpointUsage(in.Usage)
+	*out = *(*arc.EndpointSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -765,10 +703,7 @@ func Convert_v1alpha1_EndpointSpec_To_arc_EndpointSpec(in *EndpointSpec, out *ar
 }
 
 func autoConvert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in *arc.EndpointSpec, out *EndpointSpec, s conversion.Scope) error {
-	out.Type = in.Type
-	out.RemoteURL = in.RemoteURL
-	out.SecretRef = in.SecretRef
-	out.Usage = EndpointUsage(in.Usage)
+	*out = *(*EndpointSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -778,12 +713,7 @@ func Convert_arc_EndpointSpec_To_v1alpha1_EndpointSpec(in *arc.EndpointSpec, out
 }
 
 func autoConvert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, out *arc.EndpointStatus, s conversion.Scope) error {
-	out.Conditions = *(*[]v1.Condition)(unsafe.Pointer(&in.Conditions))
-	out.ObservedGeneration = in.ObservedGeneration
-	out.LastProbeTime = (*v1.Time)(unsafe.Pointer(in.LastProbeTime))
-	out.ProbedGeneration = in.ProbedGeneration
-	out.ProbedSecretVersion = in.ProbedSecretVersion
-	out.ProbedForceAt = in.ProbedForceAt
+	*out = *(*arc.EndpointStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -793,12 +723,7 @@ func Convert_v1alpha1_EndpointStatus_To_arc_EndpointStatus(in *EndpointStatus, o
 }
 
 func autoConvert_arc_EndpointStatus_To_v1alpha1_EndpointStatus(in *arc.EndpointStatus, out *EndpointStatus, s conversion.Scope) error {
-	out.Conditions = *(*[]v1.Condition)(unsafe.Pointer(&in.Conditions))
-	out.ObservedGeneration = in.ObservedGeneration
-	out.LastProbeTime = (*v1.Time)(unsafe.Pointer(in.LastProbeTime))
-	out.ProbedGeneration = in.ProbedGeneration
-	out.ProbedSecretVersion = in.ProbedSecretVersion
-	out.ProbedForceAt = in.ProbedForceAt
+	*out = *(*EndpointStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -840,11 +765,7 @@ func Convert_arc_Order_To_v1alpha1_Order(in *arc.Order, out *Order, s conversion
 }
 
 func autoConvert_v1alpha1_OrderArtifact_To_arc_OrderArtifact(in *OrderArtifact, out *arc.OrderArtifact, s conversion.Scope) error {
-	out.Type = in.Type
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Spec = in.Spec
-	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*arc.OrderArtifact)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -854,11 +775,7 @@ func Convert_v1alpha1_OrderArtifact_To_arc_OrderArtifact(in *OrderArtifact, out 
 }
 
 func autoConvert_arc_OrderArtifact_To_v1alpha1_OrderArtifact(in *arc.OrderArtifact, out *OrderArtifact, s conversion.Scope) error {
-	out.Type = in.Type
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Spec = in.Spec
-	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*OrderArtifact)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -868,10 +785,7 @@ func Convert_arc_OrderArtifact_To_v1alpha1_OrderArtifact(in *arc.OrderArtifact, 
 }
 
 func autoConvert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowStatus(in *OrderArtifactWorkflowStatus, out *arc.OrderArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
-		return err
-	}
-	out.ArtifactIndex = in.ArtifactIndex
+	*out = *(*arc.OrderArtifactWorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -881,10 +795,7 @@ func Convert_v1alpha1_OrderArtifactWorkflowStatus_To_arc_OrderArtifactWorkflowSt
 }
 
 func autoConvert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkflowStatus(in *arc.OrderArtifactWorkflowStatus, out *OrderArtifactWorkflowStatus, s conversion.Scope) error {
-	if err := Convert_arc_WorkflowStatus_To_v1alpha1_WorkflowStatus(&in.WorkflowStatus, &out.WorkflowStatus, s); err != nil {
-		return err
-	}
-	out.ArtifactIndex = in.ArtifactIndex
+	*out = *(*OrderArtifactWorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -894,9 +805,7 @@ func Convert_arc_OrderArtifactWorkflowStatus_To_v1alpha1_OrderArtifactWorkflowSt
 }
 
 func autoConvert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(in *OrderDefaults, out *arc.OrderDefaults, s conversion.Scope) error {
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Cron = (*arc.Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*arc.OrderDefaults)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -906,9 +815,7 @@ func Convert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(in *OrderDefaults, out 
 }
 
 func autoConvert_arc_OrderDefaults_To_v1alpha1_OrderDefaults(in *arc.OrderDefaults, out *OrderDefaults, s conversion.Scope) error {
-	out.SrcRef = in.SrcRef
-	out.DstRef = in.DstRef
-	out.Cron = (*Cron)(unsafe.Pointer(in.Cron))
+	*out = *(*OrderDefaults)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -940,11 +847,7 @@ func Convert_arc_OrderList_To_v1alpha1_OrderList(in *arc.OrderList, out *OrderLi
 }
 
 func autoConvert_v1alpha1_OrderSpec_To_arc_OrderSpec(in *OrderSpec, out *arc.OrderSpec, s conversion.Scope) error {
-	if err := Convert_v1alpha1_OrderDefaults_To_arc_OrderDefaults(&in.Defaults, &out.Defaults, s); err != nil {
-		return err
-	}
-	out.Artifacts = *(*[]arc.OrderArtifact)(unsafe.Pointer(&in.Artifacts))
-	out.TTL = (*v1.Duration)(unsafe.Pointer(in.TTL))
+	*out = *(*arc.OrderSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -954,11 +857,7 @@ func Convert_v1alpha1_OrderSpec_To_arc_OrderSpec(in *OrderSpec, out *arc.OrderSp
 }
 
 func autoConvert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *OrderSpec, s conversion.Scope) error {
-	if err := Convert_arc_OrderDefaults_To_v1alpha1_OrderDefaults(&in.Defaults, &out.Defaults, s); err != nil {
-		return err
-	}
-	out.Artifacts = *(*[]OrderArtifact)(unsafe.Pointer(&in.Artifacts))
-	out.TTL = (*v1.Duration)(unsafe.Pointer(in.TTL))
+	*out = *(*OrderSpec)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -968,10 +867,7 @@ func Convert_arc_OrderSpec_To_v1alpha1_OrderSpec(in *arc.OrderSpec, out *OrderSp
 }
 
 func autoConvert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.OrderStatus, s conversion.Scope) error {
-	out.ArtifactWorkflows = *(*map[string]arc.OrderArtifactWorkflowStatus)(unsafe.Pointer(&in.ArtifactWorkflows))
-	out.Message = in.Message
-	out.LastReconcileAt = in.LastReconcileAt
-	out.LastForceAt = in.LastForceAt
+	*out = *(*arc.OrderStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -981,10 +877,7 @@ func Convert_v1alpha1_OrderStatus_To_arc_OrderStatus(in *OrderStatus, out *arc.O
 }
 
 func autoConvert_arc_OrderStatus_To_v1alpha1_OrderStatus(in *arc.OrderStatus, out *OrderStatus, s conversion.Scope) error {
-	out.ArtifactWorkflows = *(*map[string]OrderArtifactWorkflowStatus)(unsafe.Pointer(&in.ArtifactWorkflows))
-	out.Message = in.Message
-	out.LastReconcileAt = in.LastReconcileAt
-	out.LastForceAt = in.LastForceAt
+	*out = *(*OrderStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -994,13 +887,7 @@ func Convert_arc_OrderStatus_To_v1alpha1_OrderStatus(in *arc.OrderStatus, out *O
 }
 
 func autoConvert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(in *WorkflowStatus, out *arc.WorkflowStatus, s conversion.Scope) error {
-	out.Phase = arc.WorkflowPhase(in.Phase)
-	out.Message = in.Message
-	out.CompletionTime = in.CompletionTime
-	out.FailureTime = in.FailureTime
-	out.LastScheduled = (*v1.Time)(unsafe.Pointer(in.LastScheduled))
-	out.Succeeded = in.Succeeded
-	out.Failed = in.Failed
+	*out = *(*arc.WorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 
@@ -1010,13 +897,7 @@ func Convert_v1alpha1_WorkflowStatus_To_arc_WorkflowStatus(in *WorkflowStatus, o
 }
 
 func autoConvert_arc_WorkflowStatus_To_v1alpha1_WorkflowStatus(in *arc.WorkflowStatus, out *WorkflowStatus, s conversion.Scope) error {
-	out.Phase = WorkflowPhase(in.Phase)
-	out.Message = in.Message
-	out.CompletionTime = in.CompletionTime
-	out.FailureTime = in.FailureTime
-	out.LastScheduled = (*v1.Time)(unsafe.Pointer(in.LastScheduled))
-	out.Succeeded = in.Succeeded
-	out.Failed = in.Failed
+	*out = *(*WorkflowStatus)(unsafe.Pointer(in))
 	return nil
 }
 

@@ -15,7 +15,7 @@ import (
 //
 // ArtifactWorkflowSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
 type ArtifactWorkflowSpecApplyConfiguration struct {
-	ArtifactWorkflowTTLSettingsApplyConfiguration `json:",inline"`
+	ArtifactWorkflowTTLSettingsApplyConfiguration `json:""`
 	// WorkflowTemplateRef specifies the corresponding Workflow for this ArtifactWorkflow as derived from ArtifactType
 	WorkflowTemplateRef *ArtifactTypeTemplateRefApplyConfiguration `json:"workflowTemplateRef,omitempty"`
 	// Parameters defines the key-value pairs, that are passed to the underlying Workflow.
