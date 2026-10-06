@@ -1,0 +1,47 @@
+# Single-process SeaweedFS (weed mini) as S3 destination. It creates an admin
+# identity from AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY (must match s3-secret in
+# secret.yaml) and the bucket S3_BUCKET on startup.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: seaweedfs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dst
+  namespace: seaweedfs
+spec:
+  selector:
+    matchLabels:
+      app: dst
+  template:
+    metadata:
+      labels:
+        app: dst
+    spec:
+      containers:
+        - name: seaweedfs
+          image: chrislusf/seaweedfs:4.48
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: admin
+            - name: AWS_SECRET_ACCESS_KEY
+              value: adminadmin
+            - name: S3_BUCKET
+              value: test
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8333
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dst
+  namespace: seaweedfs
+spec:
+  selector:
+    app: dst
+  ports:
+    - port: 8333
