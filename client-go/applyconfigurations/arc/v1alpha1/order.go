@@ -16,7 +16,7 @@ import (
 //
 // Order is the Schema for the orders API
 type OrderApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration    `json:""`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	Spec                             *OrderSpecApplyConfiguration   `json:"spec,omitempty"`
 	Status                           *OrderStatusApplyConfiguration `json:"status,omitempty"`

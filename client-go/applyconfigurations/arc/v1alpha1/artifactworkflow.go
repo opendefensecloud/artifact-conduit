@@ -16,7 +16,7 @@ import (
 //
 // ArtifactWorkflow is the Schema for the artifact workflows API
 type ArtifactWorkflowApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration    `json:""`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	Spec                             *ArtifactWorkflowSpecApplyConfiguration   `json:"spec,omitempty"`
 	Status                           *ArtifactWorkflowStatusApplyConfiguration `json:"status,omitempty"`

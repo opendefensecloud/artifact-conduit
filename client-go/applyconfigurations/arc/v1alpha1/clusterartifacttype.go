@@ -17,7 +17,7 @@ import (
 //
 // ClusterArtifactType is the Schema for the cluster artifact types API
 type ClusterArtifactTypeApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration    `json:""`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	Spec                             *ArtifactTypeSpecApplyConfiguration `json:"spec,omitempty"`
 	Status                           *arcv1alpha1.ArtifactTypeStatus     `json:"status,omitempty"`

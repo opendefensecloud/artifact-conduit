@@ -21,11 +21,39 @@ import (
 )
 
 // ClusterArtifactTypeInformer provides access to a shared informer and lister for
-// ClusterArtifactTypes.
+// ClusterArtifactTypes. Prefer using the type-safe variant (see [TypedClusterArtifactTypeInformer]).
 type ClusterArtifactTypeInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() arcv1alpha1.ClusterArtifactTypeLister
 }
+
+// TypedClusterArtifactTypeInformer provides access to a shared informer and lister for
+// ClusterArtifactTypes, including the type-safe TypedInformer variant.
+// It is a superset of ClusterArtifactTypeInformer.
+type TypedClusterArtifactTypeInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() ClusterArtifactTypeIndexInformer
+	Lister() arcv1alpha1.ClusterArtifactTypeLister
+}
+
+// ClusterArtifactTypeIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type ClusterArtifactTypeIndexInformer cache.TypedSharedIndexInformer[*apiarcv1alpha1.ClusterArtifactType]
+
+// ClusterArtifactTypeHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for ClusterArtifactType.
+type ClusterArtifactTypeHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*apiarcv1alpha1.ClusterArtifactType]
+
+// ClusterArtifactTypeDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for ClusterArtifactType.
+type ClusterArtifactTypeDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*apiarcv1alpha1.ClusterArtifactType]
+
+// ClusterArtifactTypeFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for ClusterArtifactType.
+type ClusterArtifactTypeFilteringHandler = cache.TypedFilteringResourceEventHandler[*apiarcv1alpha1.ClusterArtifactType]
+
+// ClusterArtifactTypeIndexers is a specialization of [cache.TypedIndexers] for ClusterArtifactType.
+type ClusterArtifactTypeIndexers = cache.TypedIndexers[*apiarcv1alpha1.ClusterArtifactType]
+
+// DeletedClusterArtifactType is a specialization of [cache.DeletedObject] for ClusterArtifactType.
+type DeletedClusterArtifactType = cache.DeletedObject[*apiarcv1alpha1.ClusterArtifactType]
 
 type clusterArtifactTypeInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -35,25 +63,49 @@ type clusterArtifactTypeInformer struct {
 // NewClusterArtifactTypeInformer constructs a new informer for ClusterArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedClusterArtifactTypeInformer]).
 func NewClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedClusterArtifactTypeInformer constructs a new informer for ClusterArtifactType type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers ClusterArtifactTypeIndexers) ClusterArtifactTypeIndexInformer {
+	return NewTypedClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredClusterArtifactTypeInformer constructs a new informer for ClusterArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredClusterArtifactTypeInformer]).
 func NewFilteredClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredClusterArtifactTypeInformer constructs a new informer for ClusterArtifactType type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredClusterArtifactTypeInformer(client versioned.Interface, resyncPeriod time.Duration, indexers ClusterArtifactTypeIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) ClusterArtifactTypeIndexInformer {
+	return NewTypedClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewClusterArtifactTypeInformerWithOptions constructs a new informer for ClusterArtifactType type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedClusterArtifactTypeInformerWithOptions]).
 func NewClusterArtifactTypeInformerWithOptions(client versioned.Interface, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedClusterArtifactTypeInformerWithOptions(client, options)
+}
+
+// NewTypedClusterArtifactTypeInformerWithOptions constructs a new informer for ClusterArtifactType type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedClusterArtifactTypeInformerWithOptions(client versioned.Interface, options internalinterfaces.InformerOptions) ClusterArtifactTypeIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "arc.opendefense.cloud", Version: "v1alpha1", Resource: "clusterartifacttypes"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ClusterArtifactType](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -86,17 +138,57 @@ func NewClusterArtifactTypeInformerWithOptions(client versioned.Interface, optio
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *clusterArtifactTypeInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedClusterArtifactTypeInformerWithOptions(client, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *clusterArtifactTypeInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiarcv1alpha1.ClusterArtifactType{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *clusterArtifactTypeInformer) TypedInformer() ClusterArtifactTypeIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ClusterArtifactType](f.factory.InformerFor(&apiarcv1alpha1.ClusterArtifactType{}, f.defaultInformer))
 }
 
 func (f *clusterArtifactTypeInformer) Lister() arcv1alpha1.ClusterArtifactTypeLister {
 	return arcv1alpha1.NewClusterArtifactTypeLister(f.Informer().GetIndexer())
+}
+
+// ToTypedClusterArtifactTypeInformer converts an untyped informer into a TypedClusterArtifactTypeInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ClusterArtifactType. If that is not the case, calling type-safe methods of the returned
+// TypedClusterArtifactTypeInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedClusterArtifactTypeInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedClusterArtifactTypeInformer(informer ClusterArtifactTypeInformer) TypedClusterArtifactTypeInformer {
+	if informer, ok := informer.(TypedClusterArtifactTypeInformer); ok {
+		return informer
+	}
+	return &clusterArtifactTypeTypedInformerAdapter{informer}
+}
+
+type clusterArtifactTypeTypedInformerAdapter struct {
+	ClusterArtifactTypeInformer
+}
+
+func (a *clusterArtifactTypeTypedInformerAdapter) TypedInformer() ClusterArtifactTypeIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ClusterArtifactType](a.Informer())
+}
+
+// ToClusterArtifactTypeIndexInformer converts an untyped informer into a ClusterArtifactTypeIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ClusterArtifactType. If that is not the case, calling type-safe methods of the returned
+// ClusterArtifactTypeIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a ClusterArtifactTypeIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToClusterArtifactTypeIndexInformer(informer cache.SharedIndexInformer) ClusterArtifactTypeIndexInformer {
+	if informer, ok := informer.(ClusterArtifactTypeIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ClusterArtifactType](informer)
 }

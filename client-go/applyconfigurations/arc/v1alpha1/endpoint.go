@@ -16,7 +16,7 @@ import (
 //
 // Endpoint is the Schema for the endpoints API
 type EndpointApplyConfiguration struct {
-	v1.TypeMetaApplyConfiguration    `json:",inline"`
+	v1.TypeMetaApplyConfiguration    `json:""`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
 	Spec                             *EndpointSpecApplyConfiguration   `json:"spec,omitempty"`
 	Status                           *EndpointStatusApplyConfiguration `json:"status,omitempty"`

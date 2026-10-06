@@ -21,11 +21,39 @@ import (
 )
 
 // ArtifactTypeInformer provides access to a shared informer and lister for
-// ArtifactTypes.
+// ArtifactTypes. Prefer using the type-safe variant (see [TypedArtifactTypeInformer]).
 type ArtifactTypeInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() arcv1alpha1.ArtifactTypeLister
 }
+
+// TypedArtifactTypeInformer provides access to a shared informer and lister for
+// ArtifactTypes, including the type-safe TypedInformer variant.
+// It is a superset of ArtifactTypeInformer.
+type TypedArtifactTypeInformer interface {
+	Informer() cache.SharedIndexInformer
+	TypedInformer() ArtifactTypeIndexInformer
+	Lister() arcv1alpha1.ArtifactTypeLister
+}
+
+// ArtifactTypeIndexInformer is a wrapper around the underlying [cache.SharedIndexInformer]
+// with type-safe variants of several methods.
+type ArtifactTypeIndexInformer cache.TypedSharedIndexInformer[*apiarcv1alpha1.ArtifactType]
+
+// ArtifactTypeHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerFuncs] for ArtifactType.
+type ArtifactTypeHandlerFuncs = cache.TypedResourceEventHandlerFuncs[*apiarcv1alpha1.ArtifactType]
+
+// ArtifactTypeDetailedHandlerFuncs is a specialization of [cache.TypedResourceEventHandlerDetailedFuncs] for ArtifactType.
+type ArtifactTypeDetailedHandlerFuncs = cache.TypedResourceEventHandlerDetailedFuncs[*apiarcv1alpha1.ArtifactType]
+
+// ArtifactTypeFilteringHandler is a specialization of [cache.TypedFilteringResourceEventHandler] for ArtifactType.
+type ArtifactTypeFilteringHandler = cache.TypedFilteringResourceEventHandler[*apiarcv1alpha1.ArtifactType]
+
+// ArtifactTypeIndexers is a specialization of [cache.TypedIndexers] for ArtifactType.
+type ArtifactTypeIndexers = cache.TypedIndexers[*apiarcv1alpha1.ArtifactType]
+
+// DeletedArtifactType is a specialization of [cache.DeletedObject] for ArtifactType.
+type DeletedArtifactType = cache.DeletedObject[*apiarcv1alpha1.ArtifactType]
 
 type artifactTypeInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
@@ -36,25 +64,49 @@ type artifactTypeInformer struct {
 // NewArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedArtifactTypeInformer]).
 func NewArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
 	return NewArtifactTypeInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers})
+}
+
+// NewTypedArtifactTypeInformer constructs a new informer for ArtifactType type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ArtifactTypeIndexers) ArtifactTypeIndexInformer {
+	return NewTypedArtifactTypeInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers)})
 }
 
 // NewFilteredArtifactTypeInformer constructs a new informer for ArtifactType type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedFilteredArtifactTypeInformer]).
 func NewFilteredArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
-	return NewArtifactTypeInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+	return NewTypedArtifactTypeInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: indexers, TweakListOptions: tweakListOptions})
+}
+
+// NewTypedFilteredArtifactTypeInformer constructs a new informer for ArtifactType type.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedFilteredArtifactTypeInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers ArtifactTypeIndexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) ArtifactTypeIndexInformer {
+	return NewTypedArtifactTypeInformerWithOptions(client, namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.TypedIndexersToIndexers(indexers), TweakListOptions: tweakListOptions})
 }
 
 // NewArtifactTypeInformerWithOptions constructs a new informer for ArtifactType type with additional options.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
+// If you really need an independent one, prefer using the type-safe variant (see [NewTypedArtifactTypeInformerWithOptions]).
 func NewArtifactTypeInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) cache.SharedIndexInformer {
+	return NewTypedArtifactTypeInformerWithOptions(client, namespace, options)
+}
+
+// NewTypedArtifactTypeInformerWithOptions constructs a new informer for ArtifactType type with additional options.
+// Always prefer using an informer factory to get a shared informer instead of getting an independent
+// one. This reduces memory footprint and number of connections to the server.
+func NewTypedArtifactTypeInformerWithOptions(client versioned.Interface, namespace string, options internalinterfaces.InformerOptions) ArtifactTypeIndexInformer {
 	gvr := schema.GroupVersionResource{Group: "arc.opendefense.cloud", Version: "v1alpha1", Resource: "artifacttypes"}
 	identifier := options.InformerName.WithResource(gvr)
 	tweakListOptions := options.TweakListOptions
-	return cache.NewSharedIndexInformerWithOptions(
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactType](cache.NewSharedIndexInformerWithOptions(
 		cache.ToListWatcherWithWatchListSemantics(&cache.ListWatch{
 			ListFunc: func(opts v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
@@ -87,17 +139,57 @@ func NewArtifactTypeInformerWithOptions(client versioned.Interface, namespace st
 			Indexers:     options.Indexers,
 			Identifier:   identifier,
 		},
-	)
+	))
 }
 
 func (f *artifactTypeInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewArtifactTypeInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
+	return NewTypedArtifactTypeInformerWithOptions(client, f.namespace, internalinterfaces.InformerOptions{ResyncPeriod: resyncPeriod, Indexers: cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, InformerName: f.factory.InformerName(), TweakListOptions: f.tweakListOptions})
 }
 
 func (f *artifactTypeInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&apiarcv1alpha1.ArtifactType{}, f.defaultInformer)
+	return f.TypedInformer()
+}
+
+func (f *artifactTypeInformer) TypedInformer() ArtifactTypeIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactType](f.factory.InformerFor(&apiarcv1alpha1.ArtifactType{}, f.defaultInformer))
 }
 
 func (f *artifactTypeInformer) Lister() arcv1alpha1.ArtifactTypeLister {
 	return arcv1alpha1.NewArtifactTypeLister(f.Informer().GetIndexer())
+}
+
+// ToTypedArtifactTypeInformer converts an untyped informer into a TypedArtifactTypeInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ArtifactType. If that is not the case, calling type-safe methods of the returned
+// TypedArtifactTypeInformer leads to runtime panics. A safer alternative is to pass
+// around a TypedArtifactTypeInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToTypedArtifactTypeInformer(informer ArtifactTypeInformer) TypedArtifactTypeInformer {
+	if informer, ok := informer.(TypedArtifactTypeInformer); ok {
+		return informer
+	}
+	return &artifactTypeTypedInformerAdapter{informer}
+}
+
+type artifactTypeTypedInformerAdapter struct {
+	ArtifactTypeInformer
+}
+
+func (a *artifactTypeTypedInformerAdapter) TypedInformer() ArtifactTypeIndexInformer {
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactType](a.Informer())
+}
+
+// ToArtifactTypeIndexInformer converts an untyped informer into a ArtifactTypeIndexInformer.
+//
+// WARNING: this conversion is only safe if the informer handles objects of type
+// *ArtifactType. If that is not the case, calling type-safe methods of the returned
+// ArtifactTypeIndexInformer leads to runtime panics. A safer alternative is to pass
+// around a ArtifactTypeIndexInformer instances that was obtained from a
+// SharedInformerFactory.
+func ToArtifactTypeIndexInformer(informer cache.SharedIndexInformer) ArtifactTypeIndexInformer {
+	if informer, ok := informer.(ArtifactTypeIndexInformer); ok {
+		return informer
+	}
+	return cache.NewTypedSharedIndexInformer[*apiarcv1alpha1.ArtifactType](informer)
 }

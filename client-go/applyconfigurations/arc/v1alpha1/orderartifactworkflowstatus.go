@@ -13,7 +13,7 @@ import (
 // OrderArtifactWorkflowStatusApplyConfiguration represents a declarative configuration of the OrderArtifactWorkflowStatus type for use
 // with apply.
 type OrderArtifactWorkflowStatusApplyConfiguration struct {
-	WorkflowStatusApplyConfiguration `json:",inline"`
+	WorkflowStatusApplyConfiguration `json:""`
 	// ArtifactIndex references back the index the corresponding artifact has in the .Spec
 	ArtifactIndex *int `json:"artifactIndex,omitempty"`
 }

@@ -16,7 +16,7 @@ import (
 //
 // ArtifactWorkflowStatus defines the observed state of ArtifactWorkflow
 type ArtifactWorkflowStatusApplyConfiguration struct {
-	WorkflowStatusApplyConfiguration `json:",inline"`
+	WorkflowStatusApplyConfiguration `json:""`
 	// LastReconcileAt is the last time the ArtifactWorkflow was reconciled
 	LastReconcileAt *v1.Time `json:"lastReconcileAt,omitempty"`
 	// LastForceAt is the last time a force reconciliation was requested
