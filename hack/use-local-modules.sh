@@ -205,7 +205,9 @@ clone_module() {
         # If a specific version is requested and it differs, update it
         if [[ -n "$version" ]]; then
             log_info "Checking out version: $version"
-            if ! git -C "$clone_dir" checkout --quiet "$version" 2>/dev/null; then
+            # Code generators (e.g. openapi-gen) write into the clone, so discard
+            # local changes; otherwise git refuses to switch versions.
+            if ! git -C "$clone_dir" checkout --quiet --force "$version"; then
                 log_error "Failed to checkout version $version for $module"
                 return 1
             fi
@@ -234,7 +236,7 @@ clone_module() {
     # Checkout specific version if provided
     if [[ -n "$version" ]]; then
         log_info "Checking out version: $version"
-        if ! git -C "$clone_dir" checkout --quiet "$version" 2>/dev/null; then
+        if ! git -C "$clone_dir" checkout --quiet "$version"; then
             log_error "Failed to checkout version $version for $module"
             return 1
         fi
