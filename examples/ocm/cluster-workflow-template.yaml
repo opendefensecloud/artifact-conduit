@@ -125,7 +125,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo "$src_host" | cut -d / -f 1 | cut -d : -f 1)
+                    hostname: ${src_host%%[/:]*}
                   credentials:
                     - type: Credentials
                       properties:
@@ -213,7 +213,7 @@ spec:
               consumers:
                 - identity:
                     type: OCIRegistry
-                    hostname: $(echo "$dst_host" | cut -d / -f 1 | cut -d : -f 1)
+                    hostname: ${dst_host%%[/:]*}
                   credentials:
                     - type: Credentials
                       properties:
