@@ -1,0 +1,101 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: arc-artifact-type-provider
+rules:
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - artifacttypes
+      - clusterartifacttypes
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflowtemplates
+      - clusterworkflowtemplates
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - endpoints
+      - artifactworkflows
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflows
+      - cronworkflows
+    verbs:
+      - get
+      - list
+      - watch
+---
+# Namespace scope: ArtifactTypes and WorkflowTemplates in team-a only.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: arc-artifact-type-provider
+  namespace: team-a
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: arc-artifact-type-provider
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: team-a:artifact-type-providers
+---
+# Namespace scope: read access to the ClusterArtifactTypes and
+# ClusterWorkflowTemplates that ArtifactTypes in team-a may shadow or reference.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: arc-artifact-type-provider-cluster
+rules:
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - clusterartifacttypes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - clusterworkflowtemplates
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arc-artifact-type-provider-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: arc-artifact-type-provider-cluster
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: team-a:artifact-type-providers
