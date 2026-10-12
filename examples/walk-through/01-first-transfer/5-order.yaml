@@ -1,0 +1,15 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: first-transfer
+spec:
+  defaults:
+    srcRef:
+      name: github-raw
+    dstRef:
+      name: seaweedfs
+  artifacts:
+    - type: blob # ArtifactType
+      spec: # free-form, handed to the workflow as spec* parameters
+        key: opendefensecloud/artifact-conduit/refs/heads/main/examples/blob/file.txt
+        override: test/walk-through/file.txt # <bucket>/<key> in the destination

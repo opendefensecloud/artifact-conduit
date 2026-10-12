@@ -1,0 +1,133 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: blob-transfer # replaces the template of the previous step
+spec:
+  serviceAccountName: arc-workflow
+  # ARC passes these parameters to every workflow it creates. All values are strings.
+  arguments:
+    parameters:
+      # from the source Endpoint
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret # "true" if the Endpoint has a secretRef, otherwise "false"
+      # from the destination Endpoint
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      # from the artifact spec in the Order: spec.key -> specKey, ...
+      - name: specKey
+      - name: specOverride
+      - name: specSha256 # no default: orders without a checksum fail
+      # Also passed by ARC, but not used by this template:
+      # - name: cron # "true" if the artifact is scheduled by a cron, otherwise "false"
+      # - name: <name> # every parameter of the ArtifactType, overriding the ones above
+  # Steps run in pods of their own, so they share files through a volume. Argo creates
+  # this PersistentVolumeClaim for every workflow and deletes it when the workflow is done.
+  # The size is fixed here, examples/blob sizes the volume from the blob instead.
+  volumeClaimTemplates:
+    - metadata:
+        name: work
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+  entrypoint: transfer
+  templates:
+    # Every step runs after the previous one succeeded. If a check fails, the
+    # workflow stops and the blob never reaches the destination.
+    - name: transfer
+      steps:
+        # Both pull steps are in the same group, but only the one whose condition
+        # is true runs, the other one is skipped.
+        - - name: pull-http
+            template: pull-http
+            when: "'{{workflow.parameters.srcType}}' == 'http'"
+          - name: pull-s3
+            template: pull-s3
+            when: "'{{workflow.parameters.srcType}}' == 's3'"
+        - - name: checksum
+            template: checksum
+        - - name: virus-scan
+            template: virus-scan
+        - - name: push
+            template: push
+
+    - name: pull-http
+      script:
+        image: amazon/aws-cli:2.37.9
+        command: [bash]
+        volumeMounts:
+          - name: work
+            mountPath: /work
+        source: |
+          set -euo pipefail
+          echo "Pulling {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+          curl -fsSL -o /work/blob "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+
+    - name: pull-s3
+      script:
+        image: amazon/aws-cli:2.37.9
+        command: [bash]
+        volumeMounts:
+          - name: work
+            mountPath: /work
+          - name: src-secret-vol
+            mountPath: /secrets/src
+        source: |
+          set -euo pipefail
+          # Credentials are optional: public buckets are read without signing requests.
+          AUTH=(--no-sign-request)
+          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+            export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
+            export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
+            AUTH=()
+          fi
+          echo "Pulling {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+          aws "${AUTH[@]}" --endpoint-url "{{workflow.parameters.srcRemoteURL}}" \
+            s3 cp "s3://{{workflow.parameters.specKey}}" /work/blob
+
+    - name: checksum
+      script:
+        image: amazon/aws-cli:2.37.9
+        command: [bash]
+        volumeMounts:
+          - name: work
+            mountPath: /work
+            readOnly: true # checks must not change what they check
+        source: |
+          set -euo pipefail
+          echo "{{workflow.parameters.specSha256}}  /work/blob" | sha256sum --check
+
+    - name: virus-scan
+      script:
+        image: clamav/clamav-debian:1.5.4 # ships with a virus database
+        command: [bash]
+        volumeMounts:
+          - name: work
+            mountPath: /work
+            readOnly: true
+        source: |
+          set -euo pipefail
+          clamscan /work/blob
+
+    # More checks go here as further steps, e.g. creating an SBOM or verifying a signature.
+
+    - name: push
+      script:
+        image: amazon/aws-cli:2.37.9
+        command: [bash]
+        volumeMounts:
+          - name: work
+            mountPath: /work
+          - name: dst-secret-vol
+            mountPath: /secrets/dst
+        source: |
+          set -euo pipefail
+          export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
+          export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+          echo "Pushing to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
+          aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" \
+            s3 cp /work/blob "s3://{{workflow.parameters.specOverride}}"
+          echo "Done."

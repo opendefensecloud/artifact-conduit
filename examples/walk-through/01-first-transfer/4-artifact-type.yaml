@@ -1,0 +1,15 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: ArtifactType
+metadata:
+  name: blob
+spec:
+  rules:
+    srcTypes: # allowed Endpoint types
+      - http
+    dstTypes:
+      - s3
+  workflowTemplateRef:
+    name: blob-transfer # namespaced WorkflowTemplate (clusterScope defaults to false)
+  # Keep succeeded workflows (and their logs) for an hour. If unset, ARC deletes them
+  # right after they succeed.
+  ttlAfterFinished: 1h
