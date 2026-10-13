@@ -61,10 +61,15 @@ spec:
         volumeMounts:
           - name: work
             mountPath: /work
+        env: # parameters as environment variables, see step 1
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SPEC_KEY
+            value: "{{workflow.parameters.specKey}}"
         source: |
           set -euo pipefail
-          echo "Pulling {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
-          curl -fsSL -o /work/blob "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+          echo "Pulling ${SRC_REMOTE_URL}/${SPEC_KEY}"
+          curl -fsSL -o /work/blob "${SRC_REMOTE_URL}/${SPEC_KEY}"
 
     - name: pull-s3
       script:
@@ -75,18 +80,25 @@ spec:
             mountPath: /work
           - name: src-secret-vol
             mountPath: /secrets/src
+        env:
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SPEC_KEY
+            value: "{{workflow.parameters.specKey}}"
         source: |
           set -euo pipefail
           # Credentials are optional: public buckets are read without signing requests.
           AUTH=(--no-sign-request)
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+          if [ "${SRC_SECRET}" = "true" ]; then
             export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
             export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
             AUTH=()
           fi
-          echo "Pulling {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
-          aws "${AUTH[@]}" --endpoint-url "{{workflow.parameters.srcRemoteURL}}" \
-            s3 cp "s3://{{workflow.parameters.specKey}}" /work/blob
+          echo "Pulling ${SRC_REMOTE_URL}/${SPEC_KEY}"
+          aws "${AUTH[@]}" --endpoint-url "${SRC_REMOTE_URL}" \
+            s3 cp "s3://${SPEC_KEY}" /work/blob
 
     - name: checksum
       script:
@@ -96,9 +108,12 @@ spec:
           - name: work
             mountPath: /work
             readOnly: true # checks must not change what they check
+        env:
+          - name: SPEC_SHA256
+            value: "{{workflow.parameters.specSha256}}"
         source: |
           set -euo pipefail
-          echo "{{workflow.parameters.specSha256}}  /work/blob" | sha256sum --check
+          echo "${SPEC_SHA256}  /work/blob" | sha256sum --check
 
     - name: virus-scan
       script:
@@ -123,11 +138,16 @@ spec:
             mountPath: /work
           - name: dst-secret-vol
             mountPath: /secrets/dst
+        env:
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+          - name: SPEC_OVERRIDE
+            value: "{{workflow.parameters.specOverride}}"
         source: |
           set -euo pipefail
           export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
           export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
-          echo "Pushing to {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}"
-          aws --endpoint-url "{{workflow.parameters.dstRemoteURL}}" \
-            s3 cp /work/blob "s3://{{workflow.parameters.specOverride}}"
+          echo "Pushing to ${DST_REMOTE_URL}/${SPEC_OVERRIDE}"
+          aws --endpoint-url "${DST_REMOTE_URL}" \
+            s3 cp /work/blob "s3://${SPEC_OVERRIDE}"
           echo "Done."

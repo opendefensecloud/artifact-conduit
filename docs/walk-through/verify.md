@@ -101,7 +101,7 @@ Now order the same file with a checksum that does not match, as if the file had 
       artifacts:
         - type: blob
           spec:
-            key: opendefensecloud/artifact-conduit/refs/heads/main/examples/blob/file.txt
+            key: opendefensecloud/artifact-conduit/refs/tags/v0.3.0/examples/blob/file.txt
             override: test/walk-through/tampered.txt
             sha256: "0000000000000000000000000000000000000000000000000000000000000000"
     EOF

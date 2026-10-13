@@ -13,7 +13,7 @@ spec:
   artifacts:
     - type: blob
       spec:
-        key: opendefensecloud/artifact-conduit/refs/heads/main/examples/blob/file.txt
+        key: opendefensecloud/artifact-conduit/refs/tags/v0.3.0/examples/blob/file.txt
         override: test/walk-through/verified.txt
         # quoted, YAML would read a checksum of only digits as a number
         sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9" # -> specSha256

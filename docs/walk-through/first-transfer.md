@@ -59,6 +59,12 @@ ARC provides two things to every workflow it creates:
 
 Parameters never contain secrets. Use `srcSecret` and `dstSecret` to find out whether credentials were provided.
 
+!!! warning "Parameters are data, not code"
+
+    Argo replaces `{{workflow.parameters.<name>}}` in the script `source` before bash runs it, so a value from an
+    `Order` would run as code, with the credentials of the step mounted. Pass parameters to scripts as environment
+    variables with `env`, like this template does, and quote them in the script, e.g. `"${SPEC_KEY}"`.
+
 !!! warning "Supply chain security"
 
     This workflow copies the file into the destination without looking at it. Never do this in production: anything
