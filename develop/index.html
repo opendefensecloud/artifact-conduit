@@ -65,7 +65,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -538,6 +538,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-arc-provides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ARC provides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-arc-enables-operators-to-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ARC enables operators to build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1874,6 +1902,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-arc-provides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ARC provides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-arc-enables-operators-to-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What ARC enables operators to build
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1926,7 +1982,7 @@
 <a href="https://pkg.go.dev/go.opendefense.cloud/arc"><img alt="Go Reference" src="https://pkg.go.dev/badge/go.opendefense.cloud/arc.svg"></a>
 <a href="https://github.com/opendefensecloud/artifact-conduit/releases"><img alt="GitHub release" src="https://img.shields.io/github/release/opendefensecloud/artifact-conduit.svg"></a></p>
 <h2 id="what-is-artifact-conduit-arc">What is Artifact Conduit (ARC)?<a class="headerlink" href="#what-is-artifact-conduit-arc" title="Permanent link">¶</a></h2>
-<p>ARC (Artifact Conduit) is an open-source system that acts as a gateway for procuring various artifact types and transferring them across security zones while ensuring policy compliance through automated scanning and validation. The system addresses the challenge of bringing external artifacts—container images, Helm charts, software packages, and other resources—into restricted environments where direct internet access is prohibited.</p>
+<p>ARC (Artifact Conduit) is an open-source, Kubernetes-native orchestration layer for moving artifacts — container images, Helm charts, software packages, and other resources — from external sources into restricted environments where direct internet access is prohibited. An <code>Order</code> declares which artifacts to transfer; ARC resolves the referenced endpoints and credentials and runs an operator-authored <a href="https://argo-workflows.readthedocs.io/en/stable/">Argo Workflows</a> template for each artifact.</p>
 <h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">¶</a></h2>
 <p>ARC is implemented as a Kubernetes Extension API Server integrated with the Kubernetes API Aggregation Layer. This architectural approach provides several advantages over Custom Resource Definitions (CRDs), including dedicated storage isolation, custom API implementation flexibility, and reduced risk to the hosting cluster's control plane.</p>
 <p><a class="glightbox" data-type="image" data-width="auto" data-height="auto" href="developer-guide/adrs/img/0-arc-architecture.drawio.svg" data-desc-position="bottom"><img alt="ARC Architecture Diagram" src="developer-guide/adrs/img/0-arc-architecture.drawio.svg" title="ARC Architecture"></a></p>
@@ -2013,8 +2069,8 @@ flowchart LR
   end
     Order -- contains --&gt; Spec
     Spec -- generates --&gt; ArtifactWorkflow1 &amp; ArtifactWorkflowN
-    Spec -- reads &amp; tracks generations of --&gt; EndpointSrc &amp; EndpointDst &amp; EndpointSecret
-    Spec -- type --&gt; ArtifactTypeDef
+    Spec -- reads --&gt; EndpointSrc &amp; EndpointDst &amp; EndpointSecret
+    Spec -- type, tracks generation of --&gt; ArtifactTypeDef
     ArtifactWorkflow1 -- srcRef --&gt; EndpointSrc
     ArtifactWorkflow1 -- dstRef --&gt; EndpointDst
     EndpointSrc -- secretRef --&gt; EndpointSecret
@@ -2036,17 +2092,28 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <li><a href="operator-manual/understanding-workflows/">Walk-through Workflow Configuration</a></li>
 </ul>
 <h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">¶</a></h2>
-<p>An incomplete list of features ARCs provides:</p>
+<h3 id="what-arc-provides">What ARC provides<a class="headerlink" href="#what-arc-provides" title="Permanent link">¶</a></h3>
 <ul>
-<li><strong>Artifact Procurement</strong>: Pull artifacts from diverse sources including OCI registries, Helm repositories, S3-compatible storage, and HTTP endpoints</li>
-<li><strong>Security Validation</strong>: Perform malware scanning, CVE analysis, license verification, and signature validation before artifact transfer</li>
-<li><strong>Policy Enforcement</strong>: Ensure only artifacts meeting defined security and compliance policies cross security boundaries</li>
-<li><strong>Declarative Management</strong>: Leverage Kubernetes-native declarative configuration for artifact lifecycle management</li>
-<li><strong>Auditability</strong>: Provide attestation and traceability of all artifact processing operations</li>
-<li><strong>Artifact Type Definitions</strong>: Define the types of artifacts that can be procured by ARC, including container images, Helm charts, software packages, and other resources</li>
-<li><strong>Workflow Templates</strong>: Configure workflows for artifact procurement, validation, and transfer, allowing for customization based on specific use cases or environments</li>
-<li><strong>Customizable Artifact Types</strong>: Allow users to define their own custom artifact types along with Argo Workflow Templates to solve their unique requirements</li>
+<li><strong>Declarative API</strong>: <code>Order</code>, <code>Endpoint</code>, and <code>ArtifactType</code> resources, managed with <code>kubectl</code> or GitOps</li>
+<li><strong>Endpoint and credential handling</strong>: Reusable source and destination endpoints with referenced credentials, usage constraints, and <a href="user-guide/core-concepts/#status">reachability probing</a></li>
+<li><strong>Validation</strong>: <code>Order</code>s are checked on admission and against endpoint and <code>ArtifactType</code> rules before any workflow runs</li>
+<li><strong>Idempotency</strong>: Each artifact is identified by a hash of its definition, so unchanged artifacts are not re-run and changed ones get a new workflow</li>
+<li><strong>Orchestration</strong>: One workflow per artifact, which ARC creates, tracks, <a href="operator-manual/cron-orders/">schedules</a>, and <a href="operator-manual/ttl-based-cleanup/">cleans up</a></li>
+<li><strong>Aggregated status</strong>: Per-artifact progress reported in the <code>Order</code> status, plus <a href="operator-manual/observability/">Prometheus metrics</a></li>
+<li><strong>Custom artifact types</strong>: Operators define <code>ArtifactType</code>s, each bound to a workflow template and <a href="operator-manual/workflow-parameters/">parameters</a></li>
 </ul>
+<h3 id="what-arc-enables-operators-to-build">What ARC enables operators to build<a class="headerlink" href="#what-arc-enables-operators-to-build" title="Permanent link">¶</a></h3>
+<p>Pulling, scanning, verifying, and pushing artifacts happen entirely inside the Argo workflow template an <code>ArtifactType</code> references, which operators author. ARC passes the template its parameters and the endpoint credentials as workflow volumes; the template defines all artifact handling, for example:</p>
+<ul>
+<li>Pulling from OCI registries, Helm repositories, S3-compatible storage, or HTTP endpoints</li>
+<li>Malware scanning, CVE analysis, license checks, and signature verification</li>
+<li>Blocking transfer of artifacts that fail security and compliance policies</li>
+<li>Producing attestations or reports as workflow outputs</li>
+</ul>
+<blockquote>
+<p><strong>ARC ships no workflow templates.</strong> The templates in the <a href="https://github.com/opendefensecloud/artifact-conduit/tree/main/examples"><code>examples</code> directory</a> illustrate the integration and are not production-ready. See <a href="operator-manual/extending-artifact-types/">Extending Artifact Types</a> for writing custom templates.</p>
+</blockquote>
+<p><strong>Out of Scope:</strong> ARC does not replace existing registry solutions or artifact repositories, nor does it implement transfer or scanning logic itself. It coordinates artifact transfer between existing infrastructure components through operator-authored workflow templates.</p>
 <h2 id="project-resources">Project Resources<a class="headerlink" href="#project-resources" title="Permanent link">¶</a></h2>
 <ul>
 <li><a href="https://github.com/opendefensecloud">Open Defense Cloud Organization</a></li>

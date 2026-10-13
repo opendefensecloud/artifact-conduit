@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2145,7 +2145,7 @@
 <p>This page serves as an introduction to the core concepts of Artficat Conduit (ARC).</p>
 <h2 id="the-order">The <code>Order</code><a class="headerlink" href="#the-order" title="Permanent link">¶</a></h2>
 <p>The <code>Order</code> resource is the primary Custom Resource Definition (CRD) in the ARC (Artifact Conduit) system for declaring high-level artifact transfer operations. An <code>Order</code> specifies one or more artifacts to be processed, along with default source and destination endpoints. The <code>OrderReconciler</code> decomposes each Order into individual <code>ArtifactWorkflow</code> resources, which represent atomic artifact operations that can be executed independently.</p>
-<p>The status map is populated by the <code>OrderReconciler</code> as <code>ArtifactWorkflows</code> are created. Each key is a truncated SHA-256 hash computed from the artifact's type, source endpoint (including generation), destination endpoint (including generation), source secret (including generation), destination secret (including generation), and spec fields, ensuring idempotent workflow generation and change detection.</p>
+<p>The status map is populated by the <code>OrderReconciler</code> as <code>ArtifactWorkflows</code> are created. Each key is a truncated SHA-256 hash computed from the <code>Order</code> namespace, the artifact's type and spec, the <code>ArtifactType</code> generation, the source and destination endpoint names, the cron schedule, and the time of the last <a href="../../operator-manual/force-reconciliation/">force reconciliation</a>. A change to any of these creates a new <code>ArtifactWorkflow</code> at the next reconciliation. Changes to an <code>Endpoint</code> or its <code>Secret</code> do not affect the hash: updated <code>Endpoint</code> settings take effect only after a force reconciliation, while <code>Secret</code> contents are read each time a workflow runs.</p>
 <p>See the <a href="../api-reference/#orderspec">spec documentation</a> for details on how to define an <code>Order</code>.</p>
 <h2 id="the-endpoint">The <code>Endpoint</code><a class="headerlink" href="#the-endpoint" title="Permanent link">¶</a></h2>
 <p>An <code>Endpoint</code> defines the configuration for artifact sources and destinations, including authentication credentials and usage constraints.
