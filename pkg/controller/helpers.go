@@ -119,7 +119,7 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 		kt := strings.ToUpper(k[:1]) + k[1:]
 		switch child := v.(type) {
 		case map[string]any:
-			flattenMap(prefix+k, child, dst)
+			flattenMap(prefix+kt, child, dst)
 		case []any:
 			for i, av := range child {
 				dst[prefix+kt+strconv.Itoa(i)] = av

@@ -235,8 +235,8 @@ var _ = Describe("Helper Functions", func() {
 
 			flattenMap("spec", src, dst)
 
-			Expect(dst).To(HaveKeyWithValue("specconfigPort", 8080))
-			Expect(dst).To(HaveKeyWithValue("specconfigHost", "localhost"))
+			Expect(dst).To(HaveKeyWithValue("specConfigPort", 8080))
+			Expect(dst).To(HaveKeyWithValue("specConfigHost", "localhost"))
 		})
 
 		It("should flatten arrays with indexed keys", func() {
@@ -273,7 +273,7 @@ var _ = Describe("Helper Functions", func() {
 
 			flattenMap("spec", src, dst)
 
-			Expect(dst).To(HaveKeyWithValue("speclevel1level2Value", "deep"))
+			Expect(dst).To(HaveKeyWithValue("specLevel1Level2Value", "deep"))
 		})
 
 		It("should capitalize first letter of keys", func() {
