@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -724,6 +724,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1045,6 +1049,62 @@
     
   
     Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../secret-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secret Access
   
 
     
@@ -2171,7 +2231,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dstSecret</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specRepository</span><span class="w"> </span><span class="c1"># The source image repository (e.g. library/alpine)</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specTag</span><span class="w"> </span><span class="c1"># The source image tag or semver pattern, e.g. 3.18 or &gt;3.18.0 &lt; 3.19.0</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span><span class="w"> </span><span class="c1"># Defines how destination repository:tag is overriden, supports go templates</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">specOverride</span><span class="w"> </span><span class="c1"># Defines how destination repository:tag is overriden, supports the placeholders {tag} and {repository}</span>
 <span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">""</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">scanSeverity</span><span class="w"> </span><span class="c1"># Additional parameter coming from ArtifactType</span>
 
@@ -2251,7 +2311,17 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ca-certificates</span>
 <span class="w">            </span><span class="nt">readOnly</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 
+<span class="w">        </span><span class="c1"># spec* parameters are the fields of the artifact's spec in the Order,</span>
+<span class="w">        </span><span class="c1"># chosen by whoever creates the Order. They come first in the list,</span>
+<span class="w">        </span><span class="c1"># because Kubernetes expands $(VAR) in a value with the variables</span>
+<span class="w">        </span><span class="c1"># defined before it.</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;env</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_REPOSITORY</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specRepository}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_TAG</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specTag}}"</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_OVERRIDE</span>
+<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specOverride}}"</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DOCKER_CONFIG</span>
 <span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/data/.docker</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REGISTRY_AUTH_FILE</span>
@@ -2270,12 +2340,6 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.dstRemoteURL}}"</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DST_SECRET</span>
 <span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.dstSecret}}"</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_REPOSITORY</span>
-<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specRepository}}"</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_TAG</span>
-<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specTag}}"</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SPEC_OVERRIDE</span>
-<span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.specOverride}}"</span>
 <span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SCAN_SEVERITY</span>
 <span class="w">            </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"{{workflow.parameters.scanSeverity}}"</span>
 
@@ -2283,15 +2347,15 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">          </span><span class="no">set -euo pipefail</span>
 
 <span class="w">          </span><span class="no"># Conditionally login to source registry</span>
-<span class="w">          </span><span class="no">if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then</span>
-<span class="w">              </span><span class="no">echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."</span>
-<span class="w">              </span><span class="no">cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
+<span class="w">          </span><span class="no">if [ "$SRC_SECRET" = "true" ]; then</span>
+<span class="w">              </span><span class="no">echo "Authenticating to source registry ${SRC_REMOTE_URL}..."</span>
+<span class="w">              </span><span class="no">cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin "$SRC_REMOTE_URL" --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
 <span class="w">          </span><span class="no">fi</span>
 
 <span class="w">          </span><span class="no"># Conditionally login to destination registry</span>
-<span class="w">          </span><span class="no">if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then</span>
-<span class="w">              </span><span class="no">echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."</span>
-<span class="w">              </span><span class="no">cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
+<span class="w">          </span><span class="no">if [ "$DST_SECRET" = "true" ]; then</span>
+<span class="w">              </span><span class="no">echo "Authenticating to destination registry ${DST_REMOTE_URL}..."</span>
+<span class="w">              </span><span class="no">cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin "$DST_REMOTE_URL" --compat-auth-file "${DOCKER_CONFIG}/config.json"</span>
 <span class="w">          </span><span class="no">fi</span>
 
 <span class="w">    </span><span class="c1"># --- Check Source Availability (Skopeo) ---</span>
@@ -2361,42 +2425,34 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <span class="w">          </span><span class="nt">valueFrom</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/tmp/dst.txt</span>
 <span class="w">      </span><span class="nt">script</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hairyhenderson/gomplate:v5.2.0-alpine</span>
+<span class="w">        </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alpine:3.22</span>
 <span class="w">        </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">sh</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-c</span><span class="p p-Indicator">]</span>
 <span class="w">        </span><span class="nt">volumeMounts</span><span class="p">:</span><span class="w"> </span><span class="nv">*volumeMounts</span>
 <span class="w">        </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="nv">*env</span>
 <span class="w">        </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
 <span class="w">          </span><span class="no">set -euo pipefail</span>
 
-<span class="w">          </span><span class="no"># escaping go templates sucks, so let's just not...</span>
-<span class="w">          </span><span class="no">cat &gt; /tmp/images.tpl &lt;&lt;EOF</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$srcRemoteURL := "$SRC_REMOTE_URL" &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$dstRemoteURL := "$DST_REMOTE_URL" &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$repository := "$SPEC_REPOSITORY" &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$override := "$SPEC_OVERRIDE" &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$tag := "$(cat /data/tag.txt)" &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$values := dict "tag" \$tag "repository" \$repository &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt; \$srcRemoteURL &gt;&gt;/&lt;&lt; \$repository &gt;&gt;:&lt;&lt; \$tag &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- if \$override &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- \$repoTag := tmpl.Inline \$override \$values &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt; \$dstRemoteURL &gt;&gt;/&lt;&lt; \$repoTag &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- else &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt; \$dstRemoteURL &gt;&gt;/&lt;&lt; \$repository &gt;&gt;:&lt;&lt; \$tag &gt;&gt;</span>
-<span class="w">          </span><span class="no">&lt;&lt;- end &gt;&gt;</span>
-<span class="w">          </span><span class="no">EOF</span>
+<span class="w">          </span><span class="no">tag="$(cat /data/tag.txt)"</span>
 
-<span class="w">          </span><span class="no">sed -i 's/&lt;&lt;/{{/g' /tmp/images.tpl</span>
-<span class="w">          </span><span class="no">sed -i 's/&gt;&gt;/}}/g' /tmp/images.tpl</span>
-<span class="w">          </span><span class="no">cat /tmp/images.tpl</span>
+<span class="w">          </span><span class="no"># The override comes from the Order and only gets its placeholders</span>
+<span class="w">          </span><span class="no"># replaced, it is never evaluated as a template.</span>
+<span class="w">          </span><span class="no">dst_ref="${SPEC_REPOSITORY}:${tag}"</span>
+<span class="w">          </span><span class="no">if [ -n "$SPEC_OVERRIDE" ]; then</span>
+<span class="w">            </span><span class="no">dst_ref="${SPEC_OVERRIDE//"{tag}"/$tag}"</span>
+<span class="w">            </span><span class="no">dst_ref="${dst_ref//"{repository}"/$SPEC_REPOSITORY}"</span>
+<span class="w">            </span><span class="no">case "$dst_ref" in</span>
+<span class="w">              </span><span class="no">*"{"*|*"}"*)</span>
+<span class="w">                </span><span class="no">echo "override supports only the placeholders {tag} and {repository}" &gt;&amp;2</span>
+<span class="w">                </span><span class="no">exit 1</span>
+<span class="w">                </span><span class="no">;;</span>
+<span class="w">            </span><span class="no">esac</span>
+<span class="w">          </span><span class="no">fi</span>
 
-<span class="w">          </span><span class="no">cat /tmp/images.tpl | gomplate --out - &gt; /data/gomplate.txt</span>
+<span class="w">          </span><span class="no">echo "${SRC_REMOTE_URL}/${SPEC_REPOSITORY}:${tag}" &gt; /data/src.txt</span>
+<span class="w">          </span><span class="no">echo "${DST_REMOTE_URL}/${dst_ref}" &gt; /data/dst.txt</span>
+<span class="w">          </span><span class="no">cat /data/src.txt /data/dst.txt</span>
 
-<span class="w">          </span><span class="no">sed -i '/^[[:space:]]*$/d' /data/gomplate.txt</span>
-<span class="w">          </span><span class="no">cat /data/gomplate.txt</span>
-
-<span class="w">          </span><span class="no">head -1 /data/gomplate.txt &gt; /data/src.txt</span>
 <span class="w">          </span><span class="no">cp /data/src.txt /tmp/src.txt</span>
-<span class="w">          </span><span class="no">head -2 /data/gomplate.txt | tail -1 &gt; /data/dst.txt</span>
 <span class="w">          </span><span class="no">cp /data/dst.txt /tmp/dst.txt</span>
 
 <span class="w">    </span><span class="c1"># --- Check Destination Availability (Skopeo) ---</span>

@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -724,6 +724,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -1303,6 +1307,62 @@
     
   
     Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roles/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../secret-access/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Secret Access
   
 
     
@@ -2225,7 +2285,7 @@
 <p>ARC's artifact processing pipeline is extensible through the <code>ArtifactType</code> custom resource. Each ArtifactType defines:</p>
 <ul>
 <li><strong>Rules</strong>: Which source and destination endpoint types are compatible</li>
-<li><strong>Parameters</strong>: Default parameters passed to workflows</li>
+<li><strong>Parameters</strong>: Parameters passed to workflows, overriding all others</li>
 <li><strong>WorkflowTemplateRef</strong>: The Argo Workflows template that implements the processing logic</li>
 </ul>
 <p>When an <code>Order</code> is created, the <code>OrderReconciler</code> generates <code>ArtifactWorkflow</code> resources for each artifact, which then instantiate Argo <code>Workflow</code> instances based on the referenced WorkflowTemplate.</p>
@@ -2408,7 +2468,7 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <ul>
 <li><code>rules.srcTypes</code>: Validates source <code>Endpoint.spec.type</code> compatibility</li>
 <li><code>rules.dstTypes</code>: Validates destination <code>Endpoint.spec.type</code> compatibility  </li>
-<li><code>parameters</code>: Default values merged with artifact spec (artifact spec takes precedence)</li>
+<li><code>parameters</code>: Values that override all other parameters</li>
 <li><code>workflowTemplateRef</code>: Name of the WorkflowTemplate to instantiate</li>
 </ul>
 <h3 id="parameter-naming-convention">Parameter Naming Convention<a class="headerlink" href="#parameter-naming-convention" title="Permanent link">¶</a></h3>
@@ -2479,10 +2539,11 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 </ol>
 <h3 id="parameter-design">Parameter Design<a class="headerlink" href="#parameter-design" title="Permanent link">¶</a></h3>
 <ol>
-<li><strong>Sensible Defaults</strong>: Provide defaults in ArtifactType.spec.parameters for common use cases</li>
+<li><strong>Defaults</strong>: Provide defaults in the WorkflowTemplate arguments; <code>ArtifactType.spec.parameters</code> override every other parameter</li>
 <li><strong>Required vs Optional</strong>: Document which spec fields are required</li>
 <li><strong>Type Safety</strong>: Validate parameter types in WorkflowTemplate scripts</li>
 <li><strong>Secret Handling</strong>: Never pass secrets as parameters — always use volume mounts</li>
+<li><strong>Untrusted Input</strong>: Pass <code>spec*</code> parameters to scripts as environment variables, never interpolate them into scripts or <code>when</code> expressions (see <a href="../secret-access/">Secret Access</a>)</li>
 </ol>
 <h3 id="naming-conventions">Naming Conventions<a class="headerlink" href="#naming-conventions" title="Permanent link">¶</a></h3>
 <table>
