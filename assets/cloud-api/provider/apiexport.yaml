@@ -1,0 +1,34 @@
+---
+apiVersion: apis.kcp.io/v1alpha2
+kind: APIExport
+metadata:
+  name: arc.opendefense.cloud
+  labels:
+    # Surfaces ARC's provider ContentConfigurations to binding consumers — the
+    # /services/contentconfigurations VW selects provider CCs by this label.
+    ui.platform-mesh.io/content-for: arc.opendefense.cloud
+spec:
+  resources:
+    - group: arc.opendefense.cloud
+      name: orders
+      schema: v4d632a97.orders.arc.opendefense.cloud
+      storage:
+        crd: {}
+    - group: arc.opendefense.cloud
+      name: endpoints
+      schema: vcf11840f.endpoints.arc.opendefense.cloud
+      storage:
+        crd: {}
+  permissionClaims:
+    - group: ""
+      resource: "events"
+      verbs: ["get", "list", "watch", "create", "update", "patch"]
+    - group: ""
+      resource: "secrets"
+      verbs: ["get", "list", "watch", "create", "update", "patch"]
+    - group: ""
+      resource: "namespaces"
+      verbs: ["get", "list", "watch"]
+    - group: "core.kcp.io"
+      resource: "logicalclusters"
+      verbs: ["get", "list", "watch"]

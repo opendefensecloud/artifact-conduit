@@ -1,0 +1,35 @@
+---
+# Prevents Endpoint deletion while any Order references it.
+# Uses spec.artifact.* (not artifacts[].*) — dependency-controller only resolves scalar dot-paths.
+apiVersion: dependencies.opendefense.cloud/v1alpha1
+kind: DependencyRule
+metadata:
+  name: order-endpoint-dependencies
+spec:
+  dependent:
+    apiExportName: arc.opendefense.cloud
+    group: arc.opendefense.cloud
+    version: v1alpha1
+    kind: Order
+    resource: orders
+  dependencies:
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.defaults.srcRef.name" }
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.defaults.dstRef.name" }
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.artifact.srcRef.name" }
+    - apiExportRef: { path: root:providers:odd, name: arc.opendefense.cloud }
+      group: arc.opendefense.cloud
+      version: v1alpha1
+      resource: endpoints
+      fieldRef: { path: ".spec.artifact.dstRef.name" }
