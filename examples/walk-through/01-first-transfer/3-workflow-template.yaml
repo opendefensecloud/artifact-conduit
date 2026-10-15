@@ -33,14 +33,14 @@ spec:
           - name: dst-secret-vol
             mountPath: /secrets/dst
         env: # never put parameters into the source, a value could run as code
-          - name: SRC_REMOTE_URL
-            value: "{{workflow.parameters.srcRemoteURL}}"
           - name: SPEC_KEY
             value: "{{workflow.parameters.specKey}}"
-          - name: DST_REMOTE_URL
-            value: "{{workflow.parameters.dstRemoteURL}}"
           - name: SPEC_OVERRIDE
             value: "{{workflow.parameters.specOverride}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
         source: |
           set -euo pipefail
           export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
@@ -54,5 +54,5 @@ spec:
           echo "          to ${DST_REMOTE_URL}/${SPEC_OVERRIDE}"
           curl -fsSL "${SRC_REMOTE_URL}/${SPEC_KEY}" \
             | aws --endpoint-url "${DST_REMOTE_URL}" \
-                s3 cp - "s3://${SPEC_OVERRIDE}"
+                s3 cp --no-progress - "s3://${SPEC_OVERRIDE}"
           echo "Done."

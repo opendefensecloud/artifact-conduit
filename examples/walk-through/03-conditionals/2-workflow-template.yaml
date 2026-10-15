@@ -40,7 +40,8 @@ spec:
     - name: transfer
       steps:
         # Both pull steps are in the same group, but only the one whose condition
-        # is true runs, the other one is skipped.
+        # is true runs, the other one is skipped. srcType comes from the Endpoint, not
+        # the Order. Don't put spec* parameters into a condition, they could change it.
         - - name: pull-http
             template: pull-http
             when: "'{{workflow.parameters.srcType}}' == 'http'"
@@ -62,10 +63,10 @@ spec:
           - name: work
             mountPath: /work
         env: # parameters as environment variables, see step 1
-          - name: SRC_REMOTE_URL
-            value: "{{workflow.parameters.srcRemoteURL}}"
           - name: SPEC_KEY
             value: "{{workflow.parameters.specKey}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
         source: |
           set -euo pipefail
           echo "Pulling ${SRC_REMOTE_URL}/${SPEC_KEY}"
@@ -81,12 +82,12 @@ spec:
           - name: src-secret-vol
             mountPath: /secrets/src
         env:
+          - name: SPEC_KEY
+            value: "{{workflow.parameters.specKey}}"
           - name: SRC_SECRET
             value: "{{workflow.parameters.srcSecret}}"
           - name: SRC_REMOTE_URL
             value: "{{workflow.parameters.srcRemoteURL}}"
-          - name: SPEC_KEY
-            value: "{{workflow.parameters.specKey}}"
         source: |
           set -euo pipefail
           # Credentials are optional: public buckets are read without signing requests.
@@ -98,7 +99,7 @@ spec:
           fi
           echo "Pulling ${SRC_REMOTE_URL}/${SPEC_KEY}"
           aws "${AUTH[@]}" --endpoint-url "${SRC_REMOTE_URL}" \
-            s3 cp "s3://${SPEC_KEY}" /work/blob
+            s3 cp --no-progress "s3://${SPEC_KEY}" /work/blob
 
     - name: checksum
       script:
@@ -139,15 +140,15 @@ spec:
           - name: dst-secret-vol
             mountPath: /secrets/dst
         env:
-          - name: DST_REMOTE_URL
-            value: "{{workflow.parameters.dstRemoteURL}}"
           - name: SPEC_OVERRIDE
             value: "{{workflow.parameters.specOverride}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
         source: |
           set -euo pipefail
           export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
           export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
           echo "Pushing to ${DST_REMOTE_URL}/${SPEC_OVERRIDE}"
           aws --endpoint-url "${DST_REMOTE_URL}" \
-            s3 cp /work/blob "s3://${SPEC_OVERRIDE}"
+            s3 cp --no-progress /work/blob "s3://${SPEC_OVERRIDE}"
           echo "Done."

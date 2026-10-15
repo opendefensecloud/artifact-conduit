@@ -21,7 +21,9 @@ The destination needs credentials. The keys of a Secret are up to you, the `Work
 {% include "../../examples/walk-through/01-first-transfer/1-secret.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/01-first-transfer/1-secret.yaml
+```bash
+kubectl apply -f examples/walk-through/01-first-transfer/1-secret.yaml
+```
 
 ## Endpoints
 
@@ -32,7 +34,9 @@ it. `usage` restricts it to pulling, pushing or both, and `secretRef` points to 
 {% include "../../examples/walk-through/01-first-transfer/2-endpoints.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/01-first-transfer/2-endpoints.yaml
+```bash
+kubectl apply -f examples/walk-through/01-first-transfer/2-endpoints.yaml
+```
 
 ## WorkflowTemplate
 
@@ -45,7 +49,9 @@ the file with `curl` and streams it into the bucket with the AWS CLI.
 {% include "../../examples/walk-through/01-first-transfer/3-workflow-template.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/01-first-transfer/3-workflow-template.yaml
+```bash
+kubectl apply -f examples/walk-through/01-first-transfer/3-workflow-template.yaml
+```
 
 ARC provides two things to every workflow it creates:
 
@@ -63,7 +69,8 @@ Parameters never contain secrets. Use `srcSecret` and `dstSecret` to find out wh
 
     Argo replaces `{{workflow.parameters.<name>}}` in the script `source` before bash runs it, so a value from an
     `Order` would run as code, with the credentials of the step mounted. Pass parameters to scripts as environment
-    variables with `env`, like this template does, and quote them in the script, e.g. `"${SPEC_KEY}"`.
+    variables with `env`, like this template does, and quote them in the script, e.g. `"${SPEC_KEY}"`. List the
+    `spec*` parameters first: Kubernetes expands `$(NAME)` in an `env` value with the variables listed before it.
 
 !!! warning "Supply chain security"
 
@@ -86,7 +93,9 @@ By default, ARC deletes a workflow as soon as it succeeded, failed ones are kept
 `ttlAfterFinished` keeps succeeded workflows around for a while, so you can inspect them and read their logs. See
 [TTL-Based Cleanup](../operator-manual/ttl-based-cleanup.md) for all options.
 
-    kubectl apply -f examples/walk-through/01-first-transfer/4-artifact-type.yaml
+```bash
+kubectl apply -f examples/walk-through/01-first-transfer/4-artifact-type.yaml
+```
 
 !!! note
 
@@ -108,7 +117,9 @@ override them with its own `srcRef` and `dstRef`. The `spec` is free-form and on
 
 Apply it last: the `Order` immediately creates a workflow, which fails if its `WorkflowTemplate` does not exist yet.
 
-    kubectl apply -f examples/walk-through/01-first-transfer/5-order.yaml
+```bash
+kubectl apply -f examples/walk-through/01-first-transfer/5-order.yaml
+```
 
 !!! tip
 
@@ -120,8 +131,10 @@ Apply it last: the `Order` immediately creates a workflow, which fails if its `W
 
 For every artifact in the `Order`, ARC creates an `ArtifactWorkflow`, which in turn creates an Argo `Workflow`:
 
-    kubectl get artifactworkflows
-    kubectl get workflows
+```bash
+kubectl get artifactworkflows
+kubectl get workflows
+```
 
 Wait for the workflow to finish and read its logs:
 
@@ -132,6 +145,8 @@ Wait for the workflow to finish and read its logs:
     kubectl logs -l workflows.argoproj.io/workflow -c main --tail -1
     ```
 
+    Lines with `argo=true` come from the Argo executor that runs the script, not from the script itself.
+
 === "Argo CLI"
 
     ```bash
@@ -141,7 +156,9 @@ Wait for the workflow to finish and read its logs:
 
 Once the workflow succeeded, the `Order` reports it in its status:
 
-    kubectl get orders.arc.opendefense.cloud first-transfer -o jsonpath='{.status.artifactWorkflows}'
+```bash
+kubectl get orders.arc.opendefense.cloud first-transfer -o jsonpath='{.status.artifactWorkflows}'
+```
 
 !!! note
 
@@ -150,9 +167,11 @@ Once the workflow succeeded, the `Order` reports it in its status:
 
 Check that the file arrived in the bucket:
 
-    kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
-      --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
-      --endpoint-url http://dst.seaweedfs:8333 s3 cp s3://test/walk-through/file.txt -
+```bash
+kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
+  --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
+  --endpoint-url http://dst.seaweedfs:8333 s3 cp s3://test/walk-through/file.txt -
+```
 
 If something does not work, have a look at [Debugging](../operator-manual/debugging.md).
 

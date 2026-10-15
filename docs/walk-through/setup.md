@@ -4,18 +4,23 @@ This step prepares a local cluster for the walk-through. If you already have a c
 you can skip to [creating the namespace](#create-a-namespace-for-the-walk-through).
 
 You need `git`, `kubectl`, [`helm`](https://helm.sh/docs/intro/install/) and a Kubernetes cluster, e.g. one created
-with [kind](https://kind.sigs.k8s.io/).
+with [kind](https://kind.sigs.k8s.io/). From the [verify step](verify.md) on, workflows run a ClamAV virus scan. It
+pulls a large image and loads its virus database into memory, so give a local cluster enough resources.
 
 All files used in the walk-through live in the ARC repository, so clone it first:
 
-    git clone https://github.com/opendefensecloud/artifact-conduit.git
-    cd artifact-conduit
+```bash
+git clone https://github.com/opendefensecloud/artifact-conduit.git
+cd artifact-conduit
+```
 
 ## Create a cluster
 
 Any Kubernetes cluster works. For a local one, use [kind](https://kind.sigs.k8s.io/):
 
-    kind create cluster --name arc-walk-through
+```bash
+kind create cluster --name arc-walk-through
+```
 
 ## Install Argo Workflows
 
@@ -23,10 +28,12 @@ ARC creates Argo `Workflows`, so Argo Workflows has to be installed. See the
 [Argo Workflows installation](https://argo-workflows.readthedocs.io/en/stable/installation/) for details. The short
 version, using the Argo Workflows version ARC is built and tested with:
 
-    export ARGO_WORKFLOWS_VERSION="$(awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $2}' go.mod)"
-    kubectl create namespace argo
-    kubectl apply --server-side -n argo -f "https://github.com/argoproj/argo-workflows/releases/download/${ARGO_WORKFLOWS_VERSION}/install.yaml"
-    kubectl wait deployment/workflow-controller -n argo --for condition=Available --timeout 5m
+```bash
+export ARGO_WORKFLOWS_VERSION="$(awk '/^[ \t]+github.com\/argoproj\/argo-workflows/ {print $2}' go.mod)"
+kubectl create namespace argo
+kubectl apply --server-side -n argo -f "https://github.com/argoproj/argo-workflows/releases/download/${ARGO_WORKFLOWS_VERSION}/install.yaml"
+kubectl wait deployment/workflow-controller -n argo --for condition=Available --timeout 5m
+```
 
 Optionally install the [Argo CLI](https://argo-workflows.readthedocs.io/en/stable/walk-through/argo-cli/). It is not
 required, but makes it easier to follow workflows and read their logs. The walk-through shows commands for both the
@@ -37,20 +44,30 @@ Argo CLI and plain `kubectl`, pick a tab once and all pages follow.
 ARC needs [cert-manager](https://cert-manager.io/docs/installation/) for the certificates of its API server. Install
 the version ARC is tested with:
 
-    export CERTMANAGER_VERSION="$(awk '/^export CERTMANAGER_VERSION/ {print $NF}' Makefile)"
-    kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMANAGER_VERSION}/cert-manager.yaml"
-    kubectl wait deployment -n cert-manager --all --for condition=Available --timeout 5m
+```bash
+export CERTMANAGER_VERSION="$(awk '/^export CERTMANAGER_VERSION/ {print $NF}' Makefile)"
+kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERTMANAGER_VERSION}/cert-manager.yaml"
+kubectl wait deployment -n cert-manager --all --for condition=Available --timeout 5m
+```
 
 Then install ARC with the release your checkout is based on (see the [Quick Start](../getting-started.md#install-arc-via-helm)
 for other ways to pick a version):
 
-    export ARC_VERSION="$(git describe --tags --abbrev=0)"
-    helm install arc oci://ghcr.io/opendefensecloud/charts/arc \
-      --version "${ARC_VERSION}" \
-      --namespace arc-system \
-      --create-namespace \
-      --set fullnameOverride=arc \
-      --set apiserver.args.cronMinScheduleInterval=1m
+```bash
+export ARC_VERSION="$(git describe --tags --abbrev=0)"
+helm install arc oci://ghcr.io/opendefensecloud/charts/arc \
+  --version "${ARC_VERSION}" \
+  --namespace arc-system \
+  --create-namespace \
+  --set fullnameOverride=arc \
+  --set apiserver.args.cronMinScheduleInterval=1m
+```
+
+!!! note
+
+    The walk-through is tested against ARC built from the same commit, not against a release. On `main`, a step may
+    use a feature that is not released yet and fail with the chart above. In that case, check out the release you
+    installed with `git checkout "${ARC_VERSION}"` and follow the docs of that version.
 
 By default, ARC rejects schedules that run more often than every 10 minutes. The walk-through lowers that to one
 minute, so you do not have to wait long when you [schedule transfers](schedule.md). See
@@ -59,14 +76,18 @@ minute, so you do not have to wait long when you [schedule transfers](schedule.m
 ARC's API is served by an [extension API server](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/).
 Wait until it is available, otherwise `kubectl` does not know the ARC resources yet:
 
-    kubectl wait apiservice/v1alpha1.arc.opendefense.cloud --for condition=Available --timeout 5m
+```bash
+kubectl wait apiservice/v1alpha1.arc.opendefense.cloud --for condition=Available --timeout 5m
+```
 
 ## Create a namespace for the walk-through
 
 Everything in the walk-through is namespaced. Create a namespace and make it the default for `kubectl`:
 
-    kubectl create namespace walk-through
-    kubectl config set-context --current --namespace walk-through
+```bash
+kubectl create namespace walk-through
+kubectl config set-context --current --namespace walk-through
+```
 
 ## Create a ServiceAccount for workflows
 
@@ -78,7 +99,9 @@ The workflows in this walk-through use a ServiceAccount named `arc-workflow`:
 {% include "../../test/fixtures/service-account.yaml" %}
 ```
 
-    kubectl apply -f test/fixtures/service-account.yaml
+```bash
+kubectl apply -f test/fixtures/service-account.yaml
+```
 
 ## Install an S3 store as destination
 
@@ -89,8 +112,10 @@ small S3-compatible store with a bucket named `test`:
 {% include "../../test/fixtures/dst-seaweedfs.yaml" %}
 ```
 
-    kubectl apply -f test/fixtures/dst-seaweedfs.yaml
-    kubectl wait deployment/dst -n seaweedfs --for condition=Available --timeout 5m
+```bash
+kubectl apply -f test/fixtures/dst-seaweedfs.yaml
+kubectl wait deployment/dst -n seaweedfs --for condition=Available --timeout 5m
+```
 
 You are ready for [your first transfer](first-transfer.md).
 
@@ -98,4 +123,6 @@ You are ready for [your first transfer](first-transfer.md).
 
 When you are done with the walk-through, delete the cluster:
 
-    kind delete cluster --name arc-walk-through
+```bash
+kind delete cluster --name arc-walk-through
+```

@@ -14,7 +14,9 @@ needs credentials and reuses the `Secret` of the first transfer.
 {% include "../../examples/walk-through/03-conditionals/1-endpoint.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/03-conditionals/1-endpoint.yaml
+```bash
+kubectl apply -f examples/walk-through/03-conditionals/1-endpoint.yaml
+```
 
 ## WorkflowTemplate
 
@@ -26,7 +28,9 @@ checks and `push` stay as they are, they do not care where the file came from.
 {% include "../../examples/walk-through/03-conditionals/2-workflow-template.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/03-conditionals/2-workflow-template.yaml
+```bash
+kubectl apply -f examples/walk-through/03-conditionals/2-workflow-template.yaml
+```
 
 `pull-s3` shows the second kind of conditional: whether the source has credentials is decided inside the script,
 with the `srcSecret` parameter. `src-secret-vol` is always there, but it is an empty volume if the `Endpoint` has no
@@ -46,7 +50,9 @@ artifact from `seaweedfs-source`:
 The `spec` of an `ArtifactType` is immutable, `kubectl apply` refuses to change it. Replace it instead, `--force`
 deletes the `ArtifactType` and creates it again. Workflows that already exist are not affected.
 
-    kubectl replace --force -f examples/walk-through/03-conditionals/3-artifact-type.yaml
+```bash
+kubectl replace --force -f examples/walk-through/03-conditionals/3-artifact-type.yaml
+```
 
 ## Order
 
@@ -58,20 +64,24 @@ gets `srcType=s3` and runs `pull-s3`.
 {% include "../../examples/walk-through/03-conditionals/4-order.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/03-conditionals/4-order.yaml
+```bash
+kubectl apply -f examples/walk-through/03-conditionals/4-order.yaml
+```
 
 ## Watch it run
 
 ARC creates one `ArtifactWorkflow` and one Argo `Workflow` per artifact, so there are two this time:
 
-    kubectl get workflows -l walk-through=conditionals
+```bash
+kubectl get workflows -l walk-through=conditionals
+```
 
 === "kubectl"
 
     ```bash
     kubectl wait workflows -l walk-through=conditionals --for jsonpath='{.status.phase}'=Succeeded --timeout 5m
     kubectl get workflows -l walk-through=conditionals \
-      -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{range .status.nodes.*}{"  "}{.displayName}{": "}{.phase}{"\n"}{end}{end}'
+      -o jsonpath='{range .items[*]}{range .status.nodes.*}{.name}{": "}{.phase}{"\n"}{end}{end}' | sort
     ```
 
 === "Argo CLI"
@@ -86,8 +96,10 @@ ARC creates one `ArtifactWorkflow` and one Argo `Workflow` per artifact, so ther
 In each workflow, one of `pull-http` and `pull-s3` is `Skipped`. Besides the steps, the list contains the workflow
 itself and the groups of steps, `[0]` to `[3]`. Check that both files arrived in the bucket:
 
-    kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
-      --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
-      --endpoint-url http://dst.seaweedfs:8333 s3 ls s3://test/walk-through/
+```bash
+kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
+  --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
+  --endpoint-url http://dst.seaweedfs:8333 s3 ls s3://test/walk-through/
+```
 
 Next: [schedule transfers](schedule.md).

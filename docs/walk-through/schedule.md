@@ -13,7 +13,22 @@ Nothing but the `Order` changes. Its artifact gets a `cron` with one or more `sc
 {% include "../../examples/walk-through/04-schedule/1-order.yaml" %}
 ```
 
-    kubectl apply -f examples/walk-through/04-schedule/1-order.yaml
+```bash
+kubectl apply -f examples/walk-through/04-schedule/1-order.yaml
+```
+
+!!! note
+
+    ARC rejects this schedule if it was installed without `apiserver.args.cronMinScheduleInterval=1m`, e.g. if you
+    skipped the [setup](setup.md#install-arc). Lower the interval with:
+
+    ```bash
+    helm upgrade arc oci://ghcr.io/opendefensecloud/charts/arc \
+      --version "$(git describe --tags --abbrev=0)" \
+      --namespace arc-system \
+      --reuse-values \
+      --set apiserver.args.cronMinScheduleInterval=1m
+    ```
 
 For a scheduled artifact, ARC creates an Argo [`CronWorkflow`](https://argo-workflows.readthedocs.io/en/stable/cron-workflows/)
 instead of a `Workflow`, and the `CronWorkflow` creates a `Workflow` for every run. The `WorkflowTemplate` is the same
@@ -27,12 +42,16 @@ and the run fails. You notice, and can review the new file before you update the
 
 The `CronWorkflow` exists right away, the first `Workflow` only once the schedule is due:
 
-    kubectl get cronworkflows -l walk-through=schedule
+```bash
+kubectl get cronworkflows -l walk-through=schedule
+```
 
 Wait for the first run to finish. There is no `Workflow` to wait for before the schedule is due, so wait for the
 `ArtifactWorkflow` instead:
 
-    kubectl wait artifactworkflows -l walk-through=schedule --for jsonpath='{.status.phase}'=Succeeded --timeout 5m
+```bash
+kubectl wait artifactworkflows -l walk-through=schedule --for jsonpath='{.status.phase}'=Succeeded --timeout 5m
+```
 
 === "kubectl"
 
@@ -50,19 +69,25 @@ Wait for the first run to finish. There is no `Workflow` to wait for before the 
 The `Order` shows when the last run was scheduled and how it went, and counts the `succeeded` and `failed` runs. The
 counts are updated a little after a run finished, so right after the first run they may still be `0`:
 
-    kubectl get orders.arc.opendefense.cloud scheduled-transfer -o jsonpath='{.status.artifactWorkflows}'
+```bash
+kubectl get orders.arc.opendefense.cloud scheduled-transfer -o jsonpath='{.status.artifactWorkflows}'
+```
 
 Argo keeps the last succeeded and the last failed `Workflow`, older ones are deleted. Unlike other workflows, the
 `ArtifactWorkflow` of a scheduled artifact is not cleaned up by `ttlAfterFinished`, it stays as long as the `Order`.
 
 Check that the file arrived in the bucket:
 
-    kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
-      --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
-      --endpoint-url http://dst.seaweedfs:8333 s3 cp s3://test/walk-through/scheduled.txt -
+```bash
+kubectl run s3-check --rm -it --restart Never --image amazon/aws-cli:2.37.9 \
+  --env AWS_ACCESS_KEY_ID=admin --env AWS_SECRET_ACCESS_KEY=adminadmin -- \
+  --endpoint-url http://dst.seaweedfs:8333 s3 cp s3://test/walk-through/scheduled.txt -
+```
 
 The `Order` transfers the file every two minutes until you delete it:
 
-    kubectl delete orders.arc.opendefense.cloud scheduled-transfer
+```bash
+kubectl delete orders.arc.opendefense.cloud scheduled-transfer
+```
 
 Next: [where to go from here](next-steps.md).

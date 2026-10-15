@@ -24,6 +24,8 @@ const walkThroughNamespace = "walk-through"
 // walkThroughSpecs runs every step of the walk-through (docs/walk-through) so the
 // guide only ever shows examples that work. Like a reader, it applies the steps
 // in order into one namespace, as later steps build on the resources of earlier ones.
+// It runs against the images of this commit, while readers install the latest released
+// chart (docs/walk-through/setup.md), so it can't catch a step that needs unreleased features.
 //
 // Called from inside the Ordered "ARC" container, like endpointControllerSpecs.
 func walkThroughSpecs() {
