@@ -1,0 +1,15 @@
+# The spec of an ArtifactType is immutable: change it with "kubectl replace --force".
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: ArtifactType
+metadata:
+  name: blob
+spec:
+  rules:
+    srcTypes:
+      - http
+      - s3 # new: the WorkflowTemplate can now pull from S3
+    dstTypes:
+      - s3
+  workflowTemplateRef:
+    name: blob-transfer
+  ttlAfterFinished: 1h

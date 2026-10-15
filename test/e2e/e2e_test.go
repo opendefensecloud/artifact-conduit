@@ -111,7 +111,7 @@ var _ = Describe("ARC", Ordered, func() {
 			}
 
 			By("Fetching Kubernetes events")
-			eventNamespaces := []string{namespace, "default"}
+			eventNamespaces := []string{namespace, "default", walkThroughNamespace}
 			for _, ns := range eventNamespaces {
 				cmd = exec.Command("kubectl", "get", "events", "-n", ns, "--sort-by=.lastTimestamp")
 				eventsOutput, err := run(cmd)
@@ -212,22 +212,14 @@ var _ = Describe("ARC", Ordered, func() {
 			applyResource("default", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 		})
 
-		stateFinal := func(p string) bool {
-			return p == "Succeeded" || p == "Failed"
-		}
-
-		stateSucceeded := func(p string) bool {
-			return p == "Succeeded"
-		}
-
 		for _, artifactType := range artifactTypes {
 			It(fmt.Sprintf("should run workflows of %s order successfully", artifactType), func() {
 				resourceName := fmt.Sprintf("example-%s-order", artifactType)
 				Eventually(func() bool {
-					return orderState(resourceName, stateFinal)
+					return orderState("default", resourceName, stateFinal)
 				}).Should(BeTrue())
 
-				Expect(orderState(resourceName, stateSucceeded)).To(BeTrue())
+				Expect(orderState("default", resourceName, stateSucceeded)).To(BeTrue())
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", resourceName, "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}\t{{ end }}")
 				output, err := run(cmd)
 				Expect(err).NotTo(HaveOccurred())
@@ -256,6 +248,7 @@ var _ = Describe("ARC", Ordered, func() {
 		})
 	})
 
-	// Declared last so it runs after the chart install and the fixtures above.
+	// Declared last so they run after the chart install and the fixtures above.
+	walkThroughSpecs()
 	endpointControllerSpecs()
 })

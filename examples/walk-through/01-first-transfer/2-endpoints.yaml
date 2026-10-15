@@ -1,0 +1,20 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: github-raw
+spec:
+  type: http # Endpoint type, matched against ArtifactType rules
+  remoteURL: https://raw.githubusercontent.com
+  usage: PullOnly
+  # no secretRef: public source
+---
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: seaweedfs
+spec:
+  type: s3
+  remoteURL: http://dst.seaweedfs:8333
+  usage: PushOnly
+  secretRef:
+    name: seaweedfs-credentials

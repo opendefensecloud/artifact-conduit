@@ -1,0 +1,25 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: scheduled-transfer
+  labels:
+    walk-through: schedule
+spec:
+  defaults:
+    srcRef:
+      name: github-raw
+    dstRef:
+      name: seaweedfs
+  artifacts:
+    - type: blob
+      # ARC creates an Argo CronWorkflow for this artifact instead of a Workflow.
+      cron: # -> cron=true
+        schedules:
+          - "*/2 * * * *" # every two minutes, the setup allows schedules down to 1m
+        timezone: UTC
+        # startingDeadlineSeconds: 300 # skip a run that is more than 5 minutes late
+        # when: "..." # Argo expression, skip a run if it is false
+      spec:
+        key: opendefensecloud/artifact-conduit/refs/tags/v0.3.0/examples/blob/file.txt
+        override: test/walk-through/scheduled.txt
+        sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
