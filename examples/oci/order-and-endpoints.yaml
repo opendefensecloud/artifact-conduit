@@ -42,7 +42,7 @@ spec:
       spec:
         repository: distroless/static
         tag: nonroot
-        override: "myteam/static:{{.tag}}-dev" # supports go templates
+        override: "myteam/static:{tag}-dev" # supports the placeholders {tag} and {repository}
     - type: oci
       srcRef:
         name: dockerio

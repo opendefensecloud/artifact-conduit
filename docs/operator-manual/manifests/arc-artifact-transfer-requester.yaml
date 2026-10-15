@@ -1,0 +1,77 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: arc-artifact-transfer-requester
+rules:
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - orders
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - artifactworkflows
+      - endpoints
+      - artifacttypes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflows
+      - cronworkflows
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: arc-artifact-transfer-requester
+  namespace: team-a
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: arc-artifact-transfer-requester
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: team-a:artifact-transfer-requesters
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: arc-artifact-transfer-requester-cluster
+rules:
+  - apiGroups:
+      - arc.opendefense.cloud
+    resources:
+      - clusterartifacttypes
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arc-artifact-transfer-requester-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: arc-artifact-transfer-requester-cluster
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: team-a:artifact-transfer-requesters

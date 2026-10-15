@@ -138,7 +138,8 @@ create an `Endpoint` can point it at a server they control and have that
 Secret's credentials delivered to it. RBAC that grants `Endpoint` creation
 without also granting Secret read is not a safe boundary. Egress
 `NetworkPolicy` on the controller-manager is the control for where those
-credentials may travel.
+credentials may travel. See also
+[Secret Access](../operator-manual/secret-access.md).
 
 ## The `ClusterArtifactType` and `ArtifactType`
 

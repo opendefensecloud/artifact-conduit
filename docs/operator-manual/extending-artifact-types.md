@@ -7,7 +7,7 @@ This guide explains how to add support for new artifact types in ARC by creating
 ARC's artifact processing pipeline is extensible through the `ArtifactType` custom resource. Each ArtifactType defines:
 
 - **Rules**: Which source and destination endpoint types are compatible
-- **Parameters**: Default parameters passed to workflows
+- **Parameters**: Parameters passed to workflows, overriding all others
 - **WorkflowTemplateRef**: The Argo Workflows template that implements the processing logic
 
 When an `Order` is created, the `OrderReconciler` generates `ArtifactWorkflow` resources for each artifact, which then instantiate Argo `Workflow` instances based on the referenced WorkflowTemplate.
@@ -114,7 +114,7 @@ spec:
 
 - `rules.srcTypes`: Validates source `Endpoint.spec.type` compatibility
 - `rules.dstTypes`: Validates destination `Endpoint.spec.type` compatibility  
-- `parameters`: Default values merged with artifact spec (artifact spec takes precedence)
+- `parameters`: Values that override all other parameters
 - `workflowTemplateRef`: Name of the WorkflowTemplate to instantiate
 
 ### Parameter Naming Convention
@@ -167,10 +167,11 @@ Test both success and failure paths:
 
 ### Parameter Design
 
-1. **Sensible Defaults**: Provide defaults in ArtifactType.spec.parameters for common use cases
+1. **Defaults**: Provide defaults in the WorkflowTemplate arguments; `ArtifactType.spec.parameters` override every other parameter
 2. **Required vs Optional**: Document which spec fields are required
 3. **Type Safety**: Validate parameter types in WorkflowTemplate scripts
 4. **Secret Handling**: Never pass secrets as parameters — always use volume mounts
+5. **Untrusted Input**: Pass `spec*` parameters to scripts as environment variables, never interpolate them into scripts or `when` expressions (see [Secret Access](secret-access.md))
 
 ### Naming Conventions
 

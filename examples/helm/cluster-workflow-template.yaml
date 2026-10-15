@@ -72,24 +72,41 @@ spec:
           - name: work-volume
             mountPath: /data
 
+        # spec* parameters are the fields of the artifact's spec in the Order,
+        # chosen by whoever creates the Order. All parameters are passed in as
+        # environment variables and never interpolated into the script.
+        # The spec* variables come first, because Kubernetes expands $(VAR) in a
+        # value with the variables defined before it.
+        env:
+          - name: SPEC_REPO
+            value: "{{workflow.parameters.specRepo}}"
+          - name: SPEC_CHART
+            value: "{{workflow.parameters.specChart}}"
+          - name: SPEC_VERSION
+            value: "{{workflow.parameters.specVersion}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+
         source: |
           set -euo pipefail
 
-          echo "Pulling OCI chart {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}/{{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}}"
+          echo "Pulling OCI chart ${SRC_REMOTE_URL}/${SPEC_REPO}/${SPEC_CHART}:${SPEC_VERSION}"
 
           mkdir -p /data/charts
           cd /data/charts
 
           # Conditionally login to registry
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              helm registry login -u "$(cat /secrets/src/username)" -p "$(cat /secrets/src/password)" {{workflow.parameters.srcRemoteURL}}
+          if [ "$SRC_SECRET" = "true" ]; then
+              cat /secrets/src/password | helm registry login -u "$(cat /secrets/src/username)" --password-stdin "$SRC_REMOTE_URL"
           fi
 
           # The chart reference for OCI: oci://<repo-url>/<chart-name>
-          CHART_REF="oci://{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specRepo}}/{{workflow.parameters.specChart}}"
+          CHART_REF="oci://${SRC_REMOTE_URL}/${SPEC_REPO}/${SPEC_CHART}"
 
-          helm pull $CHART_REF \
-            --version "{{workflow.parameters.specVersion}}" \
+          helm pull "$CHART_REF" \
+            --version "$SPEC_VERSION" \
             --destination . \
             --untar
 
@@ -104,27 +121,36 @@ spec:
           - name: src-secret-vol
             readOnly: true
             mountPath: /secrets/src # For passing basic auth credentials
+        env:
+          - name: SPEC_CHART
+            value: "{{workflow.parameters.specChart}}"
+          - name: SPEC_VERSION
+            value: "{{workflow.parameters.specVersion}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
         source: |
           set -euo pipefail
 
-          echo "Pulling helm chart {{workflow.parameters.specChart}}:{{workflow.parameters.specVersion}} from {{workflow.parameters.srcRemoteURL}}"
+          echo "Pulling helm chart ${SPEC_CHART}:${SPEC_VERSION} from ${SRC_REMOTE_URL}"
 
           mkdir -p /data/charts
           cd /data/charts
 
           # Add the helm repository
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              cat /secrets/src/password | helm repo add src-repo "{{workflow.parameters.srcRemoteURL}}" --username "$(cat /secrets/src/username)" --password-stdin
+          if [ "$SRC_SECRET" = "true" ]; then
+              cat /secrets/src/password | helm repo add src-repo "$SRC_REMOTE_URL" --username "$(cat /secrets/src/username)" --password-stdin
           else
-              helm repo add src-repo "{{workflow.parameters.srcRemoteURL}}"
+              helm repo add src-repo "$SRC_REMOTE_URL"
           fi
 
           # Update the index to ensure the chart is found
           helm repo update
 
           # Pull the specified chart version and unpack it
-          helm pull src-repo/"{{workflow.parameters.specChart}}" \
-            --version "{{workflow.parameters.specVersion}}" \
+          helm pull "src-repo/${SPEC_CHART}" \
+            --version "$SPEC_VERSION" \
             --destination . \
             --untar
 
@@ -136,9 +162,12 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+        env:
+          - name: SPEC_CHART
+            value: "{{workflow.parameters.specChart}}"
 
         source: |
-          cd /data/charts/{{workflow.parameters.specChart}}
+          cd "/data/charts/${SPEC_CHART}"
 
           helm lint .
 
@@ -157,9 +186,12 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+        env:
+          - name: SPEC_CHART
+            value: "{{workflow.parameters.specChart}}"
+          - name: SCAN_SEVERITY
+            value: "{{workflow.parameters.scanSeverity}}"
         source: |
-          export SCAN_SEVERITY="{{workflow.parameters.scanSeverity}}"
-
           echo "Scanning image for severities: $SCAN_SEVERITY"
 
           # Trivy scan in a directory mode
@@ -169,7 +201,7 @@ spec:
             --severity "$SCAN_SEVERITY" \
             --format json \
             --output /data/scan-results.json \
-            /data/charts/{{workflow.parameters.specChart}}
+            "/data/charts/${SPEC_CHART}"
 
           if [ $? -eq 0 ]; then
               echo "✅ Scan successful and no vulnerabilities found above severity: $SCAN_SEVERITY"
@@ -195,33 +227,42 @@ spec:
           - mountPath: /etc/ssl/certs/
             name: ca-certificates
             readOnly: true
+        env:
+          - name: SPEC_REPO
+            value: "{{workflow.parameters.specRepo}}"
+          - name: SPEC_CHART
+            value: "{{workflow.parameters.specChart}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+          - name: DST_SECRET
+            value: "{{workflow.parameters.dstSecret}}"
 
         source: |
           set -euo pipefail
           cd /data/charts
 
-          CHART_PATH="./{{workflow.parameters.specChart}}"
+          CHART_PATH="./${SPEC_CHART}"
           echo "Packaging chart from $CHART_PATH"
 
           # Package the unpacked chart back into a .tgz file
           # This step is the same regardless of the source type
-          helm package $CHART_PATH
+          helm package "$CHART_PATH"
 
           TGZ_FILE=$(ls *.tgz | head -n 1)
 
           # Check if the chart version was updated (e.g., in a previous hypothetical step)
           # For simplicity, we assume the packaged name is correct.
 
-          echo "Pushing $TGZ_FILE to OCI registry: oci://{{workflow.parameters.dstRemoteURL}}"
+          echo "Pushing $TGZ_FILE to OCI registry: oci://${DST_REMOTE_URL}"
 
           # Conditionally login to registry
           LOGIN_FLAGS=""
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              cat /secrets/dst/password | helm registry login ${LOGIN_FLAGS} -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}}
+          if [ "$DST_SECRET" = "true" ]; then
+              cat /secrets/dst/password | helm registry login ${LOGIN_FLAGS} -u "$(cat /secrets/dst/username)" --password-stdin "$DST_REMOTE_URL"
           fi
 
           # Push to the OCI registry (Destination)
-          helm push $TGZ_FILE "oci://{{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specRepo}}"
+          helm push "$TGZ_FILE" "oci://${DST_REMOTE_URL}/${SPEC_REPO}"
 
           if [ $? -ne 0 ]; then
               echo "❌ Helm Push failed!"
