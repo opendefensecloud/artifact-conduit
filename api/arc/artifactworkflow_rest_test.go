@@ -195,7 +195,7 @@ var _ = Describe("ArtifactWorkflow Strategy", func() {
 				Expect(errs).To(BeEmpty())
 			})
 
-			It("should reject update when spec.Type is changed", func() {
+			It("should reject update when spec.workflowTemplateRef is changed", func() {
 				oldWorkflow := &arc.ArtifactWorkflow{
 					Name:      "test-workflow",
 					Namespace: "default",

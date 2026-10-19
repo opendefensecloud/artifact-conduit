@@ -312,7 +312,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(3))
 		})
 
-		It("should delete artifact workflows and secrets when order is deleted", func() {
+		It("should delete artifact workflows when order is deleted", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
 				Name:      "test-order-delete",
@@ -332,7 +332,7 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(2))
 			// Delete order
 			Expect(k8sClient.Delete(ctx, order)).To(Succeed())
-			// Eventually all artifact workflows should be gone
+			// Eventually the succeeded artifact workflow should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -407,7 +407,7 @@ var _ = Describe("OrderController", func() {
 			Entry("before its TTL has elapsed", "test-order-ttl-not-expired", time.Hour),
 		)
 
-		It("should delete artifact workflows when order is completed successfully", func() {
+		It("should delete an artifact workflow once it completes successfully", func() {
 			createEndpoints("src-1", "dst-1", "src-2", "dst-2")
 			order := &arcv1alpha1.Order{
 				Name:      "test-order-cleanup-on-completion",
@@ -436,7 +436,7 @@ var _ = Describe("OrderController", func() {
 			wf.Status.Phase = wfv1alpha1.WorkflowSucceeded
 			Expect(k8sClient.Update(ctx, wf)).To(Succeed())
 
-			// Eventually all artifact workflows should be gone
+			// Eventually the succeeded artifact workflow should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -500,7 +500,7 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(1))
 
-			// Eventually all artifact workflows should be gone
+			// Eventually the succeeded artifact workflow should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -556,7 +556,7 @@ var _ = Describe("OrderController", func() {
 				return len(awList.Items)
 			}).Should(Equal(1))
 
-			// Eventually all artifact workflows should be gone
+			// Eventually the succeeded artifact workflow should be gone
 			Eventually(func() int {
 				_ = k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
 				return len(awList.Items)
@@ -729,7 +729,7 @@ var _ = Describe("OrderController", func() {
 
 		It("should update the artifact status if the workflow is updated", func() {
 			createEndpoints("src-1", "dst-1")
-			// Create test Order with multiple artifacts, no defaults
+			// Create test Order with a single artifact, no defaults
 			order := &arcv1alpha1.Order{
 				Name:      "test-order-status-updates",
 				Namespace: ns.Name,
@@ -1073,7 +1073,7 @@ var _ = Describe("OrderController", func() {
 			Expect(k8sClient.Create(ctx, at)).To(Succeed())
 
 			createEndpoints("src-1", "dst-1")
-			// Create test Order with multiple artifacts, no defaults
+			// Create test Order with a single artifact, no defaults
 			order := &arcv1alpha1.Order{
 				Name:      "test-order-no-defaults",
 				Namespace: ns.Name,
