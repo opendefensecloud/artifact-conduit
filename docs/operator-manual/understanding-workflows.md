@@ -106,7 +106,7 @@ The parameters do not contain secrets, but can be used to interact with third-pa
 
     Parameters can come from the `Order` and `ArtifactType`. These parameters are merged when creating the `ClusterArtifactType` with `ArtifactType` taking precedence over `Order`.
 
-However the source and destination secrets are mounted at `/secret/src/` and `/secret/dst/` respectively. If no secret was provided an emptyDir is mounted to make sure Argo Workflows continue to work.
+However the source and destination secrets are provided as volumes named `src-secret-vol` and `dst-secret-vol` respectively. The `WorkflowTemplate` decides where to mount them, e.g. at `/secrets/src` and `/secrets/dst`. If no secret was provided an emptyDir is used to make sure Argo Workflows continue to work.
 
 ## Example for an OCI usecase
 

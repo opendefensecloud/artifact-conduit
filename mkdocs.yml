@@ -39,7 +39,7 @@ theme:
     - content.code.copy
     - content.code.select
     # - content.footnote.tooltips
-    # - content.tabs.link
+    - content.tabs.link
     - content.tooltips
     - header.autohide
     # - navigation.expand
@@ -69,6 +69,8 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.snippets
   - pymdownx.tilde
+  - pymdownx.tabbed:
+      alternate_style: true
   - attr_list
   - pymdownx.blocks.caption
   - pymdownx.superfences:

@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: blob-transfer
+spec:
+  serviceAccountName: arc-workflow
+  # ARC passes these parameters to every workflow it creates. All values are strings.
+  arguments:
+    parameters:
+      # from the source Endpoint
+      - name: srcType
+      - name: srcRemoteURL
+      - name: srcSecret # "true" if the Endpoint has a secretRef, otherwise "false"
+      # from the destination Endpoint
+      - name: dstType
+      - name: dstRemoteURL
+      - name: dstSecret
+      # from the artifact spec in the Order: spec.key -> specKey, spec.override -> specOverride
+      - name: specKey
+      - name: specOverride
+      # Also passed by ARC, but not used by this template:
+      # - name: cron # "true" if the artifact is scheduled by a cron, otherwise "false"
+      # - name: <name> # every parameter of the ArtifactType, overriding the ones above
+  entrypoint: transfer
+  templates:
+    - name: transfer
+      script:
+        image: amazon/aws-cli:2.37.9
+        command: [bash]
+        volumeMounts:
+          # ARC adds the volumes src-secret-vol and dst-secret-vol to every workflow.
+          # The template decides where (and whether) to mount them.
+          - name: dst-secret-vol
+            mountPath: /secrets/dst
+        env: # never put parameters into the source, a value could run as code
+          - name: SPEC_KEY
+            value: "{{workflow.parameters.specKey}}"
+          - name: SPEC_OVERRIDE
+            value: "{{workflow.parameters.specOverride}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+        source: |
+          set -euo pipefail
+          export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
+          export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
+
+          # SUPPLY CHAIN: this copies the blob without inspecting it. Never do this in
+          # production: verify it (checksum, virus scan, SBOM, ...) before it reaches
+          # the destination. The next step of the walk-through (02-verify) adds a
+          # checksum and a virus scan.
+          echo "Transferring ${SRC_REMOTE_URL}/${SPEC_KEY}"
+          echo "          to ${DST_REMOTE_URL}/${SPEC_OVERRIDE}"
+          curl -fsSL "${SRC_REMOTE_URL}/${SPEC_KEY}" \
+            | aws --endpoint-url "${DST_REMOTE_URL}" \
+                s3 cp --no-progress - "s3://${SPEC_OVERRIDE}"
+          echo "Done."

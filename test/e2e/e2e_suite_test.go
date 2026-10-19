@@ -399,10 +399,19 @@ func applyOCMClusterWorkflowTemplate(namespace, file string) {
 	Expect(err).NotTo(HaveOccurred())
 }
 
-func orderState(name string, state func(string) bool) bool {
+// stateFinal matches the phases arcv1alpha1.WorkflowPhase.Completed treats as final.
+func stateFinal(p string) bool {
+	return p == "Succeeded" || p == "Failed" || p == "Error"
+}
+
+func stateSucceeded(p string) bool {
+	return p == "Succeeded"
+}
+
+func orderState(namespace, name string, state func(string) bool) bool {
 	GinkgoHelper()
 
-	cmd := exec.Command("kubectl", "get", "-n", "default", "orders", name, "-o", "go-template={{ range .status.artifactWorkflows }}{{ .phase }}\t{{ end }}")
+	cmd := exec.Command("kubectl", "get", "-n", namespace, "orders", name, "-o", "go-template={{ range .status.artifactWorkflows }}{{ .phase }}\t{{ end }}")
 	output, err := run(cmd)
 	Expect(err).NotTo(HaveOccurred())
 

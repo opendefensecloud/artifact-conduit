@@ -1,0 +1,12 @@
+# The SeaweedFS from the setup again, this time as a source. An Endpoint is
+# either PullOnly, PushOnly or All. A second Endpoint keeps "seaweedfs" PushOnly.
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Endpoint
+metadata:
+  name: seaweedfs-source
+spec:
+  type: s3
+  remoteURL: http://dst.seaweedfs:8333
+  usage: PullOnly
+  secretRef:
+    name: seaweedfs-credentials # the same credentials as for pushing

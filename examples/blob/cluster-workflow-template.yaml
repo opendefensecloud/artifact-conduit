@@ -76,16 +76,39 @@ spec:
         limit: "2"
 
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.11
         command: [sh, -c]
         volumeMounts:
           - &dstSecretMount
             name: dst-secret-vol
             mountPath: /secrets/dst
 
+        # spec* parameters are the fields of the artifact's spec in the Order,
+        # chosen by whoever creates the Order. All parameters are passed in as
+        # environment variables and never interpolated into the scripts.
+        # The spec* variables come first, because Kubernetes expands $(VAR) in a
+        # value with the variables defined before it.
+        env: &env
+          - name: SPEC_KEY
+            value: "{{workflow.parameters.specKey}}"
+          - name: SPEC_OVERRIDE
+            value: "{{workflow.parameters.specOverride}}"
+          - name: SPEC_MD5
+            value: "{{workflow.parameters.specMd5}}"
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+          - name: DST_SECRET
+            value: "{{workflow.parameters.dstSecret}}"
+          - name: STORAGE_QUOTA
+            value: "{{workflow.parameters.storageQuota}}"
+
         source: |
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+          if [ "${DST_SECRET}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
               if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
@@ -95,18 +118,18 @@ spec:
               AWS_NO_AUTH="--no-sign-request"
           fi
 
-          if [[ ! -z ${{workflow.parameters.specMd5}} ]]; then
-            BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
-            KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
+          if [[ -n "$SPEC_MD5" ]]; then
+            BUCKET=$(echo "${SPEC_KEY}" | cut -d/ -f1)
+            KEY=$(echo "${SPEC_KEY}" | cut -d/ -f2-)
 
-            MD5=$(aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query ETag --output text --no-cli-pager)
+            MD5=$(aws $AWS_NO_AUTH --endpoint-url "${DST_REMOTE_URL}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query ETag --output text --no-cli-pager)
             if [ $? -eq 254 ]; then
                 echo "unavailable"
                 exit 0
             fi
 
             if [ $? -eq 0 ]; then
-              if [[ $MD5 != {{workflow.parameters.specMd5}} ]]; then
+              if [[ "$MD5" != "$SPEC_MD5" ]]; then
                 echo "md5 mismatch, aborting"
                 exit 1
               else
@@ -118,7 +141,7 @@ spec:
             echo "unavailable"
             exit 0
           else
-            aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 ls "{{workflow.parameters.specKey}}" >/dev/null 2>&1
+            aws $AWS_NO_AUTH --endpoint-url "${DST_REMOTE_URL}" s3 ls "s3://${SPEC_KEY}" >/dev/null 2>&1
             if [ $? -eq 0 ]; then
                 echo "available"
             else
@@ -129,18 +152,19 @@ spec:
 
     - name: determine-size-s3
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.11
         command: [sh, -c]
         volumeMounts:
           - &srcSecretMount
             name: src-secret-vol
             mountPath: /secrets/src
 
+        env: *env
         source: |
           set -euo pipefail
 
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+          if [ "${SRC_SECRET}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
               if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
@@ -150,16 +174,16 @@ spec:
               AWS_NO_AUTH="--no-sign-request"
           fi
 
-          BUCKET=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f1)
-          KEY=$(echo "{{workflow.parameters.specKey}}" | cut -d/ -f2-)
+          BUCKET=$(echo "${SPEC_KEY}" | cut -d/ -f1)
+          KEY=$(echo "${SPEC_KEY}" | cut -d/ -f2-)
 
-          FILE_SIZE_BYTES=$(aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
+          FILE_SIZE_BYTES=$(aws $AWS_NO_AUTH --endpoint-url "${SRC_REMOTE_URL}" s3api head-object --bucket "$BUCKET" --key "$KEY" --query 'ContentLength' --output text)
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
           fi
-          if [[ "$FILE_SIZE_BYTES" -gt "{{workflow.parameters.storageQuota}}" ]]; then
-            echo "File size $FILE_SIZE_BYTES bigger than storage quota of {{workflow.parameters.storageQuota}} bytes."
+          if [[ "$FILE_SIZE_BYTES" -gt "${STORAGE_QUOTA}" ]]; then
+            echo "File size $FILE_SIZE_BYTES bigger than storage quota of ${STORAGE_QUOTA} bytes."
             exit 1
           fi
 
@@ -170,16 +194,17 @@ spec:
         image: quay.io/curl/curl:8.20.0
         command: [sh, -c]
 
+        env: *env
         source: |
           set -euo pipefail
 
-          FILE_SIZE_BYTES=$(curl -sI "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}" | grep -i Content-Length | awk '{print $2}')
+          FILE_SIZE_BYTES=$(curl -sI "${SRC_REMOTE_URL}/${SPEC_KEY}" | grep -i Content-Length | awk '{print $2}')
 
           if [ -z "$FILE_SIZE_BYTES" ]; then
             exit 1
           fi
-          if [[ "$FILE_SIZE_BYTES" -gt "{{workflow.parameters.storageQuota}}" ]]; then
-            echo "File size $FILE_SIZE_BYTES bigger than storage quota of {{workflow.parameters.storageQuota}} bytes."
+          if [[ "$FILE_SIZE_BYTES" -gt "${STORAGE_QUOTA}" ]]; then
+            echo "File size $FILE_SIZE_BYTES bigger than storage quota of ${STORAGE_QUOTA} bytes."
             exit 1
           fi
 
@@ -211,18 +236,19 @@ spec:
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.11
         command: [sh, -c]
         volumeMounts:
           - &workDirMount
             name: work-volume
             mountPath: /data
           - *srcSecretMount
+        env: *env
         source: |
           set -euo pipefail
 
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+          if [ "${SRC_SECRET}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/src/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/src/AWS_SECRET_ACCESS_KEY)
               if [ -f /secrets/src/AWS_SESSION_TOKEN ]; then
@@ -233,8 +259,8 @@ spec:
           fi
 
           mkdir -p /data/storage
-          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
-          aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.srcRemoteURL}}" s3 cp "s3://{{workflow.parameters.specKey}}" "/data/storage/file"
+          echo "Downloading ${SRC_REMOTE_URL}/${SPEC_KEY}..."
+          aws $AWS_NO_AUTH --endpoint-url "${SRC_REMOTE_URL}" s3 cp "s3://${SPEC_KEY}" "/data/storage/file"
 
     - name: pull-http
       volumes:
@@ -245,11 +271,12 @@ spec:
         volumeMounts:
           - *workDirMount
 
+        env: *env
         source: |
           set -euo pipefail
           mkdir -p /data/storage
-          echo "Downloading {{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}..."
-          curl --output "/data/storage/file" "{{workflow.parameters.srcRemoteURL}}/{{workflow.parameters.specKey}}"
+          echo "Downloading ${SRC_REMOTE_URL}/${SPEC_KEY}..."
+          curl --output "/data/storage/file" "${SRC_REMOTE_URL}/${SPEC_KEY}"
 
     - name: scan-clamav
       volumes:
@@ -268,16 +295,17 @@ spec:
       volumes:
         - *workDir
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.11
         command: [sh, -c]
         volumeMounts:
           - *workDirMount
           - *dstSecretMount
+        env: *env
         source: |
           set -euo pipefail
 
           AWS_NO_AUTH=""
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+          if [ "${DST_SECRET}" = "true" ]; then
               export AWS_ACCESS_KEY_ID=$(cat /secrets/dst/AWS_ACCESS_KEY_ID)
               export AWS_SECRET_ACCESS_KEY=$(cat /secrets/dst/AWS_SECRET_ACCESS_KEY)
               if [ -f /secrets/dst/AWS_SESSION_TOKEN ]; then
@@ -287,5 +315,5 @@ spec:
               AWS_NO_AUTH="--no-sign-request"
           fi
 
-          echo "Uploading {{workflow.parameters.dstRemoteURL}}/{{workflow.parameters.specOverride}}..."
-          aws $AWS_NO_AUTH --endpoint-url "{{workflow.parameters.dstRemoteURL}}" s3 cp "/data/storage/file" "s3://{{workflow.parameters.specOverride}}"
+          echo "Uploading ${DST_REMOTE_URL}/${SPEC_OVERRIDE}..."
+          aws $AWS_NO_AUTH --endpoint-url "${DST_REMOTE_URL}" s3 cp "/data/storage/file" "s3://${SPEC_OVERRIDE}"

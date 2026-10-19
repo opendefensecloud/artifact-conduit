@@ -6,7 +6,7 @@ This page serves as an introduction to the core concepts of Artficat Conduit (AR
 
 The `Order` resource is the primary Custom Resource Definition (CRD) in the ARC (Artifact Conduit) system for declaring high-level artifact transfer operations. An `Order` specifies one or more artifacts to be processed, along with default source and destination endpoints. The `OrderReconciler` decomposes each Order into individual `ArtifactWorkflow` resources, which represent atomic artifact operations that can be executed independently.
 
-The status map is populated by the `OrderReconciler` as `ArtifactWorkflows` are created. Each key is a truncated SHA-256 hash computed from the artifact's type, source endpoint (including generation), destination endpoint (including generation), source secret (including generation), destination secret (including generation), and spec fields, ensuring idempotent workflow generation and change detection.
+The status map is populated by the `OrderReconciler` as `ArtifactWorkflows` are created. Each key is a truncated SHA-256 hash computed from the `Order` namespace, the artifact's type and spec, the `ArtifactType` generation, the source and destination endpoint names, the cron schedule, and the time of the last [force reconciliation](../operator-manual/force-reconciliation.md). A change to any of these creates a new `ArtifactWorkflow` at the next reconciliation. Changes to an `Endpoint` or its `Secret` do not affect the hash: updated `Endpoint` settings take effect only after a force reconciliation, while `Secret` contents are read each time a workflow runs.
 
 See the [spec documentation](../user-guide/api-reference.md#orderspec) for details on how to define an `Order`.
 
@@ -138,7 +138,8 @@ create an `Endpoint` can point it at a server they control and have that
 Secret's credentials delivered to it. RBAC that grants `Endpoint` creation
 without also granting Secret read is not a safe boundary. Egress
 `NetworkPolicy` on the controller-manager is the control for where those
-credentials may travel.
+credentials may travel. See also
+[Secret Access](../operator-manual/secret-access.md).
 
 ## The `ClusterArtifactType` and `ArtifactType`
 

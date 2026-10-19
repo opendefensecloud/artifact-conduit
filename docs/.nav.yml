@@ -2,7 +2,14 @@ nav:
   - Home: index.md
   - Getting Started:
       - getting-started.md
-      - walk-through/about.md
+      - Walk-through:
+          - walk-through/about.md
+          - walk-through/setup.md
+          - walk-through/first-transfer.md
+          - walk-through/verify.md
+          - walk-through/conditionals.md
+          - walk-through/schedule.md
+          - walk-through/next-steps.md
   - User Guide:
       - user-guide/*
   - Operator Manual:

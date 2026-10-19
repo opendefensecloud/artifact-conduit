@@ -1,0 +1,26 @@
+apiVersion: arc.opendefense.cloud/v1alpha1
+kind: Order
+metadata:
+  name: multi-source-transfer
+  labels:
+    walk-through: conditionals
+spec:
+  defaults:
+    srcRef:
+      name: github-raw
+    dstRef:
+      name: seaweedfs
+  # One workflow per artifact.
+  artifacts:
+    - type: blob # uses the default source: github-raw
+      spec:
+        key: opendefensecloud/artifact-conduit/refs/tags/v0.3.0/examples/blob/file.txt
+        override: test/walk-through/from-http.txt
+        sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    - type: blob
+      srcRef:
+        name: seaweedfs-source # overrides the default source for this artifact
+      spec:
+        key: test/walk-through/verified.txt # <bucket>/<key>, pushed in the previous step
+        override: test/walk-through/from-s3.txt
+        sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"

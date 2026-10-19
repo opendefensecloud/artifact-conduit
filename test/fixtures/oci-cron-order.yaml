@@ -36,4 +36,4 @@ spec:
       spec: # should be quick as it should be cached
         repository: distroless/static
         tag: nonroot
-        override: "myteam/static:{{.tag}}-dev" # supports go templates
+        override: "myteam/static:{tag}-dev"

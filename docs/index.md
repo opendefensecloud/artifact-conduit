@@ -7,7 +7,7 @@
 
 ## What is Artifact Conduit (ARC)?
 
-ARC (Artifact Conduit) is an open-source system that acts as a gateway for procuring various artifact types and transferring them across security zones while ensuring policy compliance through automated scanning and validation. The system addresses the challenge of bringing external artifacts—container images, Helm charts, software packages, and other resources—into restricted environments where direct internet access is prohibited.
+{% include-markdown "../README.md" start="<!-- overview-start -->" end="<!-- overview-end -->" %}
 
 ## System Architecture
 
@@ -59,8 +59,8 @@ flowchart LR
   end
     Order -- contains --> Spec
     Spec -- generates --> ArtifactWorkflow1 & ArtifactWorkflowN
-    Spec -- reads & tracks generations of --> EndpointSrc & EndpointDst & EndpointSecret
-    Spec -- type --> ArtifactTypeDef
+    Spec -- reads --> EndpointSrc & EndpointDst & EndpointSecret
+    Spec -- type, tracks generation of --> ArtifactTypeDef
     ArtifactWorkflow1 -- srcRef --> EndpointSrc
     ArtifactWorkflow1 -- dstRef --> EndpointDst
     EndpointSrc -- secretRef --> EndpointSecret
@@ -81,16 +81,7 @@ flowchart LR
 
 ## Features
 
-An incomplete list of features ARCs provides:
-
-- **Artifact Procurement**: Pull artifacts from diverse sources including OCI registries, Helm repositories, S3-compatible storage, and HTTP endpoints
-- **Security Validation**: Perform malware scanning, CVE analysis, license verification, and signature validation before artifact transfer
-- **Policy Enforcement**: Ensure only artifacts meeting defined security and compliance policies cross security boundaries
-- **Declarative Management**: Leverage Kubernetes-native declarative configuration for artifact lifecycle management
-- **Auditability**: Provide attestation and traceability of all artifact processing operations
-- **Artifact Type Definitions**: Define the types of artifacts that can be procured by ARC, including container images, Helm charts, software packages, and other resources
-- **Workflow Templates**: Configure workflows for artifact procurement, validation, and transfer, allowing for customization based on specific use cases or environments
-- **Customizable Artifact Types**: Allow users to define their own custom artifact types along with Argo Workflow Templates to solve their unique requirements
+{% include-markdown "../README.md" start="<!-- capabilities-start -->" end="<!-- capabilities-end -->" heading-offset=1 %}
 
 ## Project Resources
 

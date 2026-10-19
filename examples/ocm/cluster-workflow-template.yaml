@@ -109,16 +109,35 @@ spec:
           - name: ca-certificates
             readOnly: true
             mountPath: /etc/ssl/certs/
+        # spec* parameters are the fields of the artifact's spec in the Order,
+        # chosen by whoever creates the Order. All parameters are passed in as
+        # environment variables and never interpolated into the script.
+        # The spec* variables come first, because Kubernetes expands $(VAR) in a
+        # value with the variables defined before it.
         env:
+          - name: SPEC_REPO
+            value: "{{workflow.parameters.specRepo}}"
+          - name: SPEC_COMPONENT
+            value: "{{workflow.parameters.specComponent}}"
+          - name: SPEC_VERSION
+            value: "{{workflow.parameters.specVersion}}"
           - name: SSL_CERT_FILE
             value: /etc/ssl/certs/trust-bundle.pem
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+          - name: SRC_SCHEME
+            value: "{{workflow.parameters.srcScheme}}"
+          - name: REGISTRY_IP
+            value: "{{inputs.parameters.registryIP}}"
         source: |
           set -euo pipefail
           export HOME=/tmp
 
-          src_host=$(echo '{{workflow.parameters.srcRemoteURL}}' | sed 's#^[a-z][a-z0-9+.-]*://##')
+          src_host=$(echo "$SRC_REMOTE_URL" | sed 's#^[a-z][a-z0-9+.-]*://##')
 
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
+          if [ "$SRC_SECRET" = "true" ]; then
               echo "type: generic.config.ocm.software/v1
           configurations:
             - type: credentials.config.ocm.software
@@ -134,23 +153,23 @@ spec:
           fi
 
           echo "Transfering to CTF..."
-          if [ -n "{{workflow.parameters.specRepo}}" ]; then
-            component_url={{workflow.parameters.srcScheme}}://$src_host/{{workflow.parameters.specRepo}}//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+          if [ -n "$SPEC_REPO" ]; then
+            component_url="${SRC_SCHEME}://${src_host}/${SPEC_REPO}//${SPEC_COMPONENT}:${SPEC_VERSION}"
           else
-            component_url={{workflow.parameters.srcScheme}}://$src_host//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}
+            component_url="${SRC_SCHEME}://${src_host}//${SPEC_COMPONENT}:${SPEC_VERSION}"
           fi
           ocm transfer component "$component_url" -r --copy-resources --copy-sources /data/ctf
 
           echo "Transfering CTF to temporary registry"
-          if [ -n "{{workflow.parameters.specRepo}}" ]; then
-            temp_registry_url=http://{{inputs.parameters.registryIP}}:5000/{{workflow.parameters.specRepo}}
+          if [ -n "$SPEC_REPO" ]; then
+            temp_registry_url="http://${REGISTRY_IP}:5000/${SPEC_REPO}"
           else
-            temp_registry_url=http://{{inputs.parameters.registryIP}}:5000
+            temp_registry_url="http://${REGISTRY_IP}:5000"
           fi
           ocm transfer ctf /data/ctf "$temp_registry_url"
 
           echo "Compile list of images for trivy"
-          ocm get resources "$temp_registry_url//{{workflow.parameters.specComponent}}:{{workflow.parameters.specVersion}}" -r -ojson > /data/resources.json
+          ocm get resources "${temp_registry_url}//${SPEC_COMPONENT}:${SPEC_VERSION}" -r -ojson > /data/resources.json
           cat /data/resources.json | jq -r '.items[] | select(.element.type == "ociImage") | .element.access.imageReference' > /data/images-tmp.txt
           cat /data/images-tmp.txt | sed 's/http:\/\///g' > /data/images.txt
 
@@ -172,16 +191,20 @@ spec:
           do
             echo "Scanning image for severities: $p"
             trivy image \
-              --exit-code {{workflow.parameters.scanExitCode}} \
-              --severity {{workflow.parameters.scanSeverity}} \
+              --exit-code "$SCAN_EXIT_CODE" \
+              --severity "$SCAN_SEVERITY" \
               --format json \
               --output /data/scan-results.json \
               --cache-dir /tmp/trivy-cache \
-              $p
+              "$p"
           done < /data/images.txt
         env:
           - name: PATH
             value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
+          - name: SCAN_EXIT_CODE
+            value: "{{workflow.parameters.scanExitCode}}"
+          - name: SCAN_SEVERITY
+            value: "{{workflow.parameters.scanSeverity}}"
 
     # --- 3. Push all resources ---
     - name: push-resources
@@ -198,15 +221,23 @@ spec:
             readOnly: true
             mountPath: /etc/ssl/certs/
         env:
+          - name: SPEC_REPO
+            value: "{{workflow.parameters.specRepo}}"
           - name: SSL_CERT_FILE
             value: /etc/ssl/certs/trust-bundle.pem
+          - name: DST_REMOTE_URL
+            value: "{{workflow.parameters.dstRemoteURL}}"
+          - name: DST_SECRET
+            value: "{{workflow.parameters.dstSecret}}"
+          - name: DST_SCHEME
+            value: "{{workflow.parameters.dstScheme}}"
         source: |
           set -euo pipefail
           export HOME=/tmp
 
-          dst_host=$(echo '{{workflow.parameters.dstRemoteURL}}' | sed 's#^[a-z][a-z0-9+.-]*://##')
+          dst_host=$(echo "$DST_REMOTE_URL" | sed 's#^[a-z][a-z0-9+.-]*://##')
 
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
+          if [ "$DST_SECRET" = "true" ]; then
               echo "type: generic.config.ocm.software/v1
           configurations:
             - type: credentials.config.ocm.software
@@ -221,9 +252,9 @@ spec:
                         password: $(cat /secrets/dst/password)" > $HOME/.ocmconfig
           fi
 
-          if [ -n "{{workflow.parameters.specRepo}}" ]; then
-            dst_url={{workflow.parameters.dstScheme}}://$dst_host/{{workflow.parameters.specRepo}}
+          if [ -n "$SPEC_REPO" ]; then
+            dst_url="${DST_SCHEME}://${dst_host}/${SPEC_REPO}"
           else
-            dst_url={{workflow.parameters.dstScheme}}://$dst_host
+            dst_url="${DST_SCHEME}://${dst_host}"
           fi
           ocm -X preferrelativeaccess=true transfer ctf /data/ctf "$dst_url"
