@@ -68,7 +68,6 @@ func workflowObjectMeta(aw *arcv1alpha1.ArtifactWorkflow) metav1.ObjectMeta {
 	return cloneObjectMeta(aw.ObjectMeta, aw.Name)
 }
 
-// TODO: add unit tests
 func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, error) {
 	// Add permanent parameters
 	params := map[string]string{}
@@ -113,13 +112,12 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 	return list, nil
 }
 
-// TODO: add unit tests
 func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 	for k, v := range src {
 		kt := strings.ToUpper(k[:1]) + k[1:]
 		switch child := v.(type) {
 		case map[string]any:
-			flattenMap(prefix+k, child, dst)
+			flattenMap(prefix+kt, child, dst)
 		case []any:
 			for i, av := range child {
 				dst[prefix+kt+strconv.Itoa(i)] = av
