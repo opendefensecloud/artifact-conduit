@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1506,6 +1506,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#to-v040-nested-spec-parameters-follow-the-naming-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        To v0.4.0 — nested spec parameters follow the naming rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#to-v030-every-endpoint-is-probed-once" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2129,6 +2140,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#to-v040-nested-spec-parameters-follow-the-naming-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        To v0.4.0 — nested spec parameters follow the naming rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#to-v030-every-endpoint-is-probed-once" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2181,6 +2203,11 @@
 <h2 id="helm">Helm<a class="headerlink" href="#helm" title="Permanent link">¶</a></h2>
 <p>See <a href="../helm/#upgrading">Helm installation</a> for more information.</p>
 <h2 id="version-notes">Version notes<a class="headerlink" href="#version-notes" title="Permanent link">¶</a></h2>
+<h3 id="to-v040-nested-spec-parameters-follow-the-naming-rules">To v0.4.0 — nested spec parameters follow the naming rules<a class="headerlink" href="#to-v040-nested-spec-parameters-follow-the-naming-rules" title="Permanent link">¶</a></h3>
+<p>Earlier versions did not capitalize the keys of nested objects when flattening an artifact's
+<code>spec</code> into workflow parameters, so <code>spec.foo.bar</code> became <code>specfooBar</code> instead of <code>specFooBar</code>
+as <a href="../workflow-parameters/#naming-rules">Workflow parameters</a> documents. This is fixed.
+Any reference to the lowercase names must switch to the documented ones.</p>
 <h3 id="to-v030-every-endpoint-is-probed-once">To v0.3.0 — every <code>Endpoint</code> is probed once<a class="headerlink" href="#to-v030-every-endpoint-is-probed-once" title="Permanent link">¶</a></h3>
 <p>The <code>EndpointReconciler</code> used to keep in memory what each probe had run against, and now
 records it in <code>status</code>. Endpoints carrying a result from an older version have no such record,
