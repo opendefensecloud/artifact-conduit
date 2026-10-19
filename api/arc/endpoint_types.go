@@ -23,7 +23,7 @@ const (
 
 // EndpointSpec defines the desired state of Endpoint.
 type EndpointSpec struct {
-	// Type specifies which ArtifactType is used to process this artifact.
+	// Type is the endpoint type, matched against the srcType and dstType rules of an ArtifactType.
 	Type string `json:"type"`
 	// RemoteURL defines the URL which is used to interact with the endpoint.
 	RemoteURL string `json:"remoteURL"`

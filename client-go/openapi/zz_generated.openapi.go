@@ -558,7 +558,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactTypeTemplateRef(ref common.ReferenceCal
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.",
+				Description: "ArtifactTypeTemplateRef is used to clearly reference an Argo WorkflowTemplate or ClusterWorkflowTemplate.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"name": {
@@ -995,7 +995,7 @@ func schema_arc_api_arc_v1alpha1_Cron(ref common.ReferenceCallback) common.OpenA
 					},
 					"startingDeadlineSeconds": {
 						SchemaProps: spec.SchemaProps{
-							Description: "StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its original scheduled time if it is missed.",
+							Description: "StartingDeadlineSeconds is the K8s-style deadline that will limit the time an Order will be run after its original scheduled time if it is missed.",
 							Type:        []string{"integer"},
 							Format:      "int64",
 						},
@@ -1127,12 +1127,12 @@ func schema_arc_api_arc_v1alpha1_EndpointSpec(ref common.ReferenceCallback) comm
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.",
+				Description: "EndpointSpec defines the desired state of Endpoint.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"type": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Type specifies which ArtifactType is used to process this artifact.",
+							Description: "Type is the endpoint type, matched against the srcType and dstType rules of an ArtifactType.",
 							Default:     "",
 							Type:        []string{"string"},
 							Format:      "",
