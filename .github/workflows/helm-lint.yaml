@@ -16,6 +16,8 @@ on:
 
 jobs:
   lint:
+    # Distinct check name: the required "lint" context is Golang CI's.
+    name: helm-lint
     runs-on: ubuntu-24.04
     # helm comes from the flake (dev-kit's defaultPkgs).
     defaults:
