@@ -1,22 +1,11 @@
 name: Label issues
-
-permissions:
-  contents: read
-
 on:
   issues:
-    types:
-      - reopened
-      - opened
+    types: [opened, reopened]
+permissions:
+  contents: read
 jobs:
-  label_issues:
-    runs-on: ubuntu-latest
+  label:
     permissions:
       issues: write
-    steps:
-      - run: gh issue edit "$NUMBER" --add-label "$LABELS"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          NUMBER: ${{ github.event.issue.number }}
-          LABELS: needs-triage
+    uses: opendefensecloud/dev-kit/.github/workflows/issues-add-labels.yaml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0

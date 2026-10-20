@@ -1,24 +1,14 @@
 name: Add issues to project
-
-permissions:
-  contents: read
-
 on:
   issues:
-    types:
-      - opened
+    types: [opened]
   pull_request:
-    types:
-      - opened
-
+    types: [opened]
+permissions:
+  contents: read
 jobs:
   add-to-project:
-    name: Add issue to project
-    runs-on: ubuntu-latest
-    # Authenticates with ADD_TO_PROJECT_PAT, so the workflow GITHUB_TOKEN needs no scopes.
     permissions: {}
-    steps:
-      - uses: actions/add-to-project@5afcf98fcd03f1c2f92c3c83f58ae24323cc57fd # v2.0.0
-        with:
-          project-url: https://github.com/orgs/opendefensecloud/projects/3
-          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
+    uses: opendefensecloud/dev-kit/.github/workflows/issues-add-to-project.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
+    secrets:
+      ADD_TO_PROJECT_PAT: ${{ secrets.ADD_TO_PROJECT_PAT }}

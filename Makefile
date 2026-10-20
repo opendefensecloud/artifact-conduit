@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v2.2.0
+DEV_KIT_VERSION := v3.1.0
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -70,6 +70,7 @@ lint: lint-no-golangci golangci-lint ## Run linters
 .PHONY: lint-no-golangci
 lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
 	$(MAKE) addlicense-check license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
+	$(MAKE) check-dev-kit-pins
 
 .PHONY: test
 test: $(SETUP_ENVTEST) $(GINKGO) envtest-binaries-sideload ## Run all tests
