@@ -1,49 +1,17 @@
 name: OSV-Scanner
-
 on:
   pull_request:
     branches: ["main"]
-  merge_group:
-    types: [checks_requested]
   schedule:
     - cron: "12 12 * * 1"
   push:
     branches: ["main"]
-
 permissions:
-  # Read commit contents
   contents: read
-
 jobs:
-  scan-scheduled:
-    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+  osv-scanner:
     permissions:
-      # Required to upload SARIF file to CodeQL. See: https://github.com/github/codeql-action/issues/2117
       actions: read
-      # Require writing security events to upload SARIF file to security tab
       security-events: write
-      # Read commit contents
       contents: read
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
-    with:
-      # Example of specifying custom arguments
-      scan-args: |-
-        --include-git-root
-        -r
-        ./
-  scan-pr:
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    permissions:
-      # Required to upload SARIF file to CodeQL. See: https://github.com/github/codeql-action/issues/2117
-      actions: read
-      # Require writing security events to upload SARIF file to security tab
-      security-events: write
-      # Read commit contents
-      contents: read
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
-    with:
-      # Example of specifying custom arguments
-      scan-args: |-
-        --include-git-root
-        -r
-        ./
+    uses: opendefensecloud/dev-kit/.github/workflows/osv-scanner.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0

@@ -47,3 +47,4 @@ common.mk
 .common.mk-version
 .common.mk-checked
 .common.mk-download
+.common.mk-configs
