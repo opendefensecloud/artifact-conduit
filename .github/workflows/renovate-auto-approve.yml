@@ -1,0 +1,19 @@
+# Auto-approve Renovate digest/patch/minor PRs so they can automerge.
+# Calls the reusable workflow in opendefensecloud/dev-kit. The automerge policy
+# (which update types are eligible) comes from the renovate-config presets.
+name: renovate-auto-approve
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+permissions:
+  contents: read
+jobs:
+  approve:
+    uses: opendefensecloud/dev-kit/.github/workflows/renovate-auto-approve.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
+    permissions:
+      # A job-level block replaces the workflow-level one rather than adding to
+      # it, and a called workflow cannot elevate what the caller grants. Without
+      # contents here the repository activity API is unreachable, which is what
+      # the pusher check and the revoke path use.
+      contents: read
+      pull-requests: write

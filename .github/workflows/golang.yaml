@@ -3,36 +3,49 @@ permissions:
   contents: read
 
 on:
+  # No paths filter: lint/test are required checks, so the workflow must always
+  # start. The changes job skips them instead, and a skipped job passes.
   push:
     branches: [main, develop]
-    paths:
-      - "**/*.go"
-      - ".github/workflows/golang.yaml"
-      - ".golangci.yml"
-      - "flake.lock"
-      - "flake.nix"
-      - "go.mod"
-      - "go.sum"
-      - "Makefile"
-      - "tools.lock"
   pull_request:
     branches: [main, develop]
-    paths:
-      - "**/*.go"
-      - ".github/workflows/golang.yaml"
-      - ".golangci.yml"
-      - "flake.lock"
-      - "flake.nix"
-      - "go.mod"
-      - "go.sum"
-      - "Makefile"
-      - "tools.lock"
 
 env:
   GO_MODULE: https://github.com/opendefensecloud/artifact-conduit
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read # paths-filter lists PR files through the API
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
+        id: filter
+        with:
+          filters: |
+            backend:
+              - '**/*.go'
+              - '**/*.sh'
+              - '.github/workflows/golang.yaml'
+              - '.golangci.yml'
+              - 'flake.lock'
+              - 'flake.nix'
+              - 'go.mod'
+              - 'go.sum'
+              - 'Makefile'
+              - 'tools.lock'
+
   lint:
+    needs: changes
+    # Skip only on a clean "no Go changes"; if changes itself fails, run anyway
+    # so a broken filter can't turn required checks into skipped (= passed).
+    if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
     runs-on: ubuntu-24.04
     # Tools (go, golangci-lint, shellcheck, addlicense) come from the flake
     # and tools.lock. `make lint` runs both lint-no-golangci and golangci-lint.
@@ -71,6 +84,9 @@ jobs:
 
   test:
     needs: lint
+    # Explicit: the implicit success() also checks changes, which lint may
+    # have run past.
+    if: ${{ !cancelled() && needs.lint.result == 'success' }}
     runs-on: ubuntu-24.04
     defaults:
       run:
