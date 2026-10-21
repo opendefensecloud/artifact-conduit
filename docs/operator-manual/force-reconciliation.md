@@ -24,7 +24,8 @@ kubectl annotate --overwrite orders.arc.opendefense.cloud/<order-name> \
 
 ## Force Reconcile Logic
 
-Controllers check the annotation and compare it against the last force reconciliation timestamp:
+Controllers force a reconciliation when the annotation is later than `.status.lastForceAt`, then record the annotation value there, so each value forces exactly once.
+Values that cannot be recorded (past year 9999, e.g. milliseconds instead of seconds) are logged and ignored.
 For `Order`, force reconciliation deletes all `ArtifactWorkflows` to trigger fresh creation. For `ArtifactWorkflow`, it deletes the Argo Workflow.
 
 ## Reconciliation Timestamps
@@ -34,4 +35,4 @@ Both `Order` and `ArtifactWorkflow` resources track reconciliation timestamps in
 | Field                     | Type          | Purpose                                       |
 | ------------------------- | ------------- | --------------------------------------------- |
 | `.status.lastReconcileAt` | `metav1.Time` | Timestamp of most recent reconciliation       |
-| `.status.lastForceAt`     | `metav1.Time` | Timestamp of most recent force reconciliation |
+| `.status.lastForceAt`     | `metav1.Time` | Annotation value last honoured                |
