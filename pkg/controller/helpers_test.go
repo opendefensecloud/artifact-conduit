@@ -470,7 +470,31 @@ var _ = Describe("Helper Functions", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("invalid force reconcile annotation"))
 		})
+
+		It("should return error for a value the status cannot record", func() {
+			// Milliseconds pasted for seconds: roughly year 3170000.
+			obj := &metav1.ObjectMeta{
+				Annotations: map[string]string{
+					AnnotationForceAt: "99999999999999",
+				},
+			}
+
+			_, err := GetForceAtAnnotationValue(obj)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("invalid force reconcile annotation"))
+		})
+
 	})
+
+	DescribeTable("recordableForceAt judges the year 9999 boundary in UTC whatever the zone",
+		func(offset int, unix int64, recordable bool) {
+			forceAt := time.Unix(unix, 0).In(time.FixedZone("test", offset))
+			Expect(recordableForceAt(forceAt)).To(Equal(recordable))
+		},
+		// 253402300799 is 9999-12-31T23:59:59Z, the last second metav1.Time can hold.
+		Entry("last recordable second, east of UTC", 3600, int64(253402300799), true),
+		Entry("first unrecordable second, west of UTC", -5*3600, int64(253402300800), false),
+	)
 
 	Describe("earliestRequeue", func() {
 		DescribeTable("should return the soonest positive duration",

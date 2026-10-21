@@ -150,9 +150,21 @@ func GetForceAtAnnotationValue(o metav1.Object) (time.Time, error) {
 			return time.Time{}, fmt.Errorf("invalid force reconcile annotation: %w", err)
 		}
 		forceAtTime := time.Unix(i, 0)
+		if !recordableForceAt(forceAtTime) {
+			return time.Time{}, fmt.Errorf("invalid force reconcile annotation: %d cannot be recorded", i)
+		}
 
 		return forceAtTime, nil
 	}
 
 	return time.Time{}, nil
+}
+
+// recordableForceAt reports whether a force annotation value survives being
+// recorded in status. That is a metav1.Time, which serialises to null past year
+// 9999, so such a value would read back unhandled on every pass. Asking the
+// serialisation rather than bounding the year keeps the two from drifting, in
+// UTC because that is the zone it serialises in.
+func recordableForceAt(forceAt time.Time) bool {
+	return forceAt.Equal(metav1.NewTime(forceAt.UTC()).Rfc3339Copy().Time)
 }
