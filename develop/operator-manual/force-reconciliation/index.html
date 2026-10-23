@@ -2200,7 +2200,9 @@
 <span class="s2">"arc.opendefense.cloud/force-at"</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span>
 </code></pre></div>
 <h2 id="force-reconcile-logic">Force Reconcile Logic<a class="headerlink" href="#force-reconcile-logic" title="Permanent link">¶</a></h2>
-<p>Controllers check the annotation and compare it against the last force reconciliation timestamp:
+<p>Controllers force a reconciliation when the annotation is later than <code>.status.lastForceAt</code>, then record the annotation value there, so each value forces exactly once.
+The force happens as soon as the controller sees the new value: <code>force-at</code> is not a schedule, a future timestamp does not delay the reconciliation until that time.
+Values that cannot be recorded (past year 9999, e.g. milliseconds instead of seconds) are logged and ignored.
 For <code>Order</code>, force reconciliation deletes all <code>ArtifactWorkflows</code> to trigger fresh creation. For <code>ArtifactWorkflow</code>, it deletes the Argo Workflow.</p>
 <h2 id="reconciliation-timestamps">Reconciliation Timestamps<a class="headerlink" href="#reconciliation-timestamps" title="Permanent link">¶</a></h2>
 <p>Both <code>Order</code> and <code>ArtifactWorkflow</code> resources track reconciliation timestamps in their status:</p>
@@ -2221,7 +2223,7 @@ For <code>Order</code>, force reconciliation deletes all <code>ArtifactWorkflows
 <tr>
 <td><code>.status.lastForceAt</code></td>
 <td><code>metav1.Time</code></td>
-<td>Timestamp of most recent force reconciliation</td>
+<td>Annotation value last honoured</td>
 </tr>
 </tbody>
 </table>
