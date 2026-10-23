@@ -13,9 +13,9 @@ import (
 // EndpointSpecApplyConfiguration represents a declarative configuration of the EndpointSpec type for use
 // with apply.
 //
-// EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
+// EndpointSpec defines the desired state of Endpoint.
 type EndpointSpecApplyConfiguration struct {
-	// Type specifies which ArtifactType is used to process this artifact.
+	// Type is the endpoint type, matched against the srcType and dstType rules of an ArtifactType.
 	Type *string `json:"type,omitempty"`
 	// RemoteURL defines the URL which is used to interact with the endpoint.
 	RemoteURL *string `json:"remoteURL,omitempty"`

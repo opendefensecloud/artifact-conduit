@@ -47,7 +47,7 @@ var _ = Describe("ArtifactWorkflow", func() {
 	)
 
 	Context("ArtifactWorkflow", func() {
-		It("should allow creating a artifact workflow", func() {
+		It("should allow creating an artifact workflow", func() {
 			By("creating a test artifact workflow")
 			frag = &arcv1alpha1.ArtifactWorkflow{
 				Namespace:    ns.Name,
@@ -57,7 +57,7 @@ var _ = Describe("ArtifactWorkflow", func() {
 			Expect(k8sClient.Create(ctx, frag)).To(Succeed())
 			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(frag), frag)).To(Succeed())
 		})
-		It("should allow deleting a artifact workflow", func() {
+		It("should allow deleting an artifact workflow", func() {
 			By("deleting a test artifact workflow")
 			Expect(k8sClient.Delete(ctx, frag)).To(Succeed())
 		})
@@ -125,7 +125,7 @@ var _ = Describe("ClusterArtifactType", func() {
 		atd = &arcv1alpha1.ClusterArtifactType{}
 	)
 
-	Context("ArtifactType", func() {
+	Context("ClusterArtifactType", func() {
 		It("should allow creating an artifact type definition", func() {
 			By("creating a test artifact type definition")
 			atd = &arcv1alpha1.ClusterArtifactType{

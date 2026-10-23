@@ -195,7 +195,7 @@ func classifyReachable(u *url.URL, resp *http.Response) Check {
 	}
 }
 
-// truncate bounds s to at most max runes, so a remote-derived string (a
+// truncate bounds s to at most limit runes, so a remote-derived string (a
 // response status line, an auth challenge's realm) cannot grow a Check
 // message — and the etcd write it eventually becomes — without bound. It cuts
 // on a rune boundary so it never produces invalid UTF-8.
