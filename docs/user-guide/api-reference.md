@@ -185,7 +185,7 @@ _Appears in:_
 | `succeeded` _integer_ | Succeeded counts how many times child workflows succeeded |  | Optional: \{\} <br /> |
 | `failed` _integer_ | Failed counts how many times child workflows failed |  | Optional: \{\} <br /> |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the ArtifactWorkflow was reconciled |  |  |
-| `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
+| `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the force-at annotation value last honoured. A later value<br />forces a reconciliation right away, it is not scheduled for that time. |  |  |
 | `activeWorkflowRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.<br />It resets after a successful or failed run. |  |  |
 
 
@@ -447,7 +447,7 @@ _Appears in:_
 | `artifactWorkflows` _object (keys:string, values:[OrderArtifactWorkflowStatus](#orderartifactworkflowstatus))_ | ArtifactWorkflows tracks the created workflows |  |  |
 | `message` _string_ | A human readable message describing the current condition of the order. |  |  |
 | `lastReconcileAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastReconcileAt is the last time the Order was reconciled |  |  |
-| `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the last time a force reconciliation was requested |  |  |
+| `lastForceAt` _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#time-v1-meta)_ | LastForceAt is the force-at annotation value last honoured. A later value<br />forces a reconciliation right away, it is not scheduled for that time. |  |  |
 
 
 #### WorkflowPhase

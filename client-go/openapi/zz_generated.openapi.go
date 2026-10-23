@@ -838,7 +838,7 @@ func schema_arc_api_arc_v1alpha1_ArtifactWorkflowStatus(ref common.ReferenceCall
 					},
 					"lastForceAt": {
 						SchemaProps: spec.SchemaProps{
-							Description: "LastForceAt is the last time a force reconciliation was requested",
+							Description: "LastForceAt is the force-at annotation value last honoured. A later value forces a reconciliation right away, it is not scheduled for that time.",
 							Ref:         ref(metav1.Time{}.OpenAPIModelName()),
 						},
 					},
@@ -1572,7 +1572,7 @@ func schema_arc_api_arc_v1alpha1_OrderStatus(ref common.ReferenceCallback) commo
 					},
 					"lastForceAt": {
 						SchemaProps: spec.SchemaProps{
-							Description: "LastForceAt is the last time a force reconciliation was requested",
+							Description: "LastForceAt is the force-at annotation value last honoured. A later value forces a reconciliation right away, it is not scheduled for that time.",
 							Ref:         ref(metav1.Time{}.OpenAPIModelName()),
 						},
 					},
