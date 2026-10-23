@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   test-e2e:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # go, kind, kubectl and helm all come from the flake. The e2e suite
     # creates the cluster itself via `make test-e2e`, pinned to
     # KIND_NODE_IMAGE (derived from ENVTEST_K8S_VERSION) — the Makefile
