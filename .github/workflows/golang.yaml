@@ -15,7 +15,7 @@ env:
 
 jobs:
   changes:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       pull-requests: read # paths-filter lists PR files through the API
@@ -46,7 +46,7 @@ jobs:
     # Skip only on a clean "no Go changes"; if changes itself fails, run anyway
     # so a broken filter can't turn required checks into skipped (= passed).
     if: ${{ !cancelled() && needs.changes.outputs.backend != 'false' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # Tools (go, golangci-lint, shellcheck, addlicense) come from the flake
     # and tools.lock. `make lint` runs both lint-no-golangci and golangci-lint.
     defaults:
@@ -87,7 +87,7 @@ jobs:
     # Explicit: the implicit success() also checks changes, which lint may
     # have run past.
     if: ${{ !cancelled() && needs.lint.result == 'success' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         shell: nix develop --command bash -e {0}

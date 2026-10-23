@@ -51,7 +51,7 @@ jobs:
         contains(toJSON(github.event.pull_request.labels), '"ok-to-e2e"')
       )) ||
       (github.event_name == 'release' && github.event.action == 'published')
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       image-tag: ${{ steps.meta.outputs.version }}
       is-local: ${{ env.ACT == 'true' }}
