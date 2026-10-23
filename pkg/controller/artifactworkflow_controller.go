@@ -129,9 +129,11 @@ func (r *ArtifactWorkflowReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		if err := handler.DeleteArgoResources(ctx); err != nil {
 			return ctrlResult, errLogAndWrap(log, err, "failed to delete existing workflow for force reconcile")
 		}
-		// Reset phase so workflow gets recreated, and update last force time
+		// Reset phase so workflow gets recreated. Record the value honoured, not
+		// the time of honouring: a future-dated annotation would stay after now
+		// and force on every pass.
 		aw.Status.Phase = arcv1alpha1.WorkflowUnknown
-		aw.Status.LastForceAt = metav1.Now()
+		aw.Status.LastForceAt = metav1.NewTime(forceAt)
 		if err := r.Status().Update(ctx, aw); err != nil {
 			return ctrlResult, errLogAndWrap(log, err, "failed to update last force time")
 		}

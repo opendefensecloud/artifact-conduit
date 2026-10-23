@@ -20,7 +20,8 @@ type OrderStatusApplyConfiguration struct {
 	Message *string `json:"message,omitempty"`
 	// LastReconcileAt is the last time the Order was reconciled
 	LastReconcileAt *v1.Time `json:"lastReconcileAt,omitempty"`
-	// LastForceAt is the last time a force reconciliation was requested
+	// LastForceAt is the force-at annotation value last honoured. A later value
+	// forces a reconciliation right away, it is not scheduled for that time.
 	LastForceAt *v1.Time `json:"lastForceAt,omitempty"`
 }
 

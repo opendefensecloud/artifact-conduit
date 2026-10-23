@@ -89,7 +89,8 @@ type ArtifactWorkflowStatus struct {
 	WorkflowStatus `json:",inline"`
 	// LastReconcileAt is the last time the ArtifactWorkflow was reconciled
 	LastReconcileAt metav1.Time `json:"lastReconcileAt,omitempty"`
-	// LastForceAt is the last time a force reconciliation was requested
+	// LastForceAt is the force-at annotation value last honoured. A later value
+	// forces a reconciliation right away, it is not scheduled for that time.
 	LastForceAt metav1.Time `json:"lastForceAt,omitempty"`
 	// ActiveWorkflowRef tracks the currently spawned workflow, if cron is used.
 	// It resets after a successful or failed run.
