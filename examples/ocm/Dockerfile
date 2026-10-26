@@ -1,6 +1,6 @@
 # ocm CLI + shell tooling (bash, sed, jq, curl) used by the OCM example workflows.
 # Built and published by .github/workflows/docker.yaml as ghcr.io/opendefensecloud/ocm-tools
-FROM alpine:3@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
+FROM alpine:3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
 
 # Version is pinned by .github/workflows/docker.yaml's ocm-tools matrix entry — no local default, to avoid a second source of truth.
 ARG OCM_VERSION
