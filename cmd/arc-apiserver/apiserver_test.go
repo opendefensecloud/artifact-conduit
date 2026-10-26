@@ -40,7 +40,7 @@ var _ = Describe("Order", func() {
 
 	// Order has no NameValidator, so it exercises the apiserver-kit default
 	// rules. This guards the kit v0.6.0 upgrade, which introduced validation
-	// of metadata.name as an RFC 1123 subdomain on create.
+	// of metadata.name as a DNS-1123 subdomain on create.
 	Context("Order name validation (kit default)", func() {
 		It("should reject names that are not DNS-1123 subdomains", func() {
 			for _, name := range []string{"has space", "under_score", "Upper-Case"} {
@@ -55,14 +55,14 @@ var _ = Describe("Order", func() {
 
 		It("should accept a dotted DNS-1123 subdomain", func() {
 			// A dot is allowed in a subdomain, which distinguishes the default
-			// rule from the stricter RFC 1123 label rule.
-			order := &arcv1alpha1.Order{
+			// rule from the stricter DNS-1123 label rule.
+			dotted := &arcv1alpha1.Order{
 				Name:      "my.order",
 				Namespace: ns.Name,
 				Spec:      arcv1alpha1.OrderSpec{},
 			}
-			Expect(k8sClient.Create(ctx, order)).To(Succeed())
-			DeferCleanup(k8sClient.Delete, ctx, order)
+			Expect(k8sClient.Create(ctx, dotted)).To(Succeed())
+			DeferCleanup(k8sClient.Delete, ctx, dotted)
 		})
 	})
 
