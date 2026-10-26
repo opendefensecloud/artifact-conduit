@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -31,8 +33,39 @@ func namespacedName(namespace, name string) types.NamespacedName {
 	}
 }
 
+const (
+	// awNameMaxLength is the maximum length of an ArtifactWorkflow name.
+	//
+	// The name is reused verbatim as the Argo Workflow/CronWorkflow name.
+	// Argo caps Workflow names at 63 characters (the Kubernetes label value
+	// limit) and CronWorkflow names at 52, because it appends
+	// "-<unix timestamp>" when creating workflows. Those limits are unexported
+	// in argo-workflows/workflow/validate, so they can't be referenced here.
+	// Use the stricter cron limit since an Order may switch to a cron schedule.
+	awNameMaxLength = 52
+
+	// awNameHashLength is the number of hex characters of the order name hash
+	// appended when the order name has to be shortened.
+	awNameHashLength = 16
+)
+
 func awName(order *arcv1alpha1.Order, sha string) string {
-	return fmt.Sprintf("%s-%s", order.Name, sha)
+	suffix := "-" + sha
+	if len(order.Name)+len(suffix) <= awNameMaxLength {
+		return order.Name + suffix
+	}
+
+	// Keep the start of the order name for readability and append a hash of
+	// the full name so that orders sharing the same prefix stay distinct.
+	sum := sha256.Sum256([]byte(order.Name))
+	nameHash := hex.EncodeToString(sum[:])[:awNameHashLength]
+	keep := max(awNameMaxLength-len(suffix)-awNameHashLength-1, 0)
+
+	// Never join the suffix to a trailing separator: "a.-hash" is not a valid
+	// DNS-1123 subdomain because the label after the dot starts with a dash.
+	prefix := strings.TrimRight(order.Name[:keep], ".-")
+
+	return prefix + "-" + nameHash + suffix
 }
 
 func cloneObjectMeta(meta metav1.ObjectMeta, name string) metav1.ObjectMeta {
