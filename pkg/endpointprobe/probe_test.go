@@ -298,6 +298,42 @@ func TestProbeDNSFailure(t *testing.T) {
 	}
 }
 
+func TestProbeUntrustedCertificateIsUnknown(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+
+	// New(nil) keeps the system roots, which do not hold the test server's CA.
+	got := New(nil).Probe(t.Context(), Target{RemoteURL: srv.URL})
+
+	if got.Reachable.Status != metav1.ConditionUnknown {
+		t.Fatalf("an unknown authority verifies nothing: want Reachable Unknown, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonUntrustedCertificate {
+		t.Fatalf("want reason %s, got %s", ReasonUntrustedCertificate, got.Reachable.Reason)
+	}
+	if !strings.Contains(got.Reachable.Message, "controller.trustBundle") {
+		t.Fatalf("message must point at the chart value, got %q", got.Reachable.Message)
+	}
+}
+
+func TestProbeHostnameMismatchIsTLSError(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+
+	// The httptest certificate covers 127.0.0.1, ::1 and example.com but not
+	// localhost: the authority is trusted, the name is not. That breaks the
+	// workflows too, so it must stay a failure.
+	u := strings.Replace(srv.URL, "127.0.0.1", "localhost", 1)
+	got := proberFor(srv).Probe(t.Context(), Target{RemoteURL: u})
+
+	if got.Reachable.Status != metav1.ConditionFalse {
+		t.Fatalf("want Reachable False, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonTLSError {
+		t.Fatalf("want reason %s, got %s", ReasonTLSError, got.Reachable.Reason)
+	}
+}
+
 func TestAuthNoSecretIsUnknown(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer srv.Close()

@@ -13,6 +13,7 @@ package endpointprobe
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io"
@@ -55,12 +56,16 @@ const (
 	ReasonDNSFailure        = "DNSFailure"
 	ReasonConnectionRefused = "ConnectionRefused"
 	ReasonTLSError          = "TLSError"
-	ReasonTimeout           = "Timeout"
-	ReasonTargetDenied      = "TargetDenied"
-	ReasonUnsupportedScheme = "UnsupportedScheme"
-	ReasonProbeFailed       = "ProbeFailed"
-	ReasonNotFound          = "NotFound"
-	ReasonServerError       = "ServerError"
+	// ReasonUntrustedCertificate means the target's certificate chains to an
+	// authority the controller does not trust. That says nothing about whether
+	// the workflows trust it, so it is reported Unknown, not False.
+	ReasonUntrustedCertificate = "UntrustedCertificate"
+	ReasonTimeout              = "Timeout"
+	ReasonTargetDenied         = "TargetDenied"
+	ReasonUnsupportedScheme    = "UnsupportedScheme"
+	ReasonProbeFailed          = "ProbeFailed"
+	ReasonNotFound             = "NotFound"
+	ReasonServerError          = "ServerError"
 )
 
 // Authenticated reasons.
@@ -259,7 +264,17 @@ func targetURL(remote string) (*url.URL, error) {
 // classifyTransportError maps a failed request onto a Reachable reason. DNS is
 // checked before timeout because a DNS timeout satisfies both and the name
 // resolution failure is the more useful thing to tell the consumer.
+//
+// An unknown authority is the one certificate error reported as Unknown: the
+// controller's trust store is not the one the workflows use, so it proves
+// nothing about whether an Order would succeed. An expired certificate or a
+// hostname mismatch fails for the workflows too and stays False.
 func classifyTransportError(err error) Check {
+	if authErr, ok := errors.AsType[x509.UnknownAuthorityError](err); ok {
+		return Check{metav1.ConditionUnknown, ReasonUntrustedCertificate, truncate(
+			authErr.Error()+"; set controller.trustBundle to the CA bundle your workflows trust", messageTruncateLimit)}
+	}
+
 	var (
 		deniedErr *DeniedError
 		dnsErr    *net.DNSError
