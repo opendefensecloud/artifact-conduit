@@ -14,7 +14,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/big"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -354,8 +353,6 @@ func issue(t *testing.T, tmpl, parent *x509.Certificate, parentKey *ecdsa.Privat
 	if parent == nil {
 		parent, parentKey = tmpl, key
 	}
-	tmpl.SerialNumber = big.NewInt(time.Now().UnixNano())
-
 	der, err := x509.CreateCertificate(rand.Reader, tmpl, parent, &key.PublicKey, parentKey)
 	if err != nil {
 		t.Fatal(err)
@@ -379,11 +376,11 @@ func caTemplate(name string, notBefore, notAfter time.Time) *x509.Certificate {
 	}
 }
 
-// serveChain serves a leaf for 127.0.0.1 signed by parent, followed by the
-// given intermediates, and returns a Prober that trusts only roots.
-func serveChain(t *testing.T, parent *x509.Certificate, parentKey *ecdsa.PrivateKey,
-	roots []*x509.Certificate, intermediates ...*x509.Certificate,
-) (*httptest.Server, *Prober) {
+// probeChain serves a leaf for 127.0.0.1 signed by parent, followed by the
+// given intermediates, and probes it with only root trusted.
+func probeChain(t *testing.T, parent *x509.Certificate, parentKey *ecdsa.PrivateKey,
+	root *x509.Certificate, intermediates ...*x509.Certificate,
+) Check {
 	t.Helper()
 
 	now := time.Now()
@@ -403,16 +400,14 @@ func serveChain(t *testing.T, parent *x509.Certificate, parentKey *ecdsa.Private
 	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 	srv.TLS = &tls.Config{Certificates: []tls.Certificate{{Certificate: chain, PrivateKey: leafKey}}}
 	srv.StartTLS()
-	t.Cleanup(srv.Close)
+	defer srv.Close()
 
 	pool := x509.NewCertPool()
-	for _, c := range roots {
-		pool.AddCert(c)
-	}
+	pool.AddCert(root)
 	p := New(nil)
 	p.client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{RootCAs: pool}
 
-	return srv, p
+	return p.Probe(t.Context(), Target{RemoteURL: srv.URL}).Reachable
 }
 
 func TestProbeExpiredAuthorityIsTLSError(t *testing.T) {
@@ -424,22 +419,13 @@ func TestProbeExpiredAuthorityIsTLSError(t *testing.T) {
 	inter, interKey := issue(t, caTemplate("arc-test-intermediate", now.Add(-2*time.Hour), now.Add(-time.Hour)), root, rootKey)
 	expiredRoot, expiredRootKey := issue(t, caTemplate("arc-test-expired-root", now.Add(-2*time.Hour), now.Add(-time.Hour)), nil, nil)
 
-	for name, serve := range map[string]func() (*httptest.Server, *Prober){
-		"intermediate": func() (*httptest.Server, *Prober) {
-			return serveChain(t, inter, interKey, []*x509.Certificate{root}, inter)
-		},
-		"root": func() (*httptest.Server, *Prober) {
-			return serveChain(t, expiredRoot, expiredRootKey, []*x509.Certificate{expiredRoot})
-		},
+	for name, got := range map[string]Check{
+		"intermediate": probeChain(t, inter, interKey, root, inter),
+		"root":         probeChain(t, expiredRoot, expiredRootKey, expiredRoot),
 	} {
-		t.Run(name, func(t *testing.T) {
-			srv, p := serve()
-			got := p.Probe(t.Context(), Target{RemoteURL: srv.URL})
-
-			if got.Reachable.Status != metav1.ConditionFalse || got.Reachable.Reason != ReasonTLSError {
-				t.Fatalf("want Reachable False/%s, got %+v", ReasonTLSError, got.Reachable)
-			}
-		})
+		if got.Status != metav1.ConditionFalse || got.Reason != ReasonTLSError {
+			t.Errorf("expired %s: want Reachable False/%s, got %+v", name, ReasonTLSError, got)
+		}
 	}
 }
 

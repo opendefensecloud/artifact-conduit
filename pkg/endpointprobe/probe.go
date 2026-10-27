@@ -56,16 +56,17 @@ const (
 	ReasonDNSFailure        = "DNSFailure"
 	ReasonConnectionRefused = "ConnectionRefused"
 	ReasonTLSError          = "TLSError"
+	ReasonTimeout           = "Timeout"
+	ReasonTargetDenied      = "TargetDenied"
+	ReasonUnsupportedScheme = "UnsupportedScheme"
+	ReasonProbeFailed       = "ProbeFailed"
+	ReasonNotFound          = "NotFound"
+	ReasonServerError       = "ServerError"
+
 	// ReasonUntrustedCertificate means the target's certificate chains to an
 	// authority the controller does not trust. That says nothing about whether
 	// the workflows trust it, so it is reported Unknown, not False.
 	ReasonUntrustedCertificate = "UntrustedCertificate"
-	ReasonTimeout              = "Timeout"
-	ReasonTargetDenied         = "TargetDenied"
-	ReasonUnsupportedScheme    = "UnsupportedScheme"
-	ReasonProbeFailed          = "ProbeFailed"
-	ReasonNotFound             = "NotFound"
-	ReasonServerError          = "ServerError"
 )
 
 // Authenticated reasons.
