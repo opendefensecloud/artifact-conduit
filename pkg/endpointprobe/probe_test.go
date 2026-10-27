@@ -5,9 +5,16 @@ package endpointprobe
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +22,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 	"unicode/utf8"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -331,6 +339,107 @@ func TestProbeHostnameMismatchIsTLSError(t *testing.T) {
 	}
 	if got.Reachable.Reason != ReasonTLSError {
 		t.Fatalf("want reason %s, got %s", ReasonTLSError, got.Reachable.Reason)
+	}
+}
+
+// issue signs tmpl with parent, or self-signs it when parent is nil, and
+// returns the certificate with its fresh key.
+func issue(t *testing.T, tmpl, parent *x509.Certificate, parentKey *ecdsa.PrivateKey) (*x509.Certificate, *ecdsa.PrivateKey) {
+	t.Helper()
+
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if parent == nil {
+		parent, parentKey = tmpl, key
+	}
+	tmpl.SerialNumber = big.NewInt(time.Now().UnixNano())
+
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, parent, &key.PublicKey, parentKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cert, key
+}
+
+func caTemplate(name string, notBefore, notAfter time.Time) *x509.Certificate {
+	return &x509.Certificate{
+		Subject:               pkix.Name{CommonName: name},
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		IsCA:                  true,
+		BasicConstraintsValid: true,
+		KeyUsage:              x509.KeyUsageCertSign,
+	}
+}
+
+// serveChain serves a leaf for 127.0.0.1 signed by parent, followed by the
+// given intermediates, and returns a Prober that trusts only roots.
+func serveChain(t *testing.T, parent *x509.Certificate, parentKey *ecdsa.PrivateKey,
+	roots []*x509.Certificate, intermediates ...*x509.Certificate,
+) (*httptest.Server, *Prober) {
+	t.Helper()
+
+	now := time.Now()
+	leaf, leafKey := issue(t, &x509.Certificate{
+		Subject:     pkix.Name{CommonName: "arc-test-leaf"},
+		NotBefore:   now.Add(-time.Hour),
+		NotAfter:    now.Add(time.Hour),
+		IPAddresses: []net.IP{net.IPv4(127, 0, 0, 1)},
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}, parent, parentKey)
+
+	chain := [][]byte{leaf.Raw}
+	for _, c := range intermediates {
+		chain = append(chain, c.Raw)
+	}
+
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.TLS = &tls.Config{Certificates: []tls.Certificate{{Certificate: chain, PrivateKey: leafKey}}}
+	srv.StartTLS()
+	t.Cleanup(srv.Close)
+
+	pool := x509.NewCertPool()
+	for _, c := range roots {
+		pool.AddCert(c)
+	}
+	p := New(nil)
+	p.client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{RootCAs: pool}
+
+	return srv, p
+}
+
+func TestProbeExpiredAuthorityIsTLSError(t *testing.T) {
+	// An expired authority fails for the workflows as well, so it must not
+	// read as Unknown. Go reports it as CertificateInvalidError, not as
+	// UnknownAuthorityError; this pins that for both places it can sit.
+	now := time.Now()
+	root, rootKey := issue(t, caTemplate("arc-test-root", now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+	inter, interKey := issue(t, caTemplate("arc-test-intermediate", now.Add(-2*time.Hour), now.Add(-time.Hour)), root, rootKey)
+	expiredRoot, expiredRootKey := issue(t, caTemplate("arc-test-expired-root", now.Add(-2*time.Hour), now.Add(-time.Hour)), nil, nil)
+
+	for name, serve := range map[string]func() (*httptest.Server, *Prober){
+		"intermediate": func() (*httptest.Server, *Prober) {
+			return serveChain(t, inter, interKey, []*x509.Certificate{root}, inter)
+		},
+		"root": func() (*httptest.Server, *Prober) {
+			return serveChain(t, expiredRoot, expiredRootKey, []*x509.Certificate{expiredRoot})
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			srv, p := serve()
+			got := p.Probe(t.Context(), Target{RemoteURL: srv.URL})
+
+			if got.Reachable.Status != metav1.ConditionFalse || got.Reachable.Reason != ReasonTLSError {
+				t.Fatalf("want Reachable False/%s, got %+v", ReasonTLSError, got.Reachable)
+			}
+		})
 	}
 }
 
