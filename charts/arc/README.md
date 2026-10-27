@@ -401,6 +401,8 @@ If you're currently using Kustomize to deploy ARC:
 | controller.serviceAccount.create | bool | `true` | Create service account |
 | controller.serviceAccount.name | string | `""` | Service account name (auto-generated if not set) |
 | controller.tolerations | list | `[]` | Tolerations for pod assignment |
+| controller.trustBundle.configMap | string | `""` | ConfigMap in the release namespace holding a PEM CA bundle, e.g. the trust-manager Bundle target your WorkflowTemplates mount. Empty disables it. The pod does not start until the ConfigMap exists, and the bundle is read once, so restart the controller-manager after the CA rotates. |
+| controller.trustBundle.key | string | `"trust-bundle.pem"` | Key of the PEM bundle in the ConfigMap |
 | createNamespace | bool | `false` | Create namespace if it doesn't exist |
 | dashboards.annotations | object | `{}` | Additional annotations for the dashboard ConfigMaps |
 | dashboards.enabled | bool | `false` | Deploy the reference dashboards as ConfigMaps for the Grafana sidecar to pick up |

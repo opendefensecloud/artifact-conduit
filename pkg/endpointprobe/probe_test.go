@@ -5,6 +5,12 @@ package endpointprobe
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +21,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 	"unicode/utf8"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -295,6 +302,149 @@ func TestProbeDNSFailure(t *testing.T) {
 	}
 	if got.Reachable.Reason != ReasonDNSFailure {
 		t.Fatalf("want reason %s, got %s", ReasonDNSFailure, got.Reachable.Reason)
+	}
+}
+
+func TestProbeUntrustedCertificateIsUnknown(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+
+	// New(nil) keeps the system roots, which do not hold the test server's CA.
+	got := New(nil).Probe(t.Context(), Target{RemoteURL: srv.URL})
+
+	if got.Reachable.Status != metav1.ConditionUnknown {
+		t.Fatalf("an unknown authority verifies nothing: want Reachable Unknown, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonUntrustedCertificate {
+		t.Fatalf("want reason %s, got %s", ReasonUntrustedCertificate, got.Reachable.Reason)
+	}
+	if !strings.Contains(got.Reachable.Message, "controller.trustBundle") {
+		t.Fatalf("message must point at the chart value, got %q", got.Reachable.Message)
+	}
+}
+
+func TestProbeHostnameMismatchIsTLSError(t *testing.T) {
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer srv.Close()
+
+	// The httptest certificate covers 127.0.0.1, ::1 and example.com but not
+	// localhost: the authority is trusted, the name is not. That breaks the
+	// workflows too, so it must stay a failure.
+	u := strings.Replace(srv.URL, "127.0.0.1", "localhost", 1)
+	got := proberFor(srv).Probe(t.Context(), Target{RemoteURL: u})
+
+	if got.Reachable.Status != metav1.ConditionFalse {
+		t.Fatalf("want Reachable False, got %+v", got.Reachable)
+	}
+	if got.Reachable.Reason != ReasonTLSError {
+		t.Fatalf("want reason %s, got %s", ReasonTLSError, got.Reachable.Reason)
+	}
+}
+
+// issue signs tmpl with parent, or self-signs it when parent is nil, and
+// returns the certificate with its fresh key.
+func issue(t *testing.T, tmpl, parent *x509.Certificate, parentKey *ecdsa.PrivateKey) (*x509.Certificate, *ecdsa.PrivateKey) {
+	t.Helper()
+
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if parent == nil {
+		parent, parentKey = tmpl, key
+	}
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, parent, &key.PublicKey, parentKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cert, key
+}
+
+func caTemplate(name string, notBefore, notAfter time.Time) *x509.Certificate {
+	return &x509.Certificate{
+		Subject:               pkix.Name{CommonName: name},
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		IsCA:                  true,
+		BasicConstraintsValid: true,
+		KeyUsage:              x509.KeyUsageCertSign,
+	}
+}
+
+// probeChain serves a leaf for 127.0.0.1 signed by parent, followed by the
+// given intermediates, and probes it with only root trusted.
+func probeChain(t *testing.T, parent *x509.Certificate, parentKey *ecdsa.PrivateKey,
+	root *x509.Certificate, intermediates ...*x509.Certificate,
+) Check {
+	t.Helper()
+
+	now := time.Now()
+	leaf, leafKey := issue(t, &x509.Certificate{
+		Subject:     pkix.Name{CommonName: "arc-test-leaf"},
+		NotBefore:   now.Add(-time.Hour),
+		NotAfter:    now.Add(time.Hour),
+		IPAddresses: []net.IP{net.IPv4(127, 0, 0, 1)},
+		ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+	}, parent, parentKey)
+
+	chain := [][]byte{leaf.Raw}
+	for _, c := range intermediates {
+		chain = append(chain, c.Raw)
+	}
+
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	srv.TLS = &tls.Config{Certificates: []tls.Certificate{{Certificate: chain, PrivateKey: leafKey}}}
+	srv.StartTLS()
+	defer srv.Close()
+
+	pool := x509.NewCertPool()
+	pool.AddCert(root)
+	p := New(nil)
+	p.client.Transport.(*http.Transport).TLSClientConfig = &tls.Config{RootCAs: pool}
+
+	return p.Probe(t.Context(), Target{RemoteURL: srv.URL}).Reachable
+}
+
+func TestProbeExpiredAuthorityIsTLSError(t *testing.T) {
+	// An expired authority fails for the workflows as well, so it must not
+	// read as Unknown. Go reports it as CertificateInvalidError, not as
+	// UnknownAuthorityError; this pins that for both places it can sit.
+	now := time.Now()
+	root, rootKey := issue(t, caTemplate("arc-test-root", now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+	inter, interKey := issue(t, caTemplate("arc-test-intermediate", now.Add(-2*time.Hour), now.Add(-time.Hour)), root, rootKey)
+	expiredRoot, expiredRootKey := issue(t, caTemplate("arc-test-expired-root", now.Add(-2*time.Hour), now.Add(-time.Hour)), nil, nil)
+
+	for name, got := range map[string]Check{
+		"intermediate": probeChain(t, inter, interKey, root, inter),
+		"root":         probeChain(t, expiredRoot, expiredRootKey, expiredRoot),
+	} {
+		if got.Status != metav1.ConditionFalse || got.Reason != ReasonTLSError {
+			t.Errorf("expired %s: want Reachable False/%s, got %+v", name, ReasonTLSError, got)
+		}
+	}
+}
+
+func TestProbeUntrustedCertificateKeepsHint(t *testing.T) {
+	// The controller holds a CA of the same name but another key, as after a
+	// rotation. Go names it in the error, and a long name must not push the
+	// controller.trustBundle hint out of the truncated message.
+	now := time.Now()
+	name := strings.Repeat("arc-test-root-", 20)
+	stale, _ := issue(t, caTemplate(name, now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+	rotated, rotatedKey := issue(t, caTemplate(name, now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+
+	got := probeChain(t, rotated, rotatedKey, stale)
+
+	if got.Status != metav1.ConditionUnknown || got.Reason != ReasonUntrustedCertificate {
+		t.Fatalf("want Reachable Unknown/%s, got %+v", ReasonUntrustedCertificate, got)
+	}
+	if !strings.HasSuffix(got.Message, "controller.trustBundle to the CA bundle your workflows trust") {
+		t.Fatalf("hint was cut off: %q", got.Message)
 	}
 }
 

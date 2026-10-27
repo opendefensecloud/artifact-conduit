@@ -252,6 +252,16 @@ controller:
   # -- Additional environment variables
   extraEnv: []
 
+  # CA bundle the Endpoint probe trusts in addition to the image's public roots
+  trustBundle:
+    # -- ConfigMap in the release namespace holding a PEM CA bundle, e.g. the
+    # trust-manager Bundle target your WorkflowTemplates mount. Empty disables
+    # it. The pod does not start until the ConfigMap exists, and the bundle is
+    # read once, so restart the controller-manager after the CA rotates.
+    configMap: ""
+    # -- Key of the PEM bundle in the ConfigMap
+    key: trust-bundle.pem
+
   # Metrics configuration
   metrics:
     # -- Enable metrics service

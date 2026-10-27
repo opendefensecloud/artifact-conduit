@@ -35,6 +35,13 @@ var _ = Describe("ARC", Ordered, func() {
 		_, err := run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to create namespace")
 
+		// trust-manager copies root-bundle into labelled namespaces. The controller
+		// mounts it like the WorkflowTemplates do, so the Endpoint probe trusts zot.
+		By("labeling arc-system so trust-manager copies the CA bundle there")
+		cmd = exec.Command("kubectl", "label", "ns", namespace, "trust=enabled", "--overwrite")
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to label namespace")
+
 		// NOTE: etcd runs as root uid, so unfortunately we can not enforce this yet
 		// By("labeling the namespace to enforce the restricted security policy")
 		// cmd = exec.Command("kubectl", "label", "--overwrite", "ns", namespace,
@@ -67,6 +74,7 @@ var _ = Describe("ARC", Ordered, func() {
 			"--set", fmt.Sprintf("controller.image.repository=%s", managerImageRepo),
 			"--set", fmt.Sprintf("controller.image.tag=%s", managerImageTag),
 			"--set", "apiserver.args.cronMinScheduleInterval=30s",
+			"--set", "controller.trustBundle.configMap=root-bundle",
 		}
 		if imageSource != "local" && ghcrToken != "" {
 			helmArgs = append(helmArgs, "--set", fmt.Sprintf("global.imagePullSecrets[0].name=%s", ghcrPullSecretName))
