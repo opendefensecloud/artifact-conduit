@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1075,6 +1075,17 @@
         
       </ul>
     </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trusting-an-internal-ca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trusting an internal CA
+      
+    </span>
+  </a>
   
 </li>
         
@@ -2351,6 +2362,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#trusting-an-internal-ca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trusting an internal CA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#what-ready-does-not-promise" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2537,6 +2559,33 @@ condition is only ever as fresh as the last reason to probe. Set
 <p>Expiry is spread across <code>Endpoint</code>s by up to 20% of the TTL, derived from each
 one's UID, so a set applied together does not come due together. The default is
 <code>0</code>, which disables it.</p>
+<h4 id="trusting-an-internal-ca">Trusting an internal CA<a class="headerlink" href="#trusting-an-internal-ca" title="Permanent link">¶</a></h4>
+<p>The probe trusts the public CAs shipped in the controller-manager image. A
+target with a certificate from an internal CA is therefore not verified, even
+when the workflows trust it through a bundle their WorkflowTemplates mount.
+Such an <code>Endpoint</code> reports <code>Reachable=Unknown</code> with reason
+<code>UntrustedCertificate</code>, and <code>Ready</code> follows as <code>Unknown</code>. Other certificate
+errors, like an expired certificate or a hostname mismatch, break the
+workflows as well and are reported as <code>Reachable=False</code> with reason <code>TLSError</code>.</p>
+<p>Give the controller-manager the same bundle the workflows use, e.g. the target
+ConfigMap of a trust-manager <code>Bundle</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">controller</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">trustBundle</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">configMap</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">root-bundle</span>
+<span class="w">    </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trust-bundle.pem</span>
+</code></pre></div>
+<p>The ConfigMap must exist in the release namespace. With trust-manager this
+means the namespace has to match the <code>Bundle</code>'s <code>namespaceSelector</code>. The bundle
+is added to the public CAs, it does not replace them. The controller-manager
+reads it once at start, so restart it after the CA rotates.</p>
+<p>A restart does not re-probe anything. <code>Endpoint</code>s probed before the bundle was
+set keep their verdict until the next probe: <code>UntrustedCertificate</code>, or
+<code>False/TLSError</code> if they were probed by an ARC release before this reason
+existed. Force a probe on all of them once the bundle is in place (see
+<a href="#when-arc-probes">When ARC probes</a>), or let <code>endpointProbeTTL</code> catch up:</p>
+<div class="highlight"><pre><span></span><code>kubectl<span class="w"> </span>annotate<span class="w"> </span>endpoints.arc.opendefense.cloud<span class="w"> </span>--all-namespaces<span class="w"> </span>--all<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>arc.opendefense.cloud/force-at<span class="o">=</span><span class="s2">"</span><span class="k">$(</span>date<span class="w"> </span>+%s<span class="k">)</span><span class="s2">"</span><span class="w"> </span>--overwrite
+</code></pre></div>
 <h4 id="what-ready-does-not-promise">What Ready does not promise<a class="headerlink" href="#what-ready-does-not-promise" title="Permanent link">¶</a></h4>
 <p>The probe runs from ARC's controller-manager, using its network position and
 its identity. The workflow pods that carry out an <code>Order</code> run under a different
