@@ -272,8 +272,9 @@ func targetURL(remote string) (*url.URL, error) {
 // hostname mismatch fails for the workflows too and stays False.
 func classifyTransportError(err error) Check {
 	if authErr, ok := errors.AsType[x509.UnknownAuthorityError](err); ok {
-		return Check{metav1.ConditionUnknown, ReasonUntrustedCertificate, truncate(
-			authErr.Error()+"; set controller.trustBundle to the CA bundle your workflows trust", messageTruncateLimit)}
+		// The hint goes after truncate: a long certificate name must not cut it.
+		return Check{metav1.ConditionUnknown, ReasonUntrustedCertificate, truncate(authErr.Error(), messageTruncateLimit) +
+			"; set controller.trustBundle to the CA bundle your workflows trust"}
 	}
 
 	var (

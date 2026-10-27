@@ -429,6 +429,25 @@ func TestProbeExpiredAuthorityIsTLSError(t *testing.T) {
 	}
 }
 
+func TestProbeUntrustedCertificateKeepsHint(t *testing.T) {
+	// The controller holds a CA of the same name but another key, as after a
+	// rotation. Go names it in the error, and a long name must not push the
+	// controller.trustBundle hint out of the truncated message.
+	now := time.Now()
+	name := strings.Repeat("arc-test-root-", 20)
+	stale, _ := issue(t, caTemplate(name, now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+	rotated, rotatedKey := issue(t, caTemplate(name, now.Add(-time.Hour), now.Add(time.Hour)), nil, nil)
+
+	got := probeChain(t, rotated, rotatedKey, stale)
+
+	if got.Status != metav1.ConditionUnknown || got.Reason != ReasonUntrustedCertificate {
+		t.Fatalf("want Reachable Unknown/%s, got %+v", ReasonUntrustedCertificate, got)
+	}
+	if !strings.HasSuffix(got.Message, "controller.trustBundle to the CA bundle your workflows trust") {
+		t.Fatalf("hint was cut off: %q", got.Message)
+	}
+}
+
 func TestAuthNoSecretIsUnknown(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer srv.Close()
