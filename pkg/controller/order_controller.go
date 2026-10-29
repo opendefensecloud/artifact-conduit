@@ -31,7 +31,7 @@ const (
 	orderFinalizer = "arc.opendefense.cloud/order-finalizer"
 )
 
-// OrderReconciler reconciles a Order object
+// OrderReconciler reconciles an Order object
 type OrderReconciler struct {
 	client.Client
 	Scheme   *runtime.Scheme
@@ -162,7 +162,7 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		r.Recorder.Eventf(order, nil, corev1.EventTypeNormal, "ForceReconcile", "Reconcile", "Force reconcile requested via annotation")
 		// Delete existing artifact workflows to force re-creation
 		for sha := range order.Status.ArtifactWorkflows {
-			// Remove Secret and ArtifactWorkflow
+			// Remove ArtifactWorkflow
 			aw := &arcv1alpha1.ArtifactWorkflow{
 				ObjectMeta: awObjectMeta(order, sha, ""),
 			}
@@ -589,7 +589,7 @@ func (r *OrderReconciler) computeDesiredAW(ctx context.Context, log logr.Logger,
 
 	sha := hex.EncodeToString(h.Sum(nil))[:16]
 
-	// We gave all the information to further process this artifact workflow.
+	// We have all the information to further process this artifact workflow.
 	// Let's store it to compare it to the current status!
 	return &desiredAW{
 		index:       i,

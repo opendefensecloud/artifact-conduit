@@ -8,7 +8,7 @@ package v1alpha1
 // ArtifactTypeTemplateRefApplyConfiguration represents a declarative configuration of the ArtifactTypeTemplateRef type for use
 // with apply.
 //
-// ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+// ArtifactTypeTemplateRef is used to clearly reference an Argo WorkflowTemplate or ClusterWorkflowTemplate.
 type ArtifactTypeTemplateRefApplyConfiguration struct {
 	// Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate.
 	Name *string `json:"name,omitempty"`

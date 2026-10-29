@@ -1,11 +1,9 @@
 // Copyright BWI GmbH and Artifact Conduit contributors
 // SPDX-License-Identifier: Apache-2.0
 
-// Package tools
-
 //go:build tools
-// +build tools
 
+// Package hack pins the code generation tools as module dependencies.
 package hack
 
 import (

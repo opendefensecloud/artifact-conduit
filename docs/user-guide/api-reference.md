@@ -88,7 +88,7 @@ _Appears in:_
 
 
 
-ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+ArtifactTypeTemplateRef is used to clearly reference an Argo WorkflowTemplate or ClusterWorkflowTemplate.
 
 
 
@@ -245,7 +245,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `timezone` _string_ | Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time. |  |  |
-| `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
+| `startingDeadlineSeconds` _integer_ | StartingDeadlineSeconds is the K8s-style deadline that will limit the time an Order will be run after its<br />original scheduled time if it is missed. |  | Minimum: 0 <br /> |
 | `schedules` _string array_ | Schedules is a list of schedules to run the Order in Cron format |  | MinItems: 1 <br />items:Pattern: `^(@(yearly\|annually\|monthly\|weekly\|daily\|midnight\|hourly)\|@every\s+([0-9]+(ns\|us\|µs\|ms\|s\|m\|h))+\|([0-9*,/?-]+\s+)\{4\}[0-9*,/?-]+)$` <br /> |
 | `when` _string_ | When is an expression that determines if a run should be scheduled. |  |  |
 
@@ -276,7 +276,7 @@ _Appears in:_
 
 
 
-EndpointSpec specifies a single artifact which is translated into a corresponding Workflow based on its type.
+EndpointSpec defines the desired state of Endpoint.
 
 
 
@@ -285,7 +285,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `type` _string_ | Type specifies which ArtifactType is used to process this artifact. |  |  |
+| `type` _string_ | Type is the endpoint type, matched against the srcType and dstType rules of an ArtifactType. |  |  |
 | `remoteURL` _string_ | RemoteURL defines the URL which is used to interact with the endpoint. |  |  |
 | `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#localobjectreference-v1-core)_ | SecretRef specifies the secret containing the relevant credentials for the endpoint. |  | Optional: \{\} <br /> |
 | `usage` _[EndpointUsage](#endpointusage)_ | Usage defines how the endpoint is allowed to be used. |  |  |

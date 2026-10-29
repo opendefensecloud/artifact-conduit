@@ -10,7 +10,7 @@ import (
 	"go.opendefense.cloud/arc/api/arc"
 )
 
-// Funcs returns the fuzzer functions for the apps api group.
+// Funcs returns the fuzzer functions for the arc API group.
 var Funcs = func(codecs runtimeserializer.CodecFactory) []any {
 	return []any{
 		func(s *arc.OrderSpec, c randfill.Continue) {

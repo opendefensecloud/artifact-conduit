@@ -26,9 +26,8 @@ var _ = Describe("ARC", Ordered, func() {
 	dir, _ := getProjectDir()
 	testStart := time.Now()
 
-	// Before running the tests, set up the environment by creating the namespace,
-	// enforce the restricted security policy to the namespace, installing CRDs,
-	// and deploying the controller.
+	// Before running the tests, set up the environment by creating the namespace
+	// and deploying the apiserver and controller-manager.
 	BeforeAll(func() {
 		By("creating arc-system namespace")
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
@@ -207,7 +206,7 @@ var _ = Describe("ARC", Ordered, func() {
 					applyResource("", templateFile)
 				}
 				applyResource("", filepath.Join(dir, "examples", artifactType, "artifact-type.yaml"))
-				By("creating a order")
+				By("creating an order")
 				manifest := filepath.Join(dir, "test", "fixtures", fmt.Sprintf("%s-order.yaml", artifactType))
 				applyResource("default", manifest)
 			})

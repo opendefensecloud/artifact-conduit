@@ -15,7 +15,7 @@ type pluginInitializer struct {
 
 var _ admission.PluginInitializer = pluginInitializer{}
 
-// New creates an instance of wardle admission plugins initializer.
+// New creates an instance of the arc admission plugin initializer.
 func New(informers informers.SharedInformerFactory) pluginInitializer {
 	return pluginInitializer{
 		informers: informers,

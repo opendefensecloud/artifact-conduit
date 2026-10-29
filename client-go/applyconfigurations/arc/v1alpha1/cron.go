@@ -12,7 +12,7 @@ package v1alpha1
 type CronApplyConfiguration struct {
 	// Timezone is the timezone against which the cron schedule will be calculated, e.g. "Asia/Tokyo". Default is machine's local time.
 	Timezone *string `json:"timezone,omitempty"`
-	// StartingDeadlineSeconds is the K8s-style deadline that will limit the time a Order will be run after its
+	// StartingDeadlineSeconds is the K8s-style deadline that will limit the time an Order will be run after its
 	// original scheduled time if it is missed.
 	StartingDeadlineSeconds *int64 `json:"startingDeadlineSeconds,omitempty"`
 	// Schedules is a list of schedules to run the Order in Cron format

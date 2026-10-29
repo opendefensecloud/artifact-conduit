@@ -15,7 +15,7 @@ type ArtifactTypeRules struct {
 	DstTypes []string `json:"dstTypes,omitempty"`
 }
 
-// ArtifactTypeTemplateRef is used to clearly reference a Argo WorkflowTemplate or ClusterWorkflowTemplate.
+// ArtifactTypeTemplateRef is used to clearly reference an Argo WorkflowTemplate or ClusterWorkflowTemplate.
 type ArtifactTypeTemplateRef struct {
 	// Name is the name of the Argo WorkflowTemplate or ClusterWorkflowTemplate.
 	Name string `json:"name,omitempty"`

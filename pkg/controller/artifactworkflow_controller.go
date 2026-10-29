@@ -35,7 +35,7 @@ const (
 	artifactWorkflowFinalizer = "arc.opendefense.cloud/artifact-workflow-finalizer"
 )
 
-// ArtifactWorkflowReconciler reconciles a ArtifactWorkflow object
+// ArtifactWorkflowReconciler reconciles an ArtifactWorkflow object
 type ArtifactWorkflowReconciler struct {
 	client.Client
 	ClientSet kubernetes.Interface
