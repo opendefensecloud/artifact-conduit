@@ -170,8 +170,9 @@ func (r *OrderReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			delete(order.Status.ArtifactWorkflows, sha)
 			r.Recorder.Eventf(order, aw, corev1.EventTypeNormal, "ForceReconcile", "Reconcile", "Deleted artifact workflow '%s' with sha %s", aw.Name, sha)
 		}
-		// Update last force time
-		order.Status.LastForceAt = metav1.Now()
+		// Record the value honoured, not the time of honouring: a future-dated
+		// annotation would stay after now and force on every pass.
+		order.Status.LastForceAt = metav1.NewTime(forceAt)
 		if err := r.Status().Update(ctx, order); err != nil {
 			return ctrl.Result{}, errLogAndWrap(log, err, "failed to update last force time")
 		}

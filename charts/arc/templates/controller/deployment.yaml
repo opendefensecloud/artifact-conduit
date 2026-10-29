@@ -81,9 +81,17 @@ spec:
             {{- range $key, $value := .Values.controller.extraArgs }}
             - --{{ $key }}={{ $value }}
             {{- end }}
-          {{- with .Values.controller.extraEnv }}
+          {{- if or .Values.controller.trustBundle.configMap .Values.controller.extraEnv }}
           env:
+            {{- if .Values.controller.trustBundle.configMap }}
+            {{- /* Go on Linux reads SSL_CERT_FILE in addition to /etc/ssl/certs,
+                   so the bundle extends the image's public roots. */}}
+            - name: SSL_CERT_FILE
+              value: /etc/arc/trust/{{ .Values.controller.trustBundle.key }}
+            {{- end }}
+            {{- with .Values.controller.extraEnv }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
           securityContext:
             {{- toYaml .Values.controller.securityContext | nindent 12 }}
@@ -93,17 +101,38 @@ spec:
             {{- toYaml .Values.controller.readinessProbe | nindent 12 }}
           resources:
             {{- toYaml .Values.controller.resources | nindent 12 }}
-          {{- if .Values.controller.metrics.certManager.enabled }}
+          {{- if or .Values.controller.metrics.certManager.enabled .Values.controller.trustBundle.configMap }}
           volumeMounts:
+            {{- if .Values.controller.metrics.certManager.enabled }}
             - name: metrics-certs
               mountPath: {{ .Values.controller.metrics.certManager.certPath }}
               readOnly: true
+            {{- end }}
+            {{- if .Values.controller.trustBundle.configMap }}
+            - name: trust-bundle
+              mountPath: /etc/arc/trust
+              readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if .Values.controller.metrics.certManager.enabled }}
+      {{- if or .Values.controller.metrics.certManager.enabled .Values.controller.trustBundle.configMap }}
       volumes:
+        {{- if .Values.controller.metrics.certManager.enabled }}
         - name: metrics-certs
           secret:
             secretName: {{ include "arc.controller.fullname" . }}-metrics-cert
+        {{- end }}
+        {{- if .Values.controller.trustBundle.configMap }}
+        {{- /* Required on purpose: roots load once per process, so a pod that
+               started before the ConfigMap existed would never trust it.
+               shortcut: CA rotation needs a restart; the chart does not own the
+               ConfigMap and cannot checksum it. */}}
+        - name: trust-bundle
+          configMap:
+            name: {{ .Values.controller.trustBundle.configMap }}
+            items:
+              - key: {{ .Values.controller.trustBundle.key }}
+                path: {{ .Values.controller.trustBundle.key }}
+        {{- end }}
       {{- end }}
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:

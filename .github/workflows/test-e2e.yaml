@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   test-e2e:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # go, kind, kubectl and helm all come from the flake. The e2e suite
     # creates the cluster itself via `make test-e2e`, pinned to
     # KIND_NODE_IMAGE (derived from ENVTEST_K8S_VERSION) — the Makefile
@@ -32,7 +32,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Set up nix with the shared Cachix cache
-        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7427f5e62c1c45ec058e3e2b483a75d9dbe48805 # v2.2.0
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
         with:
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}

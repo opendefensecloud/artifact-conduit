@@ -1,30 +1,8 @@
 name: Update Action Pins
-
-permissions:
-  contents: read
-
 on:
   pull_request:
-    paths:
-      - ".github/workflows/**"
-
+permissions:
+  contents: read
 jobs:
-  check-pins:
-    name: Check action pins
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-        with:
-          persist-credentials: false
-      - name: Verify all actions are pinned to a SHA
-        run: |
-          unpinned=$(grep -rhE '^\s+(- )?uses: ' .github/workflows/ \
-            | grep -vE '^\s+(- )?uses: \.\/' \
-            | grep -vE '@[0-9a-f]{40}($|\s)' || true)
-          if [[ -n "$unpinned" ]]; then
-            echo "::error::Found unpinned GitHub Actions (must use SHA digest, not tag):"
-            echo "$unpinned"
-            echo ""
-            echo "Run 'GITHUB_TOKEN=\$(gh auth token) update-action-pins .github/workflows/' to fix."
-            exit 1
-          fi
+  update-action-pins:
+    uses: opendefensecloud/dev-kit/.github/workflows/update-action-pins.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0

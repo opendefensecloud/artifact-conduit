@@ -51,7 +51,7 @@ jobs:
         contains(toJSON(github.event.pull_request.labels), '"ok-to-e2e"')
       )) ||
       (github.event_name == 'release' && github.event.action == 'published')
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       image-tag: ${{ steps.meta.outputs.version }}
       is-local: ${{ env.ACT == 'true' }}
@@ -93,7 +93,7 @@ jobs:
           driver-opts: ${{ env.ACT == 'true' && 'network=host' || '' }}
       - name: Login to GHCR
         if: ${{ env.ACT != 'true' }}
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

@@ -103,17 +103,17 @@ func endpointControllerSpecs() {
 				To(Equal(strings.TrimSpace(secretVersion)))
 		})
 
-		It("should reach a verdict on the target", func() {
-			// Any answer passes. Whether the in-cluster registry is reachable, and
-			// whether the controller trusts its certificate, are properties of the
-			// test cluster and not of the gate; what matters here is that a probe
-			// ran and its result reached the API.
+		It("should reach the in-cluster registry through the trust bundle", func() {
+			// zot serves a certificate from the cluster's own CA. The controller
+			// mounts the same root-bundle the WorkflowTemplates mount, so it has to
+			// trust zot exactly as the Orders do.
 			Eventually(func() string {
 				return endpointVerdict(probed, "Reachable")
-			}).ShouldNot(Equal("absent"))
+			}).Should(Equal("True/Reachable"))
 
-			logf("Reachable: %s, Ready: %s\n",
-				endpointVerdict(probed, "Reachable"), endpointVerdict(probed, "Ready"))
+			Eventually(func() string {
+				return endpointVerdict(probed, "Ready")
+			}).Should(Equal("True/Valid"))
 		})
 
 		It("should not probe again while nothing changes", func() {

@@ -110,6 +110,42 @@ Expiry is spread across `Endpoint`s by up to 20% of the TTL, derived from each
 one's UID, so a set applied together does not come due together. The default is
 `0`, which disables it.
 
+#### Trusting an internal CA
+
+The probe trusts the public CAs shipped in the controller-manager image. A
+target with a certificate from an internal CA is therefore not verified, even
+when the workflows trust it through a bundle their WorkflowTemplates mount.
+Such an `Endpoint` reports `Reachable=Unknown` with reason
+`UntrustedCertificate`, and `Ready` follows as `Unknown`. Other certificate
+errors, like an expired certificate or a hostname mismatch, break the
+workflows as well and are reported as `Reachable=False` with reason `TLSError`.
+
+Give the controller-manager the same bundle the workflows use, e.g. the target
+ConfigMap of a trust-manager `Bundle`:
+
+```yaml
+controller:
+  trustBundle:
+    configMap: root-bundle
+    key: trust-bundle.pem
+```
+
+The ConfigMap must exist in the release namespace. With trust-manager this
+means the namespace has to match the `Bundle`'s `namespaceSelector`. The bundle
+is added to the public CAs, it does not replace them. The controller-manager
+reads it once at start, so restart it after the CA rotates.
+
+A restart does not re-probe anything. `Endpoint`s probed before the bundle was
+set keep their verdict until the next probe: `UntrustedCertificate`, or
+`False/TLSError` if they were probed by an ARC release before this reason
+existed. Force a probe on all of them once the bundle is in place (see
+[When ARC probes](#when-arc-probes)), or let `endpointProbeTTL` catch up:
+
+```shell
+kubectl annotate endpoints.arc.opendefense.cloud --all-namespaces --all \
+    arc.opendefense.cloud/force-at="$(date +%s)" --overwrite
+```
+
 #### What Ready does not promise
 
 The probe runs from ARC's controller-manager, using its network position and
@@ -138,7 +174,8 @@ create an `Endpoint` can point it at a server they control and have that
 Secret's credentials delivered to it. RBAC that grants `Endpoint` creation
 without also granting Secret read is not a safe boundary. Egress
 `NetworkPolicy` on the controller-manager is the control for where those
-credentials may travel.
+credentials may travel. See also
+[Secret Access](../operator-manual/secret-access.md).
 
 ## The `ClusterArtifactType` and `ArtifactType`
 

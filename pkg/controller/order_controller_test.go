@@ -1102,11 +1102,11 @@ var _ = Describe("OrderController", func() {
 			}).Should(Equal(1))
 		})
 
-		It("should handle force reconcile annotation", func() {
+		DescribeTable("should force once for the force reconcile annotation", func(name string, offset time.Duration) {
 			createEndpoints("src-1", "dst-1")
 			// Create test Order with a single artifact
 			order := &arcv1alpha1.Order{
-				Name:      "test-order-force-reconcile",
+				Name:      name,
 				Namespace: ns.Name,
 				Spec: arcv1alpha1.OrderSpec{
 					Artifacts: []arcv1alpha1.OrderArtifact{
@@ -1142,6 +1142,7 @@ var _ = Describe("OrderController", func() {
 			}).ShouldNot(BeEmpty())
 
 			// Annotate order to force reconcile
+			forceAt := fmt.Sprintf("%v", time.Now().Add(offset).Unix())
 			Eventually(func() error {
 				if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order); err != nil {
 					return err
@@ -1149,21 +1150,31 @@ var _ = Describe("OrderController", func() {
 				if order.Annotations == nil {
 					order.Annotations = map[string]string{}
 				}
-				order.Annotations[AnnotationForceAt] = fmt.Sprintf("%v", metav1.Now().Unix())
+				order.Annotations[AnnotationForceAt] = forceAt
 
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 
 			// Verify that a new ArtifactWorkflow has been created
-			Eventually(func() string {
+			awUID := func() string {
 				err := k8sClient.List(ctx, awList, client.InNamespace(ns.Name))
-				if err != nil || len(awList.Items) == 0 {
+				if err != nil || len(awList.Items) != 1 {
 					return ""
 				}
 
 				return string(awList.Items[0].UID)
-			}).ShouldNot(Equal(originalUID))
-		})
+			}
+			Eventually(awUID).ShouldNot(Or(Equal(originalUID), BeEmpty()))
+
+			// Verify that it settles: the forced ArtifactWorkflow is kept
+			forcedUID := awUID()
+			Consistently(awUID).Should(Equal(forcedUID))
+			Expect(k8sClient.Get(ctx, client.ObjectKeyFromObject(order), order)).To(Succeed())
+			Expect(fmt.Sprintf("%v", order.Status.LastForceAt.Unix())).To(Equal(forceAt))
+		},
+			Entry("dated now", "test-order-force-now", time.Duration(0)),
+			Entry("dated in the future", "test-order-force-future", time.Hour),
+		)
 
 		It("should work with valid cron expression", Label("cron"), func() {
 			createEndpoints("src-1", "dst-1")

@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v2.2.0
+DEV_KIT_VERSION := v3.1.0
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -26,7 +26,7 @@ REPO_ADMIN_BYPASS := false
 REPO_REQUIRED_APPROVING_REVIEW_COUNT := 1
 REPO_REQUIRE_CODE_OWNER_REVIEW := false
 REPO_REQUIRE_BRANCH_UP_TO_DATE := true
-REPO_STATUS_CHECKS := ["check", "CodeQL"]
+REPO_STATUS_CHECKS := ["check", "lint", "test", "CodeQL"]
 REPO_RULESET_BRANCHES := ["release/*"]
 REPO_ALLOW_MERGE_COMMIT := true
 REPO_ALLOW_SQUASH_MERGE := false
@@ -70,6 +70,7 @@ lint: lint-no-golangci golangci-lint ## Run linters
 .PHONY: lint-no-golangci
 lint-no-golangci: $(ADDLICENSE) shellcheck  ## Run linters but not golangci-lint to exit early in CI/CD pipeline
 	$(MAKE) addlicense-check license=$(LICENSE) comment='$(LICENSE_COMMENT)' pattern='$(LICENSE_PATTERN)'
+	$(MAKE) check-dev-kit-pins
 
 .PHONY: test
 test: $(SETUP_ENVTEST) $(GINKGO) envtest-binaries-sideload ## Run all tests
@@ -167,10 +168,14 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 		test/fixtures/zot-cert.yaml
 
 	@echo -e "\nSETTING UP ARC:\n"
+	$(KUBECTL) create --context kind-$(KIND_CLUSTER_DEV) namespace arc-system --dry-run=client -o yaml | \
+		$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -f -
+	$(KUBECTL) label --context kind-$(KIND_CLUSTER_DEV) namespace arc-system trust=enabled --overwrite
 	$(HELM) upgrade --install --create-namespace \
 		--namespace arc-system arc charts/arc \
 		--set fullnameOverride=arc \
-		--set apiserver.args.cronMinScheduleInterval=30s
+		--set apiserver.args.cronMinScheduleInterval=30s \
+		--set controller.trustBundle.configMap=root-bundle
 	@echo -e "\nDONE"
 
 TIMESTAMP ?= $(shell date '+%Y%m%d%H%M%S')
@@ -186,7 +191,8 @@ dev-cluster-rebuild: ## Rebuild local images, load them into Kind cluster and up
 		--set apiserver.image.repository=local/arc-apiserver \
 		--set apiserver.image.tag=dev.$(TIMESTAMP) \
 		--set controller.image.repository=local/arc-controller-manager \
-		--set controller.image.tag=dev.$(TIMESTAMP)
+		--set controller.image.tag=dev.$(TIMESTAMP) \
+		--set controller.trustBundle.configMap=root-bundle
 
 .PHONY: cleanup-dev-cluster
 cleanup-dev-cluster: ## Tear down the Kind cluster used for e2e tests

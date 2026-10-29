@@ -34,6 +34,13 @@ var _ = Describe("ARC", Ordered, func() {
 		_, err := run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to create namespace")
 
+		// trust-manager copies root-bundle into labelled namespaces. The controller
+		// mounts it like the WorkflowTemplates do, so the Endpoint probe trusts zot.
+		By("labeling arc-system so trust-manager copies the CA bundle there")
+		cmd = exec.Command("kubectl", "label", "ns", namespace, "trust=enabled", "--overwrite")
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to label namespace")
+
 		// NOTE: etcd runs as root uid, so unfortunately we can not enforce this yet
 		// By("labeling the namespace to enforce the restricted security policy")
 		// cmd = exec.Command("kubectl", "label", "--overwrite", "ns", namespace,
@@ -66,6 +73,7 @@ var _ = Describe("ARC", Ordered, func() {
 			"--set", fmt.Sprintf("controller.image.repository=%s", managerImageRepo),
 			"--set", fmt.Sprintf("controller.image.tag=%s", managerImageTag),
 			"--set", "apiserver.args.cronMinScheduleInterval=30s",
+			"--set", "controller.trustBundle.configMap=root-bundle",
 		}
 		if imageSource != "local" && ghcrToken != "" {
 			helmArgs = append(helmArgs, "--set", fmt.Sprintf("global.imagePullSecrets[0].name=%s", ghcrPullSecretName))
@@ -110,7 +118,7 @@ var _ = Describe("ARC", Ordered, func() {
 			}
 
 			By("Fetching Kubernetes events")
-			eventNamespaces := []string{namespace, "default"}
+			eventNamespaces := []string{namespace, "default", walkThroughNamespace}
 			for _, ns := range eventNamespaces {
 				cmd = exec.Command("kubectl", "get", "events", "-n", ns, "--sort-by=.lastTimestamp")
 				eventsOutput, err := run(cmd)
@@ -211,22 +219,14 @@ var _ = Describe("ARC", Ordered, func() {
 			applyResource("default", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 		})
 
-		stateFinal := func(p string) bool {
-			return p == "Succeeded" || p == "Failed"
-		}
-
-		stateSucceeded := func(p string) bool {
-			return p == "Succeeded"
-		}
-
 		for _, artifactType := range artifactTypes {
 			It(fmt.Sprintf("should run workflows of %s order successfully", artifactType), func() {
 				resourceName := fmt.Sprintf("example-%s-order", artifactType)
 				Eventually(func() bool {
-					return orderState(resourceName, stateFinal)
+					return orderState("default", resourceName, stateFinal)
 				}).Should(BeTrue())
 
-				Expect(orderState(resourceName, stateSucceeded)).To(BeTrue())
+				Expect(orderState("default", resourceName, stateSucceeded)).To(BeTrue())
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", resourceName, "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}\t{{ end }}")
 				output, err := run(cmd)
 				Expect(err).NotTo(HaveOccurred())
@@ -255,6 +255,7 @@ var _ = Describe("ARC", Ordered, func() {
 		})
 	})
 
-	// Declared last so it runs after the chart install and the fixtures above.
+	// Declared last so they run after the chart install and the fixtures above.
+	walkThroughSpecs()
 	endpointControllerSpecs()
 })

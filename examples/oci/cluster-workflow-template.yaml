@@ -44,7 +44,7 @@ spec:
       - name: dstSecret
       - name: specRepository # The source image repository (e.g. library/alpine)
       - name: specTag # The source image tag or semver pattern, e.g. 3.18 or >3.18.0 < 3.19.0
-      - name: specOverride # Defines how destination repository:tag is overriden, supports go templates
+      - name: specOverride # Defines how destination repository:tag is overriden, supports the placeholders {tag} and {repository}
         value: ""
       - name: scanSeverity # Additional parameter coming from ArtifactType
 
@@ -124,7 +124,17 @@ spec:
             name: ca-certificates
             readOnly: true
 
+        # spec* parameters are the fields of the artifact's spec in the Order,
+        # chosen by whoever creates the Order. They come first in the list,
+        # because Kubernetes expands $(VAR) in a value with the variables
+        # defined before it.
         env: &env
+          - name: SPEC_REPOSITORY
+            value: "{{workflow.parameters.specRepository}}"
+          - name: SPEC_TAG
+            value: "{{workflow.parameters.specTag}}"
+          - name: SPEC_OVERRIDE
+            value: "{{workflow.parameters.specOverride}}"
           - name: DOCKER_CONFIG
             value: /data/.docker
           - name: REGISTRY_AUTH_FILE
@@ -143,12 +153,6 @@ spec:
             value: "{{workflow.parameters.dstRemoteURL}}"
           - name: DST_SECRET
             value: "{{workflow.parameters.dstSecret}}"
-          - name: SPEC_REPOSITORY
-            value: "{{workflow.parameters.specRepository}}"
-          - name: SPEC_TAG
-            value: "{{workflow.parameters.specTag}}"
-          - name: SPEC_OVERRIDE
-            value: "{{workflow.parameters.specOverride}}"
           - name: SCAN_SEVERITY
             value: "{{workflow.parameters.scanSeverity}}"
 
@@ -156,15 +160,15 @@ spec:
           set -euo pipefail
 
           # Conditionally login to source registry
-          if [ "{{workflow.parameters.srcSecret}}" = "true" ]; then
-              echo "Authenticating to source registry {{workflow.parameters.srcRemoteURL}}..."
-              cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin {{workflow.parameters.srcRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
+          if [ "$SRC_SECRET" = "true" ]; then
+              echo "Authenticating to source registry ${SRC_REMOTE_URL}..."
+              cat /secrets/src/password | skopeo login -u "$(cat /secrets/src/username)" --password-stdin "$SRC_REMOTE_URL" --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
           # Conditionally login to destination registry
-          if [ "{{workflow.parameters.dstSecret}}" = "true" ]; then
-              echo "Authenticating to destination registry {{workflow.parameters.dstRemoteURL}}..."
-              cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin {{workflow.parameters.dstRemoteURL}} --compat-auth-file "${DOCKER_CONFIG}/config.json"
+          if [ "$DST_SECRET" = "true" ]; then
+              echo "Authenticating to destination registry ${DST_REMOTE_URL}..."
+              cat /secrets/dst/password | skopeo login -u "$(cat /secrets/dst/username)" --password-stdin "$DST_REMOTE_URL" --compat-auth-file "${DOCKER_CONFIG}/config.json"
           fi
 
     # --- Check Source Availability (Skopeo) ---
@@ -234,42 +238,34 @@ spec:
           valueFrom:
             path: /tmp/dst.txt
       script:
-        image: hairyhenderson/gomplate:v5.2.0-alpine
+        image: alpine:3.22
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
         source: |
           set -euo pipefail
 
-          # escaping go templates sucks, so let's just not...
-          cat > /tmp/images.tpl <<EOF
-          <<- \$srcRemoteURL := "$SRC_REMOTE_URL" >>
-          <<- \$dstRemoteURL := "$DST_REMOTE_URL" >>
-          <<- \$repository := "$SPEC_REPOSITORY" >>
-          <<- \$override := "$SPEC_OVERRIDE" >>
-          <<- \$tag := "$(cat /data/tag.txt)" >>
-          <<- \$values := dict "tag" \$tag "repository" \$repository >>
-          << \$srcRemoteURL >>/<< \$repository >>:<< \$tag >>
-          <<- if \$override >>
-          <<- \$repoTag := tmpl.Inline \$override \$values >>
-          << \$dstRemoteURL >>/<< \$repoTag >>
-          <<- else >>
-          << \$dstRemoteURL >>/<< \$repository >>:<< \$tag >>
-          <<- end >>
-          EOF
+          tag="$(cat /data/tag.txt)"
 
-          sed -i 's/<</{{/g' /tmp/images.tpl
-          sed -i 's/>>/}}/g' /tmp/images.tpl
-          cat /tmp/images.tpl
+          # The override comes from the Order and only gets its placeholders
+          # replaced, it is never evaluated as a template.
+          dst_ref="${SPEC_REPOSITORY}:${tag}"
+          if [ -n "$SPEC_OVERRIDE" ]; then
+            dst_ref="${SPEC_OVERRIDE//"{tag}"/$tag}"
+            dst_ref="${dst_ref//"{repository}"/$SPEC_REPOSITORY}"
+            case "$dst_ref" in
+              *"{"*|*"}"*)
+                echo "override supports only the placeholders {tag} and {repository}" >&2
+                exit 1
+                ;;
+            esac
+          fi
 
-          cat /tmp/images.tpl | gomplate --out - > /data/gomplate.txt
+          echo "${SRC_REMOTE_URL}/${SPEC_REPOSITORY}:${tag}" > /data/src.txt
+          echo "${DST_REMOTE_URL}/${dst_ref}" > /data/dst.txt
+          cat /data/src.txt /data/dst.txt
 
-          sed -i '/^[[:space:]]*$/d' /data/gomplate.txt
-          cat /data/gomplate.txt
-
-          head -1 /data/gomplate.txt > /data/src.txt
           cp /data/src.txt /tmp/src.txt
-          head -2 /data/gomplate.txt | tail -1 > /data/dst.txt
           cp /data/dst.txt /tmp/dst.txt
 
     # --- Check Destination Availability (Skopeo) ---

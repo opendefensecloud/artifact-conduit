@@ -5,6 +5,7 @@ package controller
 
 import (
 	"fmt"
+	"time"
 
 	wfv1alpha1 "github.com/argoproj/argo-workflows/v4/pkg/apis/workflow/v1alpha1"
 	"go.opendefense.cloud/kit/envtest"
@@ -341,8 +342,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}).To(Equal(arcv1alpha1.WorkflowPending))
 		})
 
-		It("should handle force reconcile annotation", func() {
-			awName := "force-reconcile"
+		DescribeTable("should force once for the force reconcile annotation", func(awName string, offset time.Duration) {
 			aw := &arcv1alpha1.ArtifactWorkflow{
 				Namespace: ns.Name,
 				Name:      awName,
@@ -368,6 +368,7 @@ var _ = Describe("ArtifactWorkflowController", func() {
 			}).Should(Succeed())
 
 			// Update the annotation to trigger a re-reconcile
+			forceAt := fmt.Sprintf("%v", time.Now().Add(offset).Unix())
 			Eventually(func() error {
 				order := &arcv1alpha1.ArtifactWorkflow{}
 				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), order); err != nil {
@@ -376,21 +377,31 @@ var _ = Describe("ArtifactWorkflowController", func() {
 				if order.Annotations == nil {
 					order.Annotations = map[string]string{}
 				}
-				order.Annotations[AnnotationForceAt] = fmt.Sprintf("%v", metav1.Now().Unix())
+				order.Annotations[AnnotationForceAt] = forceAt
 
 				return k8sClient.Update(ctx, order)
 			}).Should(Succeed())
 
 			// Verify that a new workflow has been created
-			Eventually(func() (string, error) {
+			wfUID := func() string {
 				wf := &wfv1alpha1.Workflow{}
 				if err := k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), wf); err != nil {
-					return "", err
+					return ""
 				}
 
-				return string(wf.UID), nil
-			}).ShouldNot(Equal(originalUID))
-		})
+				return string(wf.UID)
+			}
+			Eventually(wfUID).ShouldNot(Or(Equal(originalUID), BeEmpty()))
+
+			// Verify that it settles: the forced workflow is kept
+			forcedUID := wfUID()
+			Consistently(wfUID).Should(Equal(forcedUID))
+			Expect(k8sClient.Get(ctx, namespacedName(aw.Namespace, aw.Name), aw)).To(Succeed())
+			Expect(fmt.Sprintf("%v", aw.Status.LastForceAt.Unix())).To(Equal(forceAt))
+		},
+			Entry("dated now", "force-reconcile-now", time.Duration(0)),
+			Entry("dated in the future", "force-reconcile-future", time.Hour),
+		)
 
 		It("should support cron schedules", Label("cron"), func() {
 			awName := "cron-schedule"

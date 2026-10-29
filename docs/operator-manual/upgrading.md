@@ -6,6 +6,13 @@ See [Helm installation](./helm.md#upgrading) for more information.
 
 ## Version notes
 
+### To v0.4.0 — nested spec parameters follow the naming rules
+
+Earlier versions did not capitalize the keys of nested objects when flattening an artifact's
+`spec` into workflow parameters, so `spec.foo.bar` became `specfooBar` instead of `specFooBar`
+as [Workflow parameters](./workflow-parameters.md#naming-rules) documents. This is fixed.
+Any reference to the lowercase names must switch to the documented ones.
+
 ### To v0.3.0 — every `Endpoint` is probed once
 
 The `EndpointReconciler` used to keep in memory what each probe had run against, and now
