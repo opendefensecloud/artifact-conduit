@@ -70,7 +70,7 @@ var _ = Describe("Helper Functions", func() {
 			Expect(result).To(Equal("test-order-" + sha))
 		})
 
-		It("should shorten long order names to a valid Argo workflow name", func() {
+		It("should shorten long order names to a valid DNS-1123 subdomain", func() {
 			order := &arcv1alpha1.Order{
 				// A valid 253 character DNS-1123 subdomain.
 				Name: strings.Repeat("a", 63) + "." +
@@ -81,14 +81,16 @@ var _ = Describe("Helper Functions", func() {
 			Expect(validation.IsDNS1123Subdomain(order.Name)).To(BeEmpty())
 
 			result := awName(order, sha)
-			Expect(len(result)).To(BeNumerically("<=", awNameMaxLength))
+			Expect(len(result)).To(BeNumerically("<=", validation.DNS1123SubdomainMaxLength))
 			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
 			Expect(result).To(HaveSuffix("-" + sha))
 		})
 
 		It("should not join the name hash to a trailing dot", func() {
-			keep := awNameMaxLength - len(sha) - awNameHashLength - 1
-			name := strings.Repeat("a", keep-1) + "." + strings.Repeat("b", 40)
+			maxlen := validation.DNS1123SubdomainMaxLength - len(sha) - 1
+			keep := maxlen - awNameHashLength - 1
+			// Create a name longer than maxlen but still valid as DNS-1123 subdomain
+			name := strings.Repeat("a", keep-1) + "." + strings.Repeat("b", maxlen-keep+10)
 			order := &arcv1alpha1.Order{Name: name}
 			Expect(validation.IsDNS1123Subdomain(name)).To(BeEmpty())
 
@@ -108,6 +110,42 @@ var _ = Describe("Helper Functions", func() {
 			Expect(awName(second, sha)).NotTo(Equal(firstResult))
 			Expect(validation.IsDNS1123Subdomain(firstResult)).To(BeEmpty())
 			Expect(validation.IsDNS1123Subdomain(awName(second, sha))).To(BeEmpty())
+		})
+	})
+
+	Describe("shortenName", func() {
+		It("should shorten a long name by keeping prefix and appending hash", func() {
+			name := strings.Repeat("a", 100)
+			result := shortenName(name, 50)
+			Expect(result).To(HaveLen(50))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
+		})
+
+		It("should be deterministic for the same input", func() {
+			name := strings.Repeat("b", 80)
+			result1 := shortenName(name, 40)
+			result2 := shortenName(name, 40)
+			Expect(result1).To(Equal(result2))
+		})
+
+		It("should produce different results for different names with same prefix", func() {
+			prefix := strings.Repeat("c", 20)
+			first := prefix + strings.Repeat("d", 60)
+			second := prefix + strings.Repeat("e", 60)
+			result1 := shortenName(first, 50)
+			result2 := shortenName(second, 50)
+			Expect(result1).NotTo(Equal(result2))
+			Expect(validation.IsDNS1123Subdomain(result1)).To(BeEmpty())
+			Expect(validation.IsDNS1123Subdomain(result2)).To(BeEmpty())
+		})
+
+		It("should not leave trailing dot or dash before the hash", func() {
+			// Force trimming by creating name that would end with separator
+			name := strings.Repeat("a.", 50)
+			result := shortenName(name, 40)
+			Expect(result).NotTo(ContainSubstring(".-"))
+			Expect(result).NotTo(MatchRegexp(`-\-[0-9a-f]+$`))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
 		})
 	})
 
