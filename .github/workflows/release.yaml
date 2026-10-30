@@ -1,21 +1,80 @@
 name: Release
+run-name: ${{ inputs.retry_assets_for && format('Retry assets {0}', inputs.retry_assets_for) || format('Release {0}{1}', inputs.version || '(auto)', inputs.dry_run && ' (dry run)' || '') }}
+
+# Decision 1 of 2: this creates or updates the draft release (and optionally
+# its tag). Decision 2 of 2: you publish the draft, which fires docker / helm /
+# docs. A push to main keeps the draft current; it never tags or publishes.
+# Version and notes are computed by dev-kit's reusable workflow; this
+# repository only keeps the triggers and the release-asset build.
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release, e.g. v0.4.0. Leave empty and it is computed from the commits.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Render the version and notes only. Do not create or update a release, or create a tag.'
+        required: false
+        type: boolean
+        default: true
+      force:
+        description: 'Release even though commits are missing from the notes. Recovery only.'
+        required: false
+        type: boolean
+        default: false
+      retry_assets_for:
+        description: 'Recovery only. Tag of an existing DRAFT release whose asset upload failed. Skips version and notes. Uncheck dry_run.'
+        required: false
+        type: string
+      create_tag:
+        description: 'Create the release tag now instead of when the draft is published. Leave unchecked to only update the draft.'
+        required: false
+        type: boolean
+        default: false
   push:
-    tags:
-      - 'v*'
+    branches: [main]
 
 permissions:
   contents: read
 
+concurrency:
+  # Two releases at once would race to create or update the same draft and tag.
+  # Never cancel a run in flight: it may already have tagged and drafted.
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
-    name: Release
+    name: Compute version and notes
+    # FIXME: Use released version
+    uses: opendefensecloud/dev-kit/.github/workflows/release.yml@100add157bfa01bc2e8f600951b37687afb4f672 # v0.0.0
+    permissions:
+      contents: write # create/update the draft release and, if requested, the tag
+    with:
+      # A push keeps the draft up to date; it never tags or publishes. The
+      # `inputs` context is empty on push, so each value is selected by the
+      # event and still has the declared type.
+      version: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '' }}
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+      force: ${{ github.event_name == 'workflow_dispatch' && inputs.force }}
+      retry_assets_for: ${{ github.event_name == 'workflow_dispatch' && inputs.retry_assets_for || '' }}
+      create_tag: ${{ github.event_name == 'workflow_dispatch' && inputs.create_tag }}
+
+  assets:
+    name: Build and attach release assets
+    needs: release
+    # result == 'success' matters: validation of a retry target happens in the
+    # called workflow, and always() alone would still start this job when it
+    # failed. draft_updated is empty on the retry path, so the retry input
+    # covers that case.
+    if: ${{ always() && needs.release.result == 'success' && (needs.release.outputs.draft_updated == 'true' || inputs.retry_assets_for != '') }}
     runs-on: ubuntu-26.04
     permissions:
-      contents: write
-      id-token: write # for keyless cosign sign-blob
-      attestations: write # for build-provenance attestation
+      contents: write # upload assets to the draft release
+      id-token: write # keyless cosign sign-blob
+      attestations: write # build-provenance attestation
     # go comes from the flake. cosign comes from cosign-installer on the
     # runner PATH; nix develop inherits PATH so it remains reachable from
     # inside the dev shell. No actions/cache here: this is a privileged
@@ -25,11 +84,37 @@ jobs:
     defaults:
       run:
         shell: nix develop --command bash -e {0}
-
+    env:
+      VERSION: ${{ inputs.retry_assets_for || needs.release.outputs.version }}
     steps:
+      # This runs before checkout and before nix is installed, so it cannot use
+      # the job's nix shell.
+      - name: Resolve the draft's commit for asset retry
+        id: retry
+        if: ${{ inputs.retry_assets_for != '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.retry_assets_for }}
+        run: |
+          set -euo pipefail
+
+          sha=$(gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" \
+            --json targetCommitish --jq '.targetCommitish')
+
+          if [ -z "$sha" ] || [ "$sha" = "null" ]; then
+            echo "::error::Could not resolve the target commit of draft release ${VERSION}."
+            exit 1
+          fi
+
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
+          # By SHA to avoid racing on tag propagation. The retry path has no
+          # prepare output, so it uses the draft's resolved target commit.
+          ref: ${{ needs.release.outputs.sha || steps.retry.outputs.sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -102,15 +187,11 @@ jobs:
               "$f"
           done
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
-        with:
-          # Release notes are curated by release-drafter; only attach the signed
-          # assets here so the drafted notes are preserved.
-          files: |
-            bin/*
-          # Immutable releases forbid uploading assets to an already-published
-          # release, so create a draft with the signed artefacts attached and
-          # publish it separately (UI, or `gh release edit <tag> --draft=false`).
-          draft: true
-          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+      - name: Upload assets to draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # --clobber keeps re-runs idempotent when assets were already
+          # partially uploaded.
+          gh release upload "${VERSION}" bin/arc-*-* bin/checksums.txt* provenance/*.intoto.jsonl \
+            --repo "${GITHUB_REPOSITORY}" --clobber
