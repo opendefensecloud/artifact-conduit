@@ -4,6 +4,8 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"maps"
@@ -31,8 +33,55 @@ func namespacedName(namespace, name string) types.NamespacedName {
 	}
 }
 
+const (
+	// wfNameMaxLength is the maximum length of an Argo Workflow name.
+	wfNameMaxLength = 63
+
+	// cronWfNameMaxLength is the maximum length of an Argo CronWorkflow name.
+	cronWfNameMaxLength = 52
+
+	// awNameHashLength is the number of hex characters of the order name hash
+	// appended when the order name has to be shortened.
+	awNameHashLength = 16
+)
+
 func awName(order *arcv1alpha1.Order, sha string) string {
-	return fmt.Sprintf("%s-%s", order.Name, sha)
+	name := order.Name
+	maxlen := validation.DNS1123SubdomainMaxLength - len(sha) - 1
+	if len(name) > maxlen {
+		name = shortenName(name, maxlen)
+	}
+
+	return fmt.Sprintf("%s-%s", name, sha)
+}
+
+func normalizeName(name string, cron bool) string {
+	maxlen := wfNameMaxLength
+	if cron {
+		maxlen = cronWfNameMaxLength
+	}
+
+	if len(name) <= maxlen {
+		return name
+	}
+
+	return shortenName(name, maxlen)
+}
+
+func shortenName(name string, length int) string {
+	// Keep the start of the order name for readability and append a hash of
+	// the full name so that orders sharing the same prefix stay distinct.
+	sum := sha256.Sum256([]byte(name))
+	nameHash := hex.EncodeToString(sum[:])[:awNameHashLength]
+
+	// Clamp to be at least 0 and at most len(name)
+	keep := min(max(length-len(nameHash)-1, 0), len(name))
+
+	// Never join the suffix to a trailing separator: "a.-hash" is not a valid
+	// DNS-1123 subdomain because the label after the dot starts with a dash.
+	prefix := strings.TrimRight(name[:keep], ".-")
+
+	return prefix + "-" + nameHash
 }
 
 func cloneObjectMeta(meta metav1.ObjectMeta, name string) metav1.ObjectMeta {

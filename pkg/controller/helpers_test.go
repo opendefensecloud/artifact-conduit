@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation"
 
 	arcv1alpha1 "go.opendefense.cloud/arc/api/arc/v1alpha1"
 
@@ -58,13 +59,93 @@ var _ = Describe("Helper Functions", func() {
 	})
 
 	Describe("awName", func() {
+		const sha = "0123456789abcdef"
+
 		It("should generate artifact workflow name", func() {
 			order := &arcv1alpha1.Order{
 				Name: "test-order",
 			}
 
-			result := awName(order, "abc123")
-			Expect(result).To(Equal("test-order-abc123"))
+			result := awName(order, sha)
+			Expect(result).To(Equal("test-order-" + sha))
+		})
+
+		It("should shorten long order names to a valid DNS-1123 subdomain", func() {
+			order := &arcv1alpha1.Order{
+				// A valid 253 character DNS-1123 subdomain.
+				Name: strings.Repeat("a", 63) + "." +
+					strings.Repeat("b", 63) + "." +
+					strings.Repeat("c", 63) + "." +
+					strings.Repeat("d", 61),
+			}
+			Expect(validation.IsDNS1123Subdomain(order.Name)).To(BeEmpty())
+
+			result := awName(order, sha)
+			Expect(len(result)).To(BeNumerically("<=", validation.DNS1123SubdomainMaxLength))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
+			Expect(result).To(HaveSuffix("-" + sha))
+		})
+
+		It("should not join the name hash to a trailing dot", func() {
+			maxlen := validation.DNS1123SubdomainMaxLength - len(sha) - 1
+			keep := maxlen - awNameHashLength - 1
+			// Create a name longer than maxlen but still valid as DNS-1123 subdomain
+			name := strings.Repeat("a", keep-1) + "." + strings.Repeat("b", maxlen-keep+10)
+			order := &arcv1alpha1.Order{Name: name}
+			Expect(validation.IsDNS1123Subdomain(name)).To(BeEmpty())
+
+			result := awName(order, sha)
+			Expect(result).NotTo(ContainSubstring(".-"))
+			Expect(result).To(HavePrefix(strings.Repeat("a", keep-1) + "-"))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
+		})
+
+		It("should keep shortened names deterministic and distinct", func() {
+			prefix := strings.Repeat("a", 20)
+			first := &arcv1alpha1.Order{Name: prefix + strings.Repeat("b", 40)}
+			second := &arcv1alpha1.Order{Name: prefix + strings.Repeat("c", 40)}
+
+			firstResult := awName(first, sha)
+			Expect(awName(first, sha)).To(Equal(firstResult))
+			Expect(awName(second, sha)).NotTo(Equal(firstResult))
+			Expect(validation.IsDNS1123Subdomain(firstResult)).To(BeEmpty())
+			Expect(validation.IsDNS1123Subdomain(awName(second, sha))).To(BeEmpty())
+		})
+	})
+
+	Describe("shortenName", func() {
+		It("should shorten a long name by keeping prefix and appending hash", func() {
+			name := strings.Repeat("a", 100)
+			result := shortenName(name, 50)
+			Expect(result).To(HaveLen(50))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
+		})
+
+		It("should be deterministic for the same input", func() {
+			name := strings.Repeat("b", 80)
+			result1 := shortenName(name, 40)
+			result2 := shortenName(name, 40)
+			Expect(result1).To(Equal(result2))
+		})
+
+		It("should produce different results for different names with same prefix", func() {
+			prefix := strings.Repeat("c", 20)
+			first := prefix + strings.Repeat("d", 60)
+			second := prefix + strings.Repeat("e", 60)
+			result1 := shortenName(first, 50)
+			result2 := shortenName(second, 50)
+			Expect(result1).NotTo(Equal(result2))
+			Expect(validation.IsDNS1123Subdomain(result1)).To(BeEmpty())
+			Expect(validation.IsDNS1123Subdomain(result2)).To(BeEmpty())
+		})
+
+		It("should not leave trailing dot or dash before the hash", func() {
+			// Force trimming by creating name that would end with separator
+			name := strings.Repeat("a.", 50)
+			result := shortenName(name, 40)
+			Expect(result).NotTo(ContainSubstring(".-"))
+			Expect(result).NotTo(MatchRegexp(`-\-[0-9a-f]+$`))
+			Expect(validation.IsDNS1123Subdomain(result)).To(BeEmpty())
 		})
 	})
 
@@ -483,7 +564,6 @@ var _ = Describe("Helper Functions", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("invalid force reconcile annotation"))
 		})
-
 	})
 
 	DescribeTable("recordableForceAt judges the year 9999 boundary in UTC whatever the zone",

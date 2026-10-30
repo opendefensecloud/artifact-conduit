@@ -31,6 +31,10 @@ type SingleWorkflowHandler struct {
 	aw  *arcv1alpha1.ArtifactWorkflow
 }
 
+func (h *SingleWorkflowHandler) wfName() string {
+	return normalizeName(h.aw.Name, false)
+}
+
 func NewSingleWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) *SingleWorkflowHandler {
 	return &SingleWorkflowHandler{r, log, aw}
 }
@@ -38,15 +42,15 @@ func NewSingleWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw
 func (h *SingleWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 	wf := wfv1alpha1.Workflow{
 		Namespace: h.aw.Namespace,
-		Name:      h.aw.Name,
+		Name:      h.wfName(),
 	}
 	if err := h.Delete(ctx, &wf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.aw.Name, err))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated workflow '%s': %v", h.wfName(), err))
 		metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonDeletionFailed)
 
 		return errLogAndWrap(h.log, err, "workflow deletion failed")
 	}
-	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted workflow '%s'", h.aw.Name))
+	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted workflow '%s'", h.wfName()))
 
 	return nil
 }
@@ -81,7 +85,7 @@ func (h *SingleWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 
 func (h *SingleWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 	wf := wfv1alpha1.Workflow{}
-	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &wf); err != nil {
+	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.wfName()), &wf); err != nil {
 		return errLogAndWrap(h.log, err, "failed to get workflow")
 	}
 
@@ -123,6 +127,10 @@ type CronWorkflowHandler struct {
 	aw  *arcv1alpha1.ArtifactWorkflow
 }
 
+func (h *CronWorkflowHandler) wfName() string {
+	return normalizeName(h.aw.Name, true)
+}
+
 func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *arcv1alpha1.ArtifactWorkflow) *CronWorkflowHandler {
 	return &CronWorkflowHandler{r, log, aw}
 }
@@ -130,15 +138,15 @@ func NewCronWorkflowHandler(r *ArtifactWorkflowReconciler, log logr.Logger, aw *
 func (h *CronWorkflowHandler) DeleteArgoResources(ctx context.Context) error {
 	cwf := wfv1alpha1.CronWorkflow{
 		Namespace: h.aw.Namespace,
-		Name:      h.aw.Name,
+		Name:      h.wfName(),
 	}
 	if err := h.Delete(ctx, &cwf); client.IgnoreNotFound(err) != nil {
-		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.aw.Name, err))
+		h.Recorder.Eventf(h.aw, nil, corev1.EventTypeWarning, ReasonDeletionFailed, "Delete", fmt.Sprintf("Failed to delete associated cron workflow '%s': %v", h.wfName(), err))
 		metrics.RecordReconcileError(ControllerArtifactWorkflow, ReasonDeletionFailed)
 
 		return errLogAndWrap(h.log, err, "cron workflow deletion failed")
 	}
-	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted cron workflow '%s'", h.aw.Name))
+	h.Recorder.Eventf(h.aw, nil, corev1.EventTypeNormal, "Deleted", "Delete", fmt.Sprintf("Deleted cron workflow '%s'", h.wfName()))
 
 	return nil
 }
@@ -176,7 +184,7 @@ func (h *CronWorkflowHandler) CreateArgoResources(ctx context.Context) error {
 
 func (h *CronWorkflowHandler) CheckArgoResources(ctx context.Context) error {
 	cwf := wfv1alpha1.CronWorkflow{}
-	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.aw.Name), &cwf); err != nil {
+	if err := h.Get(ctx, namespacedName(h.aw.Namespace, h.wfName()), &cwf); err != nil {
 		return errLogAndWrap(h.log, err, "failed to get cron workflow")
 	}
 
@@ -298,10 +306,13 @@ func hydrateArgoWorkflowSpec(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1
 }
 
 func hydrateArgoWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.Workflow {
-	return &wfv1alpha1.Workflow{
+	wf := &wfv1alpha1.Workflow{
 		ObjectMeta: workflowObjectMeta(aw),
 		Spec:       hydrateArgoWorkflowSpec(aw, srcSecret, dstSecret),
 	}
+	wf.Name = normalizeName(wf.Name, false)
+
+	return wf
 }
 
 func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1.Secret, dstSecret *corev1.Secret) *wfv1alpha1.CronWorkflow {
@@ -320,6 +331,7 @@ func hydrateArgoCronWorkflow(aw *arcv1alpha1.ArtifactWorkflow, srcSecret *corev1
 			WorkflowMetadata:           &om,
 		},
 	}
+	wf.Name = normalizeName(wf.Name, true)
 
 	return wf
 }
