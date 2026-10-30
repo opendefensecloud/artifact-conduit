@@ -9,6 +9,6 @@ permissions:
 jobs:
   add-to-project:
     permissions: {}
-    uses: opendefensecloud/dev-kit/.github/workflows/issues-add-to-project.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
+    uses: opendefensecloud/dev-kit/.github/workflows/issues-add-to-project.yml@ff7dfec210333b1ecd626ded75f635081149a6c6 # v3.1.1
     secrets:
       ADD_TO_PROJECT_PAT: ${{ secrets.ADD_TO_PROJECT_PAT }}

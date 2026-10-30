@@ -7,4 +7,4 @@ permissions:
   pull-requests: read
 jobs:
   conventional-commits:
-    uses: opendefensecloud/dev-kit/.github/workflows/conventional-commits.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
+    uses: opendefensecloud/dev-kit/.github/workflows/conventional-commits.yml@ff7dfec210333b1ecd626ded75f635081149a6c6 # v3.1.1
