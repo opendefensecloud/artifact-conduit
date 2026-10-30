@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   approve:
-    uses: opendefensecloud/dev-kit/.github/workflows/renovate-auto-approve.yml@6cd9f749d3b2769c8603d0bd77a3ebc23050dfa6 # v3.1.0
+    uses: opendefensecloud/dev-kit/.github/workflows/renovate-auto-approve.yml@7126784179fc6eb70f7216b788537a9d92121642 # v3.2.1
     permissions:
       # A job-level block replaces the workflow-level one rather than adding to
       # it, and a called workflow cannot elevate what the caller grants. Without
