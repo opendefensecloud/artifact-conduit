@@ -1,8 +1,8 @@
 mkdocs-material ==9.7.7
 pymdown-extensions ==12.1
-mkdocs-glightbox == 0.5.2
+mkdocs-glightbox ==0.5.3
 mkdocs-include-markdown-plugin == 7.3.0
-mkdocs-panzoom-plugin == 0.5.2
+mkdocs-panzoom-plugin ==0.5.3
 mkdocs-awesome-nav == 3.3.0
 
 pillow ==13.0.0
@@ -15,4 +15,4 @@ idna ==3.20
 
 # Pinned transitive dependency; certifi before 2026.10.18 trusts the
 # compromised emSign ECC Root CA - G3 (PYSEC-2026-4320). Kept current by Renovate.
-certifi ==2026.10.19
+certifi ==2026.10.23
