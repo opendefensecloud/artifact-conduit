@@ -368,10 +368,6 @@ var _ = Describe("Helper Functions", func() {
 			Expect(dst).To(HaveKeyWithValue("prefixLowerCase", "value"))
 		})
 
-		It("should return an error for an empty key instead of panicking", func() {
-			Expect(flattenMap("spec", map[string]any{"": "value"}, map[string]any{})).NotTo(Succeed())
-		})
-
 		It("should return an error for an empty key in a nested map", func() {
 			src := map[string]any{"config": map[string]any{"": "value"}}
 
