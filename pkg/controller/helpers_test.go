@@ -299,7 +299,7 @@ var _ = Describe("Helper Functions", func() {
 			}
 			dst := map[string]any{}
 
-			flattenMap("prefix", src, dst)
+			Expect(flattenMap("prefix", src, dst)).To(Succeed())
 
 			Expect(dst).To(HaveKeyWithValue("prefixName", "test"))
 			Expect(dst).To(HaveKeyWithValue("prefixAge", 30))
@@ -314,7 +314,7 @@ var _ = Describe("Helper Functions", func() {
 			}
 			dst := map[string]any{}
 
-			flattenMap("spec", src, dst)
+			Expect(flattenMap("spec", src, dst)).To(Succeed())
 
 			Expect(dst).To(HaveKeyWithValue("specConfigPort", 8080))
 			Expect(dst).To(HaveKeyWithValue("specConfigHost", "localhost"))
@@ -326,7 +326,7 @@ var _ = Describe("Helper Functions", func() {
 			}
 			dst := map[string]any{}
 
-			flattenMap("spec", src, dst)
+			Expect(flattenMap("spec", src, dst)).To(Succeed())
 
 			Expect(dst).To(HaveKeyWithValue("specItems0", "first"))
 			Expect(dst).To(HaveKeyWithValue("specItems1", "second"))
@@ -337,7 +337,7 @@ var _ = Describe("Helper Functions", func() {
 			src := map[string]any{}
 			dst := map[string]any{}
 
-			flattenMap("prefix", src, dst)
+			Expect(flattenMap("prefix", src, dst)).To(Succeed())
 
 			Expect(dst).To(BeEmpty())
 		})
@@ -352,7 +352,7 @@ var _ = Describe("Helper Functions", func() {
 			}
 			dst := map[string]any{}
 
-			flattenMap("spec", src, dst)
+			Expect(flattenMap("spec", src, dst)).To(Succeed())
 
 			Expect(dst).To(HaveKeyWithValue("specLevel1Level2Value", "deep"))
 		})
@@ -363,9 +363,19 @@ var _ = Describe("Helper Functions", func() {
 			}
 			dst := map[string]any{}
 
-			flattenMap("prefix", src, dst)
+			Expect(flattenMap("prefix", src, dst)).To(Succeed())
 
 			Expect(dst).To(HaveKeyWithValue("prefixLowerCase", "value"))
+		})
+
+		It("should return an error for an empty key instead of panicking", func() {
+			Expect(flattenMap("spec", map[string]any{"": "value"}, map[string]any{})).NotTo(Succeed())
+		})
+
+		It("should return an error for an empty key in a nested map", func() {
+			src := map[string]any{"config": map[string]any{"": "value"}}
+
+			Expect(flattenMap("spec", src, map[string]any{})).To(MatchError(ContainSubstring("specConfig")))
 		})
 	})
 
@@ -466,6 +476,20 @@ var _ = Describe("Helper Functions", func() {
 
 			Expect(paramMap).To(HaveKeyWithValue("specImageName", "overridden"))
 			Expect(paramMap).To(HaveKeyWithValue("customParam", "custom-value"))
+		})
+
+		It("should return error for an empty key in artifact spec", func() {
+			daw := &desiredAW{
+				srcEndpoint: &arcv1alpha1.Endpoint{},
+				dstEndpoint: &arcv1alpha1.Endpoint{},
+				artifact: &arcv1alpha1.OrderArtifact{
+					Spec: runtime.RawExtension{Raw: []byte(`{"": "value"}`)},
+				},
+				typeSpec: &arcv1alpha1.ArtifactTypeSpec{},
+			}
+
+			_, err := dawToParameters(daw)
+			Expect(err).To(HaveOccurred())
 		})
 
 		It("should return error for invalid JSON in artifact spec", func() {
