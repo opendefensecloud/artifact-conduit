@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -1343,10 +1343,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#cutting-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutting a release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
         Versioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#draft-and-tag-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draft and tag rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recovering-a-failed-asset-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recovering a failed asset upload
       
     </span>
   </a>
@@ -2089,10 +2133,54 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
       
         <li class="md-nav__item">
+  <a href="#cutting-a-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cutting a release
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#versioning" class="md-nav__link">
     <span class="md-ellipsis">
       
         Versioning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#draft-and-tag-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Draft and tag rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recovering-a-failed-asset-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recovering a failed asset upload
       
     </span>
   </a>
@@ -2145,8 +2233,53 @@
 
 <h1 id="releases">Releases<a class="headerlink" href="#releases" title="Permanent link">¶</a></h1>
 <p>You can find the most recent version in the <a href="https://github.com/opendefensecloud/artifact-conduit/releases">GitHub Releases</a>.</p>
+<h2 id="cutting-a-release">Cutting a release<a class="headerlink" href="#cutting-a-release" title="Permanent link">¶</a></h2>
+<p>Releases are cut with the <a href="https://github.com/opendefensecloud/artifact-conduit/blob/main/.github/workflows/release.yaml">Release workflow</a>, which calls dev-kit's shared release workflow to compute the version and notes from <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commit</a> messages. There is no release PR and no manual tagging.</p>
+<ol>
+<li><strong>Commits land on <code>main</code>.</strong> The Release workflow runs on every push and creates or updates the pending <strong>draft</strong> release in place, including its signed artefacts. It never tags or publishes. If nothing releasable landed, it leaves the draft untouched.</li>
+<li><strong>Run the Release workflow manually</strong> when you want to inspect or refresh the draft. <code>dry_run</code> is checked by default and only renders the version and notes. Re-run with it unchecked to update the draft and its assets. <code>create_tag</code> is off by default, so publishing the draft creates the tag. Check it only if you need the tag during the run.</li>
+<li><strong>Publish the draft</strong> via the GitHub UI or <code>gh release edit &lt;tag&gt; --draft=false</code>. Publishing creates the tag if it does not exist yet, makes the release immutable, and triggers the Docker, Helm, and docs workflows.</li>
+<li><strong>Publish-triggered workflows</strong> build and publish images, charts, and versioned docs.</li>
+</ol>
+<p>A draft is used because releases are immutable: assets must be attached before publishing. The workflow updates the same draft on each push; it does not create one draft per push.</p>
+<h2 id="release-notes">Release notes<a class="headerlink" href="#release-notes" title="Permanent link">¶</a></h2>
+<p>Notes are generated from the merge commits on <code>main</code> and grouped by conventional type. Every PR must land as a merge commit whose subject is the PR title, and the PR title must be a conventional commit. Squash merges, rebase merges, and direct commits cannot be rendered and make the Release workflow fail unless <code>force</code> is used.</p>
+<p><code>test:</code>, <code>style:</code>, and <code>build:</code> merges are omitted. A breaking change is signalled with <code>!</code> in the PR title.</p>
 <h2 id="versioning">Versioning<a class="headerlink" href="#versioning" title="Permanent link">¶</a></h2>
 <p>Versions are expressed as <code>x.y.z</code>, where <code>x</code> is the major version, <code>y</code> is the minor version, and <code>z</code> is the patch version, following Semantic Versioning terminology.</p>
+<table>
+<thead>
+<tr>
+<th>Commit type</th>
+<th>Version bump</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fix:</code>, <code>perf:</code></td>
+<td>patch</td>
+</tr>
+<tr>
+<td><code>feat:</code></td>
+<td>minor</td>
+</tr>
+<tr>
+<td><code>feat!:</code> (any type with <code>!</code>)</td>
+<td>minor while the major is <code>0</code></td>
+</tr>
+<tr>
+<td><code>chore:</code>, <code>docs:</code>, <code>ci:</code>, …</td>
+<td>none on their own</td>
+</tr>
+</tbody>
+</table>
+<p>Breaking changes bump the minor while the major is <code>0</code>; from <code>1.0.0</code> onward they bump the major. Pass an explicit <code>version</code> input to override the computed version. Prereleases (versions containing <code>-</code>) are marked as prereleases automatically.</p>
+<h2 id="draft-and-tag-rules">Draft and tag rules<a class="headerlink" href="#draft-and-tag-rules" title="Permanent link">¶</a></h2>
+<p>The workflow keeps one pending draft. A push updates it in place (title, notes, prerelease flag, and target commit); if the computed version moves, the draft is renamed.</p>
+<p>A draft whose tag already exists is blocked: publish it to ship, or delete the draft to abandon it. Where release tags are protected, a tag cannot be moved or deleted; once it exists (for example after a run with <code>create_tag</code>), publish that draft or cut the next patch.</p>
+<h2 id="recovering-a-failed-asset-upload">Recovering a failed asset upload<a class="headerlink" href="#recovering-a-failed-asset-upload" title="Permanent link">¶</a></h2>
+<p>If the draft was created but the artefacts failed to upload, run <strong>Release</strong> again with <code>retry_assets_for</code> set to the draft's tag and uncheck <code>dry_run</code>. The retry skips version resolution and notes and only rebuilds and re-attaches the artefacts. It refuses if the release is missing or already published. Uploads use <code>--clobber</code>, so re-runs are idempotent.</p>
+<p>Leave <code>retry_assets_for</code> empty for every normal release.</p>
 <h2 id="verifying-release-artefacts">Verifying release artefacts<a class="headerlink" href="#verifying-release-artefacts" title="Permanent link">¶</a></h2>
 <p>Every release artefact (each binary and <code>checksums.txt</code>) is keylessly signed with <a href="https://docs.sigstore.dev/">cosign</a> during the release workflow. For each artefact <code>&lt;file&gt;</code>, a matching Sigstore bundle <code>&lt;file&gt;.sigstore.json</code> (containing the signature, certificate, and transparency-log proof) is published next to it on the GitHub Release page.</p>
 <p>To verify a downloaded binary, install <a href="https://docs.sigstore.dev/system_config/installation/">cosign</a> and run <code>cosign verify-blob</code>, pointing it at the artefact's <code>.sigstore.json</code> bundle:</p>
