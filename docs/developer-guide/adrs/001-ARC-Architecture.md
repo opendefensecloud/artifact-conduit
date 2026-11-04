@@ -179,3 +179,12 @@ Chosen Option: Solution E.
 Because the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
 The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
 The project itself can focus on the order process and the handling of endpoints.
+
+!!! info "Amendment: Re-transfer contract"
+
+    [ADR 005: Define the Re-transfer Contract](005-Retransfer-Contract.md)
+    supersedes the Endpoint/Secret generation tracking and automatic
+    re-transfer claims in this ADR. Endpoint and Secret changes do not
+    automatically trigger re-transfers. Use the
+    [force annotation](../../operator-manual/force-reconciliation.md) on
+    affected Orders when a rerun is intended.
