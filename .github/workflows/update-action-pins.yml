@@ -1,8 +1,0 @@
-name: Update Action Pins
-on:
-  pull_request:
-permissions:
-  contents: read
-jobs:
-  update-action-pins:
-    uses: opendefensecloud/dev-kit/.github/workflows/update-action-pins.yml@983ddfc02224cbb84e8fdf875683525881b96a72 # v4.0.0
