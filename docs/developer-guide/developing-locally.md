@@ -131,6 +131,19 @@ ARC uses a multi-layered testing strategy:
 - **Controller Tests** via envtest
 - **E2E Tests** using local `kind` cluster via `make test-e2e`
 
+E2E specs have Ginkgo labels. To run the OCM workflow with ARC health and Order
+setup, while skipping the other artifact walkthroughs and endpoint specs:
+
+```sh
+make test-e2e E2E_LABEL_FILTER='setup || ocm'
+```
+
+To run the suite without the documentation walkthrough specs:
+
+```sh
+make test-e2e E2E_LABEL_FILTER='!walkthrough'
+```
+
 Run all tests and generate coverage:
 
 ```sh
