@@ -1,0 +1,9 @@
+name: Action Pins
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  action-pins:
+    uses: opendefensecloud/dev-kit/.github/workflows/action-pins.yml@983ddfc02224cbb84e8fdf875683525881b96a72 # v4.0.0
