@@ -56,7 +56,7 @@ jobs:
       image-tag: ${{ steps.meta.outputs.version }}
       is-local: ${{ env.ACT == 'true' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Setup Local Registry for act
@@ -65,7 +65,7 @@ jobs:
           if ! docker ps | grep -q act-registry; then
             docker run -d -p 5001:5000 --name act-registry registry:2
           fi
-      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         id: meta
         with:
           images: |
@@ -82,18 +82,18 @@ jobs:
             latest=${{ matrix.image.name != 'ocm-tools' && github.ref == 'refs/heads/main' }}
       - name: Set up QEMU
         if: ${{ env.ACT != 'true' }}
-        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
         with:
           platforms: arm64
       - name: Set up Docker Buildx
         timeout-minutes: 5
-        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         with:
           version: latest
           driver-opts: ${{ env.ACT == 'true' && 'network=host' || '' }}
       - name: Login to GHCR
         if: ${{ env.ACT != 'true' }}
-        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -101,7 +101,7 @@ jobs:
       - name: Build and push
         id: image
         timeout-minutes: 20
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ matrix.image.context }}
           platforms: ${{ env.ACT == 'true' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
@@ -143,7 +143,7 @@ jobs:
           echo "tag=${TAG_LIST[0]}" >> "$GITHUB_OUTPUT"
       - name: Generate SBOM
         if: ${{ env.ACT != 'true' }}
-        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
           image: ${{ steps.first-tag.outputs.tag }}
           format: 'cyclonedx-json'
@@ -157,7 +157,7 @@ jobs:
       # rather than keep two bogus warnings per image in every build.
       - name: Attest SBOM
         if: ${{ env.ACT != 'true' }}
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
@@ -166,7 +166,7 @@ jobs:
           create-storage-record: false
       - name: Attest provenance
         if: ${{ env.ACT != 'true' }}
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-name: ghcr.io/${{ github.repository_owner }}/${{ matrix.image.name }}
           subject-digest: ${{ steps.image.outputs.digest }}
