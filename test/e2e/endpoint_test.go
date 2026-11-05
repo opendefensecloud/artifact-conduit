@@ -59,7 +59,7 @@ func endpointVerdict(name, conditionType string) string {
 // container of its own: Ginkgo randomises top-level containers, and these need the
 // chart that container's BeforeAll installs.
 func endpointControllerSpecs() {
-	Context("EndpointController", func() {
+	Context("EndpointController", Label("endpoint"), func() {
 		// internal comes from the OCI order fixtures: type oci, PushOnly, pointing
 		// at the in-cluster zot with credentials in dst-reg-secret.
 		const probed = "internal"

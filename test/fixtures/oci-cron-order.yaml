@@ -32,7 +32,9 @@ spec:
     - type: oci # Artifact Type!
       cron:
         schedules:
-        - "*/2 * * * *" # every two minutes
+        # Allow the multi-step workflow to complete before Replace concurrency
+        # starts the next run, including on a busy local Kind cluster.
+        - "*/5 * * * *" # every five minutes
       spec: # should be quick as it should be cached
         repository: distroless/static
         tag: nonroot

@@ -144,7 +144,7 @@ var _ = Describe("ARC", Ordered, func() {
 	SetDefaultEventuallyPollingInterval(5 * time.Second)
 
 	Context("Extension API server and Controller Manager", func() {
-		It("should run successfully", func() {
+		It("should run successfully", Label("setup"), func() {
 			By("validating that the controller-manager pod is running as expected")
 			verifyControllerUp := func(g Gomega) {
 				// Get the name of the controller-manager pod
@@ -182,7 +182,7 @@ var _ = Describe("ARC", Ordered, func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("should prepare default namespace for Orders", func() {
+		It("should prepare default namespace for Orders", Label("setup"), func() {
 			cmd := exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
 			_, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
@@ -197,7 +197,7 @@ var _ = Describe("ARC", Ordered, func() {
 
 		artifactTypes := []string{"helm", "blob", "ocm"}
 		for _, artifactType := range artifactTypes {
-			It(fmt.Sprintf("should create orders for %s", artifactType), func() {
+			It(fmt.Sprintf("should create orders for %s", artifactType), Label(artifactType), func() {
 				By("registering the ClusterWorkflowTemplate and ClusterArtifactType")
 				templateFile := filepath.Join(dir, "examples", artifactType, "cluster-workflow-template.yaml")
 				if artifactType == "ocm" {
@@ -212,15 +212,15 @@ var _ = Describe("ARC", Ordered, func() {
 			})
 		}
 
-		// We create the cron here so it has time to trigger while the other tests run (cron triggers every 2 minutes)
-		It("should create cron oci order successfully", func() {
+		// We create the cron here so it has time to trigger while the other tests run (cron triggers every 5 minutes)
+		It("should create cron oci order successfully", Label("oci"), func() {
 			applyResource("", filepath.Join(dir, "examples", "oci", "cluster-workflow-template.yaml"))
 			applyResource("", filepath.Join(dir, "examples", "oci", "artifact-type.yaml"))
 			applyResource("default", filepath.Join(dir, "test", "fixtures", "oci-cron-order.yaml"))
 		})
 
 		for _, artifactType := range artifactTypes {
-			It(fmt.Sprintf("should run workflows of %s order successfully", artifactType), func() {
+			It(fmt.Sprintf("should run workflows of %s order successfully", artifactType), Label(artifactType), func() {
 				resourceName := fmt.Sprintf("example-%s-order", artifactType)
 				Eventually(func() bool {
 					return orderState("default", resourceName, stateFinal)
@@ -240,7 +240,7 @@ var _ = Describe("ARC", Ordered, func() {
 			})
 		}
 
-		It("should run workflows of oci cron order successfully", func() {
+		It("should run workflows of oci cron order successfully", Label("oci"), func() {
 			Eventually(func(g Gomega) {
 				cmd := exec.Command("kubectl", "get", "-n", "default", "orders", "test-oci-cron-order", "-o", "go-template={{ range .status.artifactWorkflows }}{{.succeeded}}\t{{ end }}")
 				output, err := run(cmd)

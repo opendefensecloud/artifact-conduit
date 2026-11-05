@@ -28,6 +28,7 @@ const (
 	// Image names used when building from source (local development)
 	localApiserverImage = "apiserver:e2e"
 	localManagerImage   = "manager:e2e"
+	localOCMToolsImage  = "ocm2-tools:e2e"
 
 	// Kubernetes secret name used for GHCR image pull auth
 	ghcrPullSecretName = "ghcr-pull-secret"
@@ -80,6 +81,7 @@ var (
 	apiserverImageTag  string
 	managerImageRepo   string
 	managerImageTag    string
+	ocmToolsImage      string
 
 	trustmanagerVersion  = getEnvOrExit("TRUSTMANAGER_VERSION")
 	certmanagerVersion   = getEnvOrExit("CERTMANAGER_VERSION")
@@ -143,11 +145,26 @@ var _ = BeforeSuite(func() {
 		err = loadImageToKindClusterWithName(localManagerImage)
 		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
 
+		By("building and loading the OCM v2 tools image")
+		// Use the same CLI version as the checked-in workflow image.
+		content, err := os.ReadFile("examples/ocm/cluster-workflow-template.yaml")
+		Expect(err).NotTo(HaveOccurred())
+		pinnedImage := ocmToolsImageRef.FindString(string(content))
+		version := strings.TrimPrefix(pinnedImage, "ghcr.io/opendefensecloud/ocm2-tools:")
+		Expect(version).NotTo(BeEmpty())
+		cmd = exec.Command("docker", "build", "--build-arg", "OCM_VERSION="+version,
+			"-t", localOCMToolsImage, "examples/ocm")
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to build the OCM tools image")
+		Expect(loadImageToKindClusterWithName(localOCMToolsImage)).To(Succeed())
+		ocmToolsImage = localOCMToolsImage
+
 		apiserverImageRepo = "apiserver"
 		apiserverImageTag = "e2e"
 		managerImageRepo = "manager"
 		managerImageTag = "e2e"
 	} else {
+		ocmToolsImage = fmt.Sprintf("%s/ocm2-tools:%s", imageRegistry, imageTag)
 		apiserverImageRepo = imageRegistry + "/arc-apiserver"
 		apiserverImageTag = imageTag
 		managerImageRepo = imageRegistry + "/arc-controller-manager"
@@ -364,29 +381,20 @@ func applyResource(namespace, file string) {
 	Expect(err).NotTo(HaveOccurred())
 }
 
-// ocmToolsImageRef matches the pinned ocm-tools image reference in the ocm example's
+// ocmToolsImageRef matches the pinned ocm2-tools image reference in the ocm example's
 // ClusterWorkflowTemplate, regardless of which version tag is currently checked in
 // (Renovate bumps that tag directly in the YAML, see renovate.json).
-var ocmToolsImageRef = regexp.MustCompile(`ghcr\.io/opendefensecloud/ocm-tools:\S+`)
+var ocmToolsImageRef = regexp.MustCompile(`ghcr\.io/opendefensecloud/ocm2-tools:\S+`)
 
-// applyOCMClusterWorkflowTemplate applies the ocm example's ClusterWorkflowTemplate.
-// The checked-in file pins ocm-tools to a released version tag, which is only
-// published for pushes to main (see docker.yaml), so on a PR that itself bumps or
-// introduces that tag, it doesn't exist yet. When testing pre-built CI images, rewrite
-// the reference to the ocm-tools image built for this run instead of the pinned tag.
+// applyOCMClusterWorkflowTemplate applies an OCM manifest using the image built
+// for this test run. The released tag may not have been published yet.
 func applyOCMClusterWorkflowTemplate(namespace, file string) {
 	GinkgoHelper()
-
-	if imageSource == "local" {
-		applyResource(namespace, file)
-		return
-	}
 
 	content, err := os.ReadFile(file)
 	Expect(err).NotTo(HaveOccurred())
 
-	ocmToolsImage := fmt.Sprintf("%s/ocm-tools:%s", imageRegistry, imageTag)
-	Expect(ocmToolsImageRef.Match(content)).To(BeTrue(), "expected an ocm-tools image reference in %s", file)
+	Expect(ocmToolsImageRef.Match(content)).To(BeTrue(), "expected an ocm2-tools image reference in %s", file)
 	rewritten := ocmToolsImageRef.ReplaceAllString(string(content), ocmToolsImage)
 
 	args := []string{"apply", "-f", "-"}
@@ -437,4 +445,26 @@ func getEnvOrExit(name string) string {
 	fmt.Fprintf(os.Stderr, "%s was not set\n", name)
 	os.Exit(1)
 	return ""
+}
+
+// waitForOCMWorkflow checks the fixture workflows and preserves their logs on
+// failure before deleting them, so CLI errors are visible in the test output.
+func waitForOCMWorkflow(name string) {
+	GinkgoHelper()
+	DeferCleanup(func() {
+		logs, _ := run(exec.Command("kubectl", "logs", "-n", "default",
+			"-l", "workflows.argoproj.io/workflow="+name, "-c", "main", "--tail=-1"))
+		logf("%s logs:\n%s", name, logs)
+		_, _ = run(exec.Command("kubectl", "delete", "workflow", name, "-n", "default"))
+	})
+	Eventually(func(g Gomega) {
+		output, err := run(exec.Command("kubectl", "get", "workflow", name,
+			"-n", "default", "-o", "jsonpath={.status.phase}"))
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(output).To(BeElementOf("Succeeded", "Failed", "Error"))
+	}).Should(Succeed())
+	output, err := run(exec.Command("kubectl", "get", "workflow", name,
+		"-n", "default", "-o", "jsonpath={.status.phase}"))
+	Expect(err).NotTo(HaveOccurred())
+	Expect(output).To(Equal("Succeeded"))
 }
