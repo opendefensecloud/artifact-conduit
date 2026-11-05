@@ -5,4 +5,4 @@ permissions:
   contents: read
 jobs:
   update-action-pins:
-    uses: opendefensecloud/dev-kit/.github/workflows/update-action-pins.yml@7126784179fc6eb70f7216b788537a9d92121642 # v3.2.1
+    uses: opendefensecloud/dev-kit/.github/workflows/update-action-pins.yml@983ddfc02224cbb84e8fdf875683525881b96a72 # v4.0.0
