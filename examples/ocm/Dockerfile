@@ -8,6 +8,7 @@ ARG TARGETARCH
 RUN apk add --no-cache bash sed jq curl
 # The legacy install.sh installs OCM v1. Download the v2 release explicitly.
 RUN : "${OCM_VERSION:?OCM_VERSION build-arg is required}" \
+    && TARGETARCH="${TARGETARCH:-$(uname -m | sed 's/^x86_64$/amd64/; s/^aarch64$/arm64/')}" \
     && curl -fsSL "https://github.com/open-component-model/open-component-model/releases/download/v${OCM_VERSION}/ocm-linux-${TARGETARCH}" -o /usr/local/bin/ocm \
     && chmod +x /usr/local/bin/ocm \
     && ocm version

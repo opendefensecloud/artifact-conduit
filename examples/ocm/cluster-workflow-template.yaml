@@ -179,12 +179,12 @@ spec:
           do
             echo "Scanning image for severities: $p"
             image_index=$((image_index + 1))
-            plain_http=false
+            unset TRIVY_NON_SSL
             case "$p" in
-              http://*) plain_http=true; p="${p#http://}" ;;
+              http://*) export TRIVY_NON_SSL=true; p="${p#http://}" ;;
               https://*) p="${p#https://}" ;;
             esac
-            TRIVY_NON_SSL="$plain_http" trivy image \
+            trivy image \
               --exit-code "$SCAN_EXIT_CODE" \
               --severity "$SCAN_SEVERITY" \
               --format json \
