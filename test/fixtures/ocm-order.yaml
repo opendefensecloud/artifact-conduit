@@ -1,7 +1,7 @@
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
-  name: ghcr
+  name: ocm-source
 spec:
   type: oci # Endpoint Type!
   remoteURL: ghcr.io
@@ -10,10 +10,10 @@ spec:
 apiVersion: arc.opendefense.cloud/v1alpha1
 kind: Endpoint
 metadata:
-  name: internal
+  name: ocm-destination
 spec:
   type: oci # Endpoint Type!
-  remoteURL: dst.zot
+  remoteURL: dst.zot/destination
   secretRef:
     name: dst-reg-secret
   usage: PushOnly
@@ -25,12 +25,12 @@ metadata:
 spec:
   defaults:
     srcRef:
-      name: ghcr
+      name: ocm-source
     dstRef:
-      name: internal
+      name: ocm-destination
   artifacts:
     - type: ocm # Artifact Type!
       spec:
-        repo: open-component-model/ocm
-        component: ocm.software/toi/demo/helmdemo
-        version: 0.12.0
+        repo: opendefensecloud
+        component: opendefense.cloud/arc
+        version: 0.3.2

@@ -83,6 +83,7 @@ manifests: $(CONTROLLER_GEN) ## Generate ClusterRole and CustomResourceDefinitio
 
 KIND_CLUSTER_E2E  ?= arc-test-e2e
 E2E_IMAGE_SOURCE  ?= local
+E2E_LABEL_FILTER  ?=
 REGISTRY          ?= localhost/local
 TAG               ?= e2e
 
@@ -120,7 +121,7 @@ test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using
 	E2E_IMAGE_SOURCE=$(E2E_IMAGE_SOURCE) \
 	REGISTRY=$(REGISTRY) \
 	IMAGE_TAG=$(TAG) \
-	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
+	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h -ginkgo.fail-on-empty $(if $(E2E_LABEL_FILTER),-ginkgo.label-filter='$(E2E_LABEL_FILTER)',) $(testargs)
 	$(MAKE) cleanup-test-e2e
 
 .PHONY: cleanup-test-e2e
