@@ -1,0 +1,109 @@
+---
+# Order: bidirectional sync (spec + status subresource).
+apiVersion: syncagent.kcp.io/v1alpha1
+kind: PublishedResource
+metadata:
+  name: arc-orders
+spec:
+  enableWorkspacePaths: true
+  resource:
+    apiGroup: arc.opendefense.cloud
+    kind: Order
+    versions:
+      - v1alpha1
+  naming:
+    # Single-consumer demo: land synced objects in arc-system AND preserve the original name so
+    # ARC can resolve intra-spec name refs (Order.artifacts[].srcRef/dstRef -> Endpoint). The
+    # agent does NOT rewrite ref names, so a hashed object name would break ARC's name-based
+    # lookup. TRADEOFF: two consumers (or two source namespaces) using the same name collide in
+    # arc-system. For multi-tenant use the agent must rewrite refs / ARC be made sync-aware —
+    # see docs/arc-findings.md.
+    namespace: default
+    name: '{{ .ClusterName }}-{{ .Object.metadata.namespace }}-{{ .Object.metadata.name }}'
+  mutation:
+    # The generic UI cannot author arrays, so Orders are created with a single object
+    # spec.artifact (see apiresourceschema-orders.yaml). Promote it into spec.artifacts[0] on the
+    # way down to the service cluster, then drop the helper field so ARC's typed apiserver never
+    # sees it. We set SCALAR fields at indexed paths (spec.artifacts.0.*): sjson builds the array
+    # from the numeric segment, and CEL string values marshal cleanly (a CEL *list* value does NOT
+    # serialize to a JSON array through the agent's sjson.Set — it lands as an object, which ARC
+    # rejects). The else-branch is "" (a valid empty string) — these mutations target form-authored
+    # spec.artifact Orders; Orders authored directly with spec.artifacts[] are out of scope. (An
+    # earlier `: value` else serialized a missing path as the number 0 → ARC rejected the object.)
+    spec:
+      - cel:
+          path: spec.artifacts.0.type
+          expression: 'has(self.spec.artifact) ? self.spec.artifact.type : ""'
+      # srcRef/dstRef are rewritten to the synced host Endpoint name. The endpoints
+      # PublishedResource renames Endpoints to "<ClusterName>-<namespace>-<name>" (and the agent
+      # does NOT rewrite intra-spec refs), so we reconstruct that here from the Order's own
+      # metadata: kcp.io/cluster annotation = <ClusterName>, same namespace (refs are
+      # LocalObjectReferences). KEEP THIS PREFIX IN SYNC with publishedresource-endpoints.yaml
+      # naming.name. (Resolves arc-findings.md Finding 2 for Order->Endpoint refs, multi-tenant-safe.)
+      - cel:
+          path: spec.artifacts.0.srcRef.name
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.srcRef) && has(self.spec.artifact.srcRef.name) && self.spec.artifact.srcRef.name != "" ? self.metadata.annotations["kcp.io/cluster"] + "-" + self.metadata.namespace + "-" + self.spec.artifact.srcRef.name : ""'
+      - cel:
+          path: spec.artifacts.0.dstRef.name
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.dstRef) && has(self.spec.artifact.dstRef.name) && self.spec.artifact.dstRef.name != "" ? self.metadata.annotations["kcp.io/cluster"] + "-" + self.metadata.namespace + "-" + self.spec.artifact.dstRef.name : ""'
+      # Copy the type-specific artifact spec (spec.artifact.spec -> spec.artifacts[0].spec). The
+      # spec is an ARC RawExtension (preserve-unknown) flattened into Workflow parameters by ARC
+      # (repository -> specRepository, tag -> specTag, override -> specOverride). CEL CANNOT emit a
+      # JSON object via sjson.Set (a cel map serialises to garbage {"Adapter":{}}), so we copy each
+      # OCI scalar leaf individually — same reason artifacts[0] itself is built field-by-field. These
+      # are the oci ClusterArtifactType's params (see examples/oci/cluster-workflow-template.yaml):
+      # repository + tag are required; override is optional (the template defaults specOverride to ""
+      # and guards `{{- if $override }}`), so an empty override is safe. Each guard chains has()
+      # left-to-right so a spec-less or artifact-less Order evaluates to "" without a CEL error
+      # (verified against the api-syncagent transformer). To author another ArtifactType's params,
+      # add its scalar leaves here and the matching create-form fields.
+      - cel:
+          path: spec.artifacts.0.spec.repository
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.repository) ? self.spec.artifact.spec.repository : ""'
+      - cel:
+          path: spec.artifacts.0.spec.tag
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.tag) ? self.spec.artifact.spec.tag : ""'
+      - cel:
+          path: spec.artifacts.0.spec.override
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.override) ? self.spec.artifact.spec.override : ""'
+      # ocm ArtifactType params (repo/component/version). Same scalar-copy pattern as the oci params
+      # above; the form authors the subset matching spec.artifact.type. Unused keys land as "" (the
+      # mutation cannot conditionally omit a field) — each type's Workflow reads only its own params,
+      # so the empty cross-type keys are inert.
+      - cel:
+          path: spec.artifacts.0.spec.repo
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.repo) ? self.spec.artifact.spec.repo : ""'
+      - cel:
+          path: spec.artifacts.0.spec.component
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.component) ? self.spec.artifact.spec.component : ""'
+      - cel:
+          path: spec.artifacts.0.spec.version
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.version) ? self.spec.artifact.spec.version : ""'
+      # helm ArtifactType params: repo + version are already copied above (shared with ocm); only chart
+      # is helm-specific. Same has()-guarded, else-"" scalar-copy pattern.
+      - cel:
+          path: spec.artifacts.0.spec.chart
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.chart) ? self.spec.artifact.spec.chart : ""'
+      # blob ArtifactType params: override is already copied above (shared with oci); key (required) and
+      # md5 (optional) are blob-specific.
+      - cel:
+          path: spec.artifacts.0.spec.key
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.key) ? self.spec.artifact.spec.key : ""'
+      - cel:
+          path: spec.artifacts.0.spec.md5
+          expression: 'has(self.spec.artifact) && has(self.spec.artifact.spec) && has(self.spec.artifact.spec.md5) ? self.spec.artifact.spec.md5 : ""'
+      - delete:
+          path: spec.artifact
+    # Up-sync (host->kcp): derive a clean order-level status.message so the UI can show a Status
+    # column. The per-artifact Workflow status lives in status.artifactWorkflows, a map keyed by a
+    # dynamic hash; the GraphQL gateway can only expose a dynamic-keyed map as an opaque JSON scalar
+    # (GraphQL can't sub-select dynamic keys), so the UI can't read the phase/message out of it.
+    # Prefer ARC's own order-level message when set (order-compute errors, e.g. "endpoint not found");
+    # otherwise surface the first artifact Workflow's "<phase>: <message>" (or just "<phase>" when it
+    # has no message) — so e.g. an unprovisioned ClusterWorkflowTemplate shows up as
+    # "Error: clusterworkflowtemplates.argoproj.io \"oci-image-pipeline\" not found". CEL .map()
+    # iterates the map's keys; [0] is deterministic for single-artifact orders.
+    status:
+      - cel:
+          path: status.message
+          expression: '(has(self.status) && has(self.status.message) && self.status.message != "") ? self.status.message : ((has(self.status) && has(self.status.artifactWorkflows) && size(self.status.artifactWorkflows) > 0) ? self.status.artifactWorkflows.map(k, self.status.artifactWorkflows[k].phase + ((has(self.status.artifactWorkflows[k].message) && self.status.artifactWorkflows[k].message != "") ? ": " + self.status.artifactWorkflows[k].message : ""))[0] : "")'
