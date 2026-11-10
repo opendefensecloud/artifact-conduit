@@ -29,7 +29,7 @@ spec:
   templateDefaults:
     initContainers:
       - name: registry-auth
-        image: ghcr.io/opendefensecloud/ocm2-tools:0.21.0
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
         command: [bash, -c]
         volumeMounts:
           - name: src-secret-vol
@@ -121,7 +121,7 @@ spec:
     # Snapshot descriptors and local blobs; external resources stay by reference.
     - name: inspect-components
       script:
-        image: ghcr.io/opendefensecloud/ocm2-tools:0.21.0
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
         command: [bash, -c]
         volumeMounts:
           - name: work-volume
@@ -233,7 +233,7 @@ spec:
     # Transfer the inspected snapshot to the destination after scanning.
     - name: transfer-components
       script:
-        image: ghcr.io/opendefensecloud/ocm2-tools:0.21.0
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
         command: [bash, -c]
         volumeMounts:
           - name: dst-secret-vol
