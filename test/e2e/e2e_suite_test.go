@@ -21,7 +21,7 @@ import (
 const (
 	certmanagerChart     = "oci://quay.io/jetstack/charts/cert-manager"
 	trustmanagerChart    = "oci://quay.io/jetstack/charts/trust-manager"
-	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
+	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/install.yaml"
 
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
 
@@ -304,16 +304,7 @@ func installArgoWorkflows() error {
 		return err
 	}
 
-	// archiveLogs is enabled by default but not needed for e2e test
-	cmd = exec.Command("kubectl", "patch", "configmap", "workflow-controller-configmap",
-		"-n", "argo", "--type", "merge",
-		"-p", `{"data": {"artifactRepository": "archiveLogs: false\n"}}`,
-	)
-	if _, err := run(cmd); err != nil {
-		return err
-	}
-
-	// Wait for argo-server deployment to be ready
+	// Wait for the workflow controller to be ready
 	cmd = exec.Command("kubectl", "wait", "deployment.apps/workflow-controller",
 		"--for", "condition=Available",
 		"--namespace", "argo",

@@ -26,7 +26,7 @@ REPO_ADMIN_BYPASS := false
 REPO_REQUIRED_APPROVING_REVIEW_COUNT := 1
 REPO_REQUIRE_CODE_OWNER_REVIEW := false
 REPO_REQUIRE_BRANCH_UP_TO_DATE := true
-REPO_STATUS_CHECKS := ["check", "lint", "test", "CodeQL"]
+REPO_STATUS_CHECKS := ["check", "lint", "test", "CodeQL", "action-pins / Check action pins", "action-pins / Audit action pins"]
 REPO_RULESET_BRANCHES := ["release/*"]
 REPO_ALLOW_MERGE_COMMIT := true
 REPO_ALLOW_SQUASH_MERGE := false
@@ -150,9 +150,7 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo --server-side -f \
-		https://github.com/argoproj/argo-workflows/releases/download/$(ARGO_WORKFLOWS_VERSION)/quick-start-minimal.yaml
-	$(KUBECTL) patch configmap workflow-controller-configmap --context kind-$(KIND_CLUSTER_DEV) -n argo --type=merge -p \
-		'{"data": {"artifactRepository": "archiveLogs: false\n"}}'
+		https://github.com/argoproj/argo-workflows/releases/download/$(ARGO_WORKFLOWS_VERSION)/install.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/secret.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
