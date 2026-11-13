@@ -57,7 +57,7 @@ spec:
 
     - name: pull-http
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
         command: [bash]
         volumeMounts:
           - name: work
@@ -74,7 +74,7 @@ spec:
 
     - name: pull-s3
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
         command: [bash]
         volumeMounts:
           - name: work
@@ -103,7 +103,7 @@ spec:
 
     - name: checksum
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
         command: [bash]
         volumeMounts:
           - name: work
@@ -118,7 +118,7 @@ spec:
 
     - name: virus-scan
       script:
-        image: clamav/clamav-debian:1.5.4 # ships with a virus database
+        image: clamav/clamav-debian:1.5.4@sha256:76a9c3b63764b78178dc68fa7efcceca0cde2c8c9d4f925a8e697cb4511f8fdc # ships with a virus database
         command: [bash]
         volumeMounts:
           - name: work
@@ -132,7 +132,7 @@ spec:
 
     - name: push
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
         command: [bash]
         volumeMounts:
           - name: work

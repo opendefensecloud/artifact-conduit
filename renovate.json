@@ -9,11 +9,22 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "examples/*/cluster-workflow-template.yaml",
+        "examples/**/*.yaml",
         "test/fixtures/dst-seaweedfs.yaml"
       ],
       "matchStrings": [
-        "image:\\s*(?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)"
+        "image:\\s*(?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)(@(?<currentDigest>sha256:[a-f0-9]{64}))?"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "description": "Images in the walk-through's kubectl run commands, kept in step with the walk-through examples",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "docs/walk-through/*.md"
+      ],
+      "matchStrings": [
+        "--image (?<depName>[a-zA-Z0-9./_-]+):(?<currentValue>[a-zA-Z0-9._-]+)"
       ],
       "datasourceTemplate": "docker"
     },

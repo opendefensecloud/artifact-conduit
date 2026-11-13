@@ -82,7 +82,7 @@ spec:
       retryStrategy:
         limit: 10                         # retry container if it fails
       container:
-        image: registry:3
+        image: registry:3.1.2@sha256:82f6ff4a7f982960c8aa51617fea3aabc485df6e55cce80d22deb1de36f1bc3c
         readinessProbe:                   # wait for readinessProbe to succeed
           httpGet:
             path: /v2/_catalog
@@ -97,7 +97,7 @@ spec:
         parameters:
         - name: registryIP
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
+        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0@sha256:9b6d25fc7298adaea625a56a2f911f7deb0c4055d0b7240806b4d6a893ce5d1f
         command: [bash, -c]
         # Mount the secret volume to a temporary directory
         volumeMounts:
@@ -179,7 +179,7 @@ spec:
     # --- 2. Scan Image (Trivy) ---
     - name: scan-all-images
       script:
-        image: aquasec/trivy:0.75.0
+        image: aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
         command: [sh, -c]
         volumeMounts:
           - name: work-volume
@@ -209,7 +209,7 @@ spec:
     # --- 3. Push all resources ---
     - name: push-resources
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
+        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0@sha256:9b6d25fc7298adaea625a56a2f911f7deb0c4055d0b7240806b4d6a893ce5d1f
         command: [bash, -c]
         volumeMounts:
           - name: dst-secret-vol

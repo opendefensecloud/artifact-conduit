@@ -25,7 +25,7 @@ spec:
   templates:
     - name: transfer
       script:
-        image: amazon/aws-cli:2.37.9
+        image: amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
         command: [bash]
         volumeMounts:
           # ARC adds the volumes src-secret-vol and dst-secret-vol to every workflow.
