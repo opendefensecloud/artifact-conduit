@@ -31,6 +31,6 @@ spec:
   artifacts:
     - type: ocm # Artifact Type!
       spec:
-        repo: open-component-model/ocm
-        component: ocm.software/toi/demo/helmdemo
-        version: 0.12.0
+        repo: opendefensecloud
+        component: opendefense.cloud/arc
+        version: 0.3.2

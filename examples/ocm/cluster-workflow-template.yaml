@@ -12,8 +12,11 @@ spec:
     fsGroup: 65532
     runAsUser: 65532
 
-  # Mount certificate bundle
+  # Credentials are recreated per pod and never stored on the data PVC.
   volumes:
+    - name: registry-auth
+      emptyDir:
+        medium: Memory
     - name: ca-certificates
       configMap:
         name: "root-bundle"
@@ -22,8 +25,56 @@ spec:
         items:
           - key: trust-bundle.pem
             path: trust-bundle.pem
-    - name: registry-storage
-      emptyDir: {}
+
+  templateDefaults:
+    initContainers:
+      - name: registry-auth
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
+        command: [bash, -c]
+        volumeMounts:
+          - name: src-secret-vol
+            readOnly: true
+            mountPath: /secrets/src
+          - name: registry-auth
+            mountPath: /auth
+        env:
+          - name: SRC_REMOTE_URL
+            value: "{{workflow.parameters.srcRemoteURL}}"
+          - name: SRC_SECRET
+            value: "{{workflow.parameters.srcSecret}}"
+          - name: SRC_SCHEME
+            value: "{{workflow.parameters.srcScheme}}"
+        args:
+          - |
+              set -euo pipefail
+              umask 077
+              src_host="${SRC_REMOTE_URL#*://}"
+              mkdir -p /auth/docker
+              printf '%s\n' '{"auths":{}}' > /auth/docker/config.json
+              # Registry-scoped credentials stay in this pod's memory-backed volume.
+              cat > /auth/ocmconfig <<'CONFIG'
+              type: generic.config.ocm.software/v1
+              configurations:
+                - type: credentials.config.ocm.software/v1
+                  repositories:
+                    - repository:
+                        type: DockerConfig/v1
+                        dockerConfigFile: /auth/docker/config.json
+              CONFIG
+              if [ "$SRC_SECRET" = "true" ]; then
+                registry="${src_host%%/*}"
+                # Also match references that omit an explicit default port.
+                case "$SRC_SCHEME" in
+                  https) registry="${registry%:443}" ;;
+                  http) registry="${registry%:80}" ;;
+                esac
+                jq -n --arg registry "$registry" --arg authority "${src_host%%/*}" \
+                  --arg username "$(cat /secrets/src/username)" \
+                  --arg password "$(cat /secrets/src/password)" '
+                  {auths: {($registry): {auth: ($username + ":" + $password | @base64)},
+                           ($authority): {auth: ($username + ":" + $password | @base64)}}}
+                ' > /auth/docker/config.json
+              fi
 
   # Define the PVC template for inter-step data sharing
   volumeClaimTemplates:
@@ -33,7 +84,7 @@ spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 1Gi
 
   # --- Input Parameters ---
   arguments:
@@ -57,55 +108,26 @@ spec:
   entrypoint: ocm-pipeline
 
   templates:
-    # --- Main Pipeline Entrypoint ---
+    # Snapshot and scan the source before transferring to the destination.
     - name: ocm-pipeline
       steps:
-        - - name: oci-registry
-            template: oci-registry
-
-        - - name: pull-resources
-            template: pull-resources
-            arguments:
-              parameters:
-              - name: registryIP
-                value: "{{steps.oci-registry.ip}}"
-
+        - - name: inspect-components
+            template: inspect-components
         - - name: scan-all-images
             template: scan-all-images
+        - - name: transfer-components
+            template: transfer-components
 
-        - - name: push-resoures
-            template: push-resources
-
-    # --- 0. Start temporary registry ---
-    - name: oci-registry
-      daemon: true                        # start registry as a daemon
-      retryStrategy:
-        limit: 10                         # retry container if it fails
-      container:
-        image: registry:3
-        readinessProbe:                   # wait for readinessProbe to succeed
-          httpGet:
-            path: /v2/_catalog
-            port: 5000
-        volumeMounts:
-          - name: registry-storage
-            mountPath: /var/lib/registry
-
-    # --- 1. Pull all resources & store them both on disk and registry ---
-    - name: pull-resources
-      inputs:
-        parameters:
-        - name: registryIP
+    # Snapshot descriptors and local blobs; external resources stay by reference.
+    - name: inspect-components
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
         command: [bash, -c]
-        # Mount the secret volume to a temporary directory
         volumeMounts:
-          - name: src-secret-vol
-            readOnly: true
-            mountPath: /secrets/src
           - name: work-volume
             mountPath: /data
+          - name: registry-auth
+            mountPath: /auth
           - name: ca-certificates
             readOnly: true
             mountPath: /etc/ssl/certs/
@@ -125,58 +147,46 @@ spec:
             value: /etc/ssl/certs/trust-bundle.pem
           - name: SRC_REMOTE_URL
             value: "{{workflow.parameters.srcRemoteURL}}"
-          - name: SRC_SECRET
-            value: "{{workflow.parameters.srcSecret}}"
           - name: SRC_SCHEME
             value: "{{workflow.parameters.srcScheme}}"
-          - name: REGISTRY_IP
-            value: "{{inputs.parameters.registryIP}}"
         source: |
           set -euo pipefail
           export HOME=/tmp
 
-          src_host=$(echo "$SRC_REMOTE_URL" | sed 's#^[a-z][a-z0-9+.-]*://##')
+          src_host="${SRC_REMOTE_URL#*://}"
 
-          if [ "$SRC_SECRET" = "true" ]; then
-              echo "type: generic.config.ocm.software/v1
-          configurations:
-            - type: credentials.config.ocm.software
-              consumers:
-                - identity:
-                    type: OCIRegistry
-                    hostname: ${src_host%%[/:]*}
-                  credentials:
-                    - type: Credentials
-                      properties:
-                        username: $(cat /secrets/src/username)
-                        password: $(cat /secrets/src/password)" > $HOME/.ocmconfig
-          fi
-
-          echo "Transfering to CTF..."
+          echo "Inspecting source component descriptors..."
           if [ -n "$SPEC_REPO" ]; then
             component_url="${SRC_SCHEME}://${src_host}/${SPEC_REPO}//${SPEC_COMPONENT}:${SPEC_VERSION}"
           else
             component_url="${SRC_SCHEME}://${src_host}//${SPEC_COMPONENT}:${SPEC_VERSION}"
           fi
-          ocm transfer component "$component_url" -r --copy-resources --copy-sources /data/ctf
+          source_repository="${component_url%//*}"
+          # A CTF snapshot keeps the inspected descriptors and their local blobs
+          # together, even if a source version tag changes while scanning.
+          ocm --config /auth/ocmconfig transfer cv "$component_url" ctf::/data/snapshot -r
+          snapshot_url="ctf::/data/snapshot//${SPEC_COMPONENT}:${SPEC_VERSION}"
+          printf '%s\n' "$snapshot_url" > /data/component.txt
+          ocm --config /auth/ocmconfig get cv "$snapshot_url" --recursive -o json > /data/resources.json
 
-          echo "Transfering CTF to temporary registry"
-          if [ -n "$SPEC_REPO" ]; then
-            temp_registry_url="http://${REGISTRY_IP}:5000/${SPEC_REPO}"
-          else
-            temp_registry_url="http://${REGISTRY_IP}:5000"
-          fi
-          ocm transfer ctf /data/ctf "$temp_registry_url"
-
-          echo "Compile list of images for trivy"
-          ocm get resources "${temp_registry_url}//${SPEC_COMPONENT}:${SPEC_VERSION}" -r -ojson > /data/resources.json
-          cat /data/resources.json | jq -r '.items[] | select(.element.type == "ociImage") | .element.access.imageReference' > /data/images-tmp.txt
-          cat /data/images-tmp.txt | sed 's/http:\/\///g' > /data/images.txt
-
-          echo "Images for trivy to scan:"
+          # V2 native local OCI blobs are already registry manifests in the
+          # owning component repository. Scan those digests directly; do not
+          # mistake referenceName (a relocation hint) for a reachable image.
+          jq -r --arg repository "$source_repository" '
+            [.[] | .component as $component | $component.resources[]? |
+              select(.type == "ociImage") | .access as $access |
+              if $access.imageReference then
+                $access.imageReference
+              elif ($access.type | split("/")[0] | ascii_downcase) == "localblob" then
+                $repository + "/component-descriptors/" + $component.name + "@" +
+                  ($access.localReference // error("ociImage has no localReference"))
+              else error("unsupported ociImage access: " + $access.type) end
+            ] | unique[]
+          ' /data/resources.json > /data/images.txt
+          echo "Source images for Trivy to scan:"
           cat /data/images.txt
 
-    # --- 2. Scan Image (Trivy) ---
+    # Scan by reference using source credentials and trust.
     - name: scan-all-images
       script:
         image: aquasec/trivy:0.75.0
@@ -184,12 +194,22 @@ spec:
         volumeMounts:
           - name: work-volume
             mountPath: /data
+          - name: registry-auth
+            mountPath: /auth
+          - name: ca-certificates
+            readOnly: true
+            mountPath: /etc/ssl/certs/
 
         source: |
           set -euo pipefail
           while IFS="" read -r p || [ -n "$p" ]
           do
             echo "Scanning image for severities: $p"
+            unset TRIVY_NON_SSL
+            case "$p" in
+              http://*) export TRIVY_NON_SSL=true; p="${p#http://}" ;;
+              https://*) p="${p#https://}" ;;
+            esac
             trivy image \
               --exit-code "$SCAN_EXIT_CODE" \
               --severity "$SCAN_SEVERITY" \
@@ -199,6 +219,10 @@ spec:
               "$p"
           done < /data/images.txt
         env:
+          - name: SSL_CERT_FILE
+            value: /etc/ssl/certs/trust-bundle.pem
+          - name: DOCKER_CONFIG
+            value: /auth/docker
           - name: PATH
             value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/share/trivy/sbin
           - name: SCAN_EXIT_CODE
@@ -206,10 +230,10 @@ spec:
           - name: SCAN_SEVERITY
             value: "{{workflow.parameters.scanSeverity}}"
 
-    # --- 3. Push all resources ---
-    - name: push-resources
+    # Transfer the inspected snapshot to the destination after scanning.
+    - name: transfer-components
       script:
-        image: ghcr.io/opendefensecloud/ocm-tools:0.45.0
+        image: ghcr.io/opendefensecloud/ocm2-tools:0.23.0
         command: [bash, -c]
         volumeMounts:
           - name: dst-secret-vol
@@ -217,6 +241,8 @@ spec:
             mountPath: /secrets/dst
           - name: work-volume
             mountPath: /data
+          - name: registry-auth
+            mountPath: /auth
           - name: ca-certificates
             readOnly: true
             mountPath: /etc/ssl/certs/
@@ -235,21 +261,21 @@ spec:
           set -euo pipefail
           export HOME=/tmp
 
-          dst_host=$(echo "$DST_REMOTE_URL" | sed 's#^[a-z][a-z0-9+.-]*://##')
-
+          umask 077
+          dst_host="${DST_REMOTE_URL#*://}"
           if [ "$DST_SECRET" = "true" ]; then
-              echo "type: generic.config.ocm.software/v1
-          configurations:
-            - type: credentials.config.ocm.software
-              consumers:
-                - identity:
-                    type: OCIRegistry
-                    hostname: ${dst_host%%[/:]*}
-                  credentials:
-                    - type: Credentials
-                      properties:
-                        username: $(cat /secrets/dst/username)
-                        password: $(cat /secrets/dst/password)" > $HOME/.ocmconfig
+            registry="${dst_host%%/*}"
+            case "$DST_SCHEME" in
+              https) registry="${registry%:443}" ;;
+              http) registry="${registry%:80}" ;;
+            esac
+            jq --arg registry "$registry" --arg authority "${dst_host%%/*}" \
+              --arg username "$(cat /secrets/dst/username)" \
+              --arg password "$(cat /secrets/dst/password)" '
+              .auths[$registry] = {auth: ($username + ":" + $password | @base64)} |
+              .auths[$authority] = .auths[$registry]
+            ' /auth/docker/config.json > /auth/docker/config-next.json
+            mv /auth/docker/config-next.json /auth/docker/config.json
           fi
 
           if [ -n "$SPEC_REPO" ]; then
@@ -257,4 +283,7 @@ spec:
           else
             dst_url="${DST_SCHEME}://${dst_host}"
           fi
-          ocm -X preferrelativeaccess=true transfer ctf /data/ctf "$dst_url"
+          snapshot_url=$(cat /data/component.txt)
+          # V2 copies resources; source archives remain by reference.
+          ocm --config /auth/ocmconfig \
+            transfer cv "$snapshot_url" "$dst_url" -r --copy-resources --upload-as ociArtifact
