@@ -138,7 +138,9 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 		return nil, err
 	}
 	flattened := map[string]any{}
-	flattenMap("spec", spec, flattened)
+	if err := flattenMap("spec", spec, flattened); err != nil {
+		return nil, err
+	}
 
 	for k, v := range flattened {
 		params[k] = fmt.Sprintf("%v", v)
@@ -161,12 +163,18 @@ func dawToParameters(daw *desiredAW) ([]arcv1alpha1.ArtifactWorkflowParameter, e
 	return list, nil
 }
 
-func flattenMap(prefix string, src map[string]any, dst map[string]any) {
+func flattenMap(prefix string, src map[string]any, dst map[string]any) error {
 	for k, v := range src {
+		if k == "" {
+			return fmt.Errorf("artifact spec has an empty key below %q", prefix)
+		}
+
 		kt := strings.ToUpper(k[:1]) + k[1:]
 		switch child := v.(type) {
 		case map[string]any:
-			flattenMap(prefix+kt, child, dst)
+			if err := flattenMap(prefix+kt, child, dst); err != nil {
+				return err
+			}
 		case []any:
 			for i, av := range child {
 				dst[prefix+kt+strconv.Itoa(i)] = av
@@ -175,6 +183,8 @@ func flattenMap(prefix string, src map[string]any, dst map[string]any) {
 			dst[prefix+kt] = v
 		}
 	}
+
+	return nil
 }
 
 // earliestRequeue returns the soonest of two requeue durations, treating a
