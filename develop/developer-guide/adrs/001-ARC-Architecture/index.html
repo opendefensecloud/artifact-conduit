@@ -1760,6 +1760,8 @@
       
         
       
+        
+      
     
     
     
@@ -2243,6 +2245,41 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../005-Retransfer-Contract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Define the Re-transfer Contract
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--accepted"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2701,6 +2738,15 @@ An <code>ArtifactType</code> specifies the processing rules and workflow templat
 <p>Because the solution is the one that provides the most flexibility while the necessity to write own code for many parts is minimized.
 The flexibility comes from utilizing the CNCF projects Argo Workflows and Kueue for building the workflow engine.
 The project itself can focus on the order process and the handling of endpoints.</p>
+<div class="admonition info">
+<p class="admonition-title">Amendment: Re-transfer contract</p>
+<p><a href="../005-Retransfer-Contract/">ADR 005: Define the Re-transfer Contract</a>
+supersedes the Endpoint/Secret generation tracking and automatic
+re-transfer claims in this ADR. Endpoint and Secret changes do not
+automatically trigger re-transfers. Use the
+<a href="../../../operator-manual/force-reconciliation/">force annotation</a> on
+affected Orders when a rerun is intended.</p>
+</div>
 
 
 
