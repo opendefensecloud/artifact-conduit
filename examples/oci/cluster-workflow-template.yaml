@@ -107,7 +107,7 @@ spec:
     - name: authenticate-registries
 
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
 
         # Mount the volumes
@@ -176,7 +176,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -200,7 +200,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -215,7 +215,7 @@ spec:
       retryStrategy:
         limit: "2"
       script:
-        image: ghcr.io/trevex/semver:v0.1.1
+        image: ghcr.io/trevex/semver:v0.1.1@sha256:431c9c95c651fce4ade3c687a1e6c1735eb7994ad9840ea94ff6ab2fa161ee54
         command: [bash, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -238,7 +238,7 @@ spec:
           valueFrom:
             path: /tmp/dst.txt
       script:
-        image: alpine:3.22
+        image: alpine:3.22.8@sha256:49340b346798875b5592e5d420241f2f9cfba5f47e62ebb1446a1b34734e898f
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -274,7 +274,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -298,7 +298,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -313,7 +313,7 @@ spec:
 
     - name: scan-image
       script:
-        image: aquasec/trivy:0.75.0
+        image: aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa
         command: [sh, -c]
         volumeMounts: *volumeMounts
 
@@ -344,7 +344,7 @@ spec:
         limit: "2"
 
       script:
-        image: quay.io/skopeo/stable:v1.22.2
+        image: quay.io/skopeo/stable:v1.22.2@sha256:2b7d76dde38c5924e1945348840c58786fc192201f2fd545832e58b53d26f7b8
         command: [sh, -c]
 
         # Mount the secret volume to a temporary directory
@@ -363,7 +363,7 @@ spec:
         parameters:
         - name: dst
       container:
-        image: cgr.dev/chainguard/cosign:latest
+        image: ghcr.io/sigstore/cosign/cosign:v3.1.4@sha256:0f06154836d2de34f887a5c273506d52ca43edaa1d9e53e6510fa78a48f69c2d
         command: [cosign, attest]
         args:
           [
@@ -385,7 +385,7 @@ spec:
         parameters:
         - name: dst
       container:
-        image: cgr.dev/chainguard/cosign:latest
+        image: ghcr.io/sigstore/cosign/cosign:v3.1.4@sha256:0f06154836d2de34f887a5c273506d52ca43edaa1d9e53e6510fa78a48f69c2d
         command: [cosign, sign]
         args:
           [

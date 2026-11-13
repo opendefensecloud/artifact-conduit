@@ -76,7 +76,7 @@ spec:
         limit: "2"
 
       script:
-        image: amazon/aws-cli:2.37.11
+        image: amazon/aws-cli:2.37.11@sha256:d55d5b391f1cc0d428a05eb07408bb1a730d7df9f656008f1117ed5e13b0c083
         command: [sh, -c]
         volumeMounts:
           - &dstSecretMount
@@ -152,7 +152,7 @@ spec:
 
     - name: determine-size-s3
       script:
-        image: amazon/aws-cli:2.37.11
+        image: amazon/aws-cli:2.37.11@sha256:d55d5b391f1cc0d428a05eb07408bb1a730d7df9f656008f1117ed5e13b0c083
         command: [sh, -c]
         volumeMounts:
           - &srcSecretMount
@@ -191,7 +191,7 @@ spec:
 
     - name: determine-size-http
       script:
-        image: quay.io/curl/curl:8.20.0
+        image: quay.io/curl/curl:8.20.0@sha256:b3f1fb2a51d923260350d21b8654bbc607164a987e2f7c84a0ac199a67df812a
         command: [sh, -c]
 
         env: *env
@@ -236,7 +236,7 @@ spec:
           persistentVolumeClaim:
             claimName: "{{ workflow.name }}"
       script:
-        image: amazon/aws-cli:2.37.11
+        image: amazon/aws-cli:2.37.11@sha256:d55d5b391f1cc0d428a05eb07408bb1a730d7df9f656008f1117ed5e13b0c083
         command: [sh, -c]
         volumeMounts:
           - &workDirMount
@@ -266,7 +266,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: quay.io/curl/curl:8.20.0
+        image: quay.io/curl/curl:8.20.0@sha256:b3f1fb2a51d923260350d21b8654bbc607164a987e2f7c84a0ac199a67df812a
         command: [sh, -c]
         volumeMounts:
           - *workDirMount
@@ -282,7 +282,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: clamav/clamav-debian:1.5.4
+        image: clamav/clamav-debian:1.5.4@sha256:76a9c3b63764b78178dc68fa7efcceca0cde2c8c9d4f925a8e697cb4511f8fdc
         command: ["/bin/bash", "-c"]
         volumeMounts:
           - *workDirMount
@@ -295,7 +295,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: amazon/aws-cli:2.37.11
+        image: amazon/aws-cli:2.37.11@sha256:d55d5b391f1cc0d428a05eb07408bb1a730d7df9f656008f1117ed5e13b0c083
         command: [sh, -c]
         volumeMounts:
           - *workDirMount

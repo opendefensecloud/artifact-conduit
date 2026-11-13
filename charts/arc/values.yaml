@@ -394,7 +394,7 @@ etcd:
     # -- etcd image repository
     repository: quay.io/coreos/etcd
     # -- etcd image tag
-    tag: v3.6.11
+    tag: v3.6.11@sha256:6ae247c7666ceec554c51ba1f9bc8dd2212f975370dbd65710c9ca0e36ae1fff
     # -- Image pull policy
     pullPolicy: IfNotPresent
 
