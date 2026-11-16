@@ -147,7 +147,9 @@ var _ = BeforeSuite(func() {
 
 		By("building and loading the OCM v2 tools image")
 		// Use the same CLI version as the checked-in workflow image.
-		content, err := os.ReadFile("examples/ocm/cluster-workflow-template.yaml")
+		projectDir, err := getProjectDir()
+		Expect(err).NotTo(HaveOccurred())
+		content, err := os.ReadFile(filepath.Join(projectDir, "examples", "ocm", "cluster-workflow-template.yaml"))
 		Expect(err).NotTo(HaveOccurred())
 		pinnedImage := ocmToolsImageRef.FindString(string(content))
 		version := strings.TrimPrefix(pinnedImage, "ghcr.io/opendefensecloud/ocm2-tools:")
@@ -436,26 +438,4 @@ func getEnvOrExit(name string) string {
 	fmt.Fprintf(os.Stderr, "%s was not set\n", name)
 	os.Exit(1)
 	return ""
-}
-
-// waitForOCMWorkflow checks the fixture workflows and preserves their logs on
-// failure before deleting them, so CLI errors are visible in the test output.
-func waitForOCMWorkflow(name string) {
-	GinkgoHelper()
-	DeferCleanup(func() {
-		logs, _ := run(exec.Command("kubectl", "logs", "-n", "default",
-			"-l", "workflows.argoproj.io/workflow="+name, "-c", "main", "--tail=-1"))
-		logf("%s logs:\n%s", name, logs)
-		_, _ = run(exec.Command("kubectl", "delete", "workflow", name, "-n", "default"))
-	})
-	Eventually(func(g Gomega) {
-		output, err := run(exec.Command("kubectl", "get", "workflow", name,
-			"-n", "default", "-o", "jsonpath={.status.phase}"))
-		g.Expect(err).NotTo(HaveOccurred())
-		g.Expect(output).To(BeElementOf("Succeeded", "Failed", "Error"))
-	}).Should(Succeed())
-	output, err := run(exec.Command("kubectl", "get", "workflow", name,
-		"-n", "default", "-o", "jsonpath={.status.phase}"))
-	Expect(err).NotTo(HaveOccurred())
-	Expect(output).To(Equal("Succeeded"))
 }
