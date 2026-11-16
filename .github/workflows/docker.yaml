@@ -32,10 +32,10 @@ jobs:
           - name: arc-apiserver
             context: .
             target: apiserver
-          - name: ocm-tools
+          - name: ocm2-tools
             context: examples/ocm
             target: ""
-            ocmVersion: "0.51.0"
+            ocmVersion: "0.23.0"
     permissions:
       actions: read
       contents: read
@@ -77,9 +77,9 @@ jobs:
             type=ref,event=tag
             type=ref,event=pr
             type=sha
-            ${{ matrix.image.name == 'ocm-tools' && github.ref == 'refs/heads/main' && format('type=raw,value={0}', matrix.image.ocmVersion) || '' }}
+            ${{ matrix.image.name == 'ocm2-tools' && github.ref == 'refs/heads/main' && format('type=raw,value={0}', matrix.image.ocmVersion) || '' }}
           flavor: |
-            latest=${{ matrix.image.name != 'ocm-tools' && github.ref == 'refs/heads/main' }}
+            latest=${{ matrix.image.name != 'ocm2-tools' && github.ref == 'refs/heads/main' }}
       - name: Set up QEMU
         if: ${{ env.ACT != 'true' }}
         uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
@@ -109,7 +109,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           target: ${{ matrix.image.target }}
-          build-args: ${{ matrix.image.name == 'ocm-tools' && format('OCM_VERSION={0}', matrix.image.ocmVersion) || '' }}
+          build-args: ${{ matrix.image.name == 'ocm2-tools' && format('OCM_VERSION={0}', matrix.image.ocmVersion) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Install cosign

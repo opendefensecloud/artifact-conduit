@@ -38,7 +38,7 @@ func walkThroughSpecs() {
 		panic("no walk-through steps found in " + dir)
 	}
 
-	Context("Walk-through", func() {
+	Context("Walk-through", Label("walkthrough"), func() {
 		BeforeAll(func() {
 			// Ignore the error: the namespace may exist when re-running against a cluster.
 			_, _ = run(exec.Command("kubectl", "create", "namespace", walkThroughNamespace))
