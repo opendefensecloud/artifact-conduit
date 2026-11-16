@@ -67,7 +67,7 @@
             body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color); }
             body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color); }
         </style><meta name="panzoom-theme" content="material">
-<meta name="panzoom-data" content='{"selectors": [".mermaid", ".d2"], "initial_zoom_level": 1.0}'> </head>
+<meta name="panzoom-data" content='{"selectors": [".d2", ".mermaid"], "initial_zoom_level": 1.0}'> </head>
   
   
     
@@ -2632,6 +2632,13 @@ Hold "Alt" / "Option" to enable pan &amp; zoom
 <li><strong>Controller Tests</strong> via envtest</li>
 <li><strong>E2E Tests</strong> using local <code>kind</code> cluster via <code>make test-e2e</code></li>
 </ul>
+<p>E2E specs have Ginkgo labels. To run the OCM workflow with ARC health and Order
+setup, while skipping the other artifact walkthroughs and endpoint specs:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>test-e2e<span class="w"> </span><span class="nv">E2E_LABEL_FILTER</span><span class="o">=</span><span class="s1">'setup || ocm'</span>
+</code></pre></div>
+<p>To run the suite without the documentation walkthrough specs:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>test-e2e<span class="w"> </span><span class="nv">E2E_LABEL_FILTER</span><span class="o">=</span><span class="s1">'!walkthrough'</span>
+</code></pre></div>
 <p>Run all tests and generate coverage:</p>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span><span class="nb">test</span>
 </code></pre></div>
