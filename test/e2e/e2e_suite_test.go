@@ -183,22 +183,26 @@ var _ = BeforeSuite(func() {
 	Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
 
 	logf("Installing Zot...\n")
-	Expect(installZot()).To(Succeed(), "Failed to install Argo Workflows")
+	Expect(installZot()).To(Succeed(), "Failed to install Zot")
 
 	logf("Installing SeaweedFS...\n")
 	Expect(installSeaweedFS()).To(Succeed(), "Failed to install SeaweedFS")
 })
 
 var _ = AfterSuite(func() {
+	// Setup may fail before fetching the test kubeconfig. An empty KUBECONFIG
+	// would make kubectl use the caller's default cluster during cleanup.
+	if kubeConfigPath == "" {
+		return
+	}
+
 	cmd := exec.Command("kubectl", "delete", "namespace", "zot")
 	_, _ = run(cmd)
 
 	cmd = exec.Command("kubectl", "delete", "namespace", "seaweedfs")
 	_, _ = run(cmd)
 
-	if kubeConfigPath != "" {
-		os.Remove(kubeConfigPath)
-	}
+	os.Remove(kubeConfigPath)
 })
 
 // ------------------------------- HELPER -------------------------------------
@@ -255,11 +259,20 @@ func installZot() error {
 
 	Expect(err).NotTo(HaveOccurred())
 	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=zot", fmt.Sprintf("--repo=%s", zotRepoURL), "-f", filepath.Join(dir, "test", "fixtures", "dst-zot.yaml"), "dst", "zot")
-	_, err = run(cmd)
-	Expect(err).NotTo(HaveOccurred())
+	if _, err := run(cmd); err != nil {
+		return err
+	}
 
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to install zot")
 	cmd = exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "zot-cert.yaml"))
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	// Apply the certificate before waiting: Zot mounts the TLS secret it creates.
+	By("waiting for the Zot StatefulSet to become ready")
+	cmd = exec.Command("kubectl", "rollout", "status", "statefulset/dst",
+		"--namespace", "zot",
+		"--timeout", waitTimeout)
 	_, err = run(cmd)
 
 	return err
