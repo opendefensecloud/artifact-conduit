@@ -26,8 +26,9 @@ var _ = Describe("ARC", Ordered, func() {
 	dir, _ := getProjectDir()
 	testStart := time.Now()
 
-	// Before running the tests, set up the environment by creating the namespace
-	// and deploying the apiserver and controller-manager.
+	// Before running the tests, set up the environment by creating the namespace,
+	// deploying the apiserver and controller-manager, waiting for readiness,
+	// and preparing the shared workflow resources regardless of label filters.
 	BeforeAll(func() {
 		By("creating arc-system namespace")
 		cmd := exec.Command("kubectl", "create", "ns", namespace)
@@ -81,6 +82,62 @@ var _ = Describe("ARC", Ordered, func() {
 		cmd = exec.Command(helmBinary, helmArgs...)
 		_, err = run(cmd)
 		Expect(err).NotTo(HaveOccurred())
+
+		By("waiting for the controller-manager deployment to become ready")
+		cmd = exec.Command("kubectl", "rollout", "status", "deployment/arc-controller-manager",
+			"--namespace", namespace,
+			"--timeout", waitTimeout)
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Controller-manager deployment did not become ready")
+
+		By("validating that the controller-manager pod is ready")
+		verifyControllerUp := func(g Gomega) {
+			// Get the name of the controller-manager pod
+			cmd := exec.Command("kubectl", "get",
+				"pods", "-l", "app.kubernetes.io/component=controller-manager",
+				"-o", "go-template={{ range .items }}"+
+					"{{ if not .metadata.deletionTimestamp }}"+
+					"{{ .metadata.name }}"+
+					"{{ \"\\n\" }}{{ end }}{{ end }}",
+				"-n", namespace,
+			)
+
+			podOutput, err := run(cmd)
+			g.Expect(err).NotTo(HaveOccurred(), "Failed to retrieve controller-manager pod information")
+			podNames := getNonEmptyLines(podOutput)
+			g.Expect(podNames).To(HaveLen(1), "expected 1 controller pod running")
+			controllerPodName = podNames[0]
+			g.Expect(controllerPodName).To(ContainSubstring("controller-manager"))
+
+			// Validate the pod's status
+			cmd = exec.Command("kubectl", "get",
+				"pods", controllerPodName, "-o", `jsonpath={.status.conditions[?(@.type=="Ready")].status}`,
+				"-n", namespace,
+			)
+			output, err := run(cmd)
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(output).To(Equal("True"), "Controller-manager pod is not ready")
+		}
+		Eventually(verifyControllerUp).Should(Succeed())
+
+		By("waiting for the ARC API service to become available")
+		cmd = exec.Command("kubectl", "wait", "apiservices/v1alpha1.arc.opendefense.cloud",
+			"--for", "condition=Available",
+			"--timeout", waitTimeout)
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("preparing default namespace for Orders")
+		cmd = exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred())
+
+		By("Creating the ServiceAccount")
+		applyResource("default", filepath.Join(dir, "test", "fixtures", "service-account.yaml"))
+		By("Creating the secret for zot")
+		applyResource("default", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
+		By("Creating a secret with the cosign key")
+		applyResource("default", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
 	})
 
 	// After all tests have been executed, clean up by undeploying the controller, uninstalling CRDs,
@@ -145,54 +202,34 @@ var _ = Describe("ARC", Ordered, func() {
 
 	Context("Extension API server and Controller Manager", func() {
 		It("should run successfully", Label("setup"), func() {
-			By("validating that the controller-manager pod is running as expected")
-			verifyControllerUp := func(g Gomega) {
-				// Get the name of the controller-manager pod
-				cmd := exec.Command("kubectl", "get",
-					"pods", "-l", "app.kubernetes.io/component=controller-manager",
-					"-o", "go-template={{ range .items }}"+
-						"{{ if not .metadata.deletionTimestamp }}"+
-						"{{ .metadata.name }}"+
-						"{{ \"\\n\" }}{{ end }}{{ end }}",
-					"-n", namespace,
-				)
-
-				podOutput, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred(), "Failed to retrieve controller-manager pod information")
-				podNames := getNonEmptyLines(podOutput)
-				g.Expect(podNames).To(HaveLen(1), "expected 1 controller pod running")
-				controllerPodName = podNames[0]
-				g.Expect(controllerPodName).To(ContainSubstring("controller-manager"))
-
-				// Validate the pod's status
-				cmd = exec.Command("kubectl", "get",
-					"pods", controllerPodName, "-o", "jsonpath={.status.phase}",
-					"-n", namespace,
-				)
-				output, err := run(cmd)
-				g.Expect(err).NotTo(HaveOccurred())
-				g.Expect(output).To(Equal("Running"), "Incorrect controller-manager pod status")
-			}
-			Eventually(verifyControllerUp).Should(Succeed())
-
-			cmd := exec.Command("kubectl", "wait", "apiservices/v1alpha1.arc.opendefense.cloud",
-				"--for", "condition=Available",
-				"--timeout", waitTimeout)
-			_, err := run(cmd)
+			cmd := exec.Command("kubectl", "get", "pods", controllerPodName, "-n", namespace,
+				"-o", `jsonpath={.status.conditions[?(@.type=="Ready")].status}`)
+			output, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal("True"))
+
+			cmd = exec.Command("kubectl", "get", "apiservices/v1alpha1.arc.opendefense.cloud",
+				"-o", `jsonpath={.status.conditions[?(@.type=="Available")].status}`)
+			output, err = run(cmd)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal("True"))
 		})
 
-		It("should prepare default namespace for Orders", Label("setup"), func() {
-			cmd := exec.Command("kubectl", "label", "namespace", "default", "trust=enabled", "--overwrite")
-			_, err := run(cmd)
+		It("should have workflow resources in the default namespace", Label("setup"), func() {
+			cmd := exec.Command("kubectl", "get", "namespace", "default", "-o", "jsonpath={.metadata.labels.trust}")
+			output, err := run(cmd)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal("enabled"))
 
-			By("Creating the ServiceAccount")
-			applyResource("default", filepath.Join(dir, "test", "fixtures", "service-account.yaml"))
-			By("Creating the secret for zot")
-			applyResource("default", filepath.Join(dir, "test", "fixtures", "secret.yaml"))
-			By("Creating a secret with the cosign key")
-			applyResource("default", filepath.Join(dir, "examples", "oci", "cosign-key.yaml"))
+			for _, fixture := range []string{
+				filepath.Join(dir, "test", "fixtures", "service-account.yaml"),
+				filepath.Join(dir, "test", "fixtures", "secret.yaml"),
+				filepath.Join(dir, "examples", "oci", "cosign-key.yaml"),
+			} {
+				cmd = exec.Command("kubectl", "get", "-n", "default", "-f", fixture, "-o", "name")
+				_, err = run(cmd)
+				Expect(err).NotTo(HaveOccurred(), "Expected workflow resources from %s", fixture)
+			}
 		})
 
 		artifactTypes := []string{"helm", "blob", "ocm"}
