@@ -167,11 +167,15 @@ spec:
             --dry-run -o json |
           jq --arg src "${SRC_SCHEME}://${src_host}" --arg repo "$SPEC_REPO" '
             if $repo == "" then . else
-              (.transformations | .. | objects | select(has("imageReference")) | .imageReference) |=
+              (.transformations[].spec[]? | objects | .access? | objects | select(has("imageReference")) | .imageReference) |=
                 ((capture("^(?<scheme>https?://)?(?<host>[^/]+)/(?<path>.*)$") // null) as $ref |
                  if $ref != null and ($ref.path | startswith($repo + "/")) then "\($src)/\($ref.path)" else . end) |
-              (.transformations | .. | objects | select(has("referenceName")) | .referenceName) |=
-                ltrimstr($repo + "/")
+              (.transformations[].spec[]? | objects | .access? | objects | select(has("referenceName")) | .referenceName) |=
+                ltrimstr($repo + "/") |
+              ([.transformations[].spec[]? | objects | select(.access.referenceName? != null) |
+                {name: .access.referenceName, digest: .digest.value?}] |
+               unique | group_by(.name) | map(select(length > 1)) | .[0][0].name) as $dup |
+              if $dup then error("different resources share the destination name \($dup)") else . end
             end
           ' > /data/transfer-spec.json
           ocm --config /auth/ocmconfig transfer cv --transfer-spec /data/transfer-spec.json
