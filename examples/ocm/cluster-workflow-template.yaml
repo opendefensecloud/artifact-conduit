@@ -161,9 +161,24 @@ spec:
           else
             component_url="${SRC_SCHEME}://${src_host}//${SPEC_COMPONENT}:${SPEC_VERSION}"
           fi
-          # Capture external resources too, so scanning and transfer use the
-          # same bytes even if source image tags change afterwards.
-          ocm --config /auth/ocmconfig transfer cv "$component_url" ctf::/data/snapshot -r --copy-resources
+          # Snapshot external resources so scan and transfer use the same bytes.
+          # References under the Order's repo are read from the source registry.
+          ocm --config /auth/ocmconfig transfer cv "$component_url" ctf::/data/snapshot -r --copy-resources \
+            --dry-run -o json |
+          jq --arg src "${SRC_SCHEME}://${src_host}" --arg repo "$SPEC_REPO" '
+            if $repo == "" then . else
+              (.transformations[].spec[]? | objects | .access? | objects | select(has("imageReference")) | .imageReference) |=
+                ((capture("^(?<scheme>https?://)?(?<host>[^/]+)/(?<path>.*)$") // null) as $ref |
+                 if $ref != null and ($ref.path | startswith($repo + "/")) then "\($src)/\($ref.path)" else . end) |
+              (.transformations[].spec[]? | objects | .access? | objects | select(has("referenceName")) | .referenceName) |=
+                ltrimstr($repo + "/") |
+              ([.transformations[].spec[]? | objects | select(.access.referenceName? != null) |
+                {name: .access.referenceName, digest: .digest.value?}] |
+               unique | group_by(.name) | map(select(length > 1)) | .[0][0].name) as $dup |
+              if $dup then error("different resources share the destination name \($dup)") else . end
+            end
+          ' > /data/transfer-spec.json
+          ocm --config /auth/ocmconfig transfer cv --transfer-spec /data/transfer-spec.json
           snapshot_url="ctf::/data/snapshot//${SPEC_COMPONENT}:${SPEC_VERSION}"
           printf '%s\n' "$snapshot_url" > /data/component.txt
 
