@@ -15,16 +15,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1793609003,
-        "narHash": "sha256-WkK7eZDzeMGktNjDqnyRaA/Q3wQslRqvvbiW4zp5ndc=",
+        "lastModified": 1793866066,
+        "narHash": "sha256-UgYKUqeZ0hhZJHjIjCA5jArzetldfV127tQ8Ky1oi1w=",
         "owner": "opendefensecloud",
         "repo": "dev-kit",
-        "rev": "7126784179fc6eb70f7216b788537a9d92121642",
+        "rev": "983ddfc02224cbb84e8fdf875683525881b96a72",
         "type": "github"
       },
       "original": {
         "owner": "opendefensecloud",
-        "ref": "v3.2.1",
+        "ref": "v4.0.0",
         "repo": "dev-kit",
         "type": "github"
       }
@@ -134,11 +134,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792644631,
-        "narHash": "sha256-3aILZu5bQ+6khPvGCdIbC7wBFZOgPbpP0TBSL9tf89E=",
+        "lastModified": 1794837763,
+        "narHash": "sha256-90zoQpHXQz6sNE7y/q2m80zhAAwlutXf3RNjzwN1dPg=",
         "owner": "purpleclay",
         "repo": "go-overlay",
-        "rev": "ff2b494b477eb4349dd40f0564cedab552f9804d",
+        "rev": "3207e98943b9ceb2c207d6e0958f2239c8f210db",
         "type": "github"
       },
       "original": {

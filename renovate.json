@@ -50,8 +50,14 @@
         "ocmVersion:\\s*\"(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)\""
       ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "open-component-model/ocm",
+      "depNameTemplate": "open-component-model/open-component-model",
       "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["ghcr.io/opendefensecloud/ocm2-tools"],
+      "versioning": "semver"
     }
   ],
   "ignorePaths": []

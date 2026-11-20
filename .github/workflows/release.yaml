@@ -48,7 +48,7 @@ concurrency:
 jobs:
   release:
     name: Compute version and notes
-    uses: opendefensecloud/dev-kit/.github/workflows/release.yml@7126784179fc6eb70f7216b788537a9d92121642 # v3.2.1
+    uses: opendefensecloud/dev-kit/.github/workflows/release.yml@983ddfc02224cbb84e8fdf875683525881b96a72 # v4.0.0
     permissions:
       contents: write # create/update the draft release and, if requested, the tag
     with:
@@ -109,7 +109,7 @@ jobs:
           echo "sha=${sha}" >> "$GITHUB_OUTPUT"
 
       - name: Checkout code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # By SHA to avoid racing on tag propagation. The retry path has no
           # prepare output, so it uses the draft's resolved target commit.
@@ -118,7 +118,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up nix with the shared Cachix cache
-        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@7126784179fc6eb70f7216b788537a9d92121642 # v3.2.1
+        uses: opendefensecloud/dev-kit/.github/actions/setup-nix@983ddfc02224cbb84e8fdf875683525881b96a72 # v4.0.0
         with:
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           cachix-signing-key: ${{ secrets.CACHIX_SIGNING_KEY }}
@@ -146,7 +146,7 @@ jobs:
         id: attest
         # actions/attest defaults to SLSA build provenance when no sbom-path or
         # predicate input is given.
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-path: 'bin/arc-*-*' # binaries only; runs before signing so the .sigstore.json bundles are not yet present
 
@@ -167,7 +167,7 @@ jobs:
           cp "${BUNDLE}" "provenance/arc-${asset_tag}.intoto.jsonl"
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
 
       - name: Sign release artefacts (keyless)
         env:

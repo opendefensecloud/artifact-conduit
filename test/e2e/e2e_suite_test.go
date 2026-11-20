@@ -21,13 +21,14 @@ import (
 const (
 	certmanagerChart     = "oci://quay.io/jetstack/charts/cert-manager"
 	trustmanagerChart    = "oci://quay.io/jetstack/charts/trust-manager"
-	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/quick-start-minimal.yaml"
+	argoWorkflowsURLTmpl = "https://github.com/argoproj/argo-workflows/releases/download/%s/install.yaml"
 
 	zotRepoURL = "https://zotregistry.dev/helm-charts"
 
 	// Image names used when building from source (local development)
 	localApiserverImage = "apiserver:e2e"
 	localManagerImage   = "manager:e2e"
+	localOCMToolsImage  = "ocm2-tools:e2e"
 
 	// Kubernetes secret name used for GHCR image pull auth
 	ghcrPullSecretName = "ghcr-pull-secret"
@@ -80,6 +81,7 @@ var (
 	apiserverImageTag  string
 	managerImageRepo   string
 	managerImageTag    string
+	ocmToolsImage      string
 
 	trustmanagerVersion  = getEnvOrExit("TRUSTMANAGER_VERSION")
 	certmanagerVersion   = getEnvOrExit("CERTMANAGER_VERSION")
@@ -143,11 +145,28 @@ var _ = BeforeSuite(func() {
 		err = loadImageToKindClusterWithName(localManagerImage)
 		ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to load the manager image into Kind")
 
+		By("building and loading the OCM v2 tools image")
+		// Use the same CLI version as the checked-in workflow image.
+		projectDir, err := getProjectDir()
+		Expect(err).NotTo(HaveOccurred())
+		content, err := os.ReadFile(filepath.Join(projectDir, "examples", "ocm", "cluster-workflow-template.yaml"))
+		Expect(err).NotTo(HaveOccurred())
+		pinnedImage := ocmToolsImageRef.FindString(string(content))
+		version := strings.TrimPrefix(pinnedImage, "ghcr.io/opendefensecloud/ocm2-tools:")
+		Expect(version).NotTo(BeEmpty())
+		cmd = exec.Command("docker", "build", "--build-arg", "OCM_VERSION="+version,
+			"-t", localOCMToolsImage, "examples/ocm")
+		_, err = run(cmd)
+		Expect(err).NotTo(HaveOccurred(), "Failed to build the OCM tools image")
+		Expect(loadImageToKindClusterWithName(localOCMToolsImage)).To(Succeed())
+		ocmToolsImage = localOCMToolsImage
+
 		apiserverImageRepo = "apiserver"
 		apiserverImageTag = "e2e"
 		managerImageRepo = "manager"
 		managerImageTag = "e2e"
 	} else {
+		ocmToolsImage = fmt.Sprintf("%s/ocm2-tools:%s", imageRegistry, imageTag)
 		apiserverImageRepo = imageRegistry + "/arc-apiserver"
 		apiserverImageTag = imageTag
 		managerImageRepo = imageRegistry + "/arc-controller-manager"
@@ -164,22 +183,26 @@ var _ = BeforeSuite(func() {
 	Expect(installArgoWorkflows()).To(Succeed(), "Failed to install Argo Workflows")
 
 	logf("Installing Zot...\n")
-	Expect(installZot()).To(Succeed(), "Failed to install Argo Workflows")
+	Expect(installZot()).To(Succeed(), "Failed to install Zot")
 
 	logf("Installing SeaweedFS...\n")
 	Expect(installSeaweedFS()).To(Succeed(), "Failed to install SeaweedFS")
 })
 
 var _ = AfterSuite(func() {
+	// Setup may fail before fetching the test kubeconfig. An empty KUBECONFIG
+	// would make kubectl use the caller's default cluster during cleanup.
+	if kubeConfigPath == "" {
+		return
+	}
+
 	cmd := exec.Command("kubectl", "delete", "namespace", "zot")
 	_, _ = run(cmd)
 
 	cmd = exec.Command("kubectl", "delete", "namespace", "seaweedfs")
 	_, _ = run(cmd)
 
-	if kubeConfigPath != "" {
-		os.Remove(kubeConfigPath)
-	}
+	os.Remove(kubeConfigPath)
 })
 
 // ------------------------------- HELPER -------------------------------------
@@ -236,11 +259,20 @@ func installZot() error {
 
 	Expect(err).NotTo(HaveOccurred())
 	cmd := exec.Command(helmBinary, "upgrade", "--install", "--create-namespace", "--namespace=zot", fmt.Sprintf("--repo=%s", zotRepoURL), "-f", filepath.Join(dir, "test", "fixtures", "dst-zot.yaml"), "dst", "zot")
-	_, err = run(cmd)
-	Expect(err).NotTo(HaveOccurred())
+	if _, err := run(cmd); err != nil {
+		return err
+	}
 
-	ExpectWithOffset(1, err).NotTo(HaveOccurred(), "Failed to install zot")
 	cmd = exec.Command("kubectl", "apply", "-f", filepath.Join(dir, "test", "fixtures", "zot-cert.yaml"))
+	if _, err := run(cmd); err != nil {
+		return err
+	}
+
+	// Apply the certificate before waiting: Zot mounts the TLS secret it creates.
+	By("waiting for the Zot StatefulSet to become ready")
+	cmd = exec.Command("kubectl", "rollout", "status", "statefulset/dst",
+		"--namespace", "zot",
+		"--timeout", waitTimeout)
 	_, err = run(cmd)
 
 	return err
@@ -304,16 +336,7 @@ func installArgoWorkflows() error {
 		return err
 	}
 
-	// archiveLogs is enabled by default but not needed for e2e test
-	cmd = exec.Command("kubectl", "patch", "configmap", "workflow-controller-configmap",
-		"-n", "argo", "--type", "merge",
-		"-p", `{"data": {"artifactRepository": "archiveLogs: false\n"}}`,
-	)
-	if _, err := run(cmd); err != nil {
-		return err
-	}
-
-	// Wait for argo-server deployment to be ready
+	// Wait for the workflow controller to be ready
 	cmd = exec.Command("kubectl", "wait", "deployment.apps/workflow-controller",
 		"--for", "condition=Available",
 		"--namespace", "argo",
@@ -364,29 +387,20 @@ func applyResource(namespace, file string) {
 	Expect(err).NotTo(HaveOccurred())
 }
 
-// ocmToolsImageRef matches the pinned ocm-tools image reference in the ocm example's
+// ocmToolsImageRef matches the pinned ocm2-tools image reference in the ocm example's
 // ClusterWorkflowTemplate, regardless of which version tag is currently checked in
 // (Renovate bumps that tag directly in the YAML, see renovate.json).
-var ocmToolsImageRef = regexp.MustCompile(`ghcr\.io/opendefensecloud/ocm-tools:\S+`)
+var ocmToolsImageRef = regexp.MustCompile(`ghcr\.io/opendefensecloud/ocm2-tools:\S+`)
 
-// applyOCMClusterWorkflowTemplate applies the ocm example's ClusterWorkflowTemplate.
-// The checked-in file pins ocm-tools to a released version tag, which is only
-// published for pushes to main (see docker.yaml), so on a PR that itself bumps or
-// introduces that tag, it doesn't exist yet. When testing pre-built CI images, rewrite
-// the reference to the ocm-tools image built for this run instead of the pinned tag.
+// applyOCMClusterWorkflowTemplate applies an OCM manifest using the image built
+// for this test run. The released tag may not have been published yet.
 func applyOCMClusterWorkflowTemplate(namespace, file string) {
 	GinkgoHelper()
-
-	if imageSource == "local" {
-		applyResource(namespace, file)
-		return
-	}
 
 	content, err := os.ReadFile(file)
 	Expect(err).NotTo(HaveOccurred())
 
-	ocmToolsImage := fmt.Sprintf("%s/ocm-tools:%s", imageRegistry, imageTag)
-	Expect(ocmToolsImageRef.Match(content)).To(BeTrue(), "expected an ocm-tools image reference in %s", file)
+	Expect(ocmToolsImageRef.Match(content)).To(BeTrue(), "expected an ocm2-tools image reference in %s", file)
 	rewritten := ocmToolsImageRef.ReplaceAllString(string(content), ocmToolsImage)
 
 	args := []string{"apply", "-f", "-"}

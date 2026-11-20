@@ -1,5 +1,5 @@
 # Include ODC common make targets
-DEV_KIT_VERSION := v3.2.1
+DEV_KIT_VERSION := v4.0.0
 -include common.mk
 common.mk:
 	@[ -f .common.mk-download ] || \
@@ -26,7 +26,7 @@ REPO_ADMIN_BYPASS := false
 REPO_REQUIRED_APPROVING_REVIEW_COUNT := 1
 REPO_REQUIRE_CODE_OWNER_REVIEW := false
 REPO_REQUIRE_BRANCH_UP_TO_DATE := true
-REPO_STATUS_CHECKS := ["check", "lint", "test", "CodeQL"]
+REPO_STATUS_CHECKS := ["check", "lint", "test", "CodeQL", "action-pins / Check action pins", "action-pins / Audit action pins"]
 REPO_RULESET_BRANCHES := ["release/*"]
 REPO_ALLOW_MERGE_COMMIT := true
 REPO_ALLOW_SQUASH_MERGE := false
@@ -83,6 +83,7 @@ manifests: $(CONTROLLER_GEN) ## Generate ClusterRole and CustomResourceDefinitio
 
 KIND_CLUSTER_E2E  ?= arc-test-e2e
 E2E_IMAGE_SOURCE  ?= local
+E2E_LABEL_FILTER  ?=
 REGISTRY          ?= localhost/local
 TAG               ?= e2e
 
@@ -120,7 +121,7 @@ test-e2e: manifests ## Run the e2e tests. Expected an isolated environment using
 	E2E_IMAGE_SOURCE=$(E2E_IMAGE_SOURCE) \
 	REGISTRY=$(REGISTRY) \
 	IMAGE_TAG=$(TAG) \
-	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h
+	go test -count=1 -tags=e2e ./test/e2e/ -v -timeout=1h -ginkgo.v -ginkgo.timeout=1h -ginkgo.fail-on-empty $(if $(E2E_LABEL_FILTER),-ginkgo.label-filter='$(E2E_LABEL_FILTER)',) $(testargs)
 	$(MAKE) cleanup-test-e2e
 
 .PHONY: cleanup-test-e2e
@@ -150,9 +151,7 @@ dev-cluster: manifests ## Install all necessary components into local Kind clust
 	@echo -e "\nSETTING UP ARGO WORKFLOWS:\n"
 	$(KUBECTL) --context kind-$(KIND_CLUSTER_DEV) create namespace argo || true
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n argo --server-side -f \
-		https://github.com/argoproj/argo-workflows/releases/download/$(ARGO_WORKFLOWS_VERSION)/quick-start-minimal.yaml
-	$(KUBECTL) patch configmap workflow-controller-configmap --context kind-$(KIND_CLUSTER_DEV) -n argo --type=merge -p \
-		'{"data": {"artifactRepository": "archiveLogs: false\n"}}'
+		https://github.com/argoproj/argo-workflows/releases/download/$(ARGO_WORKFLOWS_VERSION)/install.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
 		test/fixtures/secret.yaml
 	$(KUBECTL) apply --context kind-$(KIND_CLUSTER_DEV) -n default -f \
