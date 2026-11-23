@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: seaweedfs
-          image: chrislusf/seaweedfs:4.48
+          image: chrislusf/seaweedfs:4.54
           env:
             - name: AWS_ACCESS_KEY_ID
               value: admin
