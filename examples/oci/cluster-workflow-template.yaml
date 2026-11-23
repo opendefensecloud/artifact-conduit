@@ -238,7 +238,7 @@ spec:
           valueFrom:
             path: /tmp/dst.txt
       script:
-        image: alpine:3.22
+        image: alpine:3.24
         command: [sh, -c]
         volumeMounts: *volumeMounts
         env: *env
@@ -313,7 +313,7 @@ spec:
 
     - name: scan-image
       script:
-        image: aquasec/trivy:0.75.0
+        image: aquasec/trivy:0.76.2
         command: [sh, -c]
         volumeMounts: *volumeMounts
 
