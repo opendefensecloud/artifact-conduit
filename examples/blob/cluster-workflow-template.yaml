@@ -282,7 +282,7 @@ spec:
       volumes:
         - *workDir
       script:
-        image: clamav/clamav-debian:1.5.4
+        image: clamav/clamav-debian:1.5.5
         command: ["/bin/bash", "-c"]
         volumeMounts:
           - *workDirMount
