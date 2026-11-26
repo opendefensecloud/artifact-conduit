@@ -166,15 +166,21 @@ spec:
           ocm --config /auth/ocmconfig transfer cv "$component_url" ctf::/data/snapshot -r --copy-resources \
             --dry-run -o json |
           jq --arg src "${SRC_SCHEME}://${src_host}" --arg repo "$SPEC_REPO" '
+            # Accesses of the transfer steps, label values are left alone.
+            def accesses: .transformations[].spec[]? | objects | .access? | objects;
+            def reanchor:
+              (capture("^(?<scheme>https?://)?(?<host>[^/]+)/(?<path>.*)$") // null) as $ref |
+              if $ref != null and ($ref.path | startswith($repo + "/")) then "\($src)/\($ref.path)" else . end;
+            # First destination name that two resources with different digests share.
+            def duplicate_name:
+              [.transformations[].spec[]? | objects | select(.access.referenceName? != null) |
+               {name: .access.referenceName, digest: .digest.value?}] |
+              unique | group_by(.name) | map(select(length > 1)) | .[0][0].name;
+
             if $repo == "" then . else
-              (.transformations[].spec[]? | objects | .access? | objects | select(has("imageReference")) | .imageReference) |=
-                ((capture("^(?<scheme>https?://)?(?<host>[^/]+)/(?<path>.*)$") // null) as $ref |
-                 if $ref != null and ($ref.path | startswith($repo + "/")) then "\($src)/\($ref.path)" else . end) |
-              (.transformations[].spec[]? | objects | .access? | objects | select(has("referenceName")) | .referenceName) |=
-                ltrimstr($repo + "/") |
-              ([.transformations[].spec[]? | objects | select(.access.referenceName? != null) |
-                {name: .access.referenceName, digest: .digest.value?}] |
-               unique | group_by(.name) | map(select(length > 1)) | .[0][0].name) as $dup |
+              (accesses | select(has("imageReference")) | .imageReference) |= reanchor |
+              (accesses | select(has("referenceName")) | .referenceName) |= ltrimstr($repo + "/") |
+              duplicate_name as $dup |
               if $dup then error("different resources share the destination name \($dup)") else . end
             end
           ' > /data/transfer-spec.json
